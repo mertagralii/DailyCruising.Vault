@@ -22,8 +22,9 @@ geçiyor, onaysız kod yazılmıyor → [[api-sema]]
 | 2 | Katalog | ✅ onaylandı 2026-08-24 |
 | 3 | Kiralama tipleri ve fiyat | ✅ onaylandı 2026-08-24 |
 | 4 | Takvim ve sefer | ✅ onaylandı 2026-08-24 |
-| 5 | Rezervasyon | sırada |
-| 6–8 | Para · teklif+mesajlaşma · yan sistemler + olay günlüğü | — |
+| 5 | Rezervasyon | ✅ onaylandı 2026-08-24 |
+| 6 | Para | sırada |
+| 7–8 | Teklif+mesajlaşma · yan sistemler + olay günlüğü | — |
 
 Kod tarafında iskelet kurulu, **iş kodu henüz yok**. Dört katman oluşturuldu ama
 üçü bilinçli boş — şema onaylanmadan doldurulmayacak → [[api-kararlar]] 2026-08-21.
@@ -37,7 +38,6 @@ için açık görünüyordu; 2026-08-24'te düzeltildi.
 
 | # | Konu | Kimde |
 |---|---|---|
-| G-12 | **Çevrimdışı biniş** — iskelede internet yoksa QR doğrulaması ne olur | Mert |
 | 41 | Ödeme sağlayıcı (sanal POS) seçimi — şemayı bloke etmiyor | Mert |
 | G-13 | Fatura modelinin mali müşavirle teyidi | Mert |
 

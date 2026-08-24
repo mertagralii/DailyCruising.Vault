@@ -312,3 +312,33 @@ kısmi `EXCLUDE` ile iptal edilen seferin takvimi bırakması · UTC saklama ama
 ile elle yönetilirdi).
 
 İlgili: [[api-sema]] · [[domain-gereksinimler]] · [[api-durum]]
+
+---
+
+## 2026-08-24 — Şema bölüm 5: rezervasyon (Mert onayladı)
+
+**Karar:** Rezervasyon satın alma anının fotoğrafını çeker — fiyat, yaş sınırı, kur,
+komisyon oranı ve kurallar **kopyalanır**, referansla bağlanmaz. Tam şema
+→ [[api-sema]].
+
+**Neden dondurma:** tekne sahibi yarın fiyatını, yaş sınırlarını veya sözleşmesini
+değiştirebilir. Referans olsaydı geçmiş rezervasyonların tutarı ve hesaplanmış
+komisyonu geriye dönük bozulur, hakediş yanlış çıkardı.
+
+**Kapasite koruması üç katmanlı:** `CHECK (SoldSeats <= Capacity)` gerçek garanti ·
+`SELECT ... FOR UPDATE` oku-değiştir-yaz doğruluğu için · `HoldExpiresAt` üzerinde
+kısmi indeks temizlik işi için. `SERIALIZABLE` bilinçli olarak seçilmedi —
+çakışmada yeniden deneme mantığı gerektiriyor, bu iş için gereksiz karmaşık.
+
+**Mert'in iki cevabı (2026-08-24):**
+1. **Çevrimdışı biniş (G-12 KAPANDI): c seçeneği** — internet yoksa tekne sahibi
+   sonradan panelden işaretler, `BoardingScans.Method = Manuel`. **a seçeneği
+   (çevrimdışı kuyruk) gelecek sürümde**, mobil uygulamayla: *"ilerde yaparız, bunu
+   da kesinlikle ekle."*
+2. **Rezervasyon değişikliği YOK, yalnız iptal.** `ReservationAmendments` gelecek
+   sürümde — değişiklik para farkı ve yeni komisyon üretir, 6. bölümdeki para defteri
+   oturmadan kurmak erken.
+
+Her ikisi de → [[domain-gereksinimler]] 2026-08-24.
+
+İlgili: [[api-sema]] · [[domain-gereksinimler]] · [[api-durum]]

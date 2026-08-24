@@ -22,8 +22,6 @@ tamamlanamaz.**
       DailyCruising'e özgü içerik ile genel iskeletin ayrılmış olması
       Bağımlı: bu projede sistemin işe yaradığının kanıtlanması
 
-- [ ] **G-12** Çevrimdışı biniş · kimde: **Mert**
-      İskelede internet çekmezse QR doğrulama ne olacak? G-01'den arta kalan tek soru
 - [ ] **G-13** Fatura modelinin mali müşavirle teyidi · kimde: **Mert**
       Aracılık modeli seçildi; teyit gelene kadar şema esnek kurulacak
 - [ ] **G-03** Ödeme sağlayıcı kararı · kimde: **Mert**
@@ -44,6 +42,12 @@ tamamlanamaz.**
 _(boş)_
 
 ## 🟢 Tamamlandı
+
+- [x] **G-12** Çevrimdışı biniş kararı · bitti: 2026-08-24
+      Kanıt: Mert **c** seçti — internet yoksa tekne sahibi sonradan panelden
+      işaretler, `BoardingScans.Method = Manuel`. Çevrimdışı kuyruk (a) gelecek
+      sürümde, mobil uygulamayla. Karar -> [[domain-gereksinimler]] 2026-08-24,
+      şema -> [[api-sema]] bölüm 5
 
 - [x] **G-14** Vault'un yedeklenmesi · bitti: 2026-08-24
       Kanıt: `mertagralii/DailyCruising.Vault` (private) oluşturuldu ve push edildi ·

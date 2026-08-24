@@ -47,7 +47,7 @@ Biçim ve gerekçe -> [[genel-desenler]]
 ## 🟡 Yapılıyor
 
 - [ ] **A-01** Veritabanı şemasının sekiz bölümde çıkarılması · öncelik: yüksek
-      **Başlandı 2026-08-24** — 4/8 bölüm onaylandı (kimlik+yetki · katalog · fiyat · takvim+sefer) -> [[api-sema]]
+      **Başlandı 2026-08-24** — 5/8 bölüm onaylandı (kimlik · katalog · fiyat · sefer · rezervasyon) -> [[api-sema]]
       Bağımlılık **kalktı** — G-01 tamamlandı, şemayı bloke eden madde yok
       Bölümler: 1 kimlik/yetki · 2 katalog · 3 kiralama tipi+fiyat · 4 takvim+sefer
       (en kritik) · 5 rezervasyon · 6 para · 7 teklif+mesajlaşma · 8 yan sistemler

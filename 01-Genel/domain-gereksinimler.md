@@ -950,6 +950,53 @@ kayıt altyapısı ortak olsa da izin ayrı yönetilmeli.
 
 
 
+### 2026-08-24 — Çevrimdışı biniş: şimdilik elle işaretleme, kuyruk mobilde (G-12 KAPANDI)
+
+İskelede internet çekmediğinde QR okutulamıyor. Mert **c** seçeneğini seçti,
+**a**'yı gelecek sürüme aldı: *"1 soru içinde a kısmını ilerde yaparız, bunu da
+kesinlikle ekle."*
+
+**İlk sürüm (c):** tekne sahibi internet gelince panelden "bindi" işaretler.
+`BoardingScans.Method` değerine `Manuel` eklenir. Şema bugün hazır, ek geliştirme yok.
+
+**Gelecek sürüm (a) — çevrimdışı kuyruk:** mobil uygulamada tekne sahibi kodu
+çevrimdışı okutur/girer, cihaz kaydı kuyruğa alır, bağlantı gelince eşitler.
+Mobil uygulama web'den sonra geleceği için sırası da doğal.
+
+**Neden ertelendi:** çevrimdışı kuyruk gerçek bir senkronizasyon problemidir —
+aynı rezervasyon iki cihazda okutulabilir, saat kayabilir, çakışma çözümü gerekir.
+Web-only ilk sürümde karşılığı yok.
+
+**Şema buna bugünden hazır:** `BoardingScans` her okutmayı ayrı satır tutuyor ve
+`ScannedAt` ile `DeviceInfo` taşıyor. Çevrimdışı kuyruk geldiğinde eklenecek tek
+şey `ClientRecordedAt` (cihazın kendi saati) ve `SyncedAt`. Tek tablo, iki kolon.
+
+⚠️ **Biniş sonrası tetiklenen iki şey** çevrimdışıda gecikir: yorum hakkı doğması
+ve mesajlaşmanın kapanması. İkisi de gecikmeye tahammüllü — engel değil.
+
+---
+
+### 2026-08-24 — Rezervasyon değişikliği YOK, yalnız iptal (ilk sürüm)
+
+Mert: *"değişiklik olmasın sadece iptal şimdilik ama bu özelliği de getiririz."*
+
+**İlk sürümde:** müşteri kişi sayısını veya tarihi değiştiremez. İsterse iptal eder
+ve yeniden alır. Hava muhalefetindeki tarih değişikliği **ayrıdır** ve durur —
+onu platform teklif eder, müşteri talep etmez.
+
+**Gelecek sürüm — `ReservationAmendments`:** her değişiklik ayrı satır olur; ne
+değişti, fark tutarı, yeni komisyon, kim onayladı. Rezervasyonun kendisi
+güncellenmez, üzerine değişiklik kaydı biner.
+
+**Neden ertelendi:** değişiklik para farkı ve **yeni komisyon** üretir; kısmi
+tahsilat, kısmi iade ve hakediş defterinde ek kayıt demek. 6. bölümdeki para
+defteri oturmadan üstüne değişiklik akışı kurmak erken.
+
+**Neden şemayı bozmuyor:** para defteri zaten değişmez ve append-only. Değişiklik
+geldiğinde defterde yeni satırlar açılır, eskiler düzeltilmez — model aynı kalır.
+
+---
+
 ### 2026-08-24 — `AvailabilityDays` özet tablosu ERTELENDİ (bakılacak)
 
 Aynı gün içinde Claude kendi eski önerisini geri çekti, Mert kabul etti:

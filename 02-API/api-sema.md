@@ -20,8 +20,8 @@ kuralların tabloya dönüşmüş hali var. Çelişirlerse domain dosyası doğr
 | 2 | Katalog | ✅ onaylandı 2026-08-24 |
 | 3 | Kiralama tipleri ve fiyat | ✅ onaylandı 2026-08-24 |
 | 4 | Takvim ve sefer | ✅ onaylandı 2026-08-24 |
-| 5 | Rezervasyon | sırada |
-| 6 | Para | — |
+| 5 | Rezervasyon | ✅ onaylandı 2026-08-24 |
+| 6 | Para | sırada |
 | 7 | Teklif ve mesajlaşma | — |
 | 8 | Yan sistemler + olay günlüğü | — |
 
@@ -490,5 +490,134 @@ MSSQL'de `datetime2` ile bu elle yönetilirdi.
 
 Sefer açılması · sefer dolması · **asgari kişi dolmadığı için iptal** · blok
 ekleme-kaldırma · takvim modu değişikliği · hava iptali ilanı · sefer tamamlanması.
+
+---
+
+## Bölüm 5 — Rezervasyon
+
+Bölümün tek büyük fikri: **rezervasyon fotoğraf çeker.**
+
+### `Reservations`
+
+**Kimlik ve durum**
+
+| Kolon | Not |
+|---|---|
+| **Code** | rastgele, **sıralı değil**, benzersiz; `0/O`, `1/I/l` kullanılmaz |
+| VoyageId, BoatRentalTypeId | |
+| **UserId** | **nullable** — misafir rezervasyonu birinci sınıf senaryo |
+| ContactFullName, ContactEmail, ContactPhone | **kopya**, referans değil |
+| Status | Beklemede → Ödendi → Binildi → Tamamlandı · yan dal SüresiDoldu / İptal / İade |
+| **HoldExpiresAt** | 15 dakika |
+| AdultCount, ChildCount, InfantCount | |
+| **BoardingToken** | QR'ın taşıdığı rastgele jeton |
+
+İletişim bilgisi profilden kopyalanır: kullanıcı altı ay sonra e-postasını
+değiştirse geçmiş rezervasyonun o günkü bilgisi bozulmamalı.
+
+**Dondurulan alanlar — bölümün asıl konusu**
+
+| Grup | Kolonlar |
+|---|---|
+| Fiyat | AdultUnitPrice, ChildUnitPrice, InfantUnitPrice, BoatPrice |
+| Yaş sınırı | InfantMaxAge, ChildMaxAge |
+| Para birimi | ListCurrency, ListTotal, **ExchangeRate**, ExchangeRateDate, TotalTry |
+| Komisyon | **CommissionRate**, ContractId |
+| Kural | RequiresPassengerList |
+| Toplam | ExtrasTotal, CouponId, DiscountAmount, **GrandTotalTry** |
+
+Ortak gerekçe: tekne sahibi yarın fiyatı, yaş sınırını veya sözleşmesini
+değiştirebilir. Referansla bağlansaydı geçmiş rezervasyonların tutarı ve hesaplanmış
+komisyonu **geriye dönük bozulur**, hakediş yanlış çıkardı.
+
+`ExchangeRate` özellikle kritik: €500'lük tekne 1 Temmuz'da 35 kurdan 17.500 TL
+ödendi; Eylül'de kur 40 olsa da hakediş 17.500 TL üzerinden. Kur dondurulmazsa
+platform tahsil etmediği parayı ödemek zorunda kalır.
+
+### `ReservationExtras`
+
+`ReservationId, ExtraId, ExtraType, NameSnapshot, UnitPrice, Quantity, LineTotal`
+
+`NameSnapshot` var çünkü tekne sahibi "Menü 1"in içeriğini değiştirebilir; müşterinin
+ne satın aldığı kaybolmamalı.
+
+### `Passengers`
+
+`ReservationId, FullName, BirthDate, IdentityType (TCKN/Pasaport/YabancıKimlik),
+IdentityNumber, Nationality?, FilledByUserId, CreatedAt`
+
+Yalnız teknenin **"yolcu listesi ister"** anahtarı açıkken doldurulur. Kimlik verisi
+"lazım olur diye" değil, tekne sahibinin beyan ettiği yasal yükümlülük gerekçesiyle
+toplanır — KVKK m.4'ün istediği belirli ve meşru amaç.
+
+`FilledByUserId`: eksik bilgiyi tekne sahibi biniş sırasında panelden girebilir;
+kimin girdiği anlaşmazlıkta lazım. **Eksik yolcu bilgisi binişi ENGELLEMEZ.**
+
+Rezervasyonu yapan mutlaka yolcu değildir; form onun bilgisiyle önden dolu gelir
+ama silinebilir.
+
+### `BoardingScans`
+
+`ReservationId, ScannedByUserId, ScannedAt, Method (Kamera/Klavye/**Manuel**), DeviceInfo`
+
+Her okutma ayrı satır — sadece ilki değil. İlk okutma `BoardedAt`'i set eder ve iki
+şeyi tetikler: **yorum hakkı doğar**, **mesajlaşma kapanır**.
+
+`Manuel` değeri çevrimdışı biniş için (G-12): internet yoksa tekne sahibi sonradan
+panelden işaretler. Çevrimdışı kuyruk mobil uygulamayla gelecek; o zaman eklenecek
+tek şey `ClientRecordedAt` ve `SyncedAt` → [[domain-gereksinimler]] 2026-08-24.
+
+### `ReservationStatusHistory`
+
+Her durum geçişi: kim, ne zaman, neden. Para anlaşmazlığında elde tutulacak kayıt.
+
+### Rezervasyon DEĞİŞİKLİĞİ yok — yalnız iptal
+
+İlk sürümde müşteri kişi sayısını veya tarihi değiştiremez; iptal edip yeniden alır.
+Hava muhalefetindeki tarih değişikliği ayrıdır ve durur. `ReservationAmendments`
+gelecek sürümde → [[domain-gereksinimler]] 2026-08-24.
+
+### Kapasite ve 15 dakika — asıl mühendislik
+
+Rezervasyon `Beklemede` açıldığı anda `Voyages.SoldSeats` artar. Üç katman:
+
+```sql
+CHECK ("SoldSeats" <= "Capacity")                              -- 1. gerçek garanti
+SELECT * FROM "Voyages" WHERE "Id" = @id FOR UPDATE;           -- 2. satır kilidi
+CREATE INDEX ... ON "Reservations" ("HoldExpiresAt")
+  WHERE "Status" = 'Beklemede';                                -- 3. temizlik işi
+```
+
+Asıl garanti **1**; kilit yalnız oku-değiştir-yaz döngüsünün doğruluğu için. Son iki
+koltuk için aynı anda ödeyen iki müşteri olursa biri `CHECK` ihlaliyle geri döner.
+**Yük meselesi değil, doğruluk meselesi** — 100 kullanıcıyla da olur.
+
+### Misafir → üye bağlama
+
+Aynı e-postayla üye olan geçmiş misafir rezervasyonlarını görür. Tek `UPDATE`, ama
+şartı kritik: **yalnızca e-posta doğrulandıktan sonra**. Doğrulanmamış e-postayla
+üye olmak başkasının rezervasyonlarını devralmak demek olurdu — 1. bölümdeki
+`EmailVerifiedAt` bunun için var.
+
+### Kod ile sorgulama
+
+**Kod + e-posta** veya **kod + telefon**; kod tek başına yetmez. Sorgulama ucu hız
+sınırlı olmalı, yoksa kod denemesi otomatikleştirilir.
+
+### Postgres'e özgü
+
+**`SELECT ... FOR UPDATE`** — MSSQL'deki `UPDLOCK` ipucunun karşılığı.
+
+**Kısmi indeks** — süresi dolanları arayan iş, tabloda milyon satır olsa bile yalnız
+`Beklemede` olanların indeksini tarar; o indeks 20 satır büyüklüğünde kalır.
+
+**`SERIALIZABLE` kullanılmıyor** — Postgres destekliyor ama çakışan işlemi iptal edip
+yeniden denemeyi istiyor. `CHECK` + satır kilidi bu iş için daha basit ve öngörülebilir.
+
+### Bu bölümde hangi olaylar kaydediliyor
+
+Rezervasyon açılması · **terk edilen ödeme** (süresi dolan hold — AI analizi için
+değerli) · ödeme başarısı/başarısızlığı · yolcu bilgisi doldurma · biniş okutma ·
+**başarısız biniş denemesi** · iptal · durum geçişleri.
 
 İlgili: [[api-desenler]] · [[api-kararlar]] · [[api-mimari]] · [[api-gorevler]] · [[domain-gereksinimler]] · [[durum]]
