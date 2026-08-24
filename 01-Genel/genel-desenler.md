@@ -83,13 +83,35 @@ diyordu. Aynı şemada saklama süresi kararının ertelenebilme gerekçesi ise
 *"bölümlendirme sayesinde silmek ucuz olacak"*tı. BRIN sorgu hızını çözer, **silme
 maliyetini çözmez** — iki farklı problem tek çözüme bağlanmıştı.
 
-- Bir kararın gerekçesi **başka bir kararın dayanağıysa**, o dayanak kalktığında
-  ikincisi de düşer. Karar yazarken "bu gerekçe başka nerede kullanıldı" sorulur
-- Bu tür çelişkiyi `dogrula.py` **göremez** — teknik muhakeme gerektirir. Yakalayan
-  şey alan uzmanı ajan oldu (`database-reviewer`), yani **araç zincirinin inceleme
-  adımı** → [[genel-araclar]]
-- Bu yüzden inceleme adımı atlanmaz: "kod çalışıyor" ile "gerekçe tutarlı" farklı
-  şeylerdir
+**Bu dikkatle çözülmez.** Gerekçeyi yazan ile uygulayan **aynı oturumdu** ve yine
+de ayrıştı. Dikkat eksikliği olsaydı daha dikkatli olmak çözerdi; yapısal bir
+boşluk olduğu için yapısal bir kontrol gerekiyor.
+
+### Taşıyıcı gerekçe çift yönlü linklenir — zorunlu biçim
+
+Bir karar **"X ucuz/mümkün, çünkü Y var"** biçimindeyse Y **taşıyıcı gerekçedir**.
+İki satır zorunludur:
+
+Kararın olduğu yerde:
+
+    **Dayanak:** [[hedef-not]] — hangi özelliğe dayanıyor
+
+Dayanılan yerde:
+
+    **Buna dayananlar:** [[karar-notu]] — hangi karar
+
+**Tek yön yetmez.** Kırılma **Y tarafında** olur: bölümlendirme hiç yapılmadı ve
+ona dayanan saklama süresi kararı bundan habersizdi. Y'yi değiştiren kişinin,
+neyin çöktüğünü görmesi gerekir.
+
+**`dogrula.py` bunu denetler** (13. kontrol): `**Dayanak:**` satırı link vermiyorsa
+veya hedefte geri referans yoksa **hata verir**.
+
+Denetimin göremediği kısım kalıyor: BRIN'in silme maliyetini çözmediğini anlamak
+teknik muhakeme gerektirir; onu `database-reviewer` ajanı yakaladı — **araç
+zincirinin inceleme adımı** → [[genel-araclar]]. Yani biçimi betik, anlamı ajan
+denetler. İnceleme adımı bu yüzden atlanmaz: *"kod çalışıyor"* ile *"gerekçe
+tutarlı"* farklı şeylerdir.
 
 ## Kendi çıkarımım, karar değildir
 

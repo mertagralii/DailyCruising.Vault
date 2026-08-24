@@ -253,6 +253,41 @@ for alan, onek in ALAN_BOLME.items():
                 f"'{hucreler[1]}' icin 'Neden' bos")
 
 
+# 13: tasiyici gerekce cift yonlu mu
+# "X ucuz cunku Y var" bicimindeki karar, Y'ye link vermeli; Y de geri referans
+# tasimali. Kirilma Y tarafinda oldugu icin tek yon yetmez.
+# 2026-08-24: BRIN/bolumlendirme celiskisi bu denetim olmadigi icin kacti.
+DAYANAK = re.compile(r"\*\*Dayanak:\*\*(.+)")
+DAYANANLAR = re.compile(r"\*\*Buna dayananlar:\*\*(.+)")
+LINKLER = re.compile(r"\[\[([^\]|]+)")
+
+geri_referans = {}   # hedef notun stem -> geri link verdigi notlarin stem kumesi
+for p2 in notlar:
+    metin = kodu_ayikla(p2.read_text(encoding="utf-8"))
+    for m in DAYANANLAR.finditer(metin):
+        geri_referans.setdefault(p2.stem, set()).update(
+            h.strip() for h in LINKLER.findall(m.group(1)))
+
+for p2 in notlar:
+    metin = kodu_ayikla(p2.read_text(encoding="utf-8"))
+    for no, satir in enumerate(metin.splitlines(), 1):
+        m = DAYANAK.search(satir)
+        if not m:
+            continue
+        hedefler = [h.strip() for h in LINKLER.findall(m.group(1))]
+        if not hedefler:
+            sorunlar.append(
+                f"[dayanak linksiz] {p2.relative_to(VAULT)}:{no}: "
+                f"'Dayanak' satiri hicbir nota link vermiyor")
+            continue
+        for hedef in hedefler:
+            if p2.stem not in geri_referans.get(hedef, set()):
+                sorunlar.append(
+                    f"[dayanak tek yonlu] {p2.relative_to(VAULT)}:{no}: "
+                    f"[[{hedef}]] icinde 'Buna dayananlar: [[{p2.stem}]]' yok — "
+                    f"dayanak kalkarsa bu karar sessizce cokerdi")
+
+
 print(f"Vault: {VAULT}")
 print(f"Not sayisi: {len(notlar)}")
 print()
