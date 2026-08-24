@@ -96,6 +96,11 @@ olmadığı için geri alınamaz. Bu yüzden yazma hakkı bölünmüştür. Öl�
 | Frontend kodu | `03-Web/*` (durum → `web-durum.md`) |
 | Vault / genel / domain | `01-Genel/*` · `00-Index.md` · `04-Oturumlar/` |
 
+**Vault artık bir git reposudur** (`mertagralii/DailyCruising.Vault`, private).
+Alan oturumları vault'a **yazar ama commit atmaz** — commit'i vault oturumu atar.
+Böylece üç oturum aynı anda `git add -A` çalıştırıp birbirinin yarım işini
+commit'lemez.
+
 `01-Genel/durum.md`'ye **yalnız vault oturumu yazar.** Diğerleri oraya girmesi
 gereken bir şey bulursa `SendMessage` ile haber verir.
 
