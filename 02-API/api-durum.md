@@ -23,8 +23,9 @@ geçiyor, onaysız kod yazılmıyor → [[api-sema]]
 | 3 | Kiralama tipleri ve fiyat | ✅ onaylandı 2026-08-24 |
 | 4 | Takvim ve sefer | ✅ onaylandı 2026-08-24 |
 | 5 | Rezervasyon | ✅ onaylandı 2026-08-24 |
-| 6 | Para | sırada |
-| 7–8 | Teklif+mesajlaşma · yan sistemler + olay günlüğü | — |
+| 6 | Para | 🟡 tasarlandı, toplu onay bekliyor |
+| 7 | Teklif ve mesajlaşma | 🟡 tasarlandı, toplu onay bekliyor |
+| 8 | Yan sistemler + olay günlüğü | 🟡 tasarlandı, toplu onay bekliyor |
 
 Kod tarafında iskelet kurulu, **iş kodu henüz yok**. Dört katman oluşturuldu ama
 üçü bilinçli boş — şema onaylanmadan doldurulmayacak → [[api-kararlar]] 2026-08-21.

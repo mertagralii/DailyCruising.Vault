@@ -342,3 +342,53 @@ kısmi indeks temizlik işi için. `SERIALIZABLE` bilinçli olarak seçilmedi �
 Her ikisi de → [[domain-gereksinimler]] 2026-08-24.
 
 İlgili: [[api-sema]] · [[domain-gereksinimler]] · [[api-durum]]
+
+---
+
+## 2026-08-24 — Şema bölüm 6-7-8: TASARLANDI, onay bekliyor
+
+⚠️ **Bu üç bölüm Mert'in tek tek onayından geçmedi.** Mert *"sen hepsini yap, en son
+bana cevaplamam gereken soruları yaz"* dedi. Aşağıdakiler **Claude'un kararlarıdır**;
+onay gelmeden bu bölümlerden kod yazılmaz. Tam şema → [[api-sema]].
+
+**Bölüm 6 — Para.** Değişmez, append-only defter (`LedgerEntries`). Bir rezervasyonun
+tüm satırlarının toplamı her zaman 0; sapma varsa hesap hatası var demektir.
+Düzeltme `UPDATE` değil **ters kayıt**.
+**Neden:** para kaydı güncellenirse "bu tutar neden böyle" sorusu üç ay sonra
+cevaplanamaz. Aynı mantık olay günlüğüne de uygulandı.
+
+**Fatura numarasında `SEQUENCE` kullanılmayacak** — Postgres dizileri geri alınan
+işlemde boşluk bırakır, Türk vergi mevzuatı kesintisiz numara ister. Ayrı sayaç
+tablosu + `FOR UPDATE`. Sonradan fark edilirse düzeltmesi çok pahalı.
+
+**Bölüm 7 — Teklif ve mesajlaşma.** Teklif tarihi tutmak için ayrı mekanizma
+yazılmadı: `Voyages` tablosuna **`VoyageType = Teklif`** eklendi.
+**Neden:** aynı `EXCLUDE` kısıtı üç senaryoyu birden taşıyor (satış, blok, teklif).
+Ayrı mekanizma ikinci bir çakışma kontrolü gerektirirdi. Bu, 4. bölümün onaylanmış
+haline yapılan **tek ekleme**.
+
+`Messages` hem `Body` (orijinal) hem `MaskedBody` tutuyor. **Neden:** anlaşmazlıkta
+platformun elinde kayıt kalmalı, ama API asla orijinali döndürmemeli.
+`MaskedItemCount` platform dışına kaçış girişiminin sinyali.
+
+**Bölüm 8 — Yan sistemler ve olay günlüğü.** `EventLog` değişmez ve append-only;
+`Payload jsonb` sayesinde yeni olay türü şema değişikliği istemiyor. Arama sorguları
+için ayrı tablo açılmadı, `search.performed` olayının içinde duruyor.
+**Neden `Seq` kolonu:** n8n gibi dış tüketiciler `WHERE Seq > sonOkunan` ile ilerler.
+Dizi boşluk bırakır ama sıra bozulmaz — imleç için yeterli, faturada yetersizdi.
+
+`SupportTickets.FirstResponseAt` ve `ResolvedAt` süs değil: destek personeli sezon
+raporunun tek veri kaynağı. Bugün açılmazsa o rapor hiç üretilemez.
+
+**Claude'un onay bekleyen iki kararı:**
+- **S6-1** Kuponlu rezervasyonda kısmi iade → **(b)**: hakediş liste üzerinden
+  orantılı, indirimi platform karşılamaya devam eder. Bedeli: platformun payı düşer.
+- **S6-2** Hakediş periyodu → **iki haftada bir, sözleşmede yazılı**
+  (`Contracts.PayoutPeriodDays`).
+
+**Postgres'e özgü — Mert'e açıklandı:** `jsonb` + GIN (sağlayıcı seçilmeden şema
+kurulabilmesinin sebebi) · tetikleyiciyle gerçekten değişmez tablo · `EventLog` için
+aylık **declarative partitioning** (eski ayı silmek `DROP TABLE` kadar ucuz) ·
+zaman sıralı devasa tabloda **BRIN** indeksi, MSSQL'de karşılığı yok.
+
+İlgili: [[api-sema]] · [[domain-gereksinimler]] · [[api-durum]]

@@ -14,6 +14,11 @@ kuralların tabloya dönüşmüş hali var. Çelişirlerse domain dosyası doğr
 İsimlendirme: tablo **PascalCase çoğul**, kolon PascalCase, tümü İngilizce
 → [[api-desenler]].
 
+⚠️ **6–8. bölümler Mert'in tek tek onayından GEÇMEDİ.** Mert 2026-08-24'te
+*"sen hepsini yap, en son bana cevaplamam gereken soruları yaz"* dedi. Bu üç
+bölümdeki tasarım kararları Claude'undur; açık sorular oturum sonunda toplu
+soruldu. Onay gelene kadar bu bölümlerden **kod yazılmaz**.
+
 | # | Bölüm | Durum |
 |---|---|---|
 | 1 | Kimlik ve yetki | ✅ onaylandı 2026-08-24 |
@@ -21,9 +26,9 @@ kuralların tabloya dönüşmüş hali var. Çelişirlerse domain dosyası doğr
 | 3 | Kiralama tipleri ve fiyat | ✅ onaylandı 2026-08-24 |
 | 4 | Takvim ve sefer | ✅ onaylandı 2026-08-24 |
 | 5 | Rezervasyon | ✅ onaylandı 2026-08-24 |
-| 6 | Para | sırada |
-| 7 | Teklif ve mesajlaşma | — |
-| 8 | Yan sistemler + olay günlüğü | — |
+| 6 | Para | 🟡 Claude tasarladı, toplu onay bekliyor |
+| 7 | Teklif ve mesajlaşma | 🟡 Claude tasarladı, toplu onay bekliyor |
+| 8 | Yan sistemler + olay günlüğü | 🟡 Claude tasarladı, toplu onay bekliyor |
 
 ---
 
@@ -397,6 +402,7 @@ Sistemin en kritik bölümü. Altı tablo, ama asıl olan **tek bir kısıt**.
 |---|---|---|
 | **Satış** | müşteriye satılan sefer | 15 Eylül günlük tur |
 | **Blok** | tekne sahibinin kapattığı zaman | bakım, kendi kullanımı, mürettebat yok |
+| **Teklif** | 48 saat tarihi tutan özel teklif | 7. bölümde eklendi |
 
 Bakım günü için ayrı tablo **bilinçli olarak yapılmadı**. Ayrı olsaydı "sefer
 bakımla çakışmasın" diye ikinci bir kontrol yazmak gerekirdi ve o kontrolü atlayan
@@ -408,7 +414,7 @@ bir kod yolu er geç yazılırdı. Aynı tabloda tek kısıt ikisini birden kaps
 |---|---|---|
 | Id, BoatId | uuid | |
 | BoatRentalTypeId | uuid? | Blok'ta null |
-| VoyageType | text | Satış / Blok |
+| VoyageType | text | Satış / Blok / **Teklif** |
 | **TimeRange** | `tstzrange` | seferin işgal ettiği zaman |
 | Status | text | Planlandı / İptal / Tamamlandı |
 | IsExclusive | bool | kiralama tipinden kopya |
@@ -619,5 +625,271 @@ yeniden denemeyi istiyor. `CHECK` + satır kilidi bu iş için daha basit ve ön
 Rezervasyon açılması · **terk edilen ödeme** (süresi dolan hold — AI analizi için
 değerli) · ödeme başarısı/başarısızlığı · yolcu bilgisi doldurma · biniş okutma ·
 **başarısız biniş denemesi** · iptal · durum geçişleri.
+
+---
+
+## Bölüm 6 — Para
+
+Tek kural: **hiçbir para kaydı güncellenmez, sadece eklenir.**
+
+### `LedgerEntries` — defter
+
+| Kolon | Not |
+|---|---|
+| ReservationId, PartnerId | |
+| **AccountType** | Müşteri / Platform / İşOrtağı |
+| EntryType | Tahsilat / Komisyon / Hakediş / İade / KuponGideri |
+| **Amount** | numeric(12,2), **işaretli** |
+| OccurredAt, CreatedAt | |
+| **ReversesEntryId** | düzeltme kaydı; silme yok |
+| PayoutId | hangi hakedişe girdi |
+
+Bir rezervasyonun tüm satırlarının toplamı **her zaman 0**. Muhasebe süsü değil,
+hata yakalama aracı: kod yanlış hesaplarsa toplam sıfırdan sapar ve tek sorguyla
+bulunur.
+
+1000 TL tur, %15 komisyon, %10 kupon:
+
+| Hesap | Tutar |
+|---|---|
+| Müşteri (tahsilat) | +900 |
+| İş ortağı (hakediş) | −850 |
+| Platform | −50 |
+| **Toplam** | **0** |
+
+Kuponun 100 TL'sinin tamamı platformdan çıkar — tekne sahibinin hakedişi liste
+fiyatı üzerinden.
+
+**Düzeltme = ters kayıt.** Yanlış komisyon `UPDATE` edilmez; eksi işaretli yeni
+satır atılıp doğrusu eklenir.
+
+### `Payments` · `Refunds`
+
+`Payments`: `ReservationId, Provider, ProviderTransactionId, Amount, Status,
+RawResponse jsonb, IdempotencyKey`
+
+Sanal POS henüz seçilmedi (`G-03`). `RawResponse` sağlayıcının ham cevabını olduğu
+gibi saklar. `IdempotencyKey` şart — ödeme sağlayıcıları webhook'u iki kez gönderir;
+bu varsayım değil kuraldır.
+
+`Refunds`: `ReservationId, PaymentId, Amount, Reason (MüşteriIptali/HavaIptali/
+NoShow/Platform), RequestedByUserId, ProviderRefundId, Status`
+
+### `Payouts` — hakediş
+
+`PartnerId, PeriodStart, PeriodEnd, TotalAmount, Status, ProviderInstructionId,
+SettledAt`
+
+Kolon adı bilinçli `ProviderInstructionId`, `PaymentId` değil: para platformun
+hesabında değil **sağlayıcıda** bekler; hakediş bizim ödememiz değil, sağlayıcıya
+verilen **bölüştürme talimatıdır**.
+
+Periyodik olmasının yan etkisi: iptalde para hâlâ sağlayıcıda olduğu için tekne
+sahibinden komisyon **geri istenmez**, sadece hiç kazanılmamış olur.
+
+### `Coupons` · `CouponRedemptions`
+
+`Coupons`: `Code, Percentage numeric(5,2), ValidFrom, ValidTo, MaxRedemptions,
+UsedCount, Scope, IsActive`
+
+**Kupon oranı komisyon oranını aşamaz** — global kontrol edilemez, çünkü komisyon iş
+ortağı bazında. Doğrulama kuponun uygulandığı an, o rezervasyonun ortağının oranına
+karşı yapılır. Aşan kupon o teknede **geçersiz sayılır, kırpılmaz**.
+
+### `Invoices`
+
+`IssuerType, IssuerPartnerId, RecipientType, RecipientPartnerId, InvoiceType, Number,
+IssuedAt, Amount, TaxAmount, PayoutId, FileKey`
+
+Aracılık modeli: hizmeti tekne sahibi verir, müşteriye faturayı o keser; platform iş
+ortağına komisyon faturası keser. **Yön bir alandır** — mali müşavir (`G-13`) başka
+derse şema değil veri değişir.
+
+### Postgres'e özgü
+
+**`jsonb`** — MSSQL'de JSON `nvarchar(max)` içinde saklanır ve üstünde arama zordur;
+Postgres'te gerçek bir tiptir, GIN indeksiyle sorgulanır. Sağlayıcı seçilmeden şema
+kurabilmemizin sebebi bu.
+
+**Tablo gerçekten değişmez yapılabilir** — `LedgerEntries` üzerine `UPDATE`/`DELETE`
+tetikleyiciyle engellenir. "Kimse güncellemesin" kod kuralı olarak kalmaz.
+
+⚠️ **Fatura numarası için `SEQUENCE` KULLANILMAYACAK.** Postgres dizileri (MSSQL
+`IDENTITY` gibi) **boşluk bırakır**: işlem geri alınırsa o numara kaybolur. Türk
+vergi mevzuatı fatura numarasının kesintisiz olmasını ister. Doğrusu ayrı bir sayaç
+tablosu, `FOR UPDATE` ile kilitlenip artırılır. Sonradan fark edilirse düzeltmesi
+çok pahalı bir hatadır.
+
+### 🟡 Claude'un iki kararı — Mert'in onayı bekleniyor
+
+**S6-1 — Kuponlu rezervasyonda kısmi iade: (b).** 1000 liste, %15 komisyon, %10
+kupon, yarısı iade → tekne sahibi **425**, platform **25**. (a) "komisyon =
+müşteride kalmayan × oran" 382,50 / 67,50 verirdi.
+**Gerekçe:** kupon kararının mantığı "indirimi platform karşılar"dı; iadede tekne
+sahibine yükletmek o kararı yarıda bırakır. **Bedeli:** platformun payı 25'e düşer.
+
+**S6-2 — Hakediş periyodu: iki haftada bir, sözleşmede yazılı**
+(`Contracts.PayoutPeriodDays`). **Gerekçe:** kısa periyot döviz fiyatlı teknelerde
+kur riskini azaltır, uzun periyot işlem masrafını. Komisyon oranı zaten sözleşmede;
+ikisi aynı yerde dursun ve ortak bazında değişebilsin.
+
+### Bu bölümde hangi olaylar kaydediliyor
+
+Ödeme başlatma / başarı / başarısızlık · terk edilen ödeme · iade talebi ve sonucu ·
+kupon uygulama ve **reddedilen kupon denemesi** · hakediş oluşturma ve talimat
+verme · fatura kesme · defter düzeltmesi.
+
+---
+
+## Bölüm 7 — Teklif ve Mesajlaşma
+
+### `Offers` — özel teklif
+
+| Kolon | Not |
+|---|---|
+| ConversationId, BoatRentalTypeId | |
+| **VoyageId** | tarihi tutan sefer kaydı |
+| CreatedByUserId | teklifi gönderen tekne sahibi |
+| CustomerUserId?, ContactEmail, ContactPhone | |
+| TotalAmount, Currency | |
+| **ExpiresAt** | gönderimden **48 saat** |
+| Status | Gönderildi / Kabul / Ret / SüresiDoldu / İptal |
+| ReservationId? | kabul edilince doğan rezervasyon |
+
+**Teklif tarihi nasıl tutuyor:** 4. bölümdeki `Voyages` tablosuna
+**`VoyageType = Teklif`** değeri eklendi. Teklif gönderilince o sefer açılır ve
+`EXCLUDE` kısıtı sayesinde başkası o tarihi satın alamaz. Süre dolunca sefer
+`İptal`e çekilir, tarih serbest kalır.
+
+Ayrı bir "tarih rezervasyonu" mekanizması yazılmadı — 15 dakikalık `Beklemede`
+holdüyle aynı yapı, farklı süre. Tek kısıt üç senaryoyu birden taşır.
+
+`OfferItems`: `OfferId, ExtraId, NameSnapshot, UnitPrice, Quantity` — teklife menü
+ve ek hizmet dahil edilebilir. Komisyon normal oranla aynı; her kiralama tipinde açık.
+
+### `Conversations` — (müşteri × tekne)
+
+| Kolon | Not |
+|---|---|
+| BoatId, CustomerUserId | |
+| Status | Açık / Kapalı |
+| ClosedAt, **ClosedReason** | Biniş / TarihGeçti / Manuel |
+| LastMessageAt | |
+
+Konuşma **rezervasyona bağlı değil** — rezervasyondan önce açılır. Rezervasyon
+konuşmaya `ConversationReservations` ile iliştirilir.
+
+**Kapanma:** QR okutulup biniş resmileştiğinde. Biniş hiç olmazsa tur tarihi geçince
+otomatik.
+
+### `Messages`
+
+| Kolon | Not |
+|---|---|
+| ConversationId, SenderUserId, SenderRole | |
+| **Body** | orijinal — yalnız platform yönetimi görür |
+| **MaskedBody** | herkesin gördüğü, telefon/e-posta gizli |
+| **MaskedItemCount** | kaç kez maskelendi |
+| ReadAt, CreatedAt | |
+
+Orijinal saklanır çünkü anlaşmazlıkta platformun elinde kayıt kalmalı; ama API asla
+`Body` döndürmez.
+
+`MaskedItemCount` suistimal sinyalidir: ısrarla numara paylaşmaya çalışmak platform
+dışına kaçış girişimidir.
+
+### Destek talepleri AYRI
+
+Mesajlaşma (müşteri ↔ tekne sahibi) ile destek (müşteri ↔ platform) birleştirilmedi —
+Mert'in açık tercihi. Destek 8. bölümde.
+
+---
+
+## Bölüm 8 — Yan Sistemler ve Olay Günlüğü
+
+### `Reviews` · `ReviewReplies` · `ReviewInvitations`
+
+`Reviews`: `ReservationId (**benzersiz**), BoatId, Rating 1–5, Body, Status
+(Beklemede/Onaylandı/Reddedildi), ModeratedByUserId, ModeratedAt`
+
+Yorum hakkı rezervasyon yapmakla değil **QR okutulmakla** doğar; yorum yayına
+girmeden **platform onayından** geçer. Tekne sahibi cevap yazabilir.
+
+`ReviewInvitations`: `ReservationId, TokenHash, SentAt, ExpiresAt, UsedAt` — tek
+kullanımlık ve süreli jeton. Üyelik gerekmez; hak rezervasyona bağlıdır.
+
+### `BlogPosts` · `BlogPostTranslations` · `BlogCategories`
+
+`AuthorUserId, AuthorPartnerId?, Slug, Status (Taslak/İncelemede/Yayında),
+PublishedAt, CoverFileKey, ViewCount`
+
+Hem platform hem tekne sahipleri yazabilir.
+
+### `SupportTickets` · `SupportMessages`
+
+`SupportTickets`: `Code, UserId?, ContactEmail, Subject, Category, Priority, Status,
+AssignedToUserId, ReservationId?, CreatedAt, **FirstResponseAt**, **ResolvedAt**`
+
+Son iki kolon süs değil: destek personeli sezon raporunun ("ilk cevap süresi",
+"çözüm süresi") tek veri kaynağı. Bugün açılmazsa o rapor hiç üretilemez.
+
+`SupportMessages`: `TicketId, SenderUserId, Body, **IsInternal**, CreatedAt` —
+`IsInternal` personelin kendi arasındaki not, müşteri görmez.
+
+### `NotificationTemplates` · `Notifications` · `NotificationDeliveries`
+
+Üç tablo, çünkü aynı bildirim hem e-posta hem SMS olarak gider ve her kanalın kaderi
+ayrıdır: e-posta gitti, SMS başarısız olabilir.
+
+`NotificationDeliveries`: `NotificationId, Channel, Provider, ProviderMessageId,
+Status, SentAt, FailedAt, Error`
+
+Şablonlar çevrili — i18n ertelendi ama şema ertelenmedi.
+
+### `EventLog` — bölümün asıl sebebi
+
+| Kolon | Not |
+|---|---|
+| Id | uuid **v7**, zaman sıralı |
+| **Seq** | bigint identity — dışarıdan tüketim için imleç |
+| OccurredAt | timestamptz |
+| EventType | `search.performed`, `boat.viewed`, `payment.abandoned`… |
+| ActorUserId?, ActorType | Müşteri/TekneSahibi/Platform/Sistem/Anonim |
+| SessionId? | giriş yapmamış ziyaretçiyi oturum içinde izlemek için |
+| SubjectType, SubjectId | neyle ilgili |
+| PartnerId?, BoatId? | rapor kırılımları |
+| **Payload jsonb** | olaya özgü alanlar |
+| IpHash?, UserAgent? | ham IP değil, **özet** |
+
+**Değişmez ve append-only** — para defteriyle aynı mantık.
+
+Arama sorguları için ayrı tablo **açılmadı**; `search.performed` olayının
+`Payload`'ında filtreler ve sonuç sayısı durur. Yeni olay türü eklemek şema
+değişikliği gerektirmez — "veri önce, entegrasyon sonra" ilkesinin karşılığı bu.
+
+`Seq` neden var: n8n gibi dış tüketiciler `WHERE Seq > sonOkunan` ile ilerler.
+Diziler boşluk bırakır ama **sıra bozulmaz** — imleç için yeterli, faturada
+yetersizdi.
+
+⚠️ **KVKK:** ham IP değil `IpHash` saklanır. Rapor üretmek ile pazarlama amaçlı
+profilleme farklı hukuki dayanaklardır; kayıt altyapısı ortak olsa da izin ayrı
+yönetilir → 1. bölüm `ConsentRecords`.
+
+### Postgres'e özgü
+
+**Aylık bölümlendirme (declarative partitioning)** — `EventLog` sistemin açık ara en
+büyük tablosu olacak. `PARTITION BY RANGE (OccurredAt)` ile aylık parçalara ayrılır;
+eski ayı silmek `DROP TABLE` kadar ucuz olur, `DELETE` ile saatler sürerdi.
+
+**BRIN indeksi** — zaman sıralı devasa tablolarda B-tree yerine BRIN; binlerce kat az
+yer kaplar, tarih aralığı sorgusunda aynı işi görür. MSSQL'de karşılığı yok.
+
+**GIN indeksi `Payload` üzerinde** — jsonb içindeki alana göre sorgulama.
+
+### Bu bölümde hangi olaylar kaydediliyor
+
+Yorum yazma / onay / ret · tekne sahibinin cevabı · blog yayını · destek talebi
+açılış, ilk cevap, çözüm · bildirim gönderimi ve başarısızlığı · **ve olay günlüğü
+diğer yedi bölümün olaylarını taşır.**
 
 İlgili: [[api-desenler]] · [[api-kararlar]] · [[api-mimari]] · [[api-gorevler]] · [[domain-gereksinimler]] · [[durum]]

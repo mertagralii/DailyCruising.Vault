@@ -50,7 +50,10 @@ def frontmatter(text):
     return alanlar
 
 
-notlar = sorted(VAULT.rglob("*.md"))
+# Vault notu olmayan repo belgeleri denetim disi: README GitHub icin yazilir,
+# frontmatter ve hub bagi kurallari ona uygulanmaz.
+DENETIM_DISI = {"README.md"}
+notlar = sorted(p for p in VAULT.rglob("*.md") if p.name not in DENETIM_DISI)
 adlar = {}
 for p in notlar:
     adlar.setdefault(p.stem, []).append(p.relative_to(VAULT))
