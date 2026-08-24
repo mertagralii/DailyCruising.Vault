@@ -57,6 +57,7 @@ ayrı tablo istemeden bu tek kolonla çözülür.
 | Email | citext | **benzersiz** |
 | EmailVerifiedAt | timestamptz? | null = doğrulanmamış |
 | **PendingEmail** | citext? | doğrulanmamış YENİ adres burada bekler |
+| **AnonymizedAt** | timestamptz? | KVKK: hesap silinemiyor, anonimleştiriliyor |
 | PasswordHash | text | |
 | FullName | text | |
 | Phone | text | SMS zorunlu olduğu için boş geçilmez |
@@ -547,10 +548,12 @@ Bölümün tek büyük fikri: **rezervasyon fotoğraf çeker.**
 | VoyageId, BoatRentalTypeId | |
 | **UserId** | **nullable** — misafir rezervasyonu birinci sınıf senaryo |
 | ContactFullName, ContactEmail, ContactPhone | **kopya**, referans değil |
+| ContractId | **FK, Contracts** — dondurulan oranın kaynağı |
 | Status | Beklemede → Ödendi → Binildi → Tamamlandı · yan dal SüresiDoldu / İptal / İade |
 | **HoldExpiresAt** | 15 dakika |
 | AdultCount, ChildCount, InfantCount | |
-| **BoardingToken** | QR'ın taşıdığı rastgele jeton |
+| **BoardingTokenSha256** | QR jetonunun **SHA-256 özeti** — düz metin saklanmıyor |
+| BoardingTokenExpiresAt | jeton süresiz geçerli kalmasın diye |
 
 İletişim bilgisi profilden kopyalanır: kullanıcı altı ay sonra e-postasını
 değiştirse geçmiş rezervasyonun o günkü bilgisi bozulmamalı.
@@ -748,6 +751,12 @@ kurabilmemizin sebebi bu.
 **Tablo gerçekten değişmez yapılabilir** — `LedgerEntries` üzerine `UPDATE`/`DELETE`
 tetikleyiciyle engellenir. "Kimse güncellemesin" kod kuralı olarak kalmaz.
 
+⚠️ **Satır bazlı tetikleyici tek başına YETMİYOR.** Tabloyu boşaltma komutu ayrı
+bir olay sınıfıdır ve satır tetikleyicilerini hiç çalıştırmaz — 2026-08-24'te canlı
+doğrulandı, değişmez sanılan defter tek komutla boşaldı. Deyim bazlı tetikleyici
+ayrıca eklendi. Kalıcı çözüm, uygulama rolünün bu yetkiye hiç sahip olmaması,
+görev `A-10`.
+
 ⚠️ **Fatura numarası için `SEQUENCE` KULLANILMAYACAK.** Postgres dizileri (MSSQL
 `IDENTITY` gibi) **boşluk bırakır**: işlem geri alınırsa o numara kaybolur. Türk
 vergi mevzuatı fatura numarasının kesintisiz olmasını ister. Doğrusu ayrı bir sayaç
@@ -784,7 +793,7 @@ verme · fatura kesme · defter düzeltmesi.
 | ConversationId, BoatRentalTypeId | |
 | **VoyageId** | tarihi tutan sefer kaydı |
 | CreatedByUserId | teklifi gönderen tekne sahibi |
-| CustomerUserId?, ContactEmail, ContactPhone | |
+| **CustomerUserId** | **zorunlu** — mesajlaşma için giriş şart (Mert, 2026-08-24) |
 | TotalAmount, Currency | |
 | **ExpiresAt** | gönderimden **48 saat** |
 | Status | Gönderildi / Kabul / Ret / SüresiDoldu / İptal |
@@ -935,16 +944,23 @@ profilleme farklı hukuki dayanaklardır; kayıt altyapısı ortak olsa da izin 
 yönetilir → 1. bölüm `ConsentRecords`.
 
 **Saklama süresi: ŞİMDİLİK sınırsız** (Mert, 2026-08-24 — *"şimdilik hep saklayalım,
-bunu düzelteceğiz zaten"*). Aylık bölümlendirme sayesinde süre kararı sonradan
-verildiğinde uygulaması tek komut: eski ayın parçası `DROP` edilir, satır satır
-`DELETE` gerekmez. **Karar ertelendi ama uygulaması ucuz kalacak şekilde kuruldu**
-→ [[domain-gereksinimler]] 2026-08-24.
+bunu düzelteceğiz zaten"*) → [[domain-gereksinimler]].
+
+⚠️ **Bu kararın ucuz olma gerekçesi bölümlendirmeye dayanıyordu ve bölümlendirme
+henüz yok** (`A-11`). Süre kararı bölümlendirmeden önce gelirse temizlik pahalı olur.
 
 ### Postgres'e özgü
 
-**Aylık bölümlendirme (declarative partitioning)** — `EventLog` sistemin açık ara en
-büyük tablosu olacak. `PARTITION BY RANGE (OccurredAt)` ile aylık parçalara ayrılır;
-eski ayı silmek `DROP TABLE` kadar ucuz olur, `DELETE` ile saatler sürerdi.
+**Aylık bölümlendirme — ⚠️ HENÜZ YAPILMADI, görev `A-11`.**
+`EventLog` sistemin açık ara en büyük tablosu olacak. `PARTITION BY RANGE
+(OccurredAt)` ile aylık parçalara ayrılırsa eski ayı silmek tek komut olur.
+
+Bugün yapılamadı: EF Core bölümlenmiş tabloyu modellemiyor ve birincil anahtarın
+bölümleme anahtarını içermesi gerekiyor — model ile veritabanı ayrışırdı.
+
+⚠️ **Aşağıdaki saklama süresi notunun gerekçesi buna dayanıyordu ve şu an
+geçersiz.** BRIN indeksi sorgu hızını çözüyor, **silme maliyetini çözmüyor**.
+İlk ciddi veri girmeden önce yapılmalı; sonradan yapmak veri kopyalama demek.
 
 **BRIN indeksi** — zaman sıralı devasa tablolarda B-tree yerine BRIN; binlerce kat az
 yer kaplar, tarih aralığı sorgusunda aynı işi görür. MSSQL'de karşılığı yok.

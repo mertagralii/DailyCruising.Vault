@@ -40,12 +40,15 @@ yazılmaz** — yazılacaksa önce o oturuma sorulur → [[genel-esszamanli-otur
 
 ## ➡️ Şu an nerede duruyoruz
 
-**Tasarım bitti, backend başlamadı.** Frontend'de 19 ekranın tamamı uygulanıp
-ölçüldü ve `origin/main`'e alındı. Backend'de yalnız iskelet ve `/api/health` var;
-domain modeli **yok**, çünkü 4 iş kuralı sorusu cevabını bekliyor.
+**Tasarım bitti, şema bitti, uç noktalar başlamadı.** Frontend'de 19 ekranın
+tamamı uygulanıp ölçüldü ve `origin/main`'e alındı. Backend'de veritabanı şemasının
+sekiz bölümü de çıkarıldı ve Mert'in onayından geçti.
 
-**Kritik yol:** Mert'in domain sorularını cevaplaması → şema → API → frontend'in
-gerçek veriye bağlanması. Bu zincirin ilk halkası dışındaki her şey bekliyor.
+⚠️ **Mert'in kararını bekleyen bir dal var:** `feat/veritabani-semasi` (`8bbb04f`,
+91 dosya, uzağa push'lu). **Ana dala birleştirilmedi** — birleştirme kararı Mert'in.
+
+**Kritik yol:** dal birleştirme → iş uç noktaları (`A-02`) → kimlik doğrulama
+(`A-03`) → frontend'in gerçek veriye bağlanması (`W-04`).
 
 Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 
@@ -56,7 +59,7 @@ Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 | # | Konu | Neden blocker | Kimde |
 |---|---|---|---|
 | 1 | **Kimlik doğrulama yok** | `/admin`, `/owner-panel`, `/support-panel`, `/account` **herkese açık**. Gerçek veriye bağlanmadan önce mutlaka kapatılmalı — bu bir güvenlik açığı | Beraber |
-| 2 | **API yok** | Backend'de yalnızca `/api/health`. Tüm arayüz `src/lib/data/*.ts` mock verisiyle çalışıyor. **Şema çıkarma sürüyor** — 8 bölümün 3'ü onaylı, şemayı bloke eden açık soru yok → [[api-durum]] | Beraber |
+| 2 | **İş uç noktası yok** | **Şema bitti** (2026-08-24, 75 tablo, `feat/veritabani-semasi` dalında `8bbb04f`) ama iş uç noktası hâlâ yok — yalnız `/api/health` ve `/openapi/v1.json`. Arayüz `src/lib/data/*.ts` mock verisiyle çalışıyor. **Blocker duruyor, sebebi değişti** → [[api-durum]] | Beraber |
 | 3 | **Fiyat sunucuda doğrulanmıyor** | Rezervasyon toplamı istemcide hesaplanıyor; sunucuda yeniden hesaplanmalı, yoksa fiyat manipülasyonuna açık. Gerekçe PRD değil **güvenlik** | Beraber |
 | ~~4~~ | ~~**Vault'un yedeği yok**~~ | **2026-08-24'te kapatıldı.** `mertagralii/DailyCruising.Vault` (private) oluşturuldu, 117 dosya push edildi. Artık vault'ta yapılan yanlış bir yazma geri alınabilir | — |
 | ~~5~~ | ~~Yönetim ve işletme detay ekranları erişilemez~~ | **2026-08-23'te koptu, aynı gün kapatıldı.** 23 yönetim + 3 işletme ekranı geri bağlandı ve tarayıcıda doğrulandı. Sonrasında işletmeye 4 ekran daha eklendi (tekne detayı — tasarımda vardı hiç uygulanmamıştı, fiyatlandırma, menü, yeni tekne başvurusu); işletme tarafı **3 değil 7**, yetim ekran kalmadı → [[web-durum]] | — |

@@ -545,3 +545,143 @@ geçti (bkz. `A-02` görev kanıtı).
   gerekiyor → `A-10`
 
 İlgili: [[api-sema]] · [[api-desenler]] · [[api-durum]] · [[api-araclar]]
+
+---
+
+## 2026-08-24 — 2-8. bölüm entity'leri ve migration'ları
+
+**Karar:** Sekiz bölümün tamamı koda döküldü. **75 tablo**, 3 EXCLUDE kısıtı,
+5 tetikleyici. Migration'lar bölüm bölüm alındı, hepsi tek seferde değil.
+
+**Domain katmanı bağımsız kaldı — bunun bir bedeli var.**
+`daterange` ve `tstzrange` Npgsql tipleridir (`NpgsqlTypes`); Domain'de kullanmak
+oraya paket bağımlılığı sokardı ve Clean Architecture kuralını delerdi. Bu yüzden
+aralıklar **iki ayrı kolon** olarak duruyor (`StartsAt`/`EndsAt`,
+`ValidFrom`/`ValidTo`) ve kısıtlar migration'da **ifade tabanlı** kuruluyor:
+
+```sql
+EXCLUDE USING gist ("BoatId" WITH =, tstzrange("StartsAt","EndsAt",'[)') WITH &&)
+  WHERE ("Status" <> 'Cancelled')
+```
+
+Garanti birebir aynı; [[api-sema]]'daki "ValidRange daterange" ifadesi bu yüzden
+kolon adı değil **kavram** olarak okunmalı.
+
+**Üç EXCLUDE kısıtı:**
+
+| Kısıt | Engellediği |
+|---|---|
+| `EX_Voyages_NoOverlapPerBoat` | Aynı teknede zaman olarak çakışan iki sefer |
+| `EX_Prices_NoOverlappingSeasons` | Çakışan sezon fiyat aralığı |
+| `EX_CalendarModeRules_NoOverlapPerLayer` | Aynı öncelik katmanında çakışan takvim modu |
+
+Fiyat kısıtı `WHERE ValidFrom IS NOT NULL` ile sınırlı: temel fiyat satırı
+sınırsız aralık sayılıp her sezonla çakışırdı.
+
+**İki değişmez tablo:** `LedgerEntries` ve `EventLogs` üzerinde `forbid_mutation()`
+tetikleyicisi. UPDATE ve DELETE reddediliyor; düzeltme ters kayıt.
+
+**`EventLogs` aylık bölümlendirme ŞİMDİLİK YAPILMADI.** Tek tablo + BRIN indeksi.
+**Neden:** bölümlendirme ilk satır yazılmadan önce kurulmalı ama bugün hiç veri
+yok ve hacim bilinmiyor. BRIN indeksi bu ölçekte aynı işi görüyor. Saklama süresi
+kararı verildiğinde (Mert erteledi) bölümlendirme onunla birlikte gelecek — ikisi
+aynı işin parçası.
+
+**Doğrulama — sekiz senaryo canlı denendi, sekizi de doğru davrandı:**
+- Mehmet 15 Eylül günlük tur aldı; Cemil'in aynı gün konaklamalı seferi **reddedildi**
+- Aynı teknenin aynı günkü 17:00-21:00 turu **kabul edildi** (yarı açık aralık çalışıyor)
+- 12 kişilik tekneye 13 koltuk **reddedildi**
+- Çakışan sezon fiyatı **reddedildi**
+- İkinci temel fiyat **reddedildi**
+- Defterde UPDATE **reddedildi**, DELETE **reddedildi**
+- Ticari kapasite yasal kapasiteyi aşamadı
+- Test işlemi geri alındı, veritabanı temiz kaldı
+
+**Migration zinciri (ecc:database-migrations skill'i uyarınca):**
+1. Üretilen SQL okundu — **veri kaybı riski 0** (kolon silme, tip daraltma, tablo
+   düşürme yok; hepsi yeni tablo), 56 `uuidv7()` varsayılanı, 44 CHECK, 12 kısmi
+   indeks, BRIN + GIN yerinde, tüm tanımlayıcılar çift tırnaklı
+2. **Geri alma denendi:** 75 tablo, 14'e indi, tekrar 75'e çıktı; kısıtlar geri geldi
+3. `ecc:postgres-patterns` indekssiz yabancı anahtar sorgusu **0 satır** döndü
+
+**Skill'in iki tavsiyesi bilinçli reddedildi:** `bigint` yerine `uuid` (v7, rastgele
+değil; pazar yerinde id tahmin edilememeli) · `text` yerine `varchar(n)`
+(Postgres'te performans farkı yok, uzunluk doğrulama görevi görüyor).
+
+İlgili: [[api-sema]] · [[api-desenler]] · [[api-durum]]
+
+---
+
+## 2026-08-24 — 2-8. bölüm üç ajan denetimi: 20 bulgu, 13'ü düzeltildi
+
+**Karar:** Üç denetçinin bulduğu 20 boşluktan 13'ü aynı oturumda kapatıldı; kalan
+7'si görev olarak açıldı. Kapatılanların tamamı **veritabanı kısıtı veya
+tetikleyici** olarak yazıldı, uygulama koduna bırakılmadı.
+
+**Neden:** Denetçinin yakaladığı tutarsızlık şuydu — 3. bölümde fiyat çakışması
+için *"uygulama kodundaki kontrol, o kontrolü atlayan bir yazma yolu yazıldığında
+sessizce bozulur"* deyip EXCLUDE kısıtı konmuştu; ama komisyon oranı, kupon sınırı
+ve koltuk sayacı gibi **para doğuran** kurallarda aynı ilke terk edilmişti. Bu üçü
+bozulduğunda zarar sessizce oluşur ve ancak defter toplamı sıfırdan sapınca fark
+edilir. Kural veritabanında ifade edilebiliyorsa orada durmalı.
+
+`database-reviewer`, `csharp-reviewer` ve `security-reviewer` paralel çalıştı.
+C# denetimi "onay (küçük düzeltmelerle)" verdi, diğer ikisi ciddi boşluklar buldu.
+
+### EN ÖNEMLİSİ: kendi yazdığım gerekçe yanlıştı
+
+Bu dosyaya *"EventLogs aylık bölümlendirme yapılmadı, BRIN indeksi aynı işi
+görüyor"* yazmıştım. `database-reviewer` haklı olarak şunu gösterdi: [[api-sema]]
+8. bölümde saklama süresi kararının ertelenebilme gerekçesi **"bölümlendirme
+sayesinde eski ayı silmek DROP TABLE kadar ucuz olacak"** idi. Bölümlendirme
+yoksa o öncül geçersiz; silme kararı geldiğinde milyonlarca satırlık DELETE ve
+VACUUM gerekecek, yani tam da kaçınmak için kurduğum senaryo.
+
+**BRIN sorgu hızını çözüyor, SİLME maliyetini çözmüyor.** İkisini karıştırmışım.
+
+Bugün bölümlendirme yapılmadı çünkü EF Core bölümlenmiş tabloyu modellemiyor ve
+birincil anahtarın bölümleme anahtarını içermesi gerekiyor; model ile veritabanı
+ayrışırdı. Görev `A-11` olarak açıldı ve **ilk ciddi veri girmeden önce**
+yapılmalı, sonradan yapmak veri kopyalama demek.
+
+### Düzeltilen 13 bulgu
+
+| Bulgu | Düzeltme |
+|---|---|
+| **TRUNCATE değişmezlik tetikleyicisini atlıyor** — canlı doğrulandı, defter tek komutla boşaldı | `BEFORE TRUNCATE ... FOR EACH STATEMENT` tetikleyicisi iki tabloya |
+| Rezervasyonun kopyaladığı komisyon oranının **doğru** olduğunu kimse doğrulamıyordu | `trg_reservation_commission` — orana ve sözleşmenin işletmesine bakıyor |
+| **`Reservation.ContractId` yabancı anahtarsızdı** | FK, `Contracts`, `Restrict` |
+| Aritmetik tutarsızlık girebiliyordu (ListTotal 1000, GrandTotalTry 1) | `CK_Reservations_GrandTotal` + `CK_Reservations_TotalTry` + `CK_Reservations_DiscountBound` |
+| **Kupon oranı komisyonu aşabiliyordu** — platform zarar ederdi | `trg_coupon_within_commission` |
+| **`Voyages.SoldSeats` gerçek rezervasyonlarla bağlı değildi** — iptalde azaltmayı unutan kod sayacı kalıcı saptırırdı | `trg_reservation_sync_seats`; sayaç artık türetilmiş veri |
+| Başarısız hakediş `LedgerEntries.PayoutId`'yi serbest bırakmıyordu; ortağın parası askıda kalırdı | `trg_payout_failed_releases_ledger` |
+| **`BoardingToken` düz metin saklanıyordu** — diğer tüm jetonlar hash'li | `BoardingTokenSha256` + `BoardingTokenExpiresAt` |
+| `Coupon.PartnerId` ve `Invoice.IssuerPartnerId` yabancı anahtarsızdı | İkisine de FK ve indeks |
+| `Payouts`'ta tutar ve tamamlanma kontrolü yoktu | `CK_Payouts_Amount`, `CK_Payouts_Settled` |
+| `CouponRedemptions.DiscountAmountTry` negatif olabiliyordu | `CK_CouponRedemptions_Amount` |
+| `Boats.AverageRating` indekssizdi ama arama filtresinde var | `IX_Boats_Search` (bölge, durum, puan) |
+| **`User`'da anonimleştirme alanı yoktu** — "hesabımı sil" talebinin teknik karşılığı yoktu | `User.AnonymizedAt` ve kısmi indeks |
+
+### Kanıt — sekiz senaryo canlı denendi
+
+Yanlış komisyon oranı **reddedildi** · başka işletmenin sözleşmesi **reddedildi** ·
+aritmetik tutarsızlık **reddedildi** · geçerli rezervasyonda `SoldSeats` otomatik
+**5** oldu (bebek sayılmadı) · iptalde **0**'a düştü · yüzde 20 kupon yüzde 15
+komisyonda **reddedildi**, yüzde 10 **geçti** · TRUNCATE iki tabloda da
+**reddedildi**. Test işlemi geri alındı, veritabanı temiz kaldı.
+
+### Neden hepsi veritabanında, kodda değil
+
+Denetçinin yakaladığı asıl tutarsızlık şuydu: 3. bölümde fiyat çakışması için
+*"uygulama kodundaki kontrol, o kontrolü atlayan bir yazma yolu yazıldığında
+sessizce bozulur"* deyip EXCLUDE kısıtı konmuştu; komisyon, kupon ve sayaç
+kurallarında aynı ilke terk edilmişti. Artık üçü de veritabanında.
+
+### Açık bırakılanlar — görev olarak kaydedildi
+
+`A-11` EventLogs bölümlendirme · `A-12` KVKK saklama ve anonimleştirme akışı ·
+`A-13` `EventLogs.Payload` içeriğine sınır · `A-10` genişletildi (ayrı rol ve
+TRUNCATE yetkisi olmaması) · `A-03`'e eklendi: `Message.Body` asla API'den
+dönmeyecek, `Reservation.Code` sorgusu hız sınırlı olacak.
+
+İlgili: [[api-sema]] · [[api-desenler]] · [[api-durum]] · [[api-araclar]]

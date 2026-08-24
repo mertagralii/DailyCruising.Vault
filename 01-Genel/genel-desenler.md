@@ -73,6 +73,24 @@ tablosu beş soruyu açık gösteriyordu; beşinin de cevabı aynı dosyanın i�
   Tek korunma disiplin ve skill
 
 
+## Gerekçe ile uygulama ayrışabilir
+
+Özet tablo kuralının kardeşi, ama daha sinsi: orada **iki yer** çelişir, burada
+**bir kararın gerekçesi ile o kararın sonucu** çelişir.
+
+2026-08-24 örneği: bir karar *"bölümlendirme yapılmadı, BRIN aynı işi görüyor"*
+diyordu. Aynı şemada saklama süresi kararının ertelenebilme gerekçesi ise
+*"bölümlendirme sayesinde silmek ucuz olacak"*tı. BRIN sorgu hızını çözer, **silme
+maliyetini çözmez** — iki farklı problem tek çözüme bağlanmıştı.
+
+- Bir kararın gerekçesi **başka bir kararın dayanağıysa**, o dayanak kalktığında
+  ikincisi de düşer. Karar yazarken "bu gerekçe başka nerede kullanıldı" sorulur
+- Bu tür çelişkiyi `dogrula.py` **göremez** — teknik muhakeme gerektirir. Yakalayan
+  şey alan uzmanı ajan oldu (`database-reviewer`), yani **araç zincirinin inceleme
+  adımı** → [[genel-araclar]]
+- Bu yüzden inceleme adımı atlanmaz: "kod çalışıyor" ile "gerekçe tutarlı" farklı
+  şeylerdir
+
 ## Kendi çıkarımım, karar değildir
 
 `domain-gereksinimler.md`'de `*(çıkarım)*` etiketli maddeler var — Mert'in söylediği

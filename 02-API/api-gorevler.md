@@ -15,48 +15,36 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🔵 Yapılacak
 
+- [ ] **A-11** `EventLogs` aylık bölümlendirme · öncelik: **veri girmeden ÖNCE**
+      `PARTITION BY RANGE ("OccurredAt")`. Bugün yapılmadı: EF Core bölümlenmiş
+      tabloyu modellemiyor ve birincil anahtar bölümleme anahtarını içermek zorunda
+      ⚠️ Ertelenirse pahalıya patlar: saklama süresi kararının ucuz olma gerekçesi
+      bölümlendirmeydi; onsuz "eski ayı sil" milyonlarca satırlık temizlik demek
+      **BRIN sorgu hızını çözüyor, silme maliyetini çözmüyor** -> [[api-kararlar]]
+      Kabul: aylık parçalar var, bir ay tek komutla düşürülebiliyor, EF modeli
+      veritabanından ayrışmıyor
+- [ ] **A-12** KVKK saklama ve anonimleştirme akışı · öncelik: orta
+      `User.AnonymizedAt` alanı açıldı ama akış yok. Hesabın tamamen silinmesi
+      **imkânsız**: rezervasyonu veya mesajı olan kullanıcıyı Restrict zinciri
+      tutuyor ve tutmalı da (muhasebe ve anlaşmazlık kaydı)
+      Kişisel veri şu tablolara kopyalanmış durumda: `Reservations.Contact*`,
+      `Passengers.FullName/IdentityNumber`, `Messages.Body`, `EventLogs.Payload`,
+      `LedgerEntries.Note` — son ikisi **değişmez**, temizlenemez
+      Kabul: "hesabımı sil" talebi tek bir işlemle karşılanabiliyor
+- [ ] **A-13** `EventLogs.Payload` içeriğine sınır · öncelik: orta
+      Bugün jsonb serbest. Süresiz saklanan ve değişmez bir tabloya serbest metin
+      girerse (arama kutusuna yazılan isim veya telefon gibi) **asla temizlenemez**
+      Kabul: izin verilen anahtar listesi veya şema doğrulaması var
 - [ ] **A-10** Uygulama için ayrı, en az ayrıcalıklı veritabanı rolü · öncelik: orta
       Bugün uygulama rolü `dailycruising` **tabloların sahibi**. 6. bölümdeki "para
       defteri tetikleyiciyle değişmez" iddiası ancak sahip OLMAYAN bir rolle geçerli —
       sahip `ALTER TABLE ... DISABLE TRIGGER` diyebilir
+      ⚠️ **Genişletildi 2026-08-24:** boşaltma komutu da engellenmeli. Satır bazlı
+      tetikleyiciler o komutta tetiklenmiyordu — canlı doğrulandı, defter tek
+      komutla boşaldı. Deyim bazlı tetikleyici eklendi ama asıl çözüm uygulama
+      rolünün o yetkiye hiç sahip olmaması
       Bağımlı: 6. bölüm migration'ından ÖNCE · Kabul: uygulama rolü tetikleyiciyi
-      devre dışı bırakamıyor, migration ayrı rolle çalışıyor
-- [ ] **A-09** Kalan yedi bölümün entity'leri ve migration'ları · öncelik: yüksek
-      Bağımlı: A-02 · Bölüm bölüm ilerlenecek, hepsi tek migration'da değil
-      Sıra: 2 katalog · 3 fiyat · 4 takvim+sefer · 5 rezervasyon · 6 para ·
-      7 teklif+mesajlaşma · 8 yan sistemler
-      4. bölümde `EXCLUDE USING gist` kısıtı EF ile kurulamaz, **elle SQL** gerekir
-      Kabul: her bölüm ayrı migration, `dotnet ef database update` temiz
-- [ ] **A-03** Kimlik doğrulama + **dinamik rol/yetki** + satır bazlı kapsam · öncelik: yüksek
-      ⚠️ "6 rol" ifadesi **eskidir**. Roller kodda sabit DEĞİL, veritabanı kaydıdır —
-      yeni rol açmak ve yetki eklemek kod değişikliği gerektirmez ([[domain-gereksinimler]]
-      2026-08-22). Başlangıç rolleri: platform yönetimi, tekne sahibi, müşteri, destek
-      İki ayrı boyut: **ne yapabilir** × **kimin verisinde**. İkincisi iş ortağından
-      otomatik türer, elle atanmaz
-      İş ortağı sahibi kendi çalışanlarını tanımlar ve yetkilerini kısar (devredilmiş yönetim)
-      Kabul: iş ortağı yalnız kendi kayıtlarını görür; panel uçları kimliksiz 401
-      Not: web tarafındaki panel rotaları şu an herkese açık -> [[durum]]
-      ⚠️ **Host header injection:** `AllowedHosts` hâlâ `*`. Parola sıfırlama ve
-      e-posta doğrulama linkleri `Request.Host`'tan DEĞİL, sabit yapılandırılmış
-      base URL'den kurulacak — yoksa sahte sıfırlama linki üretilebilir
-      ⚠️ Jeton karşılaştırması **SHA-256** ile; bcrypt kullanılırsa `WHERE` hiç
-      eşleşmez -> [[api-sema]]
-      ⚠️ Kapsam sorgusu `PartnerMembers.Status = Active` filtresini unutmamalı;
-      benzersiz indeks Status'tan bağımsız, çıkarılmış çalışan satırı duruyor
-- [ ] **A-04** Rezervasyon toplamının sunucuda yeniden hesaplanması · öncelik: yüksek
-      Bağımlı: A-01 · Kabul: istemciden gelen tutar yok sayılır, sunucu tutarı esas
-      Gerekçe güvenliktir; PRD atfı dayanaksız -> [[api-kararlar]] 2026-08-22
-- [ ] **A-05** QR biniş doğrulama uç noktası
-      Kabul: kod kameradan da klavyeden de gelebilir; istemci detayı uca sızmaz
-- [ ] **A-06** Test projesi (xUnit) kurulumu
-      Kabul: `dotnet test` çalışır, en az bir gerçek testi vardır
-- [ ] **A-08** Olay günlüğü (event log) · öncelik: yüksek
-      Bağımlı: A-01 · **Ertelenemez** — analiz sonra yapılır ama veri geçmişe dönük
-      üretilemez. Değişmez ve append-only, para defteriyle aynı mantık
-      Kaydedilecek: arama · tekne görüntüleme · terk edilen ödeme · mesaj · destek
-      talebi · yorum · iptal · kupon · teklif
-      Kabul: zaman aralığı + tür ile sorgulanabilir, kararlı kimlik taşır (n8n
-      dışarıdan tüketebilsin) -> [[domain-gereksinimler]] "veri önce, entegrasyon sonra"
+      devre dışı bırakamıyor ve tabloyu boşaltamıyor, migration ayrı rolle çalışıyor
 - [ ] **A-07** OpenAPI'den frontend tip üretimi
       Bağımlı: A-01 · Kabul: web tarafı elle tip yazmaz
 
@@ -66,6 +54,18 @@ _(boş)_
 
 ## 🟢 Tamamlandı
 
+- [x] **A-09** Kalan yedi bölümün entity'leri ve migration'ları · bitti: 2026-08-24
+      Kanıt: **75 tablo** veritabanında · 3 EXCLUDE kısıtı · 5 tetikleyici ·
+      `dotnet build` 0 uyarı 0 hata · `GET /api/health` -> 200 `{"status":"healthy"}` ·
+      olmayan uç -> 404 · `/openapi/v1.json` -> 200 · uygulama günlüğünde 0 hata
+      Kanıt-2: sekiz kısıt senaryosu canlı denendi, sekizi de doğru davrandı —
+      Mehmet/Cemil çakışması reddedildi, aynı günün 17:00 turu geçti (yarı açık
+      aralık), kapasite aşımı reddedildi, çakışan sezon fiyatı reddedildi,
+      ikinci temel fiyat reddedildi, defterde UPDATE ve DELETE reddedildi,
+      ticari kapasite yasal kapasiteyi aşamadı
+      Kanıt-3: migration **geri alındı ve tekrar uygulandı** (75 -> 14 -> 75) ·
+      üretilen SQL okundu, veri kaybı riski 0 · indekssiz yabancı anahtar 0
+      -> [[api-kararlar]] 2026-08-24
 - [x] **A-02** EF Core + PostgreSQL kurulumu ve ilk migration · bitti: 2026-08-24
       Kanıt: PostgreSQL 18.6 kuruldu ve çalışıyor · `dailycruising_dev` veritabanı,
       dört eklenti (`citext`, `btree_gist`, `unaccent`, `pg_trgm`) ·

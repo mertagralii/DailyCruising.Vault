@@ -43,6 +43,12 @@ tamamlanamaz.**
          desen dosyasında olsa ilkinde biterdi
       6. Yazma hakkı kuralı fazla katı kuruldu — `01-Genel/*` tamamen kapalı
          ilan edilmişti, aynı gün pratikte kırıldı ve gevşetildi
+      7. **Gerekçe ile uygulama ayrıştı** — `api-kararlar.md` "bölümlendirme
+         yapılmadı, BRIN aynı işi görüyor" diyordu; `api-sema.md`'de saklama
+         süresi kararının ertelenebilme gerekçesi ise **bölümlendirme sayesinde
+         silmenin ucuz olması**ydı. BRIN sorgu hızını çözer, silme maliyetini
+         çözmez. `database-reviewer` ajanı yakaladı (araç zincirinin 7. adımı),
+         `A-11` görevi açıldı
 
 - [ ] **G-13** Fatura modelinin mali müşavirle teyidi · kimde: **Mert**
       Aracılık modeli seçildi; teyit gelene kadar şema esnek kurulacak

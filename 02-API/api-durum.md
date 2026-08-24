@@ -20,11 +20,17 @@ durum: guncel
 veritabanında **1. bölümün 13 tablosu** duruyor. Dört eklenti açık: `citext`,
 `btree_gist`, `unaccent`, `pg_trgm`.
 
-**Sırada `A-09`:** kalan yedi bölümün entity'leri, bölüm bölüm ayrı migration'larla.
+**`A-09` da BİTTİ.** Sekiz bölümün tamamı koda döküldü: **75 tablo**, 3 EXCLUDE
+kısıtı, 5 tetikleyici. `EXCLUDE USING gist` beklendiği gibi EF tarafından
+üretilemedi, elle SQL yazıldı ve **canlı test edildi** — Mehmet/Cemil çakışması
+reddedildi, aynı günün ikinci turu geçti.
 
-⚠️ **4. bölümde bilinen engel:** `EXCLUDE USING gist` kısıtını EF Core üretemiyor.
-O migration'a **elle SQL** yazılacak (`migrationBuilder.Sql(...)`). Sefer çakışma
-kuralının tamamı buna bağlı, atlanamaz.
+**Commit'lendi ve push'landı:** `feat/veritabani-semasi` dalı, 91 dosya, commit
+`8bbb04f`. **Ana dala birleştirilmedi** — Mert'in onayı bekliyor:
+`git checkout main && git merge feat/veritabani-semasi && git push`
+
+**Sırada:** `A-11` EventLogs bölümlendirme (**veri girmeden önce**) · `A-03` kimlik
+doğrulama · `A-10` ayrı veritabanı rolü · `A-06` test projesi.
 
 | # | Bölüm | Durum |
 |---|---|---|
@@ -37,9 +43,10 @@ kuralının tamamı buna bağlı, atlanamaz.
 | 7 | Teklif ve mesajlaşma | ✅ onaylandı 2026-08-24 |
 | 8 | Yan sistemler + olay günlüğü | ✅ onaylandı 2026-08-24 |
 
-Domain katmanı **artık boş değil**: `Identity/` (8 sınıf) ve `Partners/` (6 sınıf).
-Infrastructure'da `DailyCruisingDbContext` + yapılandırmalar + migration.
-Application katmanı hâlâ boş — iş mantığı yazılmadı.
+Domain katmanı **dolu**: 11 klasör, 54 dosya, 74 entity. Infrastructure'da
+`DailyCruisingDbContext` + 12 yapılandırma dosyası + 7 migration.
+Veritabanında **75 tablo · 3 EXCLUDE kısıtı · 11 tetikleyici · 54 CHECK**.
+**Application katmanı hâlâ boş** — iş mantığı ve uç nokta yazılmadı.
 Çalışan tek uç: `GET /api/health` → `{"status":"healthy"}`.
 
 Bağlantı dizesi **user-secrets'ta**, `appsettings.json`'da değil — parola repoya
