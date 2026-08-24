@@ -46,15 +46,71 @@ Karşılığı şu üçlüdür:
 - **Doğrudan ajan çağrısı** — asıl güç burada
 - Skill'ler — .NET ve Postgres için zengin
 
-### Sırayla çalıştırılacaklar — bir uç nokta veya entity yazıldığında
+### Zincir — bir uç nokta veya entity yazılırken
 
-| Sıra | Ne | Ne zaman | Neden |
+Web tarafındaki zincirin API karşılığı. **Sıra rastgele değil**: her adım bir
+öncekinin yakalayamadığını yakalar.
+
+| # | Ne | Komut / ajan | Neden bu sırada |
 |---|---|---|---|
-| 1 | `/ecc:plan` | Koda dokunmadan **önce** | Riski değerlendirir, adım planı üretir, **CONFIRM bekler**. Bu projede şema onaysız kod yazılmıyor → [[api-sema]] |
-| 2 | `Skill: ecc:dotnet-patterns` | C# yazarken | Idiomatik C#, DI, async/await konvansiyonları |
-| 3 | `/ecc:build-fix` | `dotnet build` kırılınca | Dil-agnostik; build sistemini tespit edip minimum değişiklikle düzeltir |
-| 4 | `ecc:csharp-reviewer` ajanı | C# değişen **her işten sonra** | .NET konvansiyonları, async desenleri, **nullable reference types**, güvenlik, performans |
-| 5 | `ecc:database-reviewer` ajanı | Şema, migration veya SQL yazıldığında | PostgreSQL uzmanı: sorgu optimizasyonu, şema tasarımı, indeksleme, güvenlik |
+| 1 | Plan | `/ecc:plan` | Riski değerlendirir, adım planı üretir ve **koda dokunmadan CONFIRM bekler** |
+| 2 | Şema onayı | — (bu projeye özgü) | Bu projede **onaysız kod yazılmaz**. İlgili bölüm [[api-sema]]'da onaylı değilse durulur, Mert'e sorulur |
+| 3 | Katman kontrolü | `Skill: ecc:hexagonal-architecture` | Kod yazılmadan **önce**: bu sınıf hangi katmana ait? Yanlış katman sonradan taşınırken bağımlılık yönü kırılır → [[api-desenler]] |
+| 4 | Yazım kuralları | `Skill: ecc:dotnet-patterns` | Idiomatik C#, DI, async/await. Yazarken açık olur, sonradan düzeltilmez |
+| 5 | Derleme | `dotnet build` | Sözdizimi ve tip. **Gerekli ama yeterli değil** |
+| 6 | C# incelemesi | `ecc:csharp-reviewer` ajanı | Async tuzakları, **nullable reference types**, güvenlik, performans — derleyicinin görmediği sınıf |
+| 7 | Veri katmanı incelemesi | `ecc:database-reviewer` ajanı | Şema, migration veya SQL değiştiyse. Postgres uzmanı: indeks, kısıt, sorgu planı |
+| 8 | Güvenlik | `ecc:security-reviewer` ajanı | Kullanıcı girdisi, kimlik doğrulama, ödeme veya fiyat kodu varsa **atlanamaz** |
+| 9 | **Gerçekten çalıştır** | `dotnet run` + uç noktaya istek | ⛔ **Bu adım atlanamaz** |
+| 10 | Kayıt | `api-durum.md` + panoda `Kanıt:` | Kanıt satırı 5, 6 ve 9'un çıktısını içerir |
+
+### ⛔ 9. adım neden atlanamaz
+
+**`dotnet build` temiz olması uç noktanın doğru yanıt verdiğini göstermez.**
+
+Web tarafında `npm run build` temizken 6 görsel tuzak tarayıcıda yakalandı. API'nin
+karşılığı aynıdır ve daha sinsidir — derleyici şunların hiçbirini görmez:
+
+- Yanlış status kodu (404 dönmesi gerekirken 200)
+- Boş veya eksik alanlı JSON gövdesi
+- Yetkisiz erişimin açık kalması — **panellerin herkese açık olması** tam bu sınıf
+- `DateTime` `Kind` hatası — Npgsql UTC ister, belirsiz `Kind` **çalışma anında**
+  fırlar → [[api-kararlar]] 2026-08-22
+- Migration'ın veritabanına gerçekten uygulanmamış olması
+
+**Asgari doğrulama:** uç noktaya istek at, **status kodunu ve gövdeyi** gör.
+Yetki gerektiren bir uç ise **yetkisiz istekle de** dene — 401 dönmüyorsa iş bitmemiştir.
+
+### Alt zincir — migration yazılırken
+
+Migration'ın diğerlerinden farkı: **geri alması pahalıdır**, bazen imkânsızdır.
+
+| # | Ne | Neden |
+|---|---|---|
+| 1 | `Skill: ecc:database-migrations` | Rollback ve sıfır kesintili deploy desenleri |
+| 2 | `dotnet ef migrations add <ad>` | — |
+| 3 | **Üretilen SQL'i oku** | EF'in ne ürettiği varsayılmaz. Tablo adları PascalCase olduğu için **çift tırnaklı** çıkmalı → [[api-desenler]] |
+| 4 | `ecc:database-reviewer` ajanı | Kısıt, indeks ve veri kaybı riski |
+| 5 | `dotnet ef database update` | — |
+| 6 | **Geri alma yolunu dene** | `dotnet ef migrations remove` veya bir önceki migration'a dönüş çalışıyor mu |
+
+⚠️ **Veri kaybettiren migration sessizce geçer.** Kolon silme, tip daraltma ve
+`NOT NULL` ekleme üçü de derlenir, uygulanır ve veriyi götürür. 4. adım bu yüzden var.
+
+### Alt zincir — kimlik doğrulama ve fiyat doğrulama (`A-03`, `A-05`)
+
+Bu ikisi projenin **1 ve 3 numaralı blocker'ı** → [[durum]]. Normal zincire ek olarak:
+
+| Ne | Neden |
+|---|---|
+| `Skill: ecc:security-review` | Auth, secret, injection, güvensiz kripto |
+| `ecc:security-reviewer` ajanı | Yazıldıktan sonra ikinci göz |
+| `ecc:silent-failure-hunter` ajanı | Yutulmuş exception bir yetki kontrolünü sessizce atlatabilir |
+| **Negatif test** | Yetkisiz istek 401 mi, başka kullanıcının verisi 403 mü, **istemciden gelen tutar yok sayılıyor mu** |
+
+Fiyat doğrulamasının kabul ölçütü panoda yazılı: *"istemciden gelen tutar yok
+sayılır, sunucu tutarı esas alınır"* → [[api-gorevler]] `A-05`. Bu, istemcinin
+gönderdiği tutarla karşılaştırma yapmak **değildir** — hiç bakmamaktır.
 
 ### Şema ve veritabanı — bu projenin şu anki işi
 

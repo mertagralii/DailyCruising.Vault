@@ -96,4 +96,21 @@ tanımlı mı? Değilse önce orada netleşmeli. **Çıkarımla şema kurulmaz**
 altı ay sonra "Mert böyle demişti" diye anılır. Cevabı olmayan sorular o dosyanın
 "Cevap bekleyenler" tablosunda.
 
+## "Bitti" demeden önce — uç nokta gerçekten çağrılır
+
+`dotnet build` temiz olması uç noktanın doğru yanıt verdiğini **göstermez**.
+Derleyicinin göremedikleri:
+
+- Yanlış status kodu · boş veya eksik alanlı gövde
+- Yetkisiz erişimin açık kalması
+- `DateTime` `Kind` hatası — Npgsql UTC ister, belirsiz `Kind` **çalışma anında** fırlar
+- Migration'ın veritabanına gerçekten uygulanmamış olması
+
+**Asgari:** uç noktaya istek at, status kodunu ve gövdeyi gör. Yetki gerektiren bir
+uç ise **yetkisiz istekle de** dene — 401 dönmüyorsa iş bitmemiştir.
+
+Panoda `Kanıt:` satırı bu çıktıyı içerir; "derlendi" tek başına kanıt değildir.
+Araç zinciri → [[api-araclar]]
+
+
 İlgili: [[api-notlar]] · [[api-mimari]] · [[api-kararlar]] · [[api-gorevler]] · [[api-araclar]]
