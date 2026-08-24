@@ -21,6 +21,8 @@ Gerekçesiz araç satırı eklenmez.
 | EF Core / .NET 10 API'si soruldu | `context7` MCP | .NET 10 ve `.slnx` yeni; eğitim verim bayat olabilir -> [[api-slnx-formati]] |
 | Test yazılacak | `ecc:csharp-testing` skill'i | xUnit projesi henüz yok; kurulunca biçim buradan |
 | Domain modeli tasarlanacak | `superpowers:brainstorming` | A-01 çıkarımla değil konuşularak tasarlanacak -> [[api-gorevler]] |
+| Bir kuralın/tipin kaç yerde kullanıldığı sorulacak | `Explore` ajanı | Katman sayısı arttıkça elle tarama bağlamı doldurur → [[genel-araclar]] |
+| Şema sekiz bölümü bitince bütünsel tutarlılık denetimi | `Workflow` | Tablolar arası ilişki, kısıt bütünlüğü ve güvenlik ayrı gözlerle taranmalı → [[genel-araclar]] |
 
 ## Dikkat
 

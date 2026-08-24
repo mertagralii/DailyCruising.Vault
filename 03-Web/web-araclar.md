@@ -24,6 +24,8 @@ olmayan araç kullanılmayan araçtır.
 | Grafik, gösterge, istatistik kartı yapılacak | `dataviz` skill'i | Panellerde çok sayıda grafik var; renk ve biçim tutarlılığı |
 | Mobil kırılım (390px) ölçülecek | `playwright` MCP (`browser_resize`) | **`chrome-devtools` `resize_page` 390px'e inemiyor.** 2026-08-23 mobil taraması bu yüzden Playwright ile yapıldı -> [[web-tasarimi-tarayicida-acmak]] |
 | Uygulamayı ayağa kaldırıp bakmam gerekiyor | `run` skill'i | Dev sunucusu zaten 3000'de olabilir; körlemesine `npm run dev` açmadan önce bakılır |
+| Bir token/bileşenin kaç sayfada kullanıldığı sorulacak | `Explore` ajanı | 19 ekran ve 38 modülde elle tarama bağlamı doldurur → [[genel-araclar]] |
+| Tüm sayfaların toplu yeniden ölçümü gerekecek | `Workflow` | 19 ekran birbirinden bağımsız; sıralı ölçüm saatler alır → [[genel-araclar]] |
 
 ## Araç seçimi — masaüstü mü mobil mi
 

@@ -36,9 +36,32 @@ symlink'i ile de görünür.
 - Oturum dökümleri `~/.claude/projects/` altında tutulur (~35 MB). **Okunmaz** —
   içlerinden damıtılan bilgi vault'a girer
 
+## Alt ajan ve orkestrasyon
+
+**2026-08-24'te serbest bırakıldı** — Mert izin verdi, her seferinde sormaya gerek
+yok. Ama serbest ≠ gelişigüzel: aşağıdaki tetikleyiciler dışında çağrılmaz.
+
+| Tetikleyici | Ne | Neden |
+|---|---|---|
+| Cevabı çok dosyaya yayılmış bir soru (nerede kullanılıyor, kaç yerde geçiyor) | `Explore` ajanı | Onlarca dosya okumak ana bağlamı kirletir; ajan sadece sonucu getirir |
+| Kod yazıldı veya değiştirildi, incelenecek | `ecc:*-reviewer` ajanları | Zaten alan araç dosyalarında eşlenmiş — bunlar birer alt ajandır |
+| Birbirinden bağımsız 3+ iş kolu aynı anda ilerleyebiliyor | Paralel `Agent` çağrıları | Sıralı yapmanın tek kazancı yok |
+| Kapsamlı denetim: çok sayıda dosyada tarama + bulguların ayrıca doğrulanması | `Workflow` | Bulan ile doğrulayanın ayrı olması, emin-ama-yanlış bulguyu eler |
+
+**Ne zaman çağrılmaz — çağırmadan önce bu üçünü sor:**
+
+1. **İş tek bir bilinen dosyada mı?** Öyleyse doğrudan yap. Ajan çağırmak yavaşlatır.
+2. **İş bir cevabı mı bekliyor?** Domain sorusu cevaplanmadan şema yazılamaz;
+   on ajan da o duvarı yıkmaz. Darboğaz paralellik değilse ajan işe yaramaz.
+3. **Sonucu doğrulayabilir miyim?** Ajan emin bir dille yanlış cevap verebilir.
+   Doğrulanamayacak bir çıktı, doğrulanmamış bir iddiadır → [[genel-desenler]]
+
+⚠️ **Maliyet.** `Workflow` onlarca ajan çalıştırabilir. Kapsamlı bir denetim
+başlatmadan önce ne kadar süreceği ve neyi kapsayacağı tek satırla bildirilir —
+izin için değil, Mert görsün diye.
+
 ## Kullanılmayacaklar
 
-- `Workflow` / çok ajanlı orkestrasyon — Mert açıkça istemedikçe çalıştırılmaz
-- Alt ajan (`Agent`) çağrısı — Mert açıkça istemedikçe kullanılmaz
+- (bu alanda şu an yok)
 
 İlgili: [[genel-notlar]] · [[genel-desenler]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[api-araclar]] · [[web-araclar]]

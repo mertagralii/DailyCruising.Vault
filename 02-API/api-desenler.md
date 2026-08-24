@@ -43,6 +43,39 @@ snake_case'i iptal etti.
 pgAdmin, DBeaver ve elle yazılan migration betikleri etkilenir. EF Core her
 tanımlayıcıyı zaten tırnakladığı için orada bedel yok, ek paket de gerekmez.
 
+## EF Core
+
+- **Entity `Domain`'de, yapılandırma `Infrastructure`'da.** Entity sınıfı sade POCO;
+  `[Table]`, `[Column]` gibi öznitelik yazılmaz. Kısıt ve indeks
+  `IEntityTypeConfiguration<T>` içinde durur — yoksa Domain veri erişimini tanır ve
+  bağımlılık yönü sessizce delinir
+- **Tablo adı `DbSet` adından gelir.** `DbSet<User> Users` -> `"Users"`. PascalCase
+  çoğul kuralı böylece kendiliğinden sağlanıyor, ek yapılandırma yok
+- **Enum'lar metin olarak saklanır.** `OnModelCreating` içindeki tek döngü tüm enum
+  property'lerini `string`'e çeviriyor; yeni enum eklenince bir şey yazmaya gerek yok
+- **Para daima `numeric`**, asla `float`/`double`. `HasColumnType("numeric(12,2)")`
+- **Tarih daima `DateTimeOffset`.** Npgsql `DateTime`'ın `Kind`'ının UTC olmasını
+  zorunlu tutuyor; `DateTimeOffset` bu tuzağı baştan kapatıyor
+- **Parola ve bağlantı dizesi `appsettings.json`'a yazılmaz** — geliştirmede
+  user-secrets, sunucuda ortam değişkeni. Commit'lenen parola git geçmişinden
+  pratikte silinemez
+- **Migration bölüm bölüm alınır**, hepsi tek seferde değil. İlk hatanın nerede
+  olduğu ancak böyle görülür
+
+## Kısıtlar veritabanında durur, kodda değil
+
+Bir kural veritabanı kısıtıyla ifade edilebiliyorsa **orada durur**. Uygulama
+kodundaki kontrol, o kontrolü atlayan bir yazma yolu yazıldığında sessizce delinir.
+
+| Kural | Nasıl |
+|---|---|
+| Tekil ama koşullu ("tek onaylı sözleşme") | Kısmi benzersiz indeks: `HasFilter(...)` |
+| Aralık ("komisyon 0-100") | `t.HasCheckConstraint(...)` |
+| Çakışmama ("iki sefer aynı anda olamaz") | `EXCLUDE USING gist` — **EF üretemez, elle SQL** |
+
+⚠️ `HasFilter` ve `HasCheckConstraint` içindeki kolon adları **çift tırnaklı**
+yazılır: `"\"Status\" = 'Approved'"`. PascalCase kararının bedeli burada ödeniyor.
+
 ## HTTP katmanı
 
 - **Controller tabanlı**, Minimal API değil

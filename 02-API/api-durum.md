@@ -13,8 +13,18 @@ durum: guncel
 
 ## Nerede duruyoruz
 
-**Şema çıkarma sürüyor.** `A-01` sekiz bölüme ayrıldı; her bölüm Mert'in onayından
-geçiyor, onaysız kod yazılmıyor → [[api-sema]]
+**Şema BİTTİ — `A-01` tamamlandı (2026-08-24).** Sekiz bölümün tamamı Mert onaylı
+→ [[api-sema]]. Gerekçeler [[api-kararlar]] içinde, altı tarihli giriş.
+
+**`A-02` de BİTTİ.** PostgreSQL 18.6 kurulu ve çalışıyor; `dailycruising_dev`
+veritabanında **1. bölümün 13 tablosu** duruyor. Dört eklenti açık: `citext`,
+`btree_gist`, `unaccent`, `pg_trgm`.
+
+**Sırada `A-09`:** kalan yedi bölümün entity'leri, bölüm bölüm ayrı migration'larla.
+
+⚠️ **4. bölümde bilinen engel:** `EXCLUDE USING gist` kısıtını EF Core üretemiyor.
+O migration'a **elle SQL** yazılacak (`migrationBuilder.Sql(...)`). Sefer çakışma
+kuralının tamamı buna bağlı, atlanamaz.
 
 | # | Bölüm | Durum |
 |---|---|---|
@@ -23,13 +33,17 @@ geçiyor, onaysız kod yazılmıyor → [[api-sema]]
 | 3 | Kiralama tipleri ve fiyat | ✅ onaylandı 2026-08-24 |
 | 4 | Takvim ve sefer | ✅ onaylandı 2026-08-24 |
 | 5 | Rezervasyon | ✅ onaylandı 2026-08-24 |
-| 6 | Para | 🟡 tasarlandı, toplu onay bekliyor |
-| 7 | Teklif ve mesajlaşma | 🟡 tasarlandı, toplu onay bekliyor |
-| 8 | Yan sistemler + olay günlüğü | 🟡 tasarlandı, toplu onay bekliyor |
+| 6 | Para | ✅ onaylandı 2026-08-24 |
+| 7 | Teklif ve mesajlaşma | ✅ onaylandı 2026-08-24 |
+| 8 | Yan sistemler + olay günlüğü | ✅ onaylandı 2026-08-24 |
 
-Kod tarafında iskelet kurulu, **iş kodu henüz yok**. Dört katman oluşturuldu ama
-üçü bilinçli boş — şema onaylanmadan doldurulmayacak → [[api-kararlar]] 2026-08-21.
+Domain katmanı **artık boş değil**: `Identity/` (8 sınıf) ve `Partners/` (6 sınıf).
+Infrastructure'da `DailyCruisingDbContext` + yapılandırmalar + migration.
+Application katmanı hâlâ boş — iş mantığı yazılmadı.
 Çalışan tek uç: `GET /api/health` → `{"status":"healthy"}`.
+
+Bağlantı dizesi **user-secrets'ta**, `appsettings.json`'da değil — parola repoya
+girmiyor.
 
 ## 🟢 Cevap bekleyenler — şemayı bloke eden YOK
 

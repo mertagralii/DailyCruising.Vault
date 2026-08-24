@@ -296,3 +296,36 @@ gövdesiyle çelişmesi. Yakalanan hata yoksa şablon yalnızca dosya düzenidir
 değil.
 
 İlgili: [[durum]] · [[genel-gorevler]] · [[calisma-duzeni]] · [[00-Index]]
+
+---
+
+## 2026-08-24 — Alt ajan ve orkestrasyon serbest bırakıldı
+
+**Karar (Mert):** `Agent` (alt ajan) ve `Workflow` (çok ajanlı orkestrasyon) her
+seferinde izin sormadan kullanılabilir. Ölçüt izin değil, **araç dosyalarındaki
+tetikleyici eşlemesi**.
+
+**Neden — Mert'in ifadesi:** *"ben pluginleri ve skilleri sana veriyorum, sen de
+araçlara yerleştiriyorsun; ben demeden de kullanabilsinler."* Yani izin kapısı
+gereksiz bir tur bekletiyordu; araç dosyaları zaten hangi durumda ne kullanılacağını
+tanımlıyor.
+
+**Bu karar bir çelişkiyi de kapattı.** `api-araclar.md` ve `web-araclar.md`
+`ecc:csharp-reviewer`, `ecc:database-reviewer`, `ecc:react-reviewer` öneriyordu —
+bunların üçü de **alt ajandır**. Aynı anda `genel-araclar.md` "alt ajan çağrısı
+Mert açıkça istemedikçe kullanılmaz" diyordu. Vault kendi içinde çelişiyordu ve
+bu, önerilen inceleme ajanlarının hiç çağrılmaması demekti.
+
+**Serbest ≠ gelişigüzel.** Yerine üç kapı kondu → [[genel-araclar]]:
+1. İş tek bilinen dosyadaysa doğrudan yapılır
+2. Darboğaz paralellik değilse (cevap bekleniyorsa) ajan işe yaramaz
+3. Çıktısı doğrulanamayacak ajan çağrısı, doğrulanmamış iddia üretir
+
+**Maliyet uyarısı:** `Workflow` onlarca ajan çalıştırabilir. Kapsamlı bir denetim
+öncesi kapsam ve tahmini boyut tek satırla bildirilir — izin için değil, görünürlük
+için.
+
+**Alternatif:** Her çağrıda sormaya devam etmek — Mert'in ret gerekçesi, aracı
+verip kullandırmamanın anlamsızlığıydı. Elendi.
+
+İlgili: [[genel-araclar]] · [[api-araclar]] · [[web-araclar]] · [[durum]]

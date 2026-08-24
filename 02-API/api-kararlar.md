@@ -392,3 +392,87 @@ aylık **declarative partitioning** (eski ayı silmek `DROP TABLE` kadar ucuz) �
 zaman sıralı devasa tabloda **BRIN** indeksi, MSSQL'de karşılığı yok.
 
 İlgili: [[api-sema]] · [[domain-gereksinimler]] · [[api-durum]]
+
+---
+
+## 2026-08-24 — Şema bölüm 6-7-8 ONAYLANDI (Mert'in toplu cevabı)
+
+Mert altı sorunun tamamını cevapladı; şema sekiz bölümde tamamlandı.
+
+**Onaylananlar:**
+- **A1 → (b)** Kuponlu rezervasyonda kısmi iade: hakediş liste fiyatı üzerinden
+  orantılı, indirimi platform karşılamaya devam eder. 1000/%15/%10'da yarı iade →
+  tekne sahibi 425, platform 25.
+- **A2 → iki haftada bir**, sözleşmede yazılı (`Contracts.PayoutPeriodDays`).
+- **B3 → mesajlaşma için giriş ZORUNLU.** Rezervasyon misafir olarak yapılabilir ama
+  mesaj atmak için hesap gerekir. **Neden:** cevabın kime gideceği belli olmalı ve
+  giriş olmadan spam yönetilemez.
+- **C5 → tekne sahibinin blog yazısı platform onayından geçer.** `BlogPosts` üzerine
+  `ApprovedByUserId` + `ApprovedAt`. Platform yönetiminin kendi yazısı onay beklemez.
+
+**Değişiklik gerektiren tek cevap — C4: yorumda ALT PUANLAR da olacak.**
+
+`Reviews.Rating` (genel, zorunlu) korundu; üstüne `ReviewCriteria` +
+`ReviewCriterionTranslations` + `ReviewScores` eklendi. Kriterler: temizlik,
+mürettebat, yemek, fiyat/değer, güvenlik, tekne durumu.
+
+**Neden kolon değil ayrı tablo:** yeni kriter eklemek şema değişikliği
+gerektirmemeli ve **eski yorumları bozmamalı**. Kolon olsaydı her yeni kriterde
+geçmiş yorumların tamamı `NULL` ile dolar, ortalama yanlış çıkardı.
+
+**Alt puanlar opsiyonel, genel puan zorunlu.** Menü almamış müşteri "yemek" puanı
+veremez; zorunlu olsaydı ya rastgele puan verirdi ya yorumu hiç yazmazdı.
+
+**Kriterleri platform tanımlar, tekne sahibi değil** — teknelerin karşılaştırılabilir
+kalması için. "Kararı tekne sahibi verir" ilkesinin sınırı: ayarlanabilir olan
+işletme tarzıdır, platformun ölçüsü değil → [[domain-gereksinimler]].
+
+**C6 → olay günlüğü saklama süresi ERTELENDİ.** Mert: *"şimdilik hep saklayalım,
+bunu düzelteceğiz zaten, süre vermeyelim ŞİMDİLİK."* Aylık bölümlendirme sayesinde
+karar sonradan verildiğinde uygulaması tek `DROP` komutu — satır satır `DELETE`
+gerekmeyecek. Karar ertelendi ama **uygulaması ucuz kalacak şekilde kuruldu**.
+
+İlgili: [[api-sema]] · [[domain-gereksinimler]] · [[api-durum]]
+
+---
+
+## 2026-08-24 — PostgreSQL 18 Homebrew ile kuruldu, migration bölüm bölüm
+
+**Karar:** PostgreSQL 18.6, `brew install postgresql@18`. Mert üç seçenek arasından
+Homebrew'ü seçti (Docker ve Postgres.app elendi).
+
+**Neden Homebrew:** `psql` doğrudan PATH'te (`/opt/homebrew/bin/psql`), sunucuda
+görülecek deneyimin aynısı, eklenti kurmak kolay. Docker'da `psql` konteynerin içinde
+kalıyor ve öğrenme aşamasında kafa karıştırıyor; Postgres.app'i Mert'in elle indirmesi
+gerekiyordu.
+
+**Kurulan yapı:**
+- Veritabanı `dailycruising_dev`, sahibi `dailycruising` rolü (superuser DEĞİL)
+- Eklentiler: `citext`, `btree_gist`, `unaccent`, `pg_trgm`
+- Servis: `brew services start postgresql@18` (girişte otomatik başlar)
+
+**Bağlantı dizesi `appsettings.json`'a YAZILMADI.** Parola .NET user-secrets'ta
+(`~/.microsoft/usersecrets/`), yani repo dışında. **Neden:** parola commit'lenirse
+git geçmişinden silinmesi pratikte imkânsız.
+
+**Eklentiler `HasPostgresExtension` ile modele bağlandı** — migration'ın parçası
+oldular. Yeni bir makinede `dotnet ef database update` tek başına yeterli, elle
+`CREATE EXTENSION` gerekmiyor.
+
+**Enum'lar metin olarak saklanıyor**, Postgres `ENUM` tipi olarak değil. `OnModelCreating`
+içinde tek döngüyle tüm enum property'leri `string`'e çevriliyor.
+**Neden:** Postgres ENUM'una değer eklemek migration'da acı veriyor; metin + `CHECK`
+aynı güvenceyi esneklikle veriyor.
+
+**Migration stratejisi: bölüm bölüm, hepsi tek seferde değil.**
+İlk migration `Bolum1_KimlikVeYetki` — 13 tablo. Kalan yedi bölüm ayrı migration'lar
+olacak (`A-09`).
+**Neden:** 55 tabloyu tek seferde yazmak, ilk hatanın nerede olduğunu gizler. Bölüm
+bölüm gidince her adım ayrı doğrulanıyor ve geri alınabiliyor.
+
+**Kanıtlanan kısıtlar** (geri alınan bir işlem içinde denendi):
+- `citext`: `Mert@Ornek.com` varken `mert@ornek.com` **reddedildi**
+- `CK_Contracts_CommissionRate`: %150 komisyon **reddedildi**
+- Kısmi benzersiz indeksler kuruldu: işletme başına tek onaylı sözleşme, tek sahip
+
+İlgili: [[api-sema]] · [[api-desenler]] · [[api-durum]]

@@ -14,10 +14,9 @@ kuralların tabloya dönüşmüş hali var. Çelişirlerse domain dosyası doğr
 İsimlendirme: tablo **PascalCase çoğul**, kolon PascalCase, tümü İngilizce
 → [[api-desenler]].
 
-⚠️ **6–8. bölümler Mert'in tek tek onayından GEÇMEDİ.** Mert 2026-08-24'te
-*"sen hepsini yap, en son bana cevaplamam gereken soruları yaz"* dedi. Bu üç
-bölümdeki tasarım kararları Claude'undur; açık sorular oturum sonunda toplu
-soruldu. Onay gelene kadar bu bölümlerden **kod yazılmaz**.
+**Sekiz bölümün tamamı 2026-08-24'te onaylandı.** 1–5 tek tek konuşuldu; 6–8'i
+Claude tasarlayıp açık soruları toplu sordu, Mert hepsini cevapladı
+→ [[api-kararlar]] 2026-08-24.
 
 | # | Bölüm | Durum |
 |---|---|---|
@@ -26,9 +25,9 @@ soruldu. Onay gelene kadar bu bölümlerden **kod yazılmaz**.
 | 3 | Kiralama tipleri ve fiyat | ✅ onaylandı 2026-08-24 |
 | 4 | Takvim ve sefer | ✅ onaylandı 2026-08-24 |
 | 5 | Rezervasyon | ✅ onaylandı 2026-08-24 |
-| 6 | Para | 🟡 Claude tasarladı, toplu onay bekliyor |
-| 7 | Teklif ve mesajlaşma | 🟡 Claude tasarladı, toplu onay bekliyor |
-| 8 | Yan sistemler + olay günlüğü | 🟡 Claude tasarladı, toplu onay bekliyor |
+| 6 | Para | ✅ onaylandı 2026-08-24 |
+| 7 | Teklif ve mesajlaşma | ✅ onaylandı 2026-08-24 |
+| 8 | Yan sistemler + olay günlüğü | ✅ onaylandı 2026-08-24 |
 
 ---
 
@@ -807,10 +806,33 @@ Mert'in açık tercihi. Destek 8. bölümde.
 
 ## Bölüm 8 — Yan Sistemler ve Olay Günlüğü
 
-### `Reviews` · `ReviewReplies` · `ReviewInvitations`
+### `Reviews` · `ReviewScores` · `ReviewCriteria` · `ReviewReplies` · `ReviewInvitations`
 
-`Reviews`: `ReservationId (**benzersiz**), BoatId, Rating 1–5, Body, Status
-(Beklemede/Onaylandı/Reddedildi), ModeratedByUserId, ModeratedAt`
+`Reviews`: `ReservationId (**benzersiz**), BoatId, **Rating 1–5 (genel)**, Body,
+Status (Beklemede/Onaylandı/Reddedildi), ModeratedByUserId, ModeratedAt`
+
+**Alt puanlar da var** (Mert, 2026-08-24):
+
+| Tablo | İçerik |
+|---|---|
+| `ReviewCriteria` | `Key, SortOrder, IsActive` — temizlik, mürettebat, yemek, fiyat/değer, güvenlik, tekne durumu |
+| `ReviewCriterionTranslations` | başlıkların çevirisi |
+| `ReviewScores` | `ReviewId, CriterionId, Score 1–5` — `(ReviewId, CriterionId)` benzersiz |
+
+**Alt puanlar OPSİYONEL, genel puan zorunlu.** Gerekçe: menü almamış müşteri "yemek"
+puanı veremez; zorunlu olsaydı ya boş yere puan verirdi ya yorumu hiç yazmazdı.
+
+**Kriterler ayrı tabloda, kolon değil.** Yeni kriter eklemek şema değişikliği
+gerektirmez ve **eski yorumlar bozulmaz** — yalnız o kriterde puanları olmaz.
+Kolon olsaydı her yeni kriterde tüm geçmiş yorumlar `NULL` ile dolar ve ortalama
+yanlış çıkardı.
+
+Kriterleri **platform** tanımlar, tekne sahibi değil — teknelerin karşılaştırılabilir
+kalması için. Bu, "kararı tekne sahibi verir" ilkesinin sınırına giren bir konu:
+ayarlanabilir olan işletme tarzıdır, platformun ölçüsü değil.
+
+Tekne başına kriter ortalamaları **canlı hesaplanır**, önden tutulmaz —
+`AvailabilityDays` ile aynı gerekçe.
 
 Yorum hakkı rezervasyon yapmakla değil **QR okutulmakla** doğar; yorum yayına
 girmeden **platform onayından** geçer. Tekne sahibi cevap yazabilir.
@@ -821,9 +843,11 @@ kullanımlık ve süreli jeton. Üyelik gerekmez; hak rezervasyona bağlıdır.
 ### `BlogPosts` · `BlogPostTranslations` · `BlogCategories`
 
 `AuthorUserId, AuthorPartnerId?, Slug, Status (Taslak/İncelemede/Yayında),
-PublishedAt, CoverFileKey, ViewCount`
+PublishedAt, **ApprovedByUserId**, **ApprovedAt**, CoverFileKey, ViewCount`
 
-Hem platform hem tekne sahipleri yazabilir.
+Hem platform hem tekne sahipleri yazabilir. **Tekne sahibinin yazısı platform
+onayından geçer** (Mert, 2026-08-24) — yazı platformun adı altında yayınlanıyor.
+Platform yönetiminin kendi yazısı onay beklemez.
 
 ### `SupportTickets` · `SupportMessages`
 
@@ -874,6 +898,12 @@ yetersizdi.
 ⚠️ **KVKK:** ham IP değil `IpHash` saklanır. Rapor üretmek ile pazarlama amaçlı
 profilleme farklı hukuki dayanaklardır; kayıt altyapısı ortak olsa da izin ayrı
 yönetilir → 1. bölüm `ConsentRecords`.
+
+**Saklama süresi: ŞİMDİLİK sınırsız** (Mert, 2026-08-24 — *"şimdilik hep saklayalım,
+bunu düzelteceğiz zaten"*). Aylık bölümlendirme sayesinde süre kararı sonradan
+verildiğinde uygulaması tek komut: eski ayın parçası `DROP` edilir, satır satır
+`DELETE` gerekmez. **Karar ertelendi ama uygulaması ucuz kalacak şekilde kuruldu**
+→ [[domain-gereksinimler]] 2026-08-24.
 
 ### Postgres'e özgü
 

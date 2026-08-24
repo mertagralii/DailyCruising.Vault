@@ -15,9 +15,12 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🔵 Yapılacak
 
-- [ ] **A-02** EF Core + PostgreSQL kurulumu ve ilk migration · öncelik: yüksek
-      Bağımlı: A-01 · Kabul: `dotnet ef database update` temiz, tablo adları
-      PascalCase çoğul -> [[api-desenler]]
+- [ ] **A-09** Kalan yedi bölümün entity'leri ve migration'ları · öncelik: yüksek
+      Bağımlı: A-02 · Bölüm bölüm ilerlenecek, hepsi tek migration'da değil
+      Sıra: 2 katalog · 3 fiyat · 4 takvim+sefer · 5 rezervasyon · 6 para ·
+      7 teklif+mesajlaşma · 8 yan sistemler
+      4. bölümde `EXCLUDE USING gist` kısıtı EF ile kurulamaz, **elle SQL** gerekir
+      Kabul: her bölüm ayrı migration, `dotnet ef database update` temiz
 - [ ] **A-03** Kimlik doğrulama + **dinamik rol/yetki** + satır bazlı kapsam · öncelik: yüksek
       ⚠️ "6 rol" ifadesi **eskidir**. Roller kodda sabit DEĞİL, veritabanı kaydıdır —
       yeni rol açmak ve yetki eklemek kod değişikliği gerektirmez ([[domain-gereksinimler]]
@@ -46,17 +49,23 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟡 Yapılıyor
 
-- [ ] **A-01** Veritabanı şemasının sekiz bölümde çıkarılması · öncelik: yüksek
-      **Başlandı 2026-08-24** — 8/8 bölüm çıkarıldı; 1-5 Mert onaylı, 6-8 toplu onay bekliyor -> [[api-sema]]
-      Bağımlılık **kalktı** — G-01 tamamlandı, şemayı bloke eden madde yok
-      Bölümler: 1 kimlik/yetki · 2 katalog · 3 kiralama tipi+fiyat · 4 takvim+sefer
-      (en kritik) · 5 rezervasyon · 6 para · 7 teklif+mesajlaşma · 8 yan sistemler
-      Her bölüm Mert'in onayından geçer; **onaysız kod yazılmaz**
-      Kabul: entity ve ilişkiler [[domain-gereksinimler]] ile birebir örtüşür,
-      çıkarım kalmaz; her varlık için "hangi olaylar kaydediliyor" sorusu cevaplanır
+_(boş)_
 
 ## 🟢 Tamamlandı
 
+- [x] **A-02** EF Core + PostgreSQL kurulumu ve ilk migration · bitti: 2026-08-24
+      Kanıt: PostgreSQL 18.6 kuruldu ve çalışıyor · `dailycruising_dev` veritabanı,
+      dört eklenti (`citext`, `btree_gist`, `unaccent`, `pg_trgm`) ·
+      `Bolum1_KimlikVeYetki` migration'ı uygulandı, **13 tablo** oluştu ·
+      tablo adları PascalCase çoğul (`Users`, `PartnerMembers`) ·
+      `dotnet build` 0 uyarı 0 hata · `GET /api/health` hâlâ `{"status":"healthy"}` ·
+      kısıtlar canlı denendi: citext büyük/küçük harf çakışmasını, CHECK %150
+      komisyonu **reddetti** -> [[api-kararlar]] 2026-08-24
+- [x] **A-01** Veritabanı şemasının sekiz bölümde çıkarılması · bitti: 2026-08-24
+      Kanıt: sekiz bölümün tamamı [[api-sema]] içinde, hepsi Mert onaylı.
+      1-5 tek tek konuşuldu; 6-8 Claude tasarladı, altı açık soru toplu cevaplandı.
+      Gerekçeler tarihli olarak [[api-kararlar]] içinde (6 giriş).
+      Her bölümde "hangi olaylar kaydediliyor" sorusu cevaplandı -> A-08 girdisi hazır
 - [x] **A-00** Backend iskeleti: .NET 10, Clean Architecture 4 katman, health ucu · bitti: 2026-08-21
       Kanıt: `dotnet build` 0 uyarı 0 hata · `GET /api/health` -> `{"status":"healthy"}`
 

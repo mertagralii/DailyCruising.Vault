@@ -17,6 +17,13 @@ tamamlanamaz.**
 
 ## 🔵 Yapılacak
 
+- [ ] **G-16** SaaS / abonelik ürününe dönüştürme · öncelik: **EN SON**
+      Mert: *"bu sistemi bir abonelik üzerinden satacağım"* — rezervasyon sistemi +
+      AI entegrasyonları komple paket. **Şu anda buna göre hiçbir şey yapılmıyor.**
+      Bugün hazırlık gerekmiyor: abone başına ayrı veritabanı yolu mevcut şemayla
+      çalışır. Tek veritabanı + `TenantId` yolu seçilirse sonradan çok pahalı
+      -> [[domain-gereksinimler]] 2026-08-24
+      Bağımlı: bu sistemin canlıda çalıştığının kanıtlanması
 - [ ] **G-15** Vault'un başka projelere taşınabilir şablona dönüştürülmesi
       Öncelik: bu proje kanıtlanınca · Kabul: boş bir projede kurulup çalışması,
       DailyCruising'e özgü içerik ile genel iskeletin ayrılmış olması
@@ -44,8 +51,6 @@ tamamlanamaz.**
       olmadan bölüştürme yapılamaz. Şema sağlayıcı-bağımsız kurulacak, bloke etmiyor
 - [ ] **G-04** SMS sağlayıcı kararı · kimde: **Mert**
       Eski sistem Verimor; canlıda IP whitelist hatası veriyordu
-- [ ] **G-06** Veri göçü kararı · kimde: **Mert**
-      35 tekne, 104 kullanıcı, 120 rezervasyon, 46 blog taşınacak mı
 - [ ] **G-07** Deploy, CI/CD ve ortam yönetimi
 - [ ] **G-08** ECC Memory katmanının kalıp kalmayacağına karar verilmesi
       Kuruldu, kullanılmıyor. Başka harness planı yoksa kaldırılmalı -> [[genel-kararlar]]
@@ -57,6 +62,11 @@ tamamlanamaz.**
 _(boş)_
 
 ## 🟢 Tamamlandı
+
+- [x] **G-06** Veri göçü kararı · bitti: 2026-08-24
+      Kanıt: Mert *"sıfırdan kuruyoruz zaten"* — göç YOK, dönüştürme betiği
+      yazılmayacak. Bedelleri (35 işletme yeniden kayıt, puanlar sıfırlanır, eski
+      URL'ler kırılır) bilinerek kabul edildi -> [[domain-gereksinimler]] 2026-08-24
 
 - [x] **G-12** Çevrimdışı biniş kararı · bitti: 2026-08-24
       Kanıt: Mert **c** seçti — internet yoksa tekne sahibi sonradan panelden

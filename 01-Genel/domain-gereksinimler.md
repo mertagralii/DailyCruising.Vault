@@ -1372,4 +1372,106 @@ Tablo güncellenmediği için başka oturumlar bunları blocker sanıyordu.
 **Şu an şemayı bloke eden açık madde yok.** Tek cevapsız domain sorusu
 **çevrimdışı biniş** (iskelede internet yoksa QR ne olur) → `G-12`.
 
-İlgili: [[proje]] · [[durum]] · [[genel-kararlar]] · [[api-kararlar]] · [[00-Index]]
+
+---
+
+## Toplu kararlar — 2026-08-24
+
+### 2026-08-24 — Olay günlüğü saklama süresi: ŞİMDİLİK sınırsız (döneceğiz)
+
+Mert: *"şimdilik bi hep saklayalım, bunu düzelteceğiz zaten, not al sen yine bir
+yere, bakacağız buna — buna süre vermeyelim ŞİMDİLİK."*
+
+**Bugün:** olay günlüğü silinmiyor.
+
+**Neden ertelenebildi:** `EventLog` aylık bölümlere ayrılmış olarak kuruluyor.
+Süre kararı altı ay sonra verildiğinde uygulaması eski ayın parçasını `DROP`
+etmekten ibaret — milyonlarca satırı `DELETE` etmek gerekmiyor. **Karar ertelendi
+ama bedeli ertelenmedi.**
+
+⚠️ **Ne zaman dönülmeli:** KVKK süresiz saklamayı meşru görmüyor; kişisel veri
+"işlendiği amaç için gerekli olan süre" kadar tutulur. Sezonluk AI raporları için
+en az iki sezon lazım — yani 24 ay mantıklı bir alt sınır. Karar en geç **ikinci
+sezon kapanışında** verilmeli, o zamana kadar veri birikmiş ama silme kararı hâlâ
+ucuz olur.
+
+### 2026-08-24 — Yorumlarda alt puanlar olacak
+
+Mert: *"alt puanları da olsun."* Genel puan (1–5) zorunlu; üstüne kriter bazlı
+puanlar: temizlik, mürettebat, yemek, fiyat/değer, güvenlik, tekne durumu.
+
+**Alt puanlar opsiyonel** — menü almamış müşteri "yemek" puanı veremez.
+
+**Kriterleri PLATFORM tanımlar, tekne sahibi değil.** Bu, "kararı tekne sahibi
+verir" ilkesinin sınırıdır: tekneler ancak aynı ölçüyle puanlanırsa
+karşılaştırılabilir. Her tekne kendi kriterini seçseydi puanlar anlamsızlaşırdı.
+
+### 2026-08-24 — Mesajlaşma için giriş ZORUNLU
+
+Rezervasyon misafir olarak yapılabilir ama **mesaj atmak için hesap gerekir.**
+
+**Neden:** cevabın kime gideceği belli olmalı; ayrıca girişsiz mesajlaşmada spam ve
+taciz yönetilemez. Rezervasyondaki misafir serbestliği burada geçerli değil, çünkü
+rezervasyon tek yönlü bir işlem, mesajlaşma karşılıklı bir ilişkidir.
+
+### 2026-08-24 — Tekne sahibinin blog yazısı platform onayından geçer
+
+Yazı platformun adı altında yayınlanıyor. Platform yönetiminin kendi yazısı onay
+beklemez.
+
+
+İlgili: [[proje]] · [[durum]] · [[genel-kararlar]] · [[api-kararlar]] · [[api-sema]] · [[00-Index]]
+
+---
+
+## 🔮 SaaS / abonelik ürünü — 2026-08-24
+
+### 2026-08-24 — Veri göçü YOK, sistem sıfırdan kuruluyor (G-06 kapandı)
+
+Mert: *"sıfırdan kuruyoruz zaten bu bütün sistemi."*
+
+Canlı `dailycruising.com.tr` içindeki 35 tekne, 104 kullanıcı, 120 rezervasyon ve
+46 blog yazısı **yeni sisteme taşınmayacak**. Dönüştürme betiği yazılmayacak.
+
+**Bilinerek kabul edilen bedeller:**
+- Tekne sahipleri sisteme yeniden kaydolur ve teknelerini yeniden girer — 35 işletme
+  için gerçek bir yük, bazıları geri gelmeyebilir
+- Geçmiş yorumlar ve puanlar sıfırlanır; yeni tekneler puansız başlar
+- Eski URL'ler kırılır — SEO değeri devredilmez
+
+**Neden yine de doğru:** eski şemada sefer kavramı, mod bazlı takvim, para defteri ve
+olay günlüğü yok. Bunları geçmiş veriden **üretmek** gerekirdi ve üretilen veri
+uydurma olurdu — özellikle para defterinde. Yanlış geçmiş, hiç geçmiş olmamasından
+kötüdür.
+
+### 2026-08-24 — İLERİDE: sistem abonelikle satılacak (SaaS)
+
+Mert: *"bu sistemi bir abonelik üzerinden satışını yapacağım. Satın alan işletme
+sahipleri direkt olarak bu sistemi web sitelerinde kullanabilecekler + yanında diğer
+yapay zeka entegrasyonları vesaire ile birlikte komple bir paket olarak."*
+
+⚠️ **BU EN SON YAPILACAK İŞ.** Mert açıkça belirtti: *"şu anda buna göre bir şey
+yapmayalım."* Bugün hiçbir tablo, hiçbir kolon bunun için eklenmiyor.
+
+**Neden yine de bugün yazılıyor:** çok kiracılılık (multi-tenancy), sonradan
+eklenmesi en pahalı özelliktir. Bilinmesi, bilinmemesinden iyidir.
+
+**İyi haber — bugünkü şema bunu zaten kaldırıyor.** İki yol var ve **ucuz olanı
+bugün hiçbir değişiklik istemiyor**:
+
+| Yol | Bugün gereken |
+|---|---|
+| **Abone başına ayrı veritabanı** | **Hiçbir şey.** Aynı şema, ayrı veritabanı. Bağlantı dizesi aboneye göre seçilir |
+| Tek veritabanı + `TenantId` kolonu | Her tabloya kolon, her sorguya filtre, her indekse ön ek — **sonradan eklenirse çok pahalı** |
+
+Birinci yol bu ölçekte (abone sayısı yüzlerle ifade edilecek) hem daha basit hem daha
+güvenli: bir abonenin verisi diğerininkiyle **fiziksel olarak** karışamaz, yanlış
+yazılmış tek bir `WHERE` cümlesi veri sızdıramaz.
+
+**Sonuç: SaaS kararı bugün alınmak zorunda değil.** İkinci yola geçilmek istenirse o
+zaman konuşulur; birinci yol seçilirse hiçbir şey değişmez.
+
+**Pakete dahil olacaklar** (Mert'in tarifi): rezervasyon sistemi + AI entegrasyonları
++ otomasyonlar. AI entegrasyonlarının listesi bu dosyada zaten var; SaaS bunları
+ayrı bir ürün özelliği değil, **paketin parçası** yapıyor.
+
