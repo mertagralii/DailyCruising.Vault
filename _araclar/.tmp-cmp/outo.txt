@@ -1,0 +1,66 @@
+viewport  tasarim 1280x730   uygulama 1280x730
+sayfa yuk tasarim 4496          uygulama 4496   fark +0
+metin dugumu  tasarim 177  uygulama 163
+kutu          tasarim 69  uygulama 68
+
+=== TASARIMDA VAR, UYGULAMADA YOK (13) ===
+  y=1932   '0532 774 11 08'
+  y=2564   '4820371956'
+  y=2264   'Işıl Yatçılık Turizm Ltd. Şti.'
+  y=2364   'Muğla'
+  y=2464   'Neyzen Tevfik Cad. No 118'
+  y=3343   'ortak@rihtim.com.tr'
+  y=1832   'sukru@isilyatcilik.com'
+  y=80     'Tekne veya bölge ara'
+  y=2735   'TR__ ____ ____ ____ ____ __'
+  y=3379   'WhatsApp: 0532 418 27 61'
+  y=1832   'Şükrü Aydın'
+  y=2062   '••••••'
+  y=1932   '••••••••'
+
+=== UYGULAMADA VAR, TASARIMDA YOK (2) ===
+  y=3343   'ortak@dailycruising.com.tr'
+  y=3379   'WhatsApp: 0532 418 27 60'
+
+=== ORTAK METINLERDE FARK ===
+  y=85     '▾'  x 566→560
+  y=77     'Rıhtım'  w 62→131
+  y=4154   'Rıhtım'  w 57→121
+  y=80     'Giriş yap'  x 1011→1001
+  y=81     'Turlar'  x 520→514
+  y=81     'Bloglar'  x 592→586
+  y=81     'Hakkımızda'  x 660→654
+  y=81     'Tekneni ekle'  x 760→754
+  y=81     'Özel teklifler'  x 869→863
+  y=269    'Gerçekleşen tur komisyonu, gizli ücret yok'  renk 255,255,255,179→255,255,255,178
+  y=385    'Tur sonrası ödeme hesabına geçer'  renk 255,255,255,179→255,255,255,178
+  y=501    "Ege ve Akdeniz'de aktif tekne"  renk 255,255,255,179→255,255,255,178
+  y=1197   "Neden Rıhtım'a kaydolmalısın?"  w 469→584
+  ADET  'Bodrum'  tasarim 3x  uygulama 1x
+  y=2952   'PDF veya JPG · her biri en fazla 10 MB'  y 2952→2962
+  y=2977   'Kayıt ücreti'  renk 255,255,255,179→255,255,255,178
+  y=3008   'Denize elverişlilik belgesi'  y 3008→3018
+  y=3010   'Komisyon'  renk 255,255,255,179→255,255,255,178
+  y=3017   'Yolcu sigortası poliçesi'  y 3017→3027
+  y=3039   'Dosya seç'  y 3039→3049
+  y=3039   'Dosya seç'  y 3039→3049
+  y=3154   'Dosya seç'  y 3154→3164
+  y=3154   'Dosya seç'  y 3154→3164
+  y=3042   'Ödeme'  renk 255,255,255,179→255,255,255,178
+  y=3056   'elverislilik-2026.pdf yüklendi'  y 3056→3066
+  y=3065   'Henüz yüklenmedi'  y 3065→3075
+  y=3168   'Henüz yüklenmedi'  y 3168→3178
+  y=3168   'Henüz yüklenmedi'  y 3168→3178
+  y=3144   'Kaptan ehliyeti'  y 3144→3154
+  y=3144   'Vergi levhası'  y 3144→3154
+  y=3232   'İş ortağı sözleşmesini'  y 3232→3242
+  y=3232   've komisyon koşullarını okudum, kabul ediyor'  y 3232→3242
+  y=3299   'Kaydın onaylanınca panel girişin e-posta ile'  y 3299→3309
+  y=3299   'Kaydı tamamla'  y 3299→3309
+  y=3658   "Rıhtım'da olan kaptanlar"  w 369→483
+  y=4438   '© 2026 Rıhtım Turizm A.Ş.'  w 149→191
+  y=4447   'Deneyimini geliştirmek için çerez kullanıyor'  y 4447→681 · w 295→291
+  y=4447   'Daha fazla bilgi'  y 4447→681
+  y=4447   'Kabul et'  y 4447→681
+  y=4447   'Reddet'  y 4447→681
+  toplam 40

@@ -1,0 +1,149 @@
+
+##### ov   yukseklik 1883 / 1881  (-2)  metin 115/114
+viewport  tasarim 1280x730   uygulama 1280x730
+sayfa yuk tasarim 1883          uygulama 1881   fark -2
+metin dugumu  tasarim 115  uygulama 114
+kutu          tasarim 58  uygulama 57
+
+=== TASARIMDA VAR, UYGULAMADA YOK (1) ===
+  y=80     'Tekne veya bölge ara'
+
+=== UYGULAMADA VAR, TASARIMDA YOK (0) ===
+
+=== ORTAK METINLERDE FARK ===
+  y=84     '▾'  fw 400→500 · lh normal→16px · x 1165→585
+  y=85     '▾'  fw 500→400 · lh 16px→26px · x 566→1165
+  y=73     '%'  x 956→979
+  y=77     'Rıhtım'  w 62→131
+  y=1541   'Rıhtım'  w 57→121
+  y=81     'Turlar'  x 520→539
+  y=81     'Bloglar'  x 592→611
+  y=81     'Hakkımızda'  x 660→679
+  y=81     'Tekneni ekle'  x 760→779
+  y=81     'Özel teklifler'  x 869→888
+  y=1826   '© 2026 Rıhtım Turizm A.Ş.'  w 149→191
+  y=1834   'Deneyimini geliştirmek için çerez kullanıyor'  y 1834→681 · w 295→291
+  y=1834   'Daha fazla bilgi'  y 1834→681
+  y=1834   'Kabul et'  y 1834→681
+  y=1834   'Reddet'  y 1834→681
+  toplam 15
+
+##### gelen   yukseklik 1553 / 1555  (+2)  metin 95/94
+viewport  tasarim 1280x730   uygulama 1280x730
+sayfa yuk tasarim 1553          uygulama 1555   fark +2
+metin dugumu  tasarim 95  uygulama 94
+kutu          tasarim 47  uygulama 46
+
+=== TASARIMDA VAR, UYGULAMADA YOK (1) ===
+  y=80     'Tekne veya bölge ara'
+
+=== UYGULAMADA VAR, TASARIMDA YOK (0) ===
+
+=== ORTAK METINLERDE FARK ===
+  y=84     '▾'  fw 400→500 · lh normal→16px · x 1165→585
+  y=85     '▾'  fw 500→400 · lh 16px→26px · x 566→1165
+  y=73     '%'  x 956→979
+  y=77     'Rıhtım'  w 62→131
+  y=1211   'Rıhtım'  w 57→121
+  y=81     'Turlar'  x 520→539
+  y=81     'Bloglar'  x 592→611
+  y=81     'Hakkımızda'  x 660→679
+  y=81     'Tekneni ekle'  x 760→779
+  y=81     'Özel teklifler'  x 869→888
+  y=1496   '© 2026 Rıhtım Turizm A.Ş.'  w 149→191
+  y=1504   'Deneyimini geliştirmek için çerez kullanıyor'  y 1504→681 · w 295→291
+  y=1504   'Daha fazla bilgi'  y 1504→681
+  y=1504   'Kabul et'  y 1504→681
+  y=1504   'Reddet'  y 1504→681
+  toplam 15
+
+##### tamam   yukseklik 1431 / 1437  (+6)  metin 101/100
+viewport  tasarim 1280x730   uygulama 1280x730
+sayfa yuk tasarim 1431          uygulama 1437   fark +6
+metin dugumu  tasarim 101  uygulama 100
+kutu          tasarim 32  uygulama 31
+
+=== TASARIMDA VAR, UYGULAMADA YOK (1) ===
+  y=80     'Tekne veya bölge ara'
+
+=== UYGULAMADA VAR, TASARIMDA YOK (0) ===
+
+=== ORTAK METINLERDE FARK ===
+  y=1223   '0252 345 67 89'  y 1223→1229
+  y=84     '▾'  fw 400→500 · lh normal→16px · x 1165→585
+  y=85     '▾'  fw 500→400 · lh 16px→26px · x 566→1165
+  y=73     '%'  x 956→979
+  y=77     'Rıhtım'  w 62→131
+  y=1088   'Rıhtım'  y 1088→1094 · w 57→121
+  y=81     'Turlar'  x 520→539
+  y=81     'Bloglar'  x 592→611
+  y=81     'Hakkımızda'  x 660→679
+  y=1122   'Hakkımızda'  y 1122→1128
+  y=81     'Tekneni ekle'  x 760→779
+  y=1189   'Tekneni ekle'  y 1189→1195
+  y=81     'Özel teklifler'  x 869→888
+  y=729    '★ 5,0'  y 729→734
+  y=860    '★ 5,0'  y 860→866
+  y=782    'QR okutulmadı, varış onayı · Elif Demir'  y 782→787
+  y=794    'DT-4771'  y 794→799
+  y=794    '19 Ağu'  y 794→799
+  y=794    '1 sa 6 dk'  y 794→799
+  y=794    '★ 4,0'  y 794→800
+  y=859    'DT-4765'  y 859→865
+  y=859    'Hakediş sorusu · Öz Denizcilik'  y 859→865
+  y=859    '18 Ağu'  y 859→865
+  y=859    '2 sa'  y 859→865
+  y=1087   'Tur tipleri'  y 1087→1093
+  y=1087   'Bölgeler'  y 1087→1093
+  y=1087   'Kurumsal'  y 1087→1093
+  y=1122   'Günlük Tekne Turu'  y 1122→1128
+  y=1122   'Bodrum'  y 1122→1128
+  y=1132   'Ege ve Akdeniz kıyısında günlük tekne turu p'  y 1132→1138
+  y=1155   'Günlük Dalış Turu'  y 1155→1161
+  y=1155   'Marmaris'  y 1155→1161
+  y=1155   'Blog'  y 1155→1161
+  y=1189   'Özel Gün Batımı Turu'  y 1189→1195
+  y=1189   'Datça'  y 1189→1195
+  y=1223   'Konaklamalı Tur'  y 1223→1229
+  y=1223   'Fethiye'  y 1223→1229
+  y=1223   'İptal ve iade'  y 1223→1229
+  y=1257   'Haftalık Charter'  y 1257→1263
+  y=1257   'Antalya'  y 1257→1263
+  y=1257   'Gizlilik'  y 1257→1263
+  y=1291   'İletişim'  y 1291→1297
+  y=1373   '© 2026 Rıhtım Turizm A.Ş.'  y 1373→1379 · w 149→191
+  y=1373   'Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺'  y 1373→1379
+  y=1382   'Deneyimini geliştirmek için çerez kullanıyor'  y 1382→681 · w 295→291
+  y=1382   'Daha fazla bilgi'  y 1382→681
+  y=1382   'Kabul et'  y 1382→681
+  y=1382   'Reddet'  y 1382→681
+  toplam 48
+
+##### hazir   yukseklik 1428 / 1430  (+2)  metin 77/76
+viewport  tasarim 1280x730   uygulama 1280x730
+sayfa yuk tasarim 1428          uygulama 1430   fark +2
+metin dugumu  tasarim 77  uygulama 76
+kutu          tasarim 31  uygulama 30
+
+=== TASARIMDA VAR, UYGULAMADA YOK (1) ===
+  y=80     'Tekne veya bölge ara'
+
+=== UYGULAMADA VAR, TASARIMDA YOK (0) ===
+
+=== ORTAK METINLERDE FARK ===
+  y=84     '▾'  fw 400→500 · lh normal→16px · x 1165→585
+  y=85     '▾'  fw 500→400 · lh 16px→26px · x 566→1165
+  y=73     '%'  x 956→979
+  y=77     'Rıhtım'  w 62→131
+  y=1086   'Rıhtım'  w 57→121
+  y=81     'Turlar'  x 520→539
+  y=81     'Bloglar'  x 592→611
+  y=81     'Hakkımızda'  x 660→679
+  y=81     'Tekneni ekle'  x 760→779
+  y=81     'Özel teklifler'  x 869→888
+  y=1371   '© 2026 Rıhtım Turizm A.Ş.'  w 149→191
+  y=1379   'Deneyimini geliştirmek için çerez kullanıyor'  y 1379→681 · w 295→291
+  y=1379   'Daha fazla bilgi'  y 1379→681
+  y=1379   'Kabul et'  y 1379→681
+  y=1379   'Reddet'  y 1379→681
+  toplam 15

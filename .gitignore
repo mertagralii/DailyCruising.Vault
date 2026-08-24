@@ -1,0 +1,16 @@
+# Obsidian'ın makineye özgü durumu — paylaşılmaz
+.obsidian/workspace.json
+.obsidian/graph.json
+.obsidian/cache
+.obsidian/plugins/*/data.json
+
+# Vault dışına giden symlink; repoda kırık olur.
+# Skill'ler ve hook ayarları DailyCruising/.claude/ altında yaşar.
+.claude
+
+# Silinmiş sayılan ama diskte tutulan dosyalar
+.trash/
+.trash-*
+
+# macOS
+.DS_Store

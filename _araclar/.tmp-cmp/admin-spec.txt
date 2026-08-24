@@ -1,0 +1,601 @@
+============ Genel bakış
+Toplam ciro | Toplam kullanıcı | Yat işletmesi | Yayında tekne
+₺38,4 M | 24.806 | 318 | 342
+2026 · +%22 yıllık | +412 bu ay | +9 bu ay | 6 onay bekliyor
+Bu ay rezervasyon | Komisyon geliri | Ortalama sepet | İptal oranı
+1.482 | ₺5,7 M | ₺3.240 | %3,2
+Ağustos · %78 doluluk | %15 ortalama oran | +₺180 · geçen aya göre | −%0,8 · iyileşme
+Aylık ciro
+2026 · milyon ₺
+0,8 | 1,1 | 1,26 | 2,18 | 3,24 | 4,10 | 4,82
+Şub | Mar | Nis | May | Haz | Tem | Ağu
+Yeni kullanıcı | Yeni yat işletmesi
+Aylık kayıt | Onaylanan başvuru
+186 | 224 | 262 | 348 | 412 | 4 | 5 | 6 | 7 | 9
+Nis | May | Haz | Tem | Ağu | Nis | May | Haz | Tem | Ağu
+Son eklenen tekneler | Tümü | Son eklenen yat işletmeleri | Tümü
+Mavi Yelken | Serkan Öz
+SÖ
+Fethiye · 14 kişi · Serkan Öz · 2 saat önce | Fethiye · 1 tekne · 2 saat önce
+Onay bekliyor | Detay | Onay bekliyor | Detay
+Poyraz | CT | Cem Taş | Onaylandı
+Datça · 8 kişi · Cem Taş · dün | Datça · 2 tekne · dün
+Onay bekliyor | Detay | Detay
+Nihal Arı
+Ege Yıldızı | NA
+Bodrum · 10 kişi · Nihal Arı · 3 gün önce | Bodrum · 1 tekne · 3 gün önce
+Belge eksik | Detay | Belge eksik | Detay
+Likya Rüyası | BA | Barış Ateş | Onaylandı
+Yayında | Kaş · 3 tekne · 5 gün önce
+Kaş · 12 kişi · Barış Ateş · 5 gün önce
+Detay
+Detay
+Hakan Er
+HE | Onaylandı
+Akdeniz İncisi | Antalya · 2 tekne · 1 hafta önce
+Antalya · 16 kişi · Hakan Er · 1 hafta önce | Yayında
+Detay
+Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+============ Yat işletmeleri
+Yat işletmeleri
+İşletme ekle
+318 işletme · tümü Yat İşletmecisi rolünde
+İşletme, sahibi veya bölge ara | Tüm bölgeler | ▾ | Tüm durumlar | ▾ | Tekne sayısı | ▾
+Filtrele | Temizle
+İşletme / sahibi | Bölge | Tekne | Üyelik | Bu ay ciro | Durum | İşlem
+Serkan Öz · Öz Yatçılık | Fethiye | 1 | Ağu 2026 | — | Onay bekliyor | Detay
+Cem Taş · Datça Marin | Datça | 2 | May 2025 | ₺118.300 | Onaylandı | Detay
+Nihal Arı · Arı Tekne | Bodrum | 1 | Nis 2025 | ₺162.000 | Detay
+Belge eksik
+Barış Ateş · Likya Charter | Kaş | 3 | Şub 2025 | ₺142.300 | Onaylandı | Detay
+Hakan Er · Er Denizcilik | Antalya | 2 | Ock 2024 | ₺96.400 | Onaylandı | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Daha fazla bilgi | Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺ | Kabul et | Reddet
+============ Müşteri listesi
+Müşteri listesi
+Müşteri ekle
+24.806 kayıtlı müşteri
+Ad, e-posta veya telefon ara | Tüm roller | ▾ | Tüm durumlar | ▾ | Kayıt tarihi | ▾
+Filtrele | Temizle
+Kullanıcı | Rol | Üyelik | Rezervasyon | Harcama | Durum | İşlem
+Deniz Yılmaz · deniz.yilmaz@ornek.com | Müşteri | Mar 2025 | 6 | ₺18.400 | Aktif | Detay
+Elif Demir · elif@ornek.com | Müşteri | Haz 2025 | 3 | ₺7.900 | Aktif | Detay
+Cem Taş · cem@datcamarin.com | Yat işletmecisi | May 2025 | — | — | Aktif | Detay
+Selin Kaya · selin@rihtim.com | Destek ekibi | Şub 2024 | — | — | Aktif | Detay
+Mert Ağralı · mert@rihtim.com | Site sahibi | Ock 2024 | — | — | Aktif | Detay
+Tolga Bal · tolga@ornek.com | Müşteri | Ağu 2026 | 2 | ₺4.100 | Askıda | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Daha fazla bilgi | Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺ | Kabul et | Reddet
+============ Personel listesi
+Personel listesi
+Personel ekle
+14 panel kullanıcısı · rol bazlı yetkiler
+Ad, e-posta veya departman ara
+Tüm roller | ▾ | Tüm departmanlar | ▾ | Tüm durumlar | ▾
+Filtrele | Temizle
+Personel | Rol | Departman | Başlangıç | Son işlem | Durum | İşlem
+Mert Ağralı · mert@rihtim.com | Site sahibi | Yönetim | Ock 2024 | Bugün 12.10 | Aktif | Detay
+Selin Kaya · selin@rihtim.com | Destek ekibi | Destek | Şub 2024 | Bugün 13.44 | Aktif | Detay
+Burak Tan · burak@rihtim.com | Destek | May 2024 | Dün 18.02 | Detay
+Destek ekibi | Aktif
+Merve Ak · merve@rihtim.com | İçerik editörü | Pazarlama | Eyl 2024 | 2 gün önce | Aktif | Detay
+Emre Sarı · emre@rihtim.com | Finans | Finans | Mar 2025 | 1 hafta önce | İzinli | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Daha fazla bilgi | Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺ | Kabul et | Reddet
+============ Rezervasyonlar
+Rezervasyonlar
+Kod, misafir veya tekne ara | Tüm tekneler | ▾ | Tüm durumlar | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Kod | Misafir | Tekne / tarih | Tutar | Durum | İşlem
+RH-84213 | Deniz Yılmaz | Gulet Işıl · 28 Ağu | ₺6.525 | Onaylandı | Aç
+RH-84517 | Deniz Yılmaz | Mavi Rüzgar · 12 Eyl | ₺4.800 | Ödeme bekliyor | Detay
+RH-84610 | Elif Demir | Karya Prenses · 30 Ağu | ₺2.500 | Detay
+Onaylandı
+RH-84702 | Kaan Aydın | Datça Esintisi · 2 Eyl | ₺3.300 | İnceleniyor | Detay
+RH-84755 | Selin Kaya | Gulet Işıl · 5 Eyl | ₺7.250 | Onaylandı | Detay
+RH-79004 | Deniz Yılmaz | Fethiye 12 Ada · 3 Haz | −₺1.800 | İade edildi | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Daha fazla bilgi | Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺ | Kabul et | Reddet
+============ Müsaitlik yönetimi
+Müsaitlik yönetimi
+Blokaj ekle
+Tekne bazında blokajlar ve dolu tarihler
+Tekne veya sahibi ara | Tüm tekneler | ▾ | Tüm durumlar | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Tekne | Tekne sahibi | Başlangıç tarihi | Bitiş tarihi | Durum | Açıklama | İşlem
+Gulet Işıl | Serkan Öz | 24.08.2026 | 26.08.2026 | Bakım | Motor bakımı ve boya | Detay
+Karya Prenses | Barış Ateş | 28.08.2026 | 28.08.2026 | Dolu | Özel grup kiralaması | Detay
+Datça Esintisi | Cem Taş | 30.08.2026 | 01.09.2026 | Kaptan izinli | Detay
+Kapalı
+Mavi Rüzgar | Nihal Arı | 02.09.2026 | 02.09.2026 | Dolu | Gün batımı özel turu | Detay
+Poyraz | Cem Taş | 05.09.2026 | 07.09.2026 | Bakım | Sigorta yenileme bekleniyor | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Daha fazla bilgi | Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺ | Kabul et | Reddet
+============ İptal talepleri
+İptal talepleri
+7 açık talep · ortalama karar süresi 4 saat
+Kod, misafir veya gerekçe ara | Tüm durumlar | ▾ | Tüm tekneler | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Kod | Misafir | Tekne / tarih | Tutar | Gerekçe | Durum | İşlem
+RH-84517 | Deniz Yılmaz | Mavi Rüzgar · 12 Eyl | ₺4.800 | Hava muhalefeti | Bekliyor | Detay
+RH-84610 | Elif Demir | Karya Prenses · 30 Ağu | ₺2.500 | Planlar değişti | Bekliyor | Detay
+RH-84702 | Kaan Aydın | Datça Esintisi · 2 Eyl | ₺3.300 | Sağlık | Detay
+İnceleniyor
+RH-79004 | Deniz Yılmaz | Fethiye 12 Ada · 3 Haz | ₺1.800 | Tur iptal edildi | İade edildi | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Daha fazla bilgi | Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺ | Kabul et | Reddet
+============ Rezervasyon ayarları
+Rezervasyon ayarları
+Platform genelinde geçerli kurallar; tekne baz
+Ücretsiz iptal süresi | Geç iptal iade oranı
+Tur tarihinden 7 gün önce | ▾ | %50 | ▾
+Ön ödeme oranı | Son rezervasyon saati
+%30 | ▾ | Tur saatinden 4 saat önce | ▾
+Çocuk indirimi | Komisyon oranı
+%50 (0–11 yaş) | ▾ | %15 | ▾
+Anında onay
+Müsaitlik varsa rezervasyon operatör onayı bek
+Bekleme listesi
+Dolu turlar için bekleme listesi açık tutulur.
+Aynı gün rezervasyon
+Tur gününde son 4 saate kadar satış yapılabili
+Kaydet | Varsayılanlara dön
+Tamamlanmamış yaklaşan rezervasyonlar
+Kalkışa 30 günden az kalan, eksiği olan kayıtl
+Kod veya müşteri ara | Tüm eksik tipleri | Tüm tekneler | Tarih aralığı
+▾ | ▾ | ▾
+Filtrele | Temizle
+Kod | Misafir | Tekne / tarih | Tutar | Eksik | Durum | İşlem
+RH-84517 | Deniz Yılmaz | Mavi Rüzgar · 12 Eyl | ₺4.800 | Ödeme adımı yarım kaldı | Ödeme bekliyor | Detay
+RH-84770 | Kerem Ay | Mavi Rüzgar · 8 Eyl | ₺4.800 | Telefonla açıldı, tahsilat yok | Tahsil bekliyor | Detay
+RH-84812 | Elif Demir | Karya Prenses · 15 Eyl | ₺2.500 | Yolcu bilgileri eksik | Bilgi eksik | Detay
+RH-84830 | Tolga Bal | Gulet Işıl · 18 Eyl | ₺5.800 | Kimlik bilgisi eksik | Bilgi eksik | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Daha fazla bilgi | Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺ | Kabul et | Reddet
+============ Yolcu gönder
+Telefonla rezervasyon oluştur
+Telefonda anlaştığın müşteri için ödeme adımı 
+Müşteri adı | Telefon
+Ayşe Kılıç | +90 532 111 22 33
+E-posta | Tekne
+ayse@ornek.com | Gulet Işıl ▾
+Tarih | Kalkış saati
+30.08.2026 | 09.30 ▾
+Yetişkin | Çocuk
+4 ▾ | 0 ▾
+Toplam tutar | Tahsilat durumu
+₺5.800 | Ödeme alındı ▾
+Tahsilat yöntemi | Kupon / indirim
+Nakit ▾ | —
+Not
+Müşteri 20 dk önce iskelede olacak; kaptana bi
+Rezervasyon anında onaylı açılır, müşteriye SM
+Vazgeç | Rezervasyonu oluştur
+Telefonla açılan rezervasyonlar | Sahil Güvenlik listesi
+Son 30 gün · 34 kayıt
+Kod, müşteri veya telefon ara | Tüm tekneler | ▾ | Tahsilat durumu | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Kod | Müşteri | Tekne / tarih | Kişi | Tutar | Tahsilat | Açan | İşlem
+RH-84801 | Ayşe Kılıç · +90 532 111 22 33 | Gulet Işıl · 30 Ağu 09.30 | 4 yetişkin | ₺5.800 | Ödeme alındı | Selin K. | Detay
+RH-84796 | Ozan Tunç · +90 505 444 55 66 | Karya Prenses · 2 Eyl 10.00 | 2 yetişkin, 1 çocuk | ₺3.125 | Ofiste tahsil | Burak T. | Detay
+RH-84782 | Nazlı Er · +90 542 777 88 99 | Datça Esintisi · 5 Eyl 09.00 | 2 yetişkin | ₺2.200 | Ödeme alındı | Selin K. | Detay
+RH-84770 | Kerem Ay · +90 555 222 33 44 | Mavi Rüzgar · 8 Eyl 18.00 | Tekne kiralama | ₺4.800 | Tahsil bekliyor | Selin K. | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Destek
+Telefonla rezervasyon oluştur
+Telefonda anlaştığın müşteri için ödeme adımı 
+Müşteri adı | Telefon
+Ayşe Kılıç | +90 532 111 22 33
+E-posta | Tekne
+ayse@ornek.com | Gulet Işıl ▾
+Tarih | Kalkış saati
+30.08.2026 | 09.30 ▾
+Yetişkin | Çocuk
+4 ▾ | 0 ▾
+Toplam tutar | Tahsilat durumu
+₺5.800 | Ödeme alındı ▾
+Tahsilat yöntemi | Kupon / indirim
+Nakit ▾ | —
+Not
+Müşteri 20 dk önce iskelede olacak; kaptana bi
+Rezervasyon anında onaylı açılır, müşteriye SM
+Vazgeç | Rezervasyonu oluştur
+Telefonla açılan rezervasyonlar | Sahil Güvenlik listesi
+Son 30 gün · 34 kayıt
+Kod, müşteri veya telefon ara | Tüm tekneler | ▾ | Tahsilat durumu | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Kod | Müşteri | Tekne / tarih | Kişi | Tutar | Tahsilat | Açan | İşlem
+RH-84801 | Ayşe Kılıç · +90 532 111 22 33 | Gulet Işıl · 30 Ağu 09.30 | 4 yetişkin | ₺5.800 | Ödeme alındı | Selin K. | Detay
+RH-84796 | Ozan Tunç · +90 505 444 55 66 | Karya Prenses · 2 Eyl 10.00 | 2 yetişkin, 1 çocuk | ₺3.125 | Ofiste tahsil | Burak T. | Detay
+RH-84782 | Nazlı Er · +90 542 777 88 99 | Datça Esintisi · 5 Eyl 09.00 | 2 yetişkin | ₺2.200 | Ödeme alındı | Selin K. | Detay
+RH-84770 | Kerem Ay · +90 555 222 33 44 | Mavi Rüzgar · 8 Eyl 18.00 | Tekne kiralama | ₺4.800 | Tahsil bekliyor | Selin K. | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Tekne yönetimi
+Tekne yönetimi
+Tekne ekle
+342 kayıtlı tekne · 6 onay bekliyor · 2 belge 
+Tekne, işletme veya bölge ara | Tüm bölgeler | ▾ | Kiralama tipi | ▾ | Tüm durumlar | ▾
+Filtrele | Temizle
+Tümü · 342 | Yayında · 334 | Onay bekleyen · 6 | Belge eksik · 2
+Yayında | ★ 4,9 | Yayında | ★ 4,7
+Gulet Işıl | Karya Prenses
+Bodrum · 12 kişi | Marmaris · 16 kişi
+Günlük tur | Özel kiralama | Günlük tur
+Sahibi: | Öz Yatçılık · Serkan Öz | Sahibi: | Likya Charter · Barış Ateş
+Detay | Düzenle | Sil | Detay | Düzenle | Sil
+Yayında | ★ 4,8 | Yayında | ★ 5,0
+Mavi Rüzgar | Datça Esintisi
+Bodrum · 10 kişi | Datça · 8 kişi
+Özel kiralama | Gün batımı | Günlük tur | Dalış
+Sahibi: | Arı Tekne · Nihal Arı | Sahibi: | Datça Marin · Cem Taş
+Detay | Düzenle | Sil | Detay | Düzenle | Sil
+Yayında | ★ 4,6 | Onay bekliyor | —
+Likya Rüyası | Mavi Yelken
+Kaş · 12 kişi | Fethiye · 14 kişi
+Haftalık charter | Günlük tur
+Sahibi: | Likya Charter · Barış Ateş | Sahibi: | Öz Yatçılık · Serkan Öz
+Detay | Düzenle | Sil | Detay | Düzenle | Sil
+Onay bekliyor | — | Belge eksik | —
+Poyraz | Ege Yıldızı
+Datça · 8 kişi | Bodrum · 10 kişi
+Günlük tur | Dalış | Özel kiralama
+Sahibi: | Datça Marin · Cem Taş | Sahibi: | Arı Tekne · Nihal Arı
+Detay | Düzenle | Sil | Detay | Düzenle | Sil
+342 tekneden 8 tanesi gösteriliyor | 1 | 2 | 3 | ›
+============ Bölge yönetimi
+Bölge yönetimi
+Bölge ekle
+12 bölge · yayında olan bölgeler ana sayfada l
+Bölge ara | Tüm durumlar | ▾ | Tekne sayısı | ▾ | Ciro | ▾
+Filtrele | Temizle
+Bölge | Tekne | Bu ay tur | Ciro | Durum | İşlem
+Bodrum | 96 | 412 | ₺12,4 M | Yayında | Detay
+Marmaris | 71 | 268 | ₺8,1 M | Yayında | Detay
+Fethiye | 58 | 214 | ₺6,9 M | Detay
+Yayında
+Datça | 34 | 119 | ₺4,2 M | Yayında | Detay
+Antalya | 41 | 96 | ₺3,6 M | Yayında | Detay
+Kaş | 18 | — | — | Hazırlanıyor | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Reklam yönetimi
+Reklam yönetimi
+Kampanya oluştur
+Ana sayfa ve liste sayfası vitrin kampanyaları
+Kampanya ara | Tüm konumlar | ▾ | Tüm durumlar | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Kampanya | Konum | Tarih | Gösterim | Durum | İşlem
+Yaz sonu %20 | Ana sayfa hero | 1–31 Ağu | 482 K | Aktif | Detay
+Bodrum vitrini | Liste üstü şerit | 15–30 Ağu | 126 K | Aktif | Detay
+Gün batımı turları | Blog kenar | 10 Ağu–10 Eyl | 64 K | Detay
+Aktif
+Sonbahar charter | Ana sayfa bant | 1–30 Eyl | — | Planlandı | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Kupon yönetimi
+Aktif kupon | Bu ay kullanım | Toplam indirim | Limiti dolan
+9 | 486 | ₺284.500 | 2
+3'ü kişiye özel | +%18 aylık | Ciro etkisi ₺2,1 M | Yenileme bekliyor
+Kupon yönetimi
+Kupon oluştur
+Aktif kuponlar · herkese açık veya tek kullanı
+Kupon kodu veya kullanıcı ara | Tüm kullanım tipleri | ▾ | Aktif | ▾
+Geçerlilik | ▾ | Filtrele | Temizle
+Kod | İndirim | Kullanım tipi | Kullanım | Geçerlilik | Durum | İşlem
+YAZ2026 | %15 | Herkese açık | 128 / 500 | 01 Haz – 30 Eyl 2026 | Aktif | Detay
+ILKREZ200 | ₺200 | Herkese açık | 342 / 1.000 | Süresiz | Aktif | Detay
+ELIF-TELAFI20 | %20 | Kişiye özel | Elif Demir | 0 / 1 | 31 Ağu 2026'ya kadar | Aktif | Detay
+BODRUM10 | %10 | Herkese açık | 96 / 250 | 01 Ağu – 15 Eyl 2026 | Aktif | Detay
+MERT-HEDIYE | ₺500 | Kişiye özel | Mert Yılmaz | 1 / 1 | 10 Eyl 2026'ya kadar | Kullanıldı | Detay
+HAFTAICI25 | %25 | Herkese açık | 200 / 200 | 01 Tem – 31 Ağu 2026 | Limit doldu | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Belge talepleri
+Belge talepleri
+Belge talep et
+Yat işletmelerinden istenen evraklar · 6 bekle
+İşletme veya belge ara | Tüm belge tipleri | ▾ | Tüm durumlar | ▾ | Son tarih | ▾
+Filtrele | Temizle
+İşletme | Belge | Talep tarihi | Son tarih | Durum | İşlem
+Serkan Öz | Denize elverişlilik | 18 Ağu 2026 | 25 Ağu 2026 | Yüklendi | Detay
+Nihal Arı | Sigorta poliçesi | 15 Ağu 2026 | 22 Ağu 2026 | Bekliyor | Detay
+Cem Taş | Kaptan ehliyeti | 14 Ağu 2026 | 21 Ağu 2026 | Detay
+Onaylandı
+Hakan Er | Vergi levhası | 12 Ağu 2026 | 19 Ağu 2026 | Süresi geçti | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Finans
+Ağustos cirosu | Komisyon gelirimiz | İşletmelere aktarılan | İade
+₺4,82 M | ₺723 K | ₺46 K
+₺4,10 M
++%18 · geçen yıla göre | %15 ortalama oran | 12 işlem · %0,95
+sanal POS ile otomatik
+Aylık ciro
+2026 · milyon ₺
+0,8 | 1,1 | 1,26 | 2,18 | 3,24 | 4,10 | 4,82
+Şub | Mar | Nis | May | Haz | Tem | Ağu
+Komisyon gelirimiz | İade tutarı
+Aylık · bin ₺ | Aylık · bin ₺
+189 | 327 | 486 | 615 | 723 | 62 | 54 | 51 | 48 | 46
+Nis | May | Haz | Tem | Ağu | Nis | May | Haz | Tem | Ağu
+Yat işletmesi ödemeleri
+Dönem raporu
+Ödemeler anlaşmalı sanal POS üzerinden otomati
+İşletme ara | Tüm dönemler | ▾ | Aktarım durumu | ▾ | Filtrele | Temizle
+İşletme | Tur | Brüt satış | Komisyonumuz | İşletmeye net | Aktarım | İşlem
+Serkan Öz · Öz Yatçılık | 38 | ₺334.700 | ₺50.200 | ₺284.500 | Aktarıldı | Detay
+Nihal Arı · Arı Tekne | 24 | ₺190.600 | ₺28.600 | ₺162.000 | Aktarıldı | Detay
+Barış Ateş · Likya Charter | 17 | ₺142.300 | ₺21.300 | ₺121.000 | Aktarım sırada | Detay
+Cem Taş · Datça Marin | 19 | ₺139.200 | ₺20.900 | ₺118.300 | Aktarıldı | Detay
+Hakan Er · Er Denizcilik | 12 | ₺96.400 | ₺14.500 | ₺81.900 | Aktarıldı | Detay
+Dönem brüt: | ₺903.200 | Komisyonumuz: | ₺135.500 | İşletmelere net: | ₺767.700
+Ödeme yöntemi kırılımı | Bölgeye göre ciro
+Kredi kartı · tek çekim | %62 | Bodrum | ₺12,4 M
+Kredi kartı · taksit | %24 | Marmaris | ₺8,1 M
+Havale / EFT | %9 | Fethiye | ₺6,9 M
+Cüzdan bakiyesi | %5 | Datça | ₺4,2 M
+Antalya | ₺3,6 M
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+============ Blog yönetimi
+Blog yönetimi
+Yeni yazı
+24 yazı · SEO puanı ortalaması 82
+Başlık veya yazar ara | Tüm kategoriler | ▾ | Tüm durumlar | ▾ | Tarih | ▾
+Filtrele | Temizle
+Başlık | Kategori | Yazar | Tarih | Durum | İşlem
+Bodrum'da tekne turu rehberi | Rehber | Selin Kaya | 18 Ağu 2026 | Yayında | Detay
+Gulet nedir, kime uygundur? | Tekne bilgisi | Burak Tan | 12 Ağu 2026 | Yayında | Detay
+Eylül'de Ege: sakin koylar | Rota | Selin Kaya | — | Detay
+Taslak
+Tekne turunda ne giyilir? | İpuçları | Merve Ak | 2 Ağu 2026 | Yayında | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Yorum yönetimi
+Yorum yönetimi
+1.284 yorum · 2 moderasyon bekliyor · ortalama
+Yorum, kullanıcı veya tekne ara | Tüm puanlar | ▾ | Tüm durumlar | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Kullanıcı | Tekne | Puan | Yorum | Tarih | Durum | İşlem
+Deniz Yılmaz | Gulet Işıl | ★ 5,0 | Kaptan ve ekip harikaydı, yemekler taze. | 2 Eyl 2026 | Yayında | Detay
+Elif Demir | Karya Prenses | ★ 4,5 | Tekne temiz, program biraz sıkışıktı. | 18 Tem 2026 | Yayında | Detay
+Tolga Bal | Mavi Rüzgar | ★ 2,0 | Kalkış 40 dk gecikti, bilgi verilmedi. | 15 Ağu 2026 | Detay
+Moderasyonda
+Ozan Tunç | Datça Esintisi | ★ 1,0 | Uygunsuz içerik bildirildi. | 12 Ağu 2026 | Şikayetli | Detay
+Nazlı Er | Gulet Işıl | ★ 5,0 | Küçük grup olması çok iyiydi. | 6 Tem 2026 | Yayında | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Sözleşme listesi
+Sözleşme listesi
+Sözleşme ekle
+Yasal metinler ve sürüm geçmişi
+Sözleşme ara | Tüm taraflar | ▾ | Tüm durumlar | ▾ | Filtrele
+Temizle
+Sözleşme | Sürüm | Güncelleme | Onay | Durum | İşlem
+Kullanım koşulları | v4.2 | 10 Ağu 2026 | 24.806 kullanıcı | Yürürlükte | Detay
+Gizlilik politikası | v3.8 | 10 Ağu 2026 | 24.806 kullanıcı | Yürürlükte | Detay
+Yat işletmesi sözleşmesi | v2.5 | 1 Tem 2026 | 318 işletme | Detay
+Yürürlükte
+İptal ve iade politikası | v1.9 | — | — | Taslak | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ E-posta yönetimi
+E-posta yönetimi
+Şablon ekle
+Şablonlar ve son 30 günün gönderim performansı
+Şablon ara | Tüm tetikleyiciler | ▾ | Tüm durumlar | ▾ | Filtrele
+Temizle
+Şablon | Tetikleyici | Gönderim | Açılma | Durum | İşlem
+Rezervasyon onayı | Ödeme tamamlandı | 1.482 | %92 | Aktif | Detay
+Tur hatırlatması | Kalkıştan 24 sa önce | 1.320 | %88 | Aktif | Detay
+Yorum daveti | Turdan 2 gün sonra | 1.104 | %41 | Detay
+Aktif
+Sepette kalan tur | Yarım kalan ödeme | 216 | %23 | Duraklatıldı | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ SMS yönetimi
+SMS yönetimi
+Şablon ekle
+Şablonlar, gönderen adı ve sağlayıcı ayarları
+Şablon ara | Tüm tetikleyiciler | ▾ | Tüm durumlar | ▾ | Filtrele
+Temizle
+Şablon | Tetikleyici | Gönderim | Teslim | Durum | İşlem
+Doğrulama kodu | Giriş / kayıt | 4.210 | %99 | Aktif | Detay
+Rezervasyon onayı | Ödeme tamamlandı | 1.482 | %98 | Aktif | Detay
+Tur hatırlatması | Kalkıştan 3 sa önce | 1.318 | %97 | Detay
+Aktif
+Kampanya duyurusu | Manuel gönderim | 620 | %96 | Duraklatıldı | Detay
+Sağlayıcı: | Netgsm | Gönderen adı: | RIHTIM | Kalan kredi: | 42.180 SMS
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ SMS gönderimleri
+SMS gönderimleri
+Son 7 gün · 3.482 mesaj, teslim oranı %98,4
+Numara veya şablon ara | Tüm şablonlar | ▾ | Tüm durumlar | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Tarih | Alıcı | Şablon | Sağlayıcı | Durum | İşlem
+20 Ağu 09.12 | +90 532 ••• 00 00 | Tur hatırlatması | Netgsm | İletildi | Detay
+20 Ağu 08.40 | +90 555 ••• 12 34 | Doğrulama kodu | Netgsm | İletildi | Detay
+19 Ağu 21.05 | +90 542 ••• 77 10 | Rezervasyon onayı | Netgsm | Detay
+İletildi
+19 Ağu 18.22 | +90 505 ••• 44 21 | Tur hatırlatması | Netgsm | Başarısız | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Log kayıtları
+Log kayıtları
+Site içindeki tüm istekler middleware katmanın
+Uç nokta, kullanıcı veya kod ara | Tüm seviyeler | ▾ | Tüm servisler | ▾ | Son 24 saat | ▾
+Filtrele | Temizle
+Zaman | Seviye | Servis | İstek | Kullanıcı | Kod | Detay
+20 Ağu 13.58 | info | payment | POST /api/payments/webhook | Deniz Yılmaz | 200 | Detay
+20 Ağu 13.44 | info | support | PATCH /api/tickets/DS-2291 | Selin Kaya | 200 | Detay
+20 Ağu 13.41 | sms | POST /api/sms/send · 4,2 sn | Sistem | 200 | Detay
+warn
+20 Ağu 12.20 | error | payment | POST /api/payments/3ds · zaman aşımı | Kaan Aydın | 504 | Detay
+20 Ağu 11.02 | info | search | POST /api/index/rebuild | Sistem | 200 | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
+============ Aktivite kayıtları
+Aktivite kayıtları
+Müşteri, yat işletmecisi, destek ekibi ve site
+Kullanıcı veya işlem ara | Tüm roller | ▾ | Tüm işlem tipleri | ▾ | Tarih aralığı | ▾
+Filtrele | Temizle
+Zaman | Kullanıcı | Rol | Yapılan işlem | IP | Detay
+20 Ağu 13.44 | Selin Kaya | Destek ekibi | DS-2291 talebine yanıt verdi | 88.•••.12.4 | Detay
+20 Ağu 12.10 | Mert Ağralı | Site sahibi | Yaz sonu %20 kampanyasını güncelledi | 88.•••.9.20 | Detay
+20 Ağu 10.36 | Cem Taş | Poyraz teknesinin fiyatını güncelledi | 78.•••.44.1 | Detay
+Yat işletmecisi
+20 Ağu 09.14 | Deniz Yılmaz | Müşteri | RH-84213 rezervasyonunu oluşturdu | 85.•••.7.90 | Detay
+19 Ağu 17.55 | Mert Ağralı | Site sahibi | Komisyon oranını %15 olarak kaydetti | 88.•••.9.20 | Detay
+Tur tipleri | Bölgeler | Kurumsal
+Günlük Tekne Turu | Bodrum | Hakkımızda
+Günlük Dalış Turu | Marmaris | Blog
+Özel Gün Batımı Turu | Datça | Tekneni ekle
+Konaklamalı Tur | Fethiye | İptal ve iade
+Haftalık Charter | Antalya | Gizlilik
+İletişim
+Fiyatlar ₺ cinsindendir · 1 € = 55,47 ₺
+Daha fazla bilgi | Kabul et | Reddet
