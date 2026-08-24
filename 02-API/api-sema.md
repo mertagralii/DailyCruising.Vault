@@ -958,9 +958,12 @@ henüz yok** (`A-11`). Süre kararı bölümlendirmeden önce gelirse temizlik p
 Bugün yapılamadı: EF Core bölümlenmiş tabloyu modellemiyor ve birincil anahtarın
 bölümleme anahtarını içermesi gerekiyor — model ile veritabanı ayrışırdı.
 
-⚠️ **Aşağıdaki saklama süresi notunun gerekçesi buna dayanıyordu ve şu an
-geçersiz.** BRIN indeksi sorgu hızını çözüyor, **silme maliyetini çözmüyor**.
-İlk ciddi veri girmeden önce yapılmalı; sonradan yapmak veri kopyalama demek.
+⚠️ **Bir kararın dayanağı bu.** BRIN indeksi sorgu hızını çözüyor, **silme
+maliyetini çözmüyor**. İlk ciddi veri girmeden önce yapılmalı; sonradan yapmak
+veri kopyalama demek.
+
+**Buna dayananlar:** [[domain-gereksinimler]] — olay günlüğü saklama süresinin
+ertelenmesi. Bölümlendirme yapılmazsa o erteleme ucuz olmaktan çıkar.
 
 **BRIN indeksi** — zaman sıralı devasa tablolarda B-tree yerine BRIN; binlerce kat az
 yer kaplar, tarih aralığı sorgusunda aynı işi görür. MSSQL'de karşılığı yok.

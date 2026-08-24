@@ -115,6 +115,28 @@ ve satır içi kodu ayıklıyor, dört boşluk girintisini ayıklamıyor.)*
 **`dogrula.py` bunu denetler** (13. kontrol): `**Dayanak:**` satırı link vermiyorsa
 veya hedefte geri referans yoksa **hata verir**.
 
+### Aynı gerekçe ikiden fazla yerde olabilir
+
+`**Dayanak:**` biçimi **ilk yazımda** dağılmayı önler; **zaten dağılmış** kopyaları
+bulmaz. 2026-08-24'te aynı çelişkinin **üç** kopyası vardı ve ilk düzeltmede ikisi
+görülüp üçüncüsü kaçtı. Üçüncüsü en tehlikelisiydi: bölümlendirmeyi **olmuş bitmiş**
+gibi anlatıyordu (*"aylık bölümlere ayrılmış olarak kuruluyor"*), oysa yapılmamıştı.
+
+- Bir taşıyıcı gerekçe düzeltilirken **iki kopya bulununca durulmaz**, üçüncü aranır
+- Arama **anahtar kelimeyle yapılamaz**: o örnekte "bölümlendirme", "DROP" ve
+  "saklama süresi" üç ayrı terimdi, hiçbiri diğerini `grep` ile bulmuyordu
+- **Bir özelliğin geniş zamanla anlatılması uyarı işaretidir** — *"kuruluyor"*,
+  *"tutuluyor"*, *"sağlanıyor"* cümleleri yapılmış olduğunu ima eder; koda bakılır
+
+### Kuralın asıl işleyiş biçimi
+
+Üçüncü kopyayı `dogrula.py` **yakalamadı**. Yakalanmasının sebebi, denetimin
+çift yön kurmaya zorlaması ve o sırada **bakılmış olmasıydı**.
+
+Bir kuralın değeri yalnız doğrudan yakaladığında değil, **bakmaya zorladığında** da
+oluşur. Bu, "daha dikkatli ol" demekten farklıdır: dikkat isteği bir niyettir,
+zorunlu biçim bir eylemdir.
+
 Denetimin göremediği kısım kalıyor: BRIN'in silme maliyetini çözmediğini anlamak
 teknik muhakeme gerektirir; onu `database-reviewer` ajanı yakaladı — **araç
 zincirinin inceleme adımı** → [[genel-araclar]]. Yani biçimi betik, anlamı ajan

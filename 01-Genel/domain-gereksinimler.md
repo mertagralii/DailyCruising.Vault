@@ -1384,10 +1384,15 @@ yere, bakacağız buna — buna süre vermeyelim ŞİMDİLİK."*
 
 **Bugün:** olay günlüğü silinmiyor.
 
-**Neden ertelenebildi:** `EventLog` aylık bölümlere ayrılmış olarak kuruluyor.
-Süre kararı altı ay sonra verildiğinde uygulaması eski ayın parçasını `DROP`
-etmekten ibaret — milyonlarca satırı `DELETE` etmek gerekmiyor. **Karar ertelendi
-ama bedeli ertelenmedi.**
+**Neden ertelenebilir:** süre kararı verildiğinde uygulamasının ucuz olması,
+`EventLog` tablosunun aylık bölümlere ayrılmış olmasına bağlı — o zaman eski ayın
+parçası tek komutla düşürülür, milyonlarca satır tek tek silinmez.
+
+⚠️ **DÜZELTME 2026-08-24:** bölümlendirme **henüz yapılmadı**. Bu madde ilk
+yazıldığında yapılmış varsayılmıştı; yanlıştı. Bölümlendirme olmadan bu erteleme
+ucuz değil. Görev `A-11`, ilk ciddi veri girmeden önce yapılmalı.
+
+**Dayanak:** [[api-sema]] — `EventLog` aylık bölümlendirmesi (bölüm 8)
 
 ⚠️ **Ne zaman dönülmeli:** KVKK süresiz saklamayı meşru görmüyor; kişisel veri
 "işlendiği amaç için gerekli olan süre" kadar tutulur. Sezonluk AI raporları için

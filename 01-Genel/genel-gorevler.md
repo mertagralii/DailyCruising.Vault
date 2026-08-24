@@ -49,6 +49,11 @@ tamamlanamaz.**
          silmenin ucuz olması**ydı. BRIN sorgu hızını çözer, silme maliyetini
          çözmez. `database-reviewer` ajanı yakaladı (araç zincirinin 7. adımı),
          `A-11` görevi açıldı
+      8. **Aynı çelişkinin üçüncü kopyası ilk düzeltmede kaçtı** — üç dosyada üç
+         farklı terimle (`bölümlendirme` · `DROP` · `saklama süresi`) yazılmıştı,
+         `grep` hiçbirini diğerine bağlamıyordu. Üçüncüsü özelliği **olmuş gibi**
+         anlatıyordu. Yakalanma sebebi denetimin çift yön kurmaya zorlaması —
+         kural doğrudan değil, **baktırarak** yakalattı
 
 - [ ] **G-13** Fatura modelinin mali müşavirle teyidi · kimde: **Mert**
       Aracılık modeli seçildi; teyit gelene kadar şema esnek kurulacak
