@@ -44,11 +44,11 @@ yazılmaz** — yazılacaksa önce o oturuma sorulur → [[genel-esszamanli-otur
 tamamı uygulanıp ölçüldü ve `origin/main`'e alındı. Backend'de veritabanı şemasının
 sekiz bölümü de çıkarıldı ve Mert'in onayından geçti.
 
-⚠️ **Mert'in kararını bekleyen bir dal var:** `feat/veritabani-semasi` (`8bbb04f`,
-91 dosya, uzağa push'lu). **Ana dala birleştirilmedi** — birleştirme kararı Mert'in.
+Şema `main`'e birleştirildi (`8bbb04f`, `c5b4b87`), dal silindi.
 
-**Kritik yol:** dal birleştirme → iş uç noktaları (`A-02`) → kimlik doğrulama
-(`A-03`) → frontend'in gerçek veriye bağlanması (`W-04`).
+**Kritik yol:** zamanlanmış iş katmanı (`A-15`, aşağıdaki 5 numaralı blocker) →
+iş uç noktaları (`A-02`) → kimlik doğrulama (`A-03`) → frontend'in gerçek veriye
+bağlanması (`W-04`).
 
 Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 
@@ -62,7 +62,10 @@ Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 | 2 | **İş uç noktası yok** | **Şema bitti** (2026-08-24, 75 tablo, `feat/veritabani-semasi` dalında `8bbb04f`) ama iş uç noktası hâlâ yok — yalnız `/api/health` ve `/openapi/v1.json`. Arayüz `src/lib/data/*.ts` mock verisiyle çalışıyor. **Blocker duruyor, sebebi değişti** → [[api-durum]] | Beraber |
 | 3 | **Fiyat sunucuda doğrulanmıyor** | Rezervasyon toplamı istemcide hesaplanıyor; sunucuda yeniden hesaplanmalı, yoksa fiyat manipülasyonuna açık. Gerekçe PRD değil **güvenlik** | Beraber |
 | ~~4~~ | ~~**Vault'un yedeği yok**~~ | **2026-08-24'te kapatıldı.** `mertagralii/DailyCruising.Vault` (private) oluşturuldu, 117 dosya push edildi. Artık vault'ta yapılan yanlış bir yazma geri alınabilir | — |
-| ~~5~~ | ~~Yönetim ve işletme detay ekranları erişilemez~~ | **2026-08-23'te koptu, aynı gün kapatıldı.** 23 yönetim + 3 işletme ekranı geri bağlandı ve tarayıcıda doğrulandı. Sonrasında işletmeye 4 ekran daha eklendi (tekne detayı — tasarımda vardı hiç uygulanmamıştı, fiyatlandırma, menü, yeni tekne başvurusu); işletme tarafı **3 değil 7**, yetim ekran kalmadı → [[web-durum]] | — |
+| 5 | **Zamanlanmış iş katmanı yok** | Sekiz karar buna dayanıyor ve hiçbirinde adı geçmiyor. Kodda `IHostedService`/`BackgroundService`/`Hangfire`/`Quartz` **sıfır sonuç**. Çöküş sessiz değil **satışı durdurucu**: süresi dolmayan hold `CHECK (SoldSeats <= Capacity)` yüzünden koltukları kalıcı kilitler, süresi dolmayan teklif seferi `EXCLUDE` kısıtı yüzünden tarihi sonsuza kadar kapatır. **Şemanın en güçlü iki garantisi, iş katmanı yokken sistemi kilitleyen mekanizmalara dönüşüyor** → [[genel-tasiyici-gerekce-taramasi]] | Claude |
+| 6 | **`Boats.AverageRating` güncellenmiyor** | Şema iki bölümde **zıt** söylüyor: "önden hesaplı" ↔ "canlı hesaplanır". Güncelleyen yok. Alan `0` kalır, puan filtresi her teknede aynı değeri görür; `IX_Boats_Search` sayesinde **hızlı çalışır ve hata vermez** — sessiz yanlış sonuç → [[genel-tasiyici-gerekce-taramasi]] | Claude |
+| 7 | **KVKK gerekçesi doğrulanmadı** | Kimlik verisi toplamanın tek hukuki dayanağı "yolcu listesi ister" anahtarı; şemada yalnız rezervasyona dondurulan **kopyası** var, kaynak kolon `Boats`/`BoatRentalTypes` listelerinde yok. Yoksa ya hiç istenmez ya herkesten istenir — ikisi de gerekçeyi çökertir → [[genel-tasiyici-gerekce-taramasi]] | Claude |
+| ~~8~~ | ~~Yönetim ve işletme detay ekranları erişilemez~~ | **2026-08-23'te koptu, aynı gün kapatıldı.** 23 yönetim + 3 işletme ekranı geri bağlandı ve tarayıcıda doğrulandı. Sonrasında işletmeye 4 ekran daha eklendi (tekne detayı — tasarımda vardı hiç uygulanmamıştı, fiyatlandırma, menü, yeni tekne başvurusu); işletme tarafı **3 değil 7**, yetim ekran kalmadı → [[web-durum]] | — |
 
 ## 🟡 Karara bağlanmamış — genel
 

@@ -33,3 +33,4 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[genel-araclar]] — hangi durumda hangi plugin, skill, MCP
 - [[genel-esszamanli-oturumlar]] — üç oturum aynı anda açıkken hook, `pwd` ve git durumu nasıl yanıltıyor
 - [[genel-ecc-hook-profilleri]] — 33 ECC hook'u, işi durduranlar ve kapatma anahtarları
+- [[genel-tasiyici-gerekce-taramasi]] — 10 bulgu: bir karar neye dayanıyor, o dayanak gerçekten var mı
