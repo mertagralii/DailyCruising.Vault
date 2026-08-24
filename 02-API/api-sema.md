@@ -231,7 +231,7 @@ olan her tip için ayrı (3. bölüm). Karıştırılırsa aynı veri tekrar gir
 | EngineInfo | text | |
 | CaptainName, CrewCount | | |
 | Status | text | Taslak / Yayında / Pasif |
-| AverageRating, ReviewCount | | sıralama için önden hesaplı |
+| AverageRating, ReviewCount | | **onaylı** yorumlardan tetikleyiciyle türetilir |
 | CreatedAt, UpdatedAt | timestamptz | |
 
 İki kapasite bilinçli olarak ayrı: satışta `CommercialCapacity`, denetimde
@@ -875,7 +875,9 @@ Kriterleri **platform** tanımlar, tekne sahibi değil — teknelerin karşıla�
 kalması için. Bu, "kararı tekne sahibi verir" ilkesinin sınırına giren bir konu:
 ayarlanabilir olan işletme tarzıdır, platformun ölçüsü değil.
 
-Tekne başına kriter ortalamaları **canlı hesaplanır**, önden tutulmaz —
+Tekne başına **kriter** ortalamaları (temizlik, yemek…) **canlı hesaplanır**,
+kolonları yok. Bu, `Boats.AverageRating` ile karıştırılmamalı: o **genel** puan
+ve tetikleyiciyle türetiliyor (`A-16`). İkisi farklı şeyler —
 `AvailabilityDays` ile aynı gerekçe.
 
 Yorum hakkı rezervasyon yapmakla değil **QR okutulmakla** doğar; yorum yayına

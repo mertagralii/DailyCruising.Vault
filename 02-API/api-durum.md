@@ -31,8 +31,13 @@ Birleştirme sonrası `main` üzerinde `--no-incremental` derleme 0 uyarı 0 hat
 
 **`A-11` de BİTTİ** (2026-08-24): `EventLogs` bölümlenmiş, 26 parça, toplam 101 tablo.
 
-**Sırada:** `A-03` kimlik doğrulama · `A-10` ayrı veritabanı rolü ·
-`A-14` parça uzatma işi · `A-06` test projesi.
+**`A-03` birinci dilim, `A-15` ve `A-14` de BİTTİ** (2026-08-24):
+kimlik doğrulama + JWT + yetki kontrolü çalışıyor; zamanlanmış iş katmanı kuruldu
+ve kilitlenme senaryosu canlı çözüldü.
+
+**Sırada:** `A-17` TCMB kur işi (**dövizli satış buna bağlı**) · `A-03` kalanı
+(parola sıfırlama, e-posta doğrulama, çalışan yönetimi) · `A-16` puan ortalaması ·
+`A-10` ayrı veritabanı rolü · `A-06` test projesi.
 
 | # | Bölüm | Durum |
 |---|---|---|
@@ -90,10 +95,33 @@ anılır → [[api-desenler]].
 - **Roller veritabanı kaydı**, kodda sabit değil. İki boyut: ne yapabilir × kimin
   verisinde → `A-03`
 
+## ❓ Mert'e sorulacaklar
+
+Gözetimsiz çalışırken karara bağlanamayan noktalar. Hiçbiri tahminle
+kapatılmadı; belgelenmiş bir varsayımla ilerlendi ve buraya yazıldı.
+
+| # | Konu | Şimdilik ne yapıldı |
+|---|---|---|
+| S-1 | **TCMB hangi kuru?** Dört değer yayınlanıyor: döviz alış/satış, efektif alış/satış. Seçim müşterinin ödeyeceği tutarı değiştiriyor — bugün EUR alış 55,99 satış 56,09, yani €500'lük turda ~50 TL fark | **`ForexSelling`** (döviz satış). Gerekçe: yabancı para borcunu TL'ye çevirmenin standardı ve platform lehine ihtiyatlı |
+| S-2 | **Parola kuralı ne olsun?** Şu an hiçbir kural yoktu; `"1"` bile kabul ediliyordu ve bu, PBKDF2'nin 100.000 turunu anlamsızlaştırıyordu | **En az 10 karakter**, karmaşıklık zorunluluğu YOK. Gerekçe: uzunluk tek başına en etkili ölçüt; "büyük harf + rakam + sembol" şartı kullanıcıyı `Parola1!` gibi tahmin edilebilir kalıplara itiyor |
+| S-3 | **Hız sınırı ne olsun?** Kullanıcı bazlı saatte 3 jeton vardı ama saldırgan farklı adreslerle sınırsız istek atabiliyordu | **IP başına 15 dakikada 10 istek** (hesap uçlarında). Gerekçe: gerçek kullanıcı bu sayıya normalde ulaşmıyor, bombalama ulaşıyor |
+| S-4 | **E-posta değiştirmede mevcut parola isteniyor.** UX'i biraz zorlaştırıyor ama denetimin gösterdiği hesap ele geçirme zincirini kırıyor | Zorunlu yapıldı. İstemezsen kaldırılır ama zincir yeniden açılır |
+| S-5 | **Başarısız girişte e-posta adresi olay günlüğüne yazılmıyor.** Suistimal analizi için "hangi adres denendi" değerli olurdu, ama tablo değişmez ve süresiz saklanıyor — giren kişisel veri asla silinemez | Yalnız sebep yazılıyor (`unknown_user` / `bad_password`). İstersen adres de eklenir ama **geri alınamaz** |
+| S-6 | **Olay günlüğü hangi ayrıntıya kadar tutulsun?** Şu an kimlik olayları ve terk edilen ödeme var. Arama sorguları, tekne görüntülemeler ve oturum takibi büyük hacim ve daha fazla kişisel veri demek | Şimdilik dar tutuldu. AI raporları için hangi verinin gerçekten gerektiğini sen bilirsin → `A-21` |
+| S-7 | **Kuponun matrahı ne?** İndirim yalnız tur bedeline mi, yoksa tur + ek hizmet toplamına mı uygulansın? 1000 TL tur + 500 TL menüde %10 kupon: birincisinde 100 TL, ikincisinde 150 TL indirim | **Tur + ek hizmet.** Gerekçe: komisyon matrahı da tur + menü + ek hizmet. İki oran ayrı tabana uygulansaydı "kupon komisyonu aşamaz" kuralı karşılaştırdığı şeyler farklı olduğu için anlamını yitirirdi |
+| S-8 | **Fiyat sorgulama ucunda hız sınırı kaç olsun?** Uç kimliksiz kalmalı — müşteri fiyatı üye olmadan görmeli. Ama sınırsızken kupon kodu denemek bedavaydı | **IP başına dakikada 60 istek** kondu (denendi: 61. istek 429). Hesap uçlarının 15 dk / 10 sınırı buraya çok dardı; 60 bol tutuldu, daraltmak istersen tek satır |
+
 ## 🟢 Doğrulanmış
 
 - `dotnet build` — 0 uyarı, 0 hata
 - `GET /api/health` yanıt veriyor
+- `POST /api/pricing/quote` — istemci `grandTotalTry:1` ve `discountAmountTry:9999` gönderdi, sunucu **1000.00** ve **0** döndü (2026-08-24)
+- Denetimde canlı üretilen dört açık kapatıldı ve **yeniden denendi**: taşan
+  kişi sayısı, `int.MaxValue` gece, takvim sonu tarih, 200.000 satırlık ek
+  hizmet — dördü de artık HTTP 400 (2026-08-24)
+- Production kipinde beklenmeyen hata `{"error":"Beklenmeyen bir hata oluştu."}`
+  dönüyor, yığın izi sızmıyor
+- **42 test, 42'si geçiyor**
 - Repo `mertagralii/DailyCruising.API` (private), push edildi
 
 İlgili: [[durum]] · [[api-sema]] · [[api-gorevler]] · [[api-kararlar]] · [[api-desenler]] · [[api-araclar]] · [[api-notlar]] · [[domain-gereksinimler]]

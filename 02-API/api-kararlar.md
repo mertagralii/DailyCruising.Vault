@@ -754,3 +754,571 @@ bölümlendirmeyi bilmiyor ama kolonlar, anahtar ve indeksler birebir örtüşt�
 bir sonraki `migrations add` fark üretmiyor.
 
 İlgili: [[api-sema]] · [[api-durum]] · [[domain-gereksinimler]]
+
+---
+
+## 2026-08-24 — A-15: zamanlanmış iş katmanı, Hangfire'sız
+
+**Karar:** Tek bir `BackgroundService` (`ScheduledJobRunner`) ve `IScheduledJob`
+arayüzü. Hangfire, Quartz veya benzeri **eklenmedi**.
+
+**Neden eklenmedi:** bu ölçekte beş iş var ve hiçbiri dakikadan sık çalışmıyor.
+Hangfire ek bağımlılık, ek tablolar, ek panel ve ek yapılandırma demek. Sırası
+geldiğinde (birden çok sunucu, yeniden deneme politikası, iş kuyruğu) arayüz
+korunarak değiştirilebilir — Redis'i eleme gerekçesiyle aynı.
+
+**Neden ertelenemezdi:** bu katman olmadan **veritabanı kısıtları sistemi
+kilitliyordu**. Canlı üretildi ve ölçüldü:
+
+| Adım | Sonuç |
+|---|---|
+| Terk edilmiş ödeme 12 koltuk tutuyor | `SoldSeats = 12` |
+| Aynı sefere yeni rezervasyon | `CK_Voyages_SoldSeats` ile **reddedildi** |
+| İş çalıştı | `SoldSeats` **12 -> 0** |
+| Aynı sefere yeni rezervasyon | **kabul edildi** |
+
+**Şemanın en güçlü iki garantisi, iş katmanı yokken sistemi kilitleyen
+mekanizmalara dönüşüyordu.** Kısıtlar yanlış değildi; eksik olan onları serbest
+bırakacak katmandı. Bu, "kuralı veritabanına koy" ilkesinin bedeli: kural
+uygulanır ama serbest bırakma da uygulanmak zorunda.
+
+### Beş iş
+
+| İş | Aralık | Çalışmazsa |
+|---|---|---|
+| `rezervasyon-tutma-suresi` | 1 dk | Koltuklar **kalıcı kilitlenir**, sefer satılamaz |
+| `teklif-suresi` | 5 dk | Tarih **sonsuza kadar kapalı** kalır (EXCLUDE kısıtı) |
+| `konusma-kapatma` | 1 saat | Konuşma süresiz açık kalır (kilitlenme değil, sessiz yanlış) |
+| `sefer-tamamlama` | 1 saat | Hakediş hesabı seferi "gerçekleşmemiş" sayar, para ödenmez |
+| `olay-gunlugu-parcalari` | 24 saat | 24 ay sonra olaylar varsayılan parçaya yığılır (`A-14`) |
+
+**Koltuk sayacı elle azaltılmıyor:** rezervasyon durumu `Expired`'a çekiliyor,
+`trg_reservation_sync_seats` sayacı kendisi yeniden hesaplıyor. Sayaç tek yerden
+yönetildiği için işteki bir hata onu bozamıyor.
+
+**Teklif seferi silinmiyor, `Cancelled`'a çekiliyor:** `EXCLUDE` kısıtı iptal
+edilmiş seferleri zaten dışlıyor, ve kaydı silmek geçmişi yok etmek olurdu.
+
+### "Çalışmadığında görülüyor" — kabul ölçütünün ikinci yarısı
+
+`JobRuns` tablosu her çalışmayı kaydediyor, **başarısız olanı da**. Yalnız
+başarılıyı kaydetmek, hata anında hiç iz bırakmamak olurdu.
+
+`GET /api/health/jobs` — her iş için son çalışma, geçen süre, işlenen kayıt ve
+hata. `platform.settings` yetkisi gerektiriyor: hangi işlerin çalıştığı ve hata
+mesajları operasyonel bilgi. Yetkisiz istekte **401** doğrulandı.
+
+**Kayıt yazımı ayrı bir kapsamda yapılıyor:** işin kendi `DbContext`'i hatalı
+duruma düşmüş olabilir ve o zaman kaydı da yazamazdı — yani hata anında hiç iz
+kalmazdı. Tam da en çok ize ihtiyaç duyulan an.
+
+**Her iş kendi kapsamında çalışıyor:** `DbContext` scoped, arka plan servisi
+singleton. Doğrudan enjekte edilseydi tek bir `DbContext` uygulama ömrü boyunca
+yaşar, değişiklik izleyicisi büyür ve bir işin hatası diğerlerinin durumunu
+kirletirdi.
+
+### Henüz yapılmayan iki iş
+
+`ExchangeRates` günlük TCMB çekimi ve periyodik hakediş üretimi bu dilimde YOK.
+İkisi de dış sisteme veya para kararına bağlı; ayrı görev olarak açılacak.
+⚠️ Kur tablosu boş kaldığı sürece **dövizli tekne satılamaz**.
+
+İlgili: [[api-sema]] · [[api-durum]] · [[api-gorevler]]
+
+---
+
+## 2026-08-24 — A-15 denetimi: bir DI hatası tüm API'yi düşürüyordu
+
+**Karar:** `ScheduledJobRunner` baştan sona sarmalandı, işler somut tiple
+çözülüyor, kapanış iptali hata sayılmıyor.
+
+**Neden:** `csharp-reviewer` denetimi üç gerçek kusur buldu ve **ikisini ayrı bir
+host kurarak deneyerek** doğruladı — okuyarak değil.
+
+### 🔴 En ağırı: sınıf kendi yorumunu yalanlıyordu
+
+`ScheduledJobRunner`'ın yorumunda *"bir işin hatası diğerlerini durdurmaz"*
+yazıyordu. Gerçekte yalnız `job.RunAsync` sarmalanmıştı; DI çözümlemesi
+(`CreateScope`, `GetRequiredService`, `First(j => j.Name == ...)`) korumasızdı.
+
+.NET'te `BackgroundService` içinden çıkan istisna varsayılan olarak
+**tüm host'u durduruyor** (`BackgroundServiceExceptionBehavior.StopHost`).
+Yani bir iş adı yanlış yazılsa **web API'sinin tamamı düşecekti** — arka plan
+işi değil, sitenin kendisi.
+
+**Bu, en sinsi hata türü:** kod doğru görünüyordu, yorum güvence veriyordu ve
+tetikleyici koşul (isim uyuşmazlığı) bugün oluşmuyordu. Yarın bir iş yeniden
+adlandırılsa üretimde ortaya çıkardı.
+
+### 🔴 İkincisi: izleme sisteminin kendisi yanlış alarm üretiyordu
+
+Kapanış sırasında iptal, genel `catch` tarafından **başarısızlık** sayılıyordu.
+Üstelik başarısızlık kaydı **aynı iptal edilmiş jetonla** yazılmaya çalışılıyordu,
+yani o da başarısız oluyordu.
+
+Sonuç: her düzgün yeniden başlatma `JobRuns`'a sahte bir arıza yazacaktı ve
+sağlık ucu (`basarisiz` sayacı) gerçek olmayan bir sorun gösterecekti — tam da
+gerçek arızayı görünür kılmak için kurulan mekanizma, güveni bozan bir gürültü
+kaynağına dönüyordu.
+
+**Düzeltme:** kapanış iptali `catch (OperationCanceledException) when
+(ct.IsCancellationRequested)` ile ayrıldı ve kayıt yazımı **ayrı, iptal edilmemiş**
+bir jeton kullanıyor.
+
+### 🟡 Üçüncüsü: her çalıştırmada altı işin altısı da inşa ediliyordu
+
+İş adıyla aranıyordu (`GetServices<IScheduledJob>().First(...)`), bu da kayıtlı
+bütün işleri — her birinin `DbContext` ve `HttpClient` bağımlılıklarıyla —
+yaratıp beşini atmak demekti. Artık somut tiple çözülüyor
+(`AddScheduledJob<T>()` hem tipi hem arayüzü kaydediyor).
+
+### Belgelenen kör nokta
+
+Kayıt yazımının ayrı kapsamda olması yalnız `DbContext` bozulmasına karşı işe
+yarıyor. İşin hatası **veritabanına erişememekten** kaynaklanıyorsa kayıt da
+yazılamıyor ve `JobRuns`'a hiç satır düşmüyor. Denetim bunu haklı olarak
+"yorumun fazla söz verdiği" bir nokta diye işaretledi; yorum düzeltildi ve
+izlemenin ayrıca günlük hata oranına bakması gerektiği yazıldı.
+
+### Kanıt
+
+Altı iş de çalıştı ve kaydedildi · uygulama **iş çalışırken** durduruldu ·
+kapanış sonrası `JobRuns`'ta **0 başarısız kayıt** · uygulama günlüğünde
+**0 kritik hata**, host düzgün kapandı.
+
+**Doğrulanan ama hata olmayanlar** (denetim somut olarak ölçtü): `CloseConversationsJob`
+sorgusu tam SQL'e çevriliyor, istemci tarafında değerlendirme yok ·
+`AddHttpClient` typed client kaydı doğru · 15 saniyelik tur aralığı en kısa iş
+aralığından küçük, işler seyrek çalışmıyor.
+
+İlgili: [[api-durum]] · [[api-gorevler]]
+
+---
+
+## 2026-08-24 — A-03 ikinci dilim: parola sıfırlama, e-posta doğrulama ve değiştirme
+
+**Karar:** Üç akış da aynı kalıpta — tek kullanımlık, süreli, özet olarak
+saklanan jeton. E-posta ve SMS **sağlayıcıdan bağımsız arayüz** arkasında;
+geliştirmede linkler günlüğe yazılıyor.
+
+**Neden arayüz:** e-posta sağlayıcısı hiç seçilmedi, SMS'te eski sistemin
+Verimor'u canlıda IP whitelist hatası veriyordu (`G-04`). Ödeme sağlayıcısında
+yapılanın aynısı: seçim beklenmeden akış uçtan uca çalışıyor, seçim geldiğinde
+yalnız bir uygulama ekleniyor ve çağıran hiçbir yer değişmiyor.
+
+### Linkler yapılandırılmış adresten kuruluyor
+
+`Request.Host`'tan **değil**. `AllowedHosts` gevşekken saldırgan sahte bir Host
+başlığı gönderip kendi sunucusuna işaret eden bir sıfırlama linki ürettirebilir;
+kullanıcı tıkladığında jeton saldırgana gider.
+
+**Canlı denendi:** `Host: kotu-site.com` başlığıyla istek atıldı, üretilen linkte
+o adres **geçmedi**.
+
+### Parola değişince bütün oturumlar kapanıyor
+
+Parola sızdığı için sıfırlanıyorsa, saldırganın elindeki yenileme jetonu geçerli
+kalırsa sıfırlama hiçbir işe yaramaz. `RevokeAllRefreshTokensAsync` ile
+kapatılıyor; **sıfırlama öncesi alınan jeton canlı testte 401 aldı**.
+
+### E-posta değiştirme: `PendingEmail` hesap devralmayı yapısal olarak kapatıyor
+
+Yeni adres `PendingEmail`'e yazılıyor, `Email` **değişmiyor**. Taşıma ancak
+**yeni adrese giden** jeton kullanılınca oluyor — adresin sahibi olduğunu
+kanıtlayan tek şey bu.
+
+Doğrulama linki yeni adrese, **uyarı eski adrese** gidiyor: hesabı ele geçirilen
+kullanıcı durumu ancak böyle fark eder.
+
+Bu ayrım olmadan şu saldırı mümkündü: saldırgan kendi adresiyle kayıt olup
+doğrular, sonra e-postasını kurbanınkiyle değiştirir; değiştirme kodu doğrulama
+damgasını sıfırlamayı unutursa satır "doğrulanmış" görünür ve kurbanın geçmiş
+misafir rezervasyonları saldırgana bağlanır. Artık unutmak mümkün değil, çünkü
+`Email` hiç değişmiyor.
+
+### Kullanıcı numaralandırma her yerde kapalı
+
+`forgot-password` **her zaman 204** dönüyor: e-posta kayıtlı olsa da olmasa da,
+oran sınırına takılsa da. "Çok fazla denediniz" demek bile o adresin kayıtlı
+olduğunu doğrulamak olurdu.
+
+Oran sınırı: saatte en fazla üç sıfırlama isteği (e-posta bombalamaya karşı).
+
+### Kanıt — 12 senaryo canlı denendi
+
+Var olan ve olmayan e-posta **aynı cevabı** verdi · sahte Host başlığı linke
+sızmadı · jeton ikinci kullanımda **400** · eski parola **401**, yeni parola
+**200** · sıfırlama öncesi yenileme jetonu **401** · e-posta değiştirmede `Email`
+değişmedi ve `PendingEmail` doldu · zaten kayıtlı adrese değiştirme **409** ·
+onaydan sonra `Email` değişti, `PendingEmail` boşaldı, doğrulama damgası yenilendi.
+
+**Application katmanı hâlâ hiçbir pakete bağlı değil:** `IOptions<>` yerine düz
+sınıf kullanıldı, değeri `Program.cs` yapılandırmadan okuyup tekil örnek olarak
+kaydediyor.
+
+İlgili: [[api-sema]] · [[api-durum]] · [[api-gorevler]]
+
+---
+
+## 2026-08-24 — A-03 güvenlik denetimi: hesap ele geçirme zinciri kırıldı
+
+**Karar:** Jeton tüketimi atomik yapıldı, e-posta değiştirmede mevcut parola
+zorunlu oldu, parola kuralı ve IP bazlı hız sınırı eklendi.
+
+**Neden:** `security-reviewer` denetimi **tek çalıntı erişim jetonundan kalıcı
+hesap ele geçirmeye** giden somut bir zincir gösterdi:
+
+1. Saldırgan 15 dakikalık bir erişim jetonu çalıyor
+2. `change-email` çağırıp adresi kendi adresiyle değiştiriyor — uç yalnız
+   `[Authorize]` istiyordu, **parola sormuyordu**
+3. Doğrulama linki saldırgana gidiyor, kurbana yalnız uyarı
+4. Kurban uyarıyı görmezse saldırgan 24 saat içinde adresi devralıyor
+5. Sonra sıradan parola sıfırlama akışıyla parolayı da alıyor
+   — **kurbanın parolasını hiç bilmeden**
+
+**Kırılan halka:** mevcut parola teyidi. Çalıntı jeton parolayı vermiyor.
+**Canlı doğrulandı:** çalıntı jeton + yanlış parola → **401**, doğru parola → 204.
+
+### Yorumum yine yalan söylüyordu
+
+`ConsumeTokenAsync`'in yorumunda *"tek kullanımlık olması burada garanti
+ediliyor"* yazıyordu. Gerçekte oku-kontrol-et-yaz yarışına açıktı: iki eşzamanlı
+istek aynı jetonu "kullanılmamış" görebiliyordu, çünkü `ConsumedAt` bellekte
+damgalanıp `SaveChanges` çağırana bırakılıyordu.
+
+**Bugün ikinci kez** bir yorumun kodun yapmadığı bir şeyi vaat ettiği yakalandı
+(ilki `ScheduledJobRunner`). Desen aynı: güvence yorumda, uygulama eksik.
+
+**Düzeltme:** `TryConsumeUserTokenAsync` — koşul (`ConsumedAt IS NULL`) SQL'in
+içinde, tek güncellemede. Etkilenen satır 1 değilse reddediyor. İleride
+eklenecek her jeton akışı (sihirli link, davet, 2FA yedek kodu) bunu kullanacak.
+
+### Diğer düzeltmeler
+
+| Bulgu | Düzeltme |
+|---|---|
+| **Parola kuralı hiç yoktu** — `"1"` kabul ediliyor, PBKDF2'nin 100.000 turu anlamsızlaşıyordu | En az 10 karakter, **Application katmanında** (yalnız API doğrulaması başka istemciyle atlanabilirdi) |
+| İptal + kayıt **ayrı** kalıcılaşıyordu; parola değişikliği başarısız olsa oturumlar kapanmış ama parola değişmemiş kalırdı | `ExecuteUpdate` yerine izlenen güncelleme, tek `SaveChanges` |
+| Hız sınırı yalnız kullanıcı bazlı; saldırgan **farklı adreslerle** sınırsız istek atabiliyordu | IP başına 15 dakikada 10 istek. **Canlı denendi:** 8 istek geçti, sonrakiler **429** |
+| Jeton standart base64 (`+ / =`) — WAF, CDN veya e-posta tarayıcısı yanlış çözerse sessizce bozulur | URL güvenli base64 (RFC 4648 §5). Doğrulandı: üretilen jetonda yalnız `-` ve `_` |
+| Zayıf parola **409** dönüyordu ("çakışma"), oysa geçersiz istek | `ValidationFailedException` ayrıldı → **400**. Çakışma 409 kaldı |
+
+### Denetimin doğruladığı ama sorun olmayan
+
+Amaç kontrolü (`Purpose != expected`) çalışıyor — parola sıfırlama jetonu
+doğrulama ucunda kullanılamıyor.
+
+### Açık kalan
+
+⚠️ **`UseForwardedHeaders` yok.** Ters vekil arkasında `RemoteIpAddress` proxy'nin
+IP'sini döner: hem `CreatedIp` adli izi bozuk olur hem IP bazlı hız sınırı
+işlevsiz kalır. Yanlış yapılandırılırsa saldırgan `X-Forwarded-For` uydurabilir.
+Vekil kurulumu bilinmediği için tahmin edilmedi → görev `A-19`.
+
+İlgili: [[api-durum]] · [[api-gorevler]]
+
+---
+
+## 2026-08-24 — A-06: testler gerçek PostgreSQL'e karşı çalışıyor
+
+**Karar:** xUnit + gerçek PostgreSQL. Bellek içi sağlayıcı **reddedildi**.
+
+**Neden:** bu şemanın değeri Postgres'e özgü kısıtlarda — `EXCLUDE USING gist`
+sefer çakışmasını, tetikleyiciler komisyon tutarlılığını ve defter
+değişmezliğini, `citext` e-posta benzersizliğini garanti ediyor. Bellek içi
+sağlayıcı bunların **hiçbirini** uygulamaz: testler geçer ve hiçbir şey
+kanıtlamaz. **Yanlış güven, güvensizlikten kötüdür.**
+
+Şema `EnsureCreated` ile değil **migration'lardan** kuruluyor: EXCLUDE kısıtları
+ve tetikleyiciler yalnız elle yazılmış migration'larda var, `EnsureCreated`
+onları atlar ve testler gerçekte olmayan bir şemayı sınardı.
+
+### İddialar mesaja değil HATA KODUNA bakıyor
+
+İlk yazımda tetikleyici mesajlarını arıyordum ve 6 test kırıldı — mesajlar
+Türkçe karakter içeriyor, testler ASCII arıyordu. Mesaj düzeltilse test yine
+kırılırdı: **gerçek bir sorun olmadan kırmızıya dönen test güven kaybettirir.**
+Artık SQLSTATE koduna (`23001`, `23514`) ve kısıt adına bakılıyor — ikisi de
+dilden bağımsız ve kararlı.
+
+### Test kendi hatasını gösterdi
+
+Sefer çakışma testi başta yanlıştı: iki seferi de aynı kiralama tipiyle
+kuruyordum, bu yüzden `EXCLUDE` yerine `IX_Voyages_SharedVoyagePerDay`
+indeksine takılıyordu.
+
+Bu bir kusur değil, **tasarımın doğrulanması**: aynı günde iki tur satmak,
+tasarım gereği iki AYRI `BoatRentalType` satırı demek — Mert'in "sabah ve
+öğleden sonra turu" kararının şemadaki karşılığı. Test senaryoya sadık hale
+getirildi (Mehmet günlük tur, Cemil konaklamalı).
+
+### Kanıt
+
+**14 test, 14'ü geçiyor, 0 uyarı.** Kapsananlar: sefer çakışması · aynı gün
+peş peşe tur · iptal edilen seferin tarihi bırakması · kapasite aşımı · defter
+güncelleme, silme ve boşaltma · olay günlüğü parçasının doğrudan
+boşaltılamaması · üç yetki tetikleyicisi · citext e-posta benzersizliği.
+
+⚠️ **Testcontainers tercih edilirdi**, Docker daemon kapalıydı. Yerel sunucuda
+ayrı test veritabanı kuruluyor; bağlantı dizesi ortam değişkeninden geldiği
+için CI'a geçiş tek noktada → `A-20`.
+
+⚠️ `dailycruising` rolüne test için **`CREATEDB`** verildi. `A-10`'da uygulama
+rolü ayrılırken bu yetki **uygulama rolüne verilmeyecek** — yalnız geliştirme
+ve migration rolünde kalacak.
+
+İlgili: [[api-durum]] · [[api-gorevler]]
+
+---
+
+## 2026-08-24 — A-10: uygulama artık tabloların sahibi değil
+
+**Karar:** İki rol. `dailycruising` sahip ve migration çalıştırır;
+`dailycruising_app` uygulamanın çalışma anı rolü — veri okur ve yazar, başka
+hiçbir şey yapamaz.
+
+**Neden:** uygulama tabloların SAHİBİ olarak bağlanıyordu. Sahip
+`ALTER TABLE ... DISABLE TRIGGER` diyebilir, yani *"para defteri değişmezdir"*
+iddiası uygulamanın kendi kendini durdurmamasına bağlıydı.
+
+**Bir güvence, ancak onu ihlal edebilecek olanın elinde değilse güvencedir.**
+`A-15` ve `A-11`'de kurulan bütün değişmezlik korumaları bu adıma kadar
+yarım kalmıştı.
+
+**TRUNCATE bilerek verilmedi.** PostgreSQL'de ayrı bir ayrıcalık; okuma ve yazma
+yetkisi onu kapsamıyor. Tetikleyicinin ötesinde ikinci katman.
+
+**`ALTER DEFAULT PRIVILEGES` şart.** Onsuz bir sonraki migration'ın yarattığı
+tabloya uygulama erişemez ve hata açılışta değil **ilk kullanımda**, üstelik
+yalnız o özellikte ortaya çıkar — bulması en zor türden.
+
+**Parola migration'a gömülmedi.** `DC_APP_ROLE_PASSWORD` ortam değişkeninden
+okunuyor; yoksa migration duruyor. Sessizce zayıf bir parola kullanmaktansa
+açıkça çalışmaması iyidir.
+
+**Rol `Down`'da düşürülmüyor:** başka veritabanlarında kullanılıyor olabilir ve
+düşürmek geri alınamaz. Yalnız bu veritabanındaki yetkiler geri alınıyor.
+
+### Kanıt — yedi senaryo
+
+Okuma ✓ · yazma ✓ · tetikleyici kapatma **"must be owner"** · tablo boşaltma
+**"permission denied"** · tablo düşürme **reddedildi** · kolon ekleme
+**reddedildi** · defter güncelleme tetikleyiciyle **reddedildi**.
+
+Uygulama bu role geçirildi: sağlık ucu 200, giriş 200, altı zamanlanmış iş
+çalıştı, 0 hata.
+
+⚠️ `dailycruising` rolüne bu iş için `CREATEROLE`, `A-06` için `CREATEDB`
+verildi. İkisi de **yalnız sahip/migration rolünde**; uygulama rolünde yok.
+
+İlgili: [[api-durum]] · [[api-gorevler]]
+
+---
+
+## 2026-08-24 — A-08: olay günlüğü artık fiilen yazılıyor
+
+**Karar:** `IEventLogger` arayüzü + `EventLogger` uygulaması. Kimlik olayları ve
+terk edilen ödeme bağlandı.
+
+**Neden şimdi:** tablo, bölümlendirme ve değişmezlik hazırdı ama **hiçbir olay
+yazılmıyordu.** Boş bir tabloyu bölümlemek, kimsenin gelmeyeceği bir salona
+sandalye dizmek gibiydi. Analiz ertelenebilir; **veri toplama ertelenemez** —
+geçen sezonun olayları kaydedilmediyse sonsuza kadar yoktur.
+
+### Üç tasarım kararı
+
+**1. Olay yazımı ASLA istisna fırlatmıyor.** Günlük analiz içindir, işin
+doğruluğu için değil: bir olayı kaybetmek kabul edilebilir, müşterinin girişini
+bozmak değil. Hata yutuluyor ama uygulama günlüğüne yazılıyor.
+
+**2. Yazma iş işleminden AYRI kapsamda.** Aynı işlemde olsaydı iki yönde de
+yanlış olurdu: olay yazımındaki hata rezervasyonu geri alırdı, ya da rezervasyon
+geri alındığında olay da kaybolurdu — oysa **"denendi ve başarısız oldu" tam
+olarak kaydetmek istediğimiz şey**.
+
+**3. IP tuzlu hash'leniyor.** Ham IP'nin **tuzsuz** SHA-256'sı koruma değildir:
+IPv4 uzayı yaklaşık 4 milyar adres, tamamının özeti kısa sürede hesaplanıp
+eşleştirilebilir. Tuz olmadan "hash'ledik" demek ham IP saklamakla neredeyse
+aynı şey. Tuz yapılandırmadan geliyor; yoksa uygulama **açılmıyor**.
+
+### Kişisel veri payload'a konmuyor
+
+Başarısız giriş olayında e-posta adresi **yazılmıyor**, yalnız sebep
+(`unknown_user` / `bad_password`). Tablo değişmez ve süresiz saklanıyor —
+buraya bir kez giren kişisel veri **asla silinemez**. Kullanıcı varsa kimliği
+`ActorUserId`'de zaten duruyor.
+
+### Test iki gerçek şey buldu
+
+**`Seq` EF tarafından geri okunmuyor.** Veritabanında doğru artıyor ama
+bölümlenmiş tabloda EF `RETURNING` uygulamıyor, bellekteki nesnede sıfır
+kalıyor. Sorun değil çünkü hiçbir kod ekleme sonrası o değeri kullanmıyor —
+ama biri kullanmaya kalkarsa **sessizce sıfır alır**, o yüzden testte açıkça
+belgelendi.
+
+**`A-10` testlere sürtünme getirmişti:** migration uygulama rolü parolasını
+ortam değişkeninden istiyor ve test çalıştıran kişiye ikinci bir değişken
+sordurmak gereksizdi. Fixture tek kullanımlık bir değer veriyor.
+
+### Kanıt
+
+Dört kimlik olayı canlı yazıldı, IP hepsinde hash'li. **Terk edilen ödeme
+yakalandı:** tutar 3000, 2 yetişkin 1 çocuk, **745 saniye sonra vazgeçilmiş** —
+son alan, 15 dakikalık tutma süresinin doğru olup olmadığını ölçmenin tek yolu.
+
+**18 test, 18'i geçiyor**, `dotnet build` 0 uyarı.
+
+## 2026-08-24 — Fiyat sunucuda hesaplanır, istemciden tutar HİÇ alınmaz
+
+`QuoteRequest` içinde tutar alanı **yok** ve olmayacak.
+
+**Neden:** "İstemcinin tutarını al, sonra doğrula" güvenlik değildir.
+Doğrulama bir kod yolunda atlanabilir, yeni bir uçta unutulabilir, yuvarlama
+farkıyla gevşetilebilir. **Alan hiç var olmazsa atlanacak bir şey de olmaz.**
+Canlı denendi: istek `grandTotalTry: 1` ve `discountAmountTry: 9999` gönderdi,
+sunucu 1000.00 ve 0 döndü — alanlar reddedilmedi, hiç okunmadı.
+
+### Kuponun matrahı: tur + ek hizmet
+
+**Neden:** komisyon matrahı da tur + menü + ek hizmet. İki oran ayrı tabana
+uygulansaydı "kupon komisyonu aşamaz" kuralı farklı şeyleri karşılaştırdığı
+için anlamını yitirirdi. Mert'e soruldu -> [[api-durum]] S-7.
+
+### Kupon reddinin sebebi SÖYLENMİYOR
+
+Altı ayrı ret mesajı vardı; hepsi tek metne indirildi.
+
+**Neden:** ayrıntılı mesaj kimliksiz çağırana keşif aracı veriyordu. "Bu
+kupon bu işletmede geçerli değil" cevabı kodun GERÇEK olduğunu ve başka bir
+işletmeye ait olduğunu söylüyordu. Daha kötüsü "komisyonu aşıyor" cevabı,
+bilinen oranlı kuponlar denenerek işletmenin **komisyon oranının** ikili
+aramayla bulunmasına izin veriyordu — komisyon oranı sözleşme verisidir.
+Bedeli: gerçekten süresi dolmuş bir kuponu getiren müşteri artık sebebi
+göremiyor. Takas bilinçli.
+
+### `MinPassengers` fiyat sorgusunda kontrol EDİLMİYOR
+
+Denetim "kontrol edilmiyor" diye işaretledi; **uygulanmadı**.
+
+**Neden:** o sınır sefere kopyalanıyor, rezervasyona değil. Paylaşımlı seferde
+asgari 8 kişilik tura 2 kişilik rezervasyon meşrudur; sefer dolmazsa iptal
+edilir. Fiyat sorgusunda kontrol edilseydi geçerli bir satış reddedilirdi.
+Denetim bulgusunun kendisi doğru, önerdiği düzeltme yanlıştı.
+
+### Denetim dört gerçek açık buldu — hepsi CANLI üretildi
+
+Hiçbiri okumayla kabul edilmedi; her biri istek atılarak doğrulandı, düzeltildi
+ve yeniden denendi.
+
+**`int` taşması kapasite kontrolünü atlıyordu.** 2 milyar yetişkin + 2 milyar
+çocuk toplamda `-294.967.296` oluyor, 12 kişilik teknenin kontrolünü geçiyor ve
+**1,6 trilyon TL**'lik teklif HTTP 200 dönüyordu. Sayılar artık toplanmadan
+önce tek tek sınırlanıyor — sıra önemli, sonra sınırlamak işe yaramaz.
+
+**İki ayrı yoldan HTTP 500.** `Nights = int.MaxValue` taşıp negatife düşüyor;
+9999-12-20 kalkışlı konaklamalı tur ise taşma olmadan takvimin sonunu aşıyor.
+İkisi de `DateOnly.AddDays` içinde yakalanmamış hata veriyordu.
+
+**Ek hizmet satırı sınırsızdı.** 200.000 satırlık tek bir kimliksiz istek
+26 MB cevap ürettiriyordu. Dahası aynı menü 200.000 kez sayıldığı için
+**2 yolcuya 40 milyon TL**'lik ek hizmet çıkıyordu: satır başına yapılan "adet
+yolcu sayısını aşamaz" kontrolü, satır sayısı sınırsız olduğu için hiçbir şey
+engellemiyordu. Sınır + aynı hizmetin tekrarının reddi birlikte kapatıyor.
+
+**Kupon aramam indeksi öldürüyordu.** `c.Code.ToUpper() == code.ToUpper()`
+yazmıştım. Kolon zaten `citext`, yani harf duyarsızlığı bedava geliyordu;
+`upper()` sarmalaması `IX_Coupons_Code`'u kullanılamaz kılıp her fiyat
+sorgusunda tabloyu baştan sona taratıyordu. Ölçüldü: `upper()` ile `Seq Scan`,
+düz eşitlikle `Index Only Scan`. **Kendi eklediğim satır hem gereksiz hem
+zararlıydı.**
+
+### Sözleşme seçiminde kesin sıralama
+
+`ORDER BY ApprovedAt DESC` tek başına kesin değil.
+
+**Neden:** yönetici birkaç sözleşmeyi tek `UPDATE` ile onaylarsa damgalar
+eşitlenir. Aynı ifade içindeki üç ayrı alt sorgu o zaman farklı satır
+seçebilir — komisyon oranı bir sözleşmeden, kimliği başkasından gelir.
+`ThenByDescending(Id)` eklendi. **Tek sorguda okumak tek başına yetmiyormuş;**
+sınıfın yorumu bunu güvence diye anlatıyordu, düzeltildi.
+
+### Yazdığım iki yorum fazlasını iddia ediyordu
+
+`Quote` için "ikisinin ayrışması mümkün değil", controller için "rezervasyon
+oluşturulurken AYNI servisle yeniden hesaplanır" yazmıştım. İkisi de bu
+dosyaların sağlayamayacağı, üstelik rezervasyon oluşturma ucu **henüz
+yazılmadığı** için bugün doğrulanamaz iddialar. Niyet olarak yeniden yazıldı.
+
+**Neden:** bu depo yorumun yalan söylemesinden iki kez zarar gördü. Güvence
+diye yazılan şey güvence değilse, sonraki okuyan ona güvenip kontrol koymaz.
+
+### Kanıt
+
+`POST /api/pricing/quote` canlı çağrıldı. Doğru hesap: 2 yetişkin + 1 çocuk +
+1 bebek → 1300.00 TL. Kupon: %15 komisyonda %10 kupon → 900 TL, %20 kupon →
+indirim 0. Kapasite: 12 kişilik teknede 13 yetişkin → 400. Dört açık kapandı,
+dördü de yeniden denendi → 400. Hız sınırı → 61. istekte 429. Production
+kipinde beklenmeyen hata → yığın izi yok. **42 test, 42'si geçiyor.**
+
+## 2026-08-24 — Veritabanı denetimi: iki indeks hiç yaratılmamış
+
+`database-reviewer` canlı veritabanında `EXPLAIN` çalıştırdı. Üç bulgu, üçü de
+doğrulandı.
+
+### `Prices.BoatRentalTypeId` ve `Contracts.PartnerId` indeksleri YOKTU
+
+Yapılandırma ikisini de istiyordu; EF aynı kolona yapılan ikinci `HasIndex`
+çağrısını birincinin yerine koyduğu için hiç yaratılmamışlardı.
+`Contracts` tarafında yanlarında **"bu sorgu kısmi indeksi kullanamaz"**
+yorumu duruyordu — yorum ihtiyacı doğru anlatıyor, indeks yok.
+
+**Neden fark edilmedi:** derleme temiz, testler geçiyor, sorgular doğru sonuç
+veriyor. Yalnız yavaş. Bunu ancak `pg_indexes`'e bakmak gösteriyor.
+`HasDatabaseName` eklemek de yetmedi; ad ikinci parametre olarak verilmeli
+-> [[api-hasindex-yutulmasi]]
+
+### `ExchangeRates` indeksinin sırası fiyat sorgusuna ters
+
+Tek indeks `(Date, CurrencyCode)`. Fiyat hesabı ise
+`WHERE CurrencyCode = x ORDER BY Date DESC LIMIT 1` sorguyor — para birimi
+baştaki kolon olmadığı için Postgres indeksi tarihe göre GERİ YÜRÜYEREK
+tarıyor, eşleşen satıra varana kadar diğer para birimlerinin satırlarını
+geçiyor.
+
+**Neden mevcut indeks silinmedi:** TCMB işi `WHERE "Date" = @date` sorguyor,
+onun için sıra Date-önce kalmalı. İkinci indeks eklendi.
+Ölçüldü: geri yürüyüşle 19.32, yeni indeksle 8.15.
+
+### Fiyat sorgusu iki gidiş-dönüşten bire indi
+
+Önce "sezon var mı", yoksa "temel fiyat" diye iki sorgu atılıyordu — ve
+YAYGIN durum olan "sezon tanımlı değil" her seferinde ikisini birden
+yapıyordu. Tek sorguya indi; sıralama sezonu öne alıyor.
+
+**Neden güvenli:** `EX_Prices_NoOverlappingSeasons` en fazla bir sezonun,
+`IX_Prices_SingleBasePrice` en fazla bir temel fiyatın eşleşmesini garanti
+ediyor. Yani "hangisi kazanır" belirsizliği yok.
+
+### Doğrulanan bir şey: sezon koşulunda boşluk YOK
+
+`ValidFrom` dolu ama `ValidTo` boş bir satır koşulu sessizce atlardı.
+`CK_Prices_RangeComplete` böyle bir satırı imkânsız kılıyor — kontrol edildi,
+düzeltme gerekmedi.
+
+### Sonraya bırakılan: kupon kullanım sayımı yarış açık
+
+`CountCouponRedemptionsAsync` sayıp karşılaştırıyor; arada kilit yok. Bugün
+sömürülemez çünkü yazan bir yol yok — fiyat sorgusu salt okuma. Rezervasyon
+oluşturma ucunda (`A-22`) aynı kontrol olduğu gibi kullanılırsa iki eşzamanlı
+rezervasyon `MaxRedemptions`'ı aşabilir. `CK_Coupons_Redemptions` bunu
+kapatmıyor: o yalnız `UsedCount` kolonunu sınırlıyor, bu kod ise o kolona
+bilerek güvenmiyor.
+
+### Kanıt
+
+Üç indeks migration'la yaratıldı ve `pg_indexes`'te görüldü. Tekleştirilmiş
+sorgunun planı yeni `IX_Prices_BoatRentalTypeId` üzerinden tek tarama.
+Canlı: eylül kalkışı 1800 TL (sezon), kasım kalkışı 1000 TL (temel) —
+sezon önceliği bozulmadı. **42 test, 42'si geçiyor.**
+
+İlgili: [[api-sema]] · [[api-durum]] · [[domain-gereksinimler]]

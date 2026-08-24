@@ -83,6 +83,28 @@ yazılır: `"\"Status\" = 'Approved'"`. PascalCase kararının bedeli burada öd
   `Cors:AllowedOrigins` dizisinden okunur. Yeni ortam eklenince kod değil
   yapılandırma değişir
 - OpenAPI yalnız Development ortamında açık (`/openapi/v1.json`)
+- **Enum'lar JSON'da metin**, sayı değil (`JsonStringEnumConverter`). Sayı
+  dönerse arayüz `listCurrency: 0` görür ve enum sırası değiştiğinde sessizce
+  başka bir para birimi gösterir; veritabanında da metin saklanıyor
+
+## Para istemciden gelmez
+
+Tutar taşıyan hiçbir istek gövdesinde **tutar alanı bulunmaz**.
+
+"İstemcinin tutarını al, sonra karşılaştır" güvenlik değildir: karşılaştırma
+bir kod yolunda atlanabilir, yeni bir uçta unutulabilir, yuvarlama farkıyla
+gevşetilebilir. **Alan hiç var olmazsa atlanacak bir şey de olmaz** —
+`QuoteRequest` bu yüzden tutar alanı taşımıyor.
+
+- Hesabın çıktısı (`Quote`) **aynı zamanda** rezervasyona dondurulacak alanların
+  tamamıdır. Hesap ile saklanan arasında ikinci bir dönüşüm yok, yani ikisinin
+  ayrışması mümkün değil
+- Fiyat sorgulama ucunun döndürdüğü tutar **bağlayıcı değildir**; rezervasyon
+  oluşturulurken aynı servisle yeniden hesaplanır. Sorgunun cevabını saklayıp
+  rezervasyonda kullanmak, kapıyı bir adım geriye taşımaktan ibaret olurdu
+- Para daima **iki haneye** yuvarlanır (`MidpointRounding.AwayFromZero`). Ara
+  sonuçta yuvarlanmazsa toplam `CK_Reservations_GrandTotal` kısıtına takılır —
+  kısıt tam eşitlik istiyor
 
 ## Veritabanı
 

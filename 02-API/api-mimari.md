@@ -21,10 +21,10 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 
 | Proje | Bağımlılıkları | Durum |
 |---|---|---|
-| `DailyCruising.Domain` | **hiçbiri** | boş — domain tanımlı değil |
-| `DailyCruising.Application` | Domain | boş |
-| `DailyCruising.Infrastructure` | Application | boş |
-| `DailyCruising.Api` | Application + Infrastructure | health endpoint |
+| `DailyCruising.Domain` | **hiçbiri** | 11 klasör, **74 entity** |
+| `DailyCruising.Application` | Domain | kimlik doğrulama senaryoları, yetki anahtarları, arayüzler |
+| `DailyCruising.Infrastructure` | Application | EF Core, 12 yapılandırma, **8 migration**, JWT ve parola özeti |
+| `DailyCruising.Api` | Application + Infrastructure | health + kimlik doğrulama uçları, yetki politikaları |
 
 **Değişmez kural:** Domain hiçbir projeye referans vermez. Bu yön bozulursa Clean
 Architecture'ın anlamı kalmaz.
@@ -45,7 +45,13 @@ OpenAPI yalnızca Development ortamında açık (`/openapi/v1.json`).
 |---|---|---|
 | GET | `/api/health` | `{"status":"healthy"}` |
 
-İş uç noktası yok — domain bekleniyor → [[durum]]
+| POST | `/api/auth/register` | erişim + yenileme jetonu |
+| POST | `/api/auth/login` | erişim + yenileme jetonu |
+| POST | `/api/auth/refresh` | jeton döndürme (eski iptal edilir) |
+| POST | `/api/auth/logout` | yenileme jetonunu iptal eder |
+| GET | `/api/auth/me` | kimlik + kapsam + yetkiler |
+
+**İş uç noktası hâlâ yok** — tekne, rezervasyon, fiyat uçları yazılmadı → [[durum]]
 
 ## Şema
 

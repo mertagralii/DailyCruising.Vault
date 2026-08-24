@@ -46,9 +46,16 @@ sekiz bölümü de çıkarıldı ve Mert'in onayından geçti.
 
 Şema `main`'e birleştirildi (`8bbb04f`, `c5b4b87`), dal silindi.
 
-**Kritik yol:** zamanlanmış iş katmanı (`A-15`, aşağıdaki 5 numaralı blocker) →
-iş uç noktaları (`A-02`) → kimlik doğrulama (`A-03`) → frontend'in gerçek veriye
-bağlanması (`W-04`).
+**Kritik yol:** rezervasyon oluşturma ucu (`A-22`) → zamanlanmış iş katmanı
+(`A-15`, 5 numaralı blocker) → kimlik doğrulamanın kalanı (`A-03`) → frontend'in
+gerçek veriye bağlanması (`W-04`).
+
+`A-04` bitti ama **`PricingService`'i çağıran bir uç henüz yok** — fiyat
+hesaplaması yazıldı, kullanılmıyor. `A-22` bu yüzden sırada.
+
+⚠️ **Mert'in cevabını bekleyen sekiz soru var** (`S-1`…`S-8`) → [[api-durum]].
+Son ikisi varsayımla ilerlendi: kuponun matrahı (tur + ek hizmet varsayıldı) ve
+fiyat ucunda hız sınırı (dakikada 60 kondu, onaylanmadı).
 
 Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 
@@ -60,7 +67,7 @@ Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 |---|---|---|---|
 | 1 | **Kimlik doğrulama yok** | `/admin`, `/owner-panel`, `/support-panel`, `/account` **herkese açık**. Gerçek veriye bağlanmadan önce mutlaka kapatılmalı — bu bir güvenlik açığı | Beraber |
 | 2 | **İş uç noktası yok** | **Şema bitti** (2026-08-24, 75 tablo, `feat/veritabani-semasi` dalında `8bbb04f`) ama iş uç noktası hâlâ yok — yalnız `/api/health` ve `/openapi/v1.json`. Arayüz `src/lib/data/*.ts` mock verisiyle çalışıyor. **Blocker duruyor, sebebi değişti** → [[api-durum]] | Beraber |
-| 3 | **Fiyat sunucuda doğrulanmıyor** | Rezervasyon toplamı istemcide hesaplanıyor; sunucuda yeniden hesaplanmalı, yoksa fiyat manipülasyonuna açık. Gerekçe PRD değil **güvenlik** | Beraber |
+| ~~3~~ | ~~**Fiyat sunucuda doğrulanmıyor**~~ | **2026-08-24'te kapatıldı** (`A-04`). `POST /api/pricing/quote` ayakta. Kanıt: istemci `grandTotalTry:1` ve `discountAmountTry:9999` gönderdi, sunucu **1000.00 ve 0** döndü — `QuoteRequest`'te tutar alanı **yok**, yani alanlar reddedilmedi, **hiç okunmadı**. 42 test geçiyor | — |
 | ~~4~~ | ~~**Vault'un yedeği yok**~~ | **2026-08-24'te kapatıldı.** `mertagralii/DailyCruising.Vault` (private) oluşturuldu, 117 dosya push edildi. Artık vault'ta yapılan yanlış bir yazma geri alınabilir | — |
 | 5 | **Zamanlanmış iş katmanı yok** | Sekiz karar buna dayanıyor ve hiçbirinde adı geçmiyor. Kodda `IHostedService`/`BackgroundService`/`Hangfire`/`Quartz` **sıfır sonuç**. Çöküş sessiz değil **satışı durdurucu**: süresi dolmayan hold `CHECK (SoldSeats <= Capacity)` yüzünden koltukları kalıcı kilitler, süresi dolmayan teklif seferi `EXCLUDE` kısıtı yüzünden tarihi sonsuza kadar kapatır. **Şemanın en güçlü iki garantisi, iş katmanı yokken sistemi kilitleyen mekanizmalara dönüşüyor** → [[genel-tasiyici-gerekce-taramasi]] | Claude |
 | 6 | **`Boats.AverageRating` güncellenmiyor** | Şema iki bölümde **zıt** söylüyor: "önden hesaplı" ↔ "canlı hesaplanır". Güncelleyen yok. Alan `0` kalır, puan filtresi her teknede aynı değeri görür; `IX_Boats_Search` sayesinde **hızlı çalışır ve hata vermez** — sessiz yanlış sonuç → [[genel-tasiyici-gerekce-taramasi]] | Claude |
