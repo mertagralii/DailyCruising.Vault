@@ -94,15 +94,21 @@ olmadığı için geri alınamaz. Bu yüzden yazma hakkı bölünmüştür. Öl�
 |---|---|
 | Backend kodu | `02-API/*` (durum → `api-durum.md`) |
 | Frontend kodu | `03-Web/*` (durum → `web-durum.md`) |
-| Vault / genel / domain | `01-Genel/*` · `00-Index.md` · `04-Oturumlar/` |
+| Vault / genel | `00-Index.md` · `04-Oturumlar/` · `01-Genel/durum.md` |
 
 **Vault artık bir git reposudur** (`mertagralii/DailyCruising.Vault`, private).
 Alan oturumları vault'a **yazar ama commit atmaz** — commit'i vault oturumu atar.
 Böylece üç oturum aynı anda `git add -A` çalıştırıp birbirinin yarım işini
 commit'lemez.
 
-`01-Genel/durum.md`'ye **yalnız vault oturumu yazar.** Diğerleri oraya girmesi
-gereken bir şey bulursa `SendMessage` ile haber verir.
+**Kapalı olan yalnız `01-Genel/durum.md`'dir** — oraya yalnız vault oturumu yazar,
+diğerleri oraya girmesi gereken bir şey bulursa `SendMessage` ile haber verir.
+
+`01-Genel/` içindeki **`domain-gereksinimler.md` ve `genel-gorevler.md` ortaktır**:
+domain konuşması hangi oturumda geçiyorsa cevabı o yazar, bir görevi kim
+kapatıyorsa `Kanıt:` satırını o yazar. 2026-08-24'te bu iki dosya önce kapalı
+ilan edilmişti; aynı gün backend oturumu `G-12`'yi kapatınca kuralın fazla katı
+olduğu görüldü — **çakışma riski dosyada değil, aynı bölüme aynı anda yazmakta.**
 
 ⚠️ **Başka oturum açıkken git durumu, dosya sayısı ve "şu an ne yapılıyor" bilgisi
 vault'a yazılmaz** — ölçüldüğü anda doğru olup saniyeler sonra yalan olabiliyor.

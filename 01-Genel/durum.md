@@ -24,10 +24,12 @@ frontend işi yapan oturumun `pwd`'si vault çıktı, yani klasör güvenilir bi
 |---|---|---|
 | Backend kodu | `02-API/*` | [[api-durum]] |
 | Frontend kodu | `03-Web/*` | [[web-durum]] |
-| Vault / genel / domain | `01-Genel/*` · `00-Index.md` · `04-Oturumlar/` · **bu dosya** | — |
+| Vault / genel | `00-Index.md` · `04-Oturumlar/` · **bu dosya** | — |
 
 **Alan oturumları bu dosyaya yazmaz.** Kendi `*-durum.md` dosyasına yazar; genel
-resmi vault oturumu buradan derler. Genel dosyaya girmesi gereken bir şey varsa
+resmi vault oturumu buradan derler. Ama `domain-gereksinimler.md` ve
+`genel-gorevler.md` **ortaktır** — domain cevabını konuşan oturum, görev kanıtını
+kapatan oturum yazar. Genel dosyaya girmesi gereken bir şey varsa
 vault oturumuna `SendMessage` ile haber verilir.
 
 ⚠️ **Başka bir oturum çalışıyorken okunan durum anında bayatlar.** 2026-08-24'te

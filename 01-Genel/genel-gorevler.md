@@ -22,6 +22,21 @@ tamamlanamaz.**
       DailyCruising'e özgü içerik ile genel iskeletin ayrılmış olması
       Bağımlı: bu projede sistemin işe yaradığının kanıtlanması
 
+      **Yakalanan hata defteri** — şablon ancak sistem gerçek hata yakaladıysa
+      hak edilir. Yoksa şablon bir klasör düzenidir, sistem değil:
+      1. Git durumu bayatlaması — vault oturumu "2 dosya commit'lenmemiş" yazdı,
+         peer oturum saniyeler önce commit atmıştı
+      2. `api-durum` çelişkisi — "domain modeli yok" yazıldı, backend o sırada
+         şemanın 2. bölümünü onaylatıyordu
+      3. `domain-gereksinimler` tablosu gövdesiyle çelişiyordu — 5 kapalı soru
+         açık görünüyordu, iki oturum blocker sandı
+      4. Geniş tablo kabı her ölçüde açık bırakıldı — kaydırma çubuğu masaüstü
+         ölçümünü 18px'ten 55px'e çıkardı, bir saat kaybedildi
+      5. Gövdenin sabit satır yüksekliği **dört ayrı yerde** aynı hatayı üretti;
+         desen dosyasında olsa ilkinde biterdi
+      6. Yazma hakkı kuralı fazla katı kuruldu — `01-Genel/*` tamamen kapalı
+         ilan edilmişti, aynı gün pratikte kırıldı ve gevşetildi
+
 - [ ] **G-13** Fatura modelinin mali müşavirle teyidi · kimde: **Mert**
       Aracılık modeli seçildi; teyit gelene kadar şema esnek kurulacak
 - [ ] **G-03** Ödeme sağlayıcı kararı · kimde: **Mert**
