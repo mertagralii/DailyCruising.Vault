@@ -288,6 +288,48 @@ for p2 in notlar:
                     f"dayanak kalkarsa bu karar sessizce cokerdi")
 
 
+# 14: gorev kimligi kaybi
+# Vault kurali: iptal edilen gorev SILINMEZ, "iptal" olarak Tamamlandi'ya tasinir.
+# Kural vardi, denetimi yoktu. 2026-08-24: bir aralikla-silme hatasi bes gorevi
+# panodan yok etti; dogrula.py TEMIZ dedi cunku bicim bozulmamisti — yazili olan
+# dogruydu, yazilmamis olan kayipti. Referans olarak git'teki son surum kullanilir.
+import subprocess
+
+def _git(args):
+    try:
+        r = subprocess.run(["git", "-C", str(VAULT)] + args,
+                           capture_output=True, text=True, timeout=10)
+        return r.stdout if r.returncode == 0 else None
+    except Exception:
+        return None
+
+KIMLIK = re.compile(r"\*\*([A-Z]-\d+)\*\*")
+
+if _git(["rev-parse", "--git-dir"]) is not None:
+    for alan, onek in ALAN_BOLME.items():
+        yol = VAULT / alan / f"{onek}-gorevler.md"
+        if not yol.exists():
+            continue
+        rel = yol.relative_to(VAULT).as_posix()
+        # HEAD degil TUM gecmis taranir: kayip bir kez commit'lenirse HEAD onu
+        # normal sayar. 2026-08-24'te tam bu oldu — silinmis hali commit'lendi.
+        commitler = (_git(["log", "--format=%H", "-n", "50", "--", rel]) or "").split()
+        gorulmus = set()
+        for c in commitler:
+            icerik = _git(["show", f"{c}:{rel}"])
+            if icerik:
+                gorulmus |= set(KIMLIK.findall(kodu_ayikla(icerik)))
+        if not gorulmus:
+            continue
+        yeni_k = set(KIMLIK.findall(kodu_ayikla(yol.read_text(encoding="utf-8"))))
+        kayip = sorted(gorulmus - yeni_k)
+        if kayip:
+            sorunlar.append(
+                f"[gorev kimligi kayboldu] {rel}: {', '.join(kayip)} "
+                f"panonun gecmisinde vardi, simdi yok — iptal edilen gorev silinmez, "
+                f"'iptal' olarak Tamamlandi'ya tasinir")
+
+
 print(f"Vault: {VAULT}")
 print(f"Not sayisi: {len(notlar)}")
 print()

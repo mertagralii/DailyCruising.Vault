@@ -73,6 +73,30 @@ tablosu beş soruyu açık gösteriyordu; beşinin de cevabı aynı dosyanın i�
   Tek korunma disiplin ve skill
 
 
+## Yazılı olan doğru, yazılmamış olan kayıp
+
+Denetlenebilir hataların iki türü var ve ikincisi çok daha sinsi:
+
+| Tür | Örnek | Betik görebilir mi |
+|---|---|---|
+| İki yazılı şey çelişiyor | Tablo gövdeyle uyuşmuyor, gerekçe uygulamayla | Kısmen — **kıyaslayacak referans var** |
+| Yazılı olan doğru, **bir şey yok olmuş** | Panodan beş görev silindi | Hayır — **kıyaslayacak referans yok** |
+
+2026-08-24'te ikinci tür yaşandı: aralıkla silme beş görevi yok etti, `dogrula.py`
+TEMİZ dedi çünkü kalan her şey biçim olarak kusursuzdu.
+
+**Bu türün tek panzehiri sürüm geçmişidir.** Referans yoksa üretilir: `dogrula.py`
+14. denetimi panonun **tüm git geçmişini** tarar; bir görev kimliği bir kez
+göründüyse bir daha kaybolamaz.
+
+- **Aralıkla silme kullanılmaz.** "X'ten Y'ye kadar sil" komutunun kapsamı, dosyadaki
+  **gerçek sıraya** bağlıdır ve o sıra beklendiği gibi olmayabilir. Silinecekler
+  tek tek adlandırılır
+- **Bildirimin doğru olması yan etkinin doğru olduğunu göstermez.** O oturumda
+  "A-09 tamamlandı" bildirimi doğruydu; yanlış olan söylenmeyen kısımdı
+- Geçmiş **`HEAD` değil tüm log** olmalı: kayıp bir kez commit'lenirse `HEAD` onu
+  normal sayar. Bugün tam bu oldu — silinmiş hâl commit'lendi
+
 ## Gerekçe ile uygulama ayrışabilir
 
 Özet tablo kuralının kardeşi, ama daha sinsi: orada **iki yer** çelişir, burada

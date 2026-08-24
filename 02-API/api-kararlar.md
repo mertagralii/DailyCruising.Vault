@@ -685,3 +685,72 @@ TRUNCATE yetkisi olmaması) · `A-03`'e eklendi: `Message.Body` asla API'den
 dönmeyecek, `Reservation.Code` sorgusu hız sınırlı olacak.
 
 İlgili: [[api-sema]] · [[api-desenler]] · [[api-durum]] · [[api-araclar]]
+
+---
+
+## 2026-08-24 — A-11: EventLogs aylık bölümlendirmeye çevrildi
+
+**Karar:** `EventLogs` artık `PARTITION BY RANGE ("OccurredAt")`. Birincil anahtar
+`("Id","OccurredAt")` bileşik, `Seq` benzersizliği `("Seq","OccurredAt")`.
+26 parça: 25 ay peşinen açıldı, bir de varsayılan parça var.
+
+**Neden:** saklama süresi kararının ertelenebilmesi bölümlendirmeye dayanıyordu —
+eski ayı silmek tek komut olsun diye. Bölümlendirme olmadan o gerekçe geçersizdi.
+
+**Neden şimdi:** tablo boştu. Veri girdikten sonra bölümlendirmek satır kopyalama
+demek; migration bunu bildiği için tabloyu boş bulmazsa **durup hata fırlatıyor**.
+
+**Neden bileşik anahtar:** Postgres, bölümlenmiş tabloda birincil anahtarın ve her
+benzersizlik kısıtının bölümleme anahtarını içermesini şart koşuyor. Bedeli yok —
+`EventLogs`'a işaret eden yabancı anahtar ve navigasyon zaten hiç yok.
+
+### Bölümlendirme dünkü bir korumada DELİK AÇTI
+
+Prototipte ölçüldü — ayrı bir deneme veritabanı kuruldu, varsayımla ilerlenmedi:
+
+| Davranış | Sonuç |
+|---|---|
+| Satır bazlı tetikleyici üst tablodan parçalara yayılıyor mu | evet |
+| Deyim bazlı boşaltma tetikleyicisi yayılıyor mu | **HAYIR** |
+
+Bir ay parçasına doğrudan boşaltma komutu **hiçbir hata vermeden geçti**. Dün
+kapatılan açık, bölümlendirmeyle yeniden açılmış olacaktı.
+
+**Çözüm:** tetikleyici hem üst tabloya hem **her parçaya ayrı** kuruluyor;
+`ensure_event_log_partition()` yeni parça açarken tetikleyiciyi de kuruyor, yani
+unutulması mümkün değil.
+
+### Parça bitmesi bir kesinti riskidir — iki katmanlı koruma
+
+1. Peşinen 24 ay açık
+2. Kapsanmayan tarih gelirse **varsayılan parçaya** düşüyor, yazma başarısız olmuyor
+
+Varsayılan parçanın bedeli: o aralık için sonradan gerçek parça eklenemez, önce
+satırların taşınması gerekir.
+
+⚠️ **`ensure_event_log_partitions(24)` düzenli çağrılmalı.** Zamanlanmış iş yok;
+`A-14` olarak açıldı. Çağrılmazsa 24 ay sonra her olay varsayılan parçaya yığılır
+ve bölümlendirmenin faydası kaybolur.
+
+### Ölçülen bedel: tarihsiz sorgu 26 parçayı da tarıyor
+
+Payload içinde arama, tarih filtresi olmadan tüm parçalara yayılıyor (sorgu planıyla
+görüldü). Sezonluk AI raporları zaten tarih sınırlı olacağı için uyumlu, ama
+**olay günlüğü sorguları tarih aralığı içermeli** — yoksa bölümlendirme fayda değil
+maliyet olur.
+
+### Kanıt
+
+10 senaryo canlı denendi: doğru parçaya yönlendirme · `Seq` parçalar arası artıyor ·
+güncelleme ve silme hem üst tablodan hem parçadan **reddedildi** · boşaltma üst
+tabloda, ay parçasında ve varsayılan parçada **reddedildi** · tarih aralığı sorgusu
+**tek parça** tarıyor · `Seq` imleci çalışıyor.
+
+Migration **geri alınıp tekrar uygulandı**: bölümlenmiş, sıradan, tekrar bölümlenmiş.
+`dotnet build` 0 uyarı 0 hata. Toplam 101 tablo (75 tablo + 26 parça).
+
+**EF Core sapması yok:** EF tabloyu sıradan bir tablo olarak modelliyor;
+bölümlendirmeyi bilmiyor ama kolonlar, anahtar ve indeksler birebir örtüştüğü için
+bir sonraki `migrations add` fark üretmiyor.
+
+İlgili: [[api-sema]] · [[api-durum]] · [[domain-gereksinimler]]

@@ -951,16 +951,20 @@ henüz yok** (`A-11`). Süre kararı bölümlendirmeden önce gelirse temizlik p
 
 ### Postgres'e özgü
 
-**Aylık bölümlendirme — ⚠️ HENÜZ YAPILMADI, görev `A-11`.**
-`EventLog` sistemin açık ara en büyük tablosu olacak. `PARTITION BY RANGE
-(OccurredAt)` ile aylık parçalara ayrılırsa eski ayı silmek tek komut olur.
+**Aylık bölümlendirme — ✅ YAPILDI 2026-08-24** (`A-11`).
+`PARTITION BY RANGE ("OccurredAt")`, 25 ay peşinen + varsayılan parça. Eski ayı
+silmek tek komut. Birincil anahtar bu yüzden bileşik: `("Id","OccurredAt")`.
 
-Bugün yapılamadı: EF Core bölümlenmiş tabloyu modellemiyor ve birincil anahtarın
-bölümleme anahtarını içermesi gerekiyor — model ile veritabanı ayrışırdı.
+⚠️ **Bölümlendirme, boşaltma korumasında delik açıyor:** deyim bazlı tetikleyici
+parçalara **yayılmıyor**, bir ay parçası doğrudan boşaltılabiliyor. Bu yüzden
+tetikleyici her parçaya ayrı kuruluyor; `ensure_event_log_partition()` yeni parça
+açarken bunu üstleniyor.
 
-⚠️ **Bir kararın dayanağı bu.** BRIN indeksi sorgu hızını çözüyor, **silme
-maliyetini çözmüyor**. İlk ciddi veri girmeden önce yapılmalı; sonradan yapmak
-veri kopyalama demek.
+⚠️ **Tarihsiz sorgu tüm parçaları tarıyor.** Olay günlüğü sorguları tarih aralığı
+içermeli, yoksa bölümlendirme fayda değil maliyet olur.
+
+⚠️ **`ensure_event_log_partitions(24)` düzenli çağrılmalı** — zamanlanmış iş yok,
+görev `A-14`.
 
 **Buna dayananlar:** [[domain-gereksinimler]] — olay günlüğü saklama süresinin
 ertelenmesi. Bölümlendirme yapılmazsa o erteleme ucuz olmaktan çıkar.

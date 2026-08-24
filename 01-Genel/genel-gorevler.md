@@ -54,6 +54,12 @@ tamamlanamaz.**
          `grep` hiçbirini diğerine bağlamıyordu. Üçüncüsü özelliği **olmuş gibi**
          anlatıyordu. Yakalanma sebebi denetimin çift yön kurmaya zorlaması —
          kural doğrudan değil, **baktırarak** yakalattı
+      9. **Panodan beş görev sessizce silindi** — "A-09'dan A-07'ye kadar sil"
+         denmişti, panodaki gerçek sıra yüzünden aralık altı görevi kapsadı.
+         `dogrula.py` **TEMİZ dedi**: biçim bozulmamış, link kırılmamıştı —
+         *yazılı olan doğruydu, yazılmamış olan kayıptı.* Aynı oturumda verilen
+         "A-09 tamamlandı" bildirimi de doğruydu; yanlış olan görünmeyen yan
+         etkisiydi. Vault bir gün önce git'e alınmasaydı **kalıcı kayıptı**
 
 - [ ] **G-13** Fatura modelinin mali müşavirle teyidi · kimde: **Mert**
       Aracılık modeli seçildi; teyit gelene kadar şema esnek kurulacak

@@ -25,12 +25,14 @@ kısıtı, 5 tetikleyici. `EXCLUDE USING gist` beklendiği gibi EF tarafından
 üretilemedi, elle SQL yazıldı ve **canlı test edildi** — Mehmet/Cemil çakışması
 reddedildi, aynı günün ikinci turu geçti.
 
-**Commit'lendi ve push'landı:** `feat/veritabani-semasi` dalı, 91 dosya, commit
-`8bbb04f`. **Ana dala birleştirilmedi** — Mert'in onayı bekliyor:
-`git checkout main && git merge feat/veritabani-semasi && git push`
+**`main`'e birleştirildi ve push'landı** (2026-08-24): commit `8bbb04f`, 91 dosya.
+Birleştirme sonrası `main` üzerinde `--no-incremental` derleme 0 uyarı 0 hata,
+`GET /api/health` 200. Özellik dalı hem yerelde hem uzakta silindi.
 
-**Sırada:** `A-11` EventLogs bölümlendirme (**veri girmeden önce**) · `A-03` kimlik
-doğrulama · `A-10` ayrı veritabanı rolü · `A-06` test projesi.
+**`A-11` de BİTTİ** (2026-08-24): `EventLogs` bölümlenmiş, 26 parça, toplam 101 tablo.
+
+**Sırada:** `A-03` kimlik doğrulama · `A-10` ayrı veritabanı rolü ·
+`A-14` parça uzatma işi · `A-06` test projesi.
 
 | # | Bölüm | Durum |
 |---|---|---|
@@ -45,7 +47,7 @@ doğrulama · `A-10` ayrı veritabanı rolü · `A-06` test projesi.
 
 Domain katmanı **dolu**: 11 klasör, 54 dosya, 74 entity. Infrastructure'da
 `DailyCruisingDbContext` + 12 yapılandırma dosyası + 7 migration.
-Veritabanında **75 tablo · 3 EXCLUDE kısıtı · 11 tetikleyici · 54 CHECK**.
+Veritabanında **75 tablo (+26 EventLogs parçası) · 3 EXCLUDE kısıtı · 54 CHECK**.
 **Application katmanı hâlâ boş** — iş mantığı ve uç nokta yazılmadı.
 Çalışan tek uç: `GET /api/health` → `{"status":"healthy"}`.
 

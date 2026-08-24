@@ -22,6 +22,7 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 
 - [[api-slnx-formati]] — .NET 10 solution formatı ve araç uyumu
 - [[api-webapi-sablon-tuzaklari]] — `dotnet new webapi` varsayılanları
+- [[api-aralikla-silme-tuzagi]] — "A'dan B'ye kadar sil" beş görevi götürdü
 
 İlgili: [[00-Index]] · [[api-kararlar]] · [[api-mimari]] · [[durum]]
 
