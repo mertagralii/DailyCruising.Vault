@@ -476,3 +476,72 @@ bölüm gidince her adım ayrı doğrulanıyor ve geri alınabiliyor.
 - Kısmi benzersiz indeksler kuruldu: işletme başına tek onaylı sözleşme, tek sahip
 
 İlgili: [[api-sema]] · [[api-desenler]] · [[api-durum]]
+
+---
+
+## 2026-08-24 — Üç ajan denetimi: 1. bölümde 17 kusur bulundu ve düzeltildi
+
+Mert *"aç bunu ve api araçlarını kullan"* dedi; [[api-araclar]]'ın üç tetikleyicisi de
+oluşmuştu. `database-reviewer`, `csharp-reviewer` ve `security-reviewer` paralel
+çalıştı. Üçü de kusur buldu; `csharp-reviewer` birleştirmeyi **engelledi**.
+
+### ⚠️ Bu bir vault ↔ kod çelişkisiydi
+
+Bulguların çoğu **[[api-sema]]'da doğru yazılmış ama koda geçmemiş** kurallardı.
+Şemada "işletme rolü yalnız IsPartnerAssignable=true yetkiler alabilir" yazıyordu;
+veritabanında böyle bir kısıt yoktu. Yani belge ile gerçek ayrışmıştı ve
+**`dogrula.py` bunu yakalayamaz** — semantik çelişki, kırık link değil.
+
+### Güvenlik: üç eksik birleşince gerçek yetki yükseltme zinciri
+
+1. `PartnerMembers.RoleId` herhangi bir role bağlanabiliyordu — FK "bu rol var mı"
+   der, "bu rol bu işletmenin mi" demez. `platform.admin`'in id'si yazılırsa çalışan
+   platform yetkilerini devralıyordu
+2. `Roles.PartnerId` null'a çekilebiliyordu → sahte "platform rolü" üretilebiliyordu
+3. `UserRoles`'a işletme rolü eklenebiliyordu — kural yalnız yorum satırındaydı
+
+Üçü birlikte: **bir çalışan başka bir işletmenin verisini görebiliyordu.**
+
+**Çözüm: üç plpgsql tetikleyici** (`Bolum1_GuvenlikTetikleyicileri` migration'ı).
+FK ve CHECK bu kuralları ifade edemiyor — FK doğru satırı değil var olan satırı
+kontrol eder, CHECK başka tabloya bakamaz.
+
+**Neden kodda değil veritabanında:** şemanın kendi ilkesi. 3. bölümde fiyat
+çakışması için *"uygulama kodundaki kontrol, o kontrolü atlayan bir yazma yolu
+yazıldığında sessizce bozulur"* denip `EXCLUDE` kısıtı konmuştu. En kritik güvenlik
+kuralında aynı ilkeyi terk etmek tutarsızlıktı.
+
+**Kanıt:** dört saldırı senaryosu canlı denendi, dördü de reddedildi; meşru işlem
+geçti (bkz. `A-02` görev kanıtı).
+
+### Diğer düzeltmeler
+
+| Bulgu | Düzeltme |
+|---|---|
+| `(PartnerId, Key)` benzersizliği platform rollerinde çalışmıyordu — Postgres'te NULL, NULL'a eşit değil, iki `platform.admin` açılabiliyordu | İki ayrı **kısmi** benzersiz indeks: `PartnerId IS NULL` ve `IS NOT NULL` |
+| `EmailVerifiedAt` mutable `Email`'e bağlıydı → hesap devralma | **`User.PendingEmail`** eklendi + `UserTokenPurpose.EmailChange` |
+| `TokenHash` adı bcrypt tuzağı kuruyordu (bcrypt her çağrıda farklı çıktı verir, `WHERE` hiç eşleşmez) | **`TokenSha256`** olarak yeniden adlandırıldı, gerekçe koda yazıldı |
+| `uuid v7` kararı şemada vardı, kodda yoktu | `HasDefaultValueSql("uuidv7()")` — PostgreSQL 18 yerleşik fonksiyonu |
+| Enum→string dönüşümü `OnModelCreating`'de refleksiyonla, yapılandırmalardan SONRA çalışıyordu; ileride yazılacak `.HasConversion<int>()`'ı sessizce eziyordu | `ConfigureConventions` + `Properties<Enum>().HaveConversion<string>()` — yapılandırmalardan ÖNCE çalışır, ezilebilir |
+| `UseNpgsql(null)` hata vermiyor; uygulama açılıp ilk istekte anlamsız hatayla düşüyordu | Başlangıçta hemen patlıyor, mesaj user-secrets komutunu veriyor |
+| `Roles.PartnerId` yabancı anahtarsızdı | FK → `Partners`, `Restrict` |
+| Kanıt kolonları (`ApprovedByUserId`, `SentByUserId`, `GrantedByUserId`, `InvitedByUserId`, `CreatedByUserId`) çıplak uuid'di — "anlaşmazlıkta tek kanıt" dediğimiz alanın ucu kopabiliyordu | Hepsine FK → `Users`, `Restrict` |
+| `ConsentRecords` → `User` **Cascade**'di; kullanıcı silinince KVKK onay ispatı da siliniyordu | **`Restrict`** — silme isteği geldiğinde karar vermek zorunda kalınır |
+| `PartnerId` üzerinde yalnız kısmi indeks vardı; "işletmenin tüm sözleşmeleri" sorgusu filtreyi içermediği için tablo taramasına düşüyordu | Ayrıca düz indeks |
+| Partner çocuklarında `OnDelete` tutarsızdı (sözleşme `Restrict`, evrak `Cascade`) | Hepsi `Restrict` — "red kaydı silinmez" kuralıyla uyumlu |
+| `Status='Approved'` iken `ApprovedAt`/`ApprovedByUserId` boş kalabiliyordu | `CK_Contracts_ApprovedEvidence` |
+| Reddedilen başvuruda sebep boş kalabiliyordu | `CK_Partners_RejectionReason` |
+| Kısmi indeks filtresi `'Approved'` düz metindi; enum adı değişse sessizce bozulurdu | `nameof(ContractStatus.Approved)` |
+| Entity ve yapılandırma sınıfları `sealed` değildi | Hepsi `sealed` |
+
+### İleriye taşınan iki uyarı (henüz açık)
+
+- **`AllowedHosts: "*"`** duruyor. Parola sıfırlama linkleri `Request.Host`'tan
+  kurulursa Host header injection ile sahte link üretilebilir. Linkler sabit
+  yapılandırılmış base URL'den kurulacak → `A-03`
+- **Uygulama rolü tabloların sahibi.** 6. bölümdeki "para defteri tetikleyiciyle
+  değişmez" iddiası ancak uygulama rolü tablo sahibi DEĞİLSE geçerli — sahip
+  `ALTER TABLE ... DISABLE TRIGGER` diyebilir. Ayrı, en az ayrıcalıklı bir rol
+  gerekiyor → `A-10`
+
+İlgili: [[api-sema]] · [[api-desenler]] · [[api-durum]] · [[api-araclar]]

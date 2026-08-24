@@ -15,6 +15,12 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🔵 Yapılacak
 
+- [ ] **A-10** Uygulama için ayrı, en az ayrıcalıklı veritabanı rolü · öncelik: orta
+      Bugün uygulama rolü `dailycruising` **tabloların sahibi**. 6. bölümdeki "para
+      defteri tetikleyiciyle değişmez" iddiası ancak sahip OLMAYAN bir rolle geçerli —
+      sahip `ALTER TABLE ... DISABLE TRIGGER` diyebilir
+      Bağımlı: 6. bölüm migration'ından ÖNCE · Kabul: uygulama rolü tetikleyiciyi
+      devre dışı bırakamıyor, migration ayrı rolle çalışıyor
 - [ ] **A-09** Kalan yedi bölümün entity'leri ve migration'ları · öncelik: yüksek
       Bağımlı: A-02 · Bölüm bölüm ilerlenecek, hepsi tek migration'da değil
       Sıra: 2 katalog · 3 fiyat · 4 takvim+sefer · 5 rezervasyon · 6 para ·
@@ -30,6 +36,13 @@ Biçim ve gerekçe -> [[genel-desenler]]
       İş ortağı sahibi kendi çalışanlarını tanımlar ve yetkilerini kısar (devredilmiş yönetim)
       Kabul: iş ortağı yalnız kendi kayıtlarını görür; panel uçları kimliksiz 401
       Not: web tarafındaki panel rotaları şu an herkese açık -> [[durum]]
+      ⚠️ **Host header injection:** `AllowedHosts` hâlâ `*`. Parola sıfırlama ve
+      e-posta doğrulama linkleri `Request.Host`'tan DEĞİL, sabit yapılandırılmış
+      base URL'den kurulacak — yoksa sahte sıfırlama linki üretilebilir
+      ⚠️ Jeton karşılaştırması **SHA-256** ile; bcrypt kullanılırsa `WHERE` hiç
+      eşleşmez -> [[api-sema]]
+      ⚠️ Kapsam sorgusu `PartnerMembers.Status = Active` filtresini unutmamalı;
+      benzersiz indeks Status'tan bağımsız, çıkarılmış çalışan satırı duruyor
 - [ ] **A-04** Rezervasyon toplamının sunucuda yeniden hesaplanması · öncelik: yüksek
       Bağımlı: A-01 · Kabul: istemciden gelen tutar yok sayılır, sunucu tutarı esas
       Gerekçe güvenliktir; PRD atfı dayanaksız -> [[api-kararlar]] 2026-08-22
@@ -60,7 +73,14 @@ _(boş)_
       tablo adları PascalCase çoğul (`Users`, `PartnerMembers`) ·
       `dotnet build` 0 uyarı 0 hata · `GET /api/health` hâlâ `{"status":"healthy"}` ·
       kısıtlar canlı denendi: citext büyük/küçük harf çakışmasını, CHECK %150
-      komisyonu **reddetti** -> [[api-kararlar]] 2026-08-24
+      komisyonu **reddetti**
+      **Üç ajan denetiminden geçti** (database/csharp/security-reviewer), 17 kusur
+      bulundu ve düzeltildi; ikinci migration `Bolum1_GuvenlikTetikleyicileri`
+      Kanıt-2: dört saldırı senaryosu canlı denendi ve **dördü de reddedildi** —
+      çalışana platform.admin atama · işletme roluna yasak yetki bağlama ·
+      UserRoles'a işletme rolü koyma · ikinci platform.admin açma.
+      Meşru işlem (kendi rolünü kendi çalışanına verme) geçti
+      -> [[api-kararlar]] 2026-08-24
 - [x] **A-01** Veritabanı şemasının sekiz bölümde çıkarılması · bitti: 2026-08-24
       Kanıt: sekiz bölümün tamamı [[api-sema]] içinde, hepsi Mert onaylı.
       1-5 tek tek konuşuldu; 6-8 Claude tasarladı, altı açık soru toplu cevaplandı.

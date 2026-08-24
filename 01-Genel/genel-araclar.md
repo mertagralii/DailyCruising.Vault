@@ -60,6 +60,28 @@ yok. Ama serbest ≠ gelişigüzel: aşağıdaki tetikleyiciler dışında çağ
 başlatmadan önce ne kadar süreceği ve neyi kapsayacağı tek satırla bildirilir —
 izin için değil, Mert görsün diye.
 
+## ECC — alandan bağımsız olanlar
+
+Komutlar `/ecc:<ad>`, skill'ler `Skill` aracıyla `ecc:<ad>`. Alan-özgü eşlemeler
+[[api-araclar]] ve [[web-araclar]] içinde; burada yalnız her iki tarafta geçerli
+olanlar var.
+
+| Tetikleyici | Ne | Neden |
+|---|---|---|
+| Ciddi bir işe başlamadan önce | `/ecc:plan` | Riski değerlendirir, adım planı üretir ve **koda dokunmadan CONFIRM bekler** |
+| Hangi komutları hangi sırayla çalıştıracağım belirsiz | `Skill: ecc:ecc-recipes` | İş akışını doğru komut **grubuna**, sırasıyla ve durma koşuluyla eşler |
+| ECC'de ne var, ne yok | `/ecc:ecc-guide` | Canlı repo yüzeyinden ajan/skill/komut/hook listesi |
+| Kod yazıldı, incelenecek | `/ecc:code-review` | Yerel commit edilmemiş değişiklik veya PR numarası/URL alır |
+| "Bitti" denmeden önce | `Skill: ecc:verification-loop` | Bu projenin bilinen arıza modu kanıtsız tamamlandı raporu |
+| Mimari karar verildi | `Skill: ecc:architecture-decision-records` | ADR üretir — ama bu projede kararlar `*-kararlar.md`'ye gider, ADR **ikinci bir otorite yaratmaz** |
+| Yayın öncesi hazırlık | `Skill: ecc:production-audit` | Yerel kanıta dayalı "prod'da ne kırılır" denetimi |
+| Bir hook veya kapı işi tıkadı | → [[genel-ecc-hook-profilleri]] | 33 hook'un hangisi ne yapıyor, nasıl kapatılıyor |
+
+⚠️ **Kullanılmayacak ECC parçaları — bu projede ikinci otorite yaratırlar:**
+`ecc:ck` ve `ecc:unified-memory` (kalıcı bellek katmanları) vault'un yerini almaya
+çalışır; `durum.md` tek otorite kuralını bozar → [[genel-kararlar]] 2026-08-24.
+`ecc:continuous-learning` **deprecated**, kullanılmaz.
+
 ## Kullanılmayacaklar
 
 - (bu alanda şu an yok)

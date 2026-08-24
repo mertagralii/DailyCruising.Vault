@@ -329,3 +329,37 @@ için.
 verip kullandırmamanın anlamsızlığıydı. Elendi.
 
 İlgili: [[genel-araclar]] · [[api-araclar]] · [[web-araclar]] · [[durum]]
+
+---
+
+## 2026-08-24 — İki eklenti proje bazlı kuruldu, küresel ayar kirletilmedi
+
+**Karar (Mert):** `ui-ux-pro-max` (nextlevelbuilder) ve `seo-butler` (mertagralii)
+**yalnız bu projede** etkin olacak. Tanımları `DailyCruising/.claude/settings.json`
+içinde; `~/.claude/settings.json` değiştirilmedi.
+
+**Neden:** Mert'in açık talebi — *"benim user scope'uma kurma"*. Küresel kurulum
+her projede menüyü şişirir; DailyCruising'e özgü bir SEO eklentisinin başka bir
+projede görünmesi gürültüdür.
+
+**Nasıl:** `extraKnownMarketplaces` + `enabledPlugins` anahtarları proje düzeyi
+`settings.json`'a yazıldı:
+
+| Eklenti | Marketplace | Gereksinim |
+|---|---|---|
+| `ui-ux-pro-max` | `ui-ux-pro-max-skill` | Python 3 |
+| `seo-butler` | `seo-butler-marketplace` | Node 18+ |
+
+Küresel kalanlar: `ecc`, `superpowers`, `context7`, `playwright`,
+`frontend-design` — bunlar her projede geçerli.
+
+**Etkin olması için yeni oturum gerekir.** Eklentiler oturum açılışında yüklenir;
+çalışan oturumlar bu ikisini görmez → [[genel-esszamanli-oturumlar]]
+
+**Kullanım eşlemeleri** gerekçeleriyle [[web-araclar]] içinde. Özellikle iki uyarı
+oraya yazıldı: `ui-ux-pro-max` **tasarımı olmayan** yeni iş içindir, var olan ekranı
+"iyileştirmek" tasarımdan sapmadır; `seo-butler`'ın canlı komutları yayın öncesi
+anlamsızdır ve `/seo` yer tutucu kurumsal veriyle çalıştırılırsa yanlış bilgi arama
+motoruna işlenir.
+
+İlgili: [[web-araclar]] · [[genel-araclar]] · [[durum]]

@@ -32,3 +32,4 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[genel-gorevler]] — yapılacak / yapılıyor / tamamlandı
 - [[genel-araclar]] — hangi durumda hangi plugin, skill, MCP
 - [[genel-esszamanli-oturumlar]] — üç oturum aynı anda açıkken hook, `pwd` ve git durumu nasıl yanıltıyor
+- [[genel-ecc-hook-profilleri]] — 33 ECC hook'u, işi durduranlar ve kapatma anahtarları

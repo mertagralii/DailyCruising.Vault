@@ -53,9 +53,10 @@ ayrı tablo istemeden bu tek kolonla çözülür.
 
 | Kolon | Tip | Not |
 |---|---|---|
-| Id | uuid | PK, v7 |
+| Id | uuid | PK, **v7** — `DEFAULT uuidv7()`, PostgreSQL 18 yerleşiği |
 | Email | citext | **benzersiz** |
 | EmailVerifiedAt | timestamptz? | null = doğrulanmamış |
+| **PendingEmail** | citext? | doğrulanmamış YENİ adres burada bekler |
 | PasswordHash | text | |
 | FullName | text | |
 | Phone | text | SMS zorunlu olduğu için boş geçilmez |
@@ -117,13 +118,35 @@ verdiği ekranda **listelenmez bile**. Bu kolon olmazsa yetki yükseltme açığ
 tekne sahibi kendi çalışanına komisyon değiştirme veya başka işletmeyi görme
 yetkisi verebilir.
 
-Kısıt: `PartnerId` dolu bir rol, yalnız `IsPartnerAssignable = true` yetkiler alabilir.
+Kısıt: `PartnerId` dolu bir rol, yalnız `IsPartnerAssignable = true` yetkiler
+alabilir. **Bu kural plpgsql tetikleyiciyle veritabanında zorlanıyor** — CHECK
+başka tabloya bakamadığı için başka yolu yok.
 
 #### `RolePermissions` · `UserRoles`
 
 `RolePermissions`: (RoleId, PermissionId) bileşik PK.
 `UserRoles`: yalnız **platform** rolleri için. İşletme içi rol
 `PartnerMembers.RoleId` üzerinden gelir; iki yol karışmaz.
+
+### Üç tetikleyici — yetki modelinin gerçek kilidi
+
+2026-08-24 denetiminde bu üç kuralın **yalnız yorum satırında** yazdığı, veritabanında
+karşılığı olmadığı bulundu. Üçü birleşince bir çalışan başka bir işletmenin verisini
+görebiliyordu. Artık `Bolum1_GuvenlikTetikleyicileri` migration'ında:
+
+| Tetikleyici | Engellediği |
+|---|---|
+| `trg_partner_member_role_scope` | Çalışana başka işletmenin veya platformun rolünü atamak |
+| `trg_role_permission_assignable` | İşletme roluna `IsPartnerAssignable = false` yetki bağlamak |
+| `trg_user_role_is_platform` | `UserRoles`'a işletme rolü koymak |
+
+Yabancı anahtar bunları ifade edemiyor: FK "bu satır var mı" der, **"bu satır doğru
+satır mı" demez**.
+
+`Roles` üzerinde ayrıca **iki ayrı** kısmi benzersiz indeks var, tek bileşik indeks
+değil: Postgres'te NULL başka bir NULL'a eşit sayılmadığı için `(PartnerId, Key)`
+benzersizliği platform rollerinde hiçbir şey engellemiyordu — iki tane
+`platform.admin` açılabiliyordu.
 
 #### `ContractTemplates` · `Contracts`
 
@@ -151,10 +174,22 @@ KVKK'da onay aldığını söylemek yetmez, ispatı gerekir.
 
 #### `RefreshTokens` · `UserTokens`
 
-`RefreshTokens`: oturum sürdürme. `TokenHash` saklanır, düz metin değil.
+`RefreshTokens`: oturum sürdürme. **`TokenSha256`** saklanır, düz metin değil.
 `RevokedAt`, `ReplacedById` ile zincir izlenir.
-`UserTokens`: e-posta doğrulama ve parola sıfırlama. `Purpose`, `ExpiresAt`,
-`ConsumedAt` — tek kullanımlık.
+`UserTokens`: e-posta doğrulama, parola sıfırlama ve **e-posta değiştirme**.
+`Purpose`, `ExpiresAt`, `ConsumedAt` — tek kullanımlık; `CreatedIp`/`UserAgent`
+oran sınırlama ve adli iz için.
+
+⚠️ **Kolon adı bilerek `TokenSha256`.** Parolalarda kullanılan bcrypt/argon2 buraya
+UYMAZ — her çağrıda farklı çıktı verdikleri için `WHERE TokenSha256 = @hash` hiç
+eşleşmez. Jeton zaten yüksek entropili; yavaş hash değil **deterministik** hash gerekiyor.
+
+⚠️ **`PendingEmail` neden var:** `EmailVerifiedAt` tek başına *hangi* adresin
+doğrulandığını söylemiyor. Saldırgan kendi adresiyle doğrulayıp sonra e-postasını
+kurbanınkiyle değiştirirse, değiştirme kodu `EmailVerifiedAt`'i sıfırlamayı
+unuttuğu anda kurbanın geçmiş misafir rezervasyonları saldırgana bağlanır.
+`PendingEmail` bunu yapısal olarak imkânsız kılıyor: `Email` ancak jeton
+kullanılınca değişiyor.
 
 #### `PartnerDocuments`
 
