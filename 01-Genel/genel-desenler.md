@@ -94,15 +94,23 @@ Bir karar **"X ucuz/mümkün, çünkü Y var"** biçimindeyse Y **taşıyıcı g
 
 Kararın olduğu yerde:
 
-    **Dayanak:** [[hedef-not]] — hangi özelliğe dayanıyor
+```
+**Dayanak:** [[hedef-not]] — hangi özelliğe dayanıyor
+```
 
 Dayanılan yerde:
 
-    **Buna dayananlar:** [[karar-notu]] — hangi karar
+```
+**Buna dayananlar:** [[karar-notu]] — hangi karar
+```
 
 **Tek yön yetmez.** Kırılma **Y tarafında** olur: bölümlendirme hiç yapılmadı ve
 ona dayanan saklama süresi kararı bundan habersizdi. Y'yi değiştiren kişinin,
 neyin çöktüğünü görmesi gerekir.
+
+*(Örnek satırlar kod bloğunda yazılır. Denetim eklendiği gün bu kuralın kendi
+belgesini yakaladı — girintili örnek gerçek link sayılmıştı. Betik ``` bloklarını
+ve satır içi kodu ayıklıyor, dört boşluk girintisini ayıklamıyor.)*
 
 **`dogrula.py` bunu denetler** (13. kontrol): `**Dayanak:**` satırı link vermiyorsa
 veya hedefte geri referans yoksa **hata verir**.
