@@ -246,3 +246,53 @@ commit attı, doğru cevap "temiz, `eb40c7e`" çıktı. Ayrıntı →
 [[genel-esszamanli-oturumlar]]
 
 İlgili: [[durum]] · [[api-durum]] · [[web-durum]] · [[calisma-duzeni]]
+
+---
+
+## 2026-08-24 — Vault sürüm kontrolüne alındı
+
+**Karar:** Vault `mertagralii/DailyCruising.Vault` private reposunda tutulur.
+
+**Neden:** 47 notun tek kopyası tek diskteydi — git reposu değil, Obsidian Sync
+kapalı, bulut yolunda değil, Time Machine hedefi bağlanamıyor. Vault'un varlık
+sebebi "hafıza kaybolmasın" iken kendisi kaybolmaya açıktı. İkinci ve daha sinsi
+sebep: geri alma. Vault'a üç oturum yazıyor; yanlış bir `Write` sürüm kontrolü
+olmadan **geri alınamaz**.
+
+**Kapsam dışı:** `.obsidian/workspace.json` ve `graph.json` (makineye özgü),
+`.claude` symlink'i (repo dışına gider, klonlandığında kırık olur).
+
+**Not — CLAUDE.md bu repoda var.** "Repolara AI araç dosyası ekleme" kuralı
+**ürün kod repoları** içindir (`DailyCruising.API`, `DailyCruising.Web`). Vault'un
+tamamı zaten bağlam dosyası; `CLAUDE.md` onun anayasası, çıkarılırsa vault anlamsız
+kalır.
+
+---
+
+## 2026-08-24 — Vault'un uzun vadeli hedefi: taşınabilir şablon
+
+**Karar (Mert):** Bu vault DailyCruising'de kanıtlanırsa, yeni projelerde ve
+**başka yazılımcılar tarafından** kullanılabilecek bir şablona dönüştürülecek.
+Görev `G-15`.
+
+**Neden:** Mert'in kendi ifadesi — iki gün sonra yeni bir projeye başladığında aynı
+hafıza sistemini kurmak, ve başkalarının da kurabilmesini sağlamak istiyor.
+
+**Bu hedefin bugünden getirdiği kısıt:** Yazarken **DailyCruising'e özgü olan** ile
+**her projede geçerli olan** ayrılabilir kalmalı.
+
+| Genel iskelet (şablona girer) | Projeye özgü (girmez) |
+|---|---|
+| Üç havuz, altı bölme düzeni | Tekne, sefer, rezervasyon domaini |
+| `acilis.md` + karakter tavanı | DailyCruising'in blocker'ları |
+| Pano biçimi, `Kanıt:` zorunluluğu | `A-`/`W-`/`G-` görev içerikleri |
+| `dogrula.py` denetimleri | Postgres/Next.js'e özgü desenler |
+| Hook'lar, yazma hakkı bölünmesi | `r-ht-m-temeller-sayfas` tasarım kaynağı |
+
+**Kanıt ölçütü — şablonlaştırma ne zaman hak edilir:** Sistem bu projede en az bir
+kez **yakalanmış hata** üretmiş olmalı. 2026-08-24 itibarıyla üç tane var: git
+durumu bayatlaması, `api-durum` çelişkisi, `domain-gereksinimler` tablosunun
+gövdesiyle çelişmesi. Yakalanan hata yoksa şablon yalnızca dosya düzenidir, sistem
+değil.
+
+İlgili: [[durum]] · [[genel-gorevler]] · [[calisma-duzeni]] · [[00-Index]]

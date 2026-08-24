@@ -17,10 +17,10 @@ tamamlanamaz.**
 
 ## 🔵 Yapılacak
 
-- [ ] **G-14** Vault'un yedeklenmesi · öncelik: **yüksek** · kimde: **Mert**
-      Kabul: vault private bir git reposunda ve push edilmiş. Şu an git reposu
-      değil, Obsidian Sync kapalı, bulut yolunda değil, Time Machine hedefi
-      bağlanamıyor — 47 notun tek kopyası tek diskte
+- [ ] **G-15** Vault'un başka projelere taşınabilir şablona dönüştürülmesi
+      Öncelik: bu proje kanıtlanınca · Kabul: boş bir projede kurulup çalışması,
+      DailyCruising'e özgü içerik ile genel iskeletin ayrılmış olması
+      Bağımlı: bu projede sistemin işe yaradığının kanıtlanması
 
 - [ ] **G-12** Çevrimdışı biniş · kimde: **Mert**
       İskelede internet çekmezse QR doğrulama ne olacak? G-01'den arta kalan tek soru
@@ -44,6 +44,11 @@ tamamlanamaz.**
 _(boş)_
 
 ## 🟢 Tamamlandı
+
+- [x] **G-14** Vault'un yedeklenmesi · bitti: 2026-08-24
+      Kanıt: `mertagralii/DailyCruising.Vault` (private) oluşturuldu ve push edildi ·
+      117 dosya, commit `db57a77` · `git status` origin/main ile eşit ·
+      `.obsidian/workspace.json`, `graph.json` ve `.claude` symlink'i `.gitignore`'da
 
 - [x] **G-01** Domain görüşmesi: iş kurallarının tamamının netleştirilmesi · bitti: 2026-08-24
       Kanıt: [[domain-gereksinimler]] 60+ karar, her biri gerekçeli · DÖNÜLECEK

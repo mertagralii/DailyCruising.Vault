@@ -56,7 +56,7 @@ Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 | 1 | **Kimlik doğrulama yok** | `/admin`, `/owner-panel`, `/support-panel`, `/account` **herkese açık**. Gerçek veriye bağlanmadan önce mutlaka kapatılmalı — bu bir güvenlik açığı | Beraber |
 | 2 | **API yok** | Backend'de yalnızca `/api/health`. Tüm arayüz `src/lib/data/*.ts` mock verisiyle çalışıyor. **Şema çıkarma sürüyor** — 8 bölümün 3'ü onaylı, şemayı bloke eden açık soru yok → [[api-durum]] | Beraber |
 | 3 | **Fiyat sunucuda doğrulanmıyor** | Rezervasyon toplamı istemcide hesaplanıyor; sunucuda yeniden hesaplanmalı, yoksa fiyat manipülasyonuna açık. Gerekçe PRD değil **güvenlik** | Beraber |
-| 4 | **Vault'un yedeği yok** | Git reposu değil, Obsidian Sync kapalı, bulut yolunda değil, Time Machine hedefi bağlanamıyor. 43 notun tek kopyası tek diskte | Mert |
+| ~~4~~ | ~~**Vault'un yedeği yok**~~ | **2026-08-24'te kapatıldı.** `mertagralii/DailyCruising.Vault` (private) oluşturuldu, 117 dosya push edildi. Artık vault'ta yapılan yanlış bir yazma geri alınabilir | — |
 | ~~5~~ | ~~Yönetim ve işletme detay ekranları erişilemez~~ | **2026-08-23'te koptu, aynı gün kapatıldı.** 23 yönetim + 3 işletme ekranı geri bağlandı ve tarayıcıda doğrulandı. Sonrasında işletmeye 4 ekran daha eklendi (tekne detayı — tasarımda vardı hiç uygulanmamıştı, fiyatlandırma, menü, yeni tekne başvurusu); işletme tarafı **3 değil 7**, yetim ekran kalmadı → [[web-durum]] | — |
 
 ## 🟡 Karara bağlanmamış — genel
