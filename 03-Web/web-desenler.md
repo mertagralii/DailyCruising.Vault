@@ -23,6 +23,34 @@ durum: guncel
   Katman dışı bir `a { }` kuralı, class seçicili Tailwind yardımcısını özgüllükten
   bağımsız olarak ezer -> [[web-tailwind-katman-tuzagi]]
 - Bölüm boşlukları elle değil `Section` bileşenine parametre olarak verilir
+- **Küçük metne açık satır yüksekliği yazılır.** `globals.css` gövdeye **26px sabit**
+  veriyor; `leading-` verilmeyen her öğe bunu miras alıyor. Tasarımda `line-height`
+  yoksa bizde `leading-[normal]` yazılmalı, boş bırakılmaz. 2026-08-24'te aynı hata
+  dört ayrı yerde çıktı: tekne kartı satırları, takvim gün başlığı, hücre gün
+  numarası, tablo rozet hücresi -> [[web-olcum-yanlis-pozitifleri]]
+  *(Genel kural değil — bu projenin gövde ayarına özgü. Şablona taşınırsa
+  "gövde sabit satır yüksekliği veriyorsa açık yaz" biçiminde genelleşir.)*
+
+## Duyarlı kırılımlar
+
+Tailwind'in hazır ekran adları bu tasarımla uyuşmuyor. Temaya iki kırılım eklendi;
+**yeni ızgara yazarken bunlar kullanılır, `lg`/`md` değil**:
+
+| Ad | Değer | Nereden |
+|---|---|---|
+| `wide` | 1180px | Tasarımın tek eşiği: `const wide = vw >= 1180` |
+| `mid` | 720px | İkinci eşik: `aboutCols`, `cardCols`, `whyCols` için `vw < 720` |
+
+Izgara kuralları (tasarımdan birebir): istatistik 4 → darda 2 · çift blok 2 → 1 ·
+kart ızgarası 3 → 2 → 1 · panel yan menüsü `248px 1fr` → tek kolon.
+
+- **Geniş tablo kabı yalnızca dar ekranda kaydırır:** `overflow-x-auto
+  wide:overflow-x-visible`. Her ölçüde açık bırakılırsa tarayıcı 15px kaydırma
+  çubuğu ekliyor ve masaüstü ölçümü tasarımdan sapıyor; tasarımda kaydırma kabı
+  yok, geniş tablo kartın dışına taşıyor -> [[web-kararlar]]
+
+*(Kırılım değerleri DailyCruising tasarımına özgü; "hazır ekran adlarını değil
+tasarımın kendi eşiklerini kullan" kuralı her projede geçerli.)*
 
 ## Tek kaynaklar
 
