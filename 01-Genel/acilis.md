@@ -84,4 +84,14 @@ backend → `02-API/*` · frontend → `03-Web/*` · vault/genel → `01-Genel/*
 `durum.md`'ye yalnız vault oturumu yazar. Başka oturum açıkken git durumu ve
 "şu an ne yapılıyor" bilgisi vault'a yazılmaz, önce `SendMessage` ile sorulur.
 
+## Araç zinciri — işe başlamadan
+
+Her alanın sıralı bir zinciri var; sıra rastgele değil, her adım öncekinin
+kaçırdığını yakalar. `01-Genel/genel-araclar.md` · `02-API/api-araclar.md` ·
+`03-Web/web-araclar.md`.
+
+Üçünde de aynı kapı: **araç gerekli koşuldur, yeterli değildir.**
+Web'de build temiz ≠ görünüm doğru · API'de build temiz ≠ uç nokta doğru ·
+genel'de "karar verildi" ≠ dosyalar senkron.
+
 İlgili: [[00-Index]] · [[durum]] · [[CLAUDE]] · [[genel-desenler]] · [[genel-gorevler]]
