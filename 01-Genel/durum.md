@@ -66,12 +66,13 @@ Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 | # | Konu | Neden blocker | Kimde |
 |---|---|---|---|
 | 1 | **Kimlik doğrulama yok** | `/admin`, `/owner-panel`, `/support-panel`, `/account` **herkese açık**. Gerçek veriye bağlanmadan önce mutlaka kapatılmalı — bu bir güvenlik açığı | Beraber |
-| 2 | **İş uç noktası yok** | **Şema bitti** (2026-08-24, 75 tablo, `feat/veritabani-semasi` dalında `8bbb04f`) ama iş uç noktası hâlâ yok — yalnız `/api/health` ve `/openapi/v1.json`. Arayüz `src/lib/data/*.ts` mock verisiyle çalışıyor. **Blocker duruyor, sebebi değişti** → [[api-durum]] | Beraber |
+| 2 | **Katalog ve arama uçları yok** | **2026-08-26'da yeniden ölçüldü, metin değişti, blocker duruyor.** Rezervasyon oluştur/iptal, fiyat teklifi, QR biniş, personel uçları **yazıldı** (8 controller, 27 uç nokta). Ama **katalog** (tekne, kiralama tipi, fiyat girişi) ve **arama** uçları yok — yani bugün sisteme tekne girilemiyor, müşteri tekne arayamaz. Gerçek ölçü: **102 tablo, 27 uç nokta**. `W-04` buna bağlı bekliyor → [[api-mimari]] | Beraber |
 | ~~3~~ | ~~**Fiyat sunucuda doğrulanmıyor**~~ | **2026-08-24'te kapatıldı** (`A-04`). `POST /api/pricing/quote` ayakta. Kanıt: istemci `grandTotalTry:1` ve `discountAmountTry:9999` gönderdi, sunucu **1000.00 ve 0** döndü — `QuoteRequest`'te tutar alanı **yok**, yani alanlar reddedilmedi, **hiç okunmadı**. 42 test geçiyor | — |
 | ~~4~~ | ~~**Vault'un yedeği yok**~~ | **2026-08-24'te kapatıldı.** `mertagralii/DailyCruising.Vault` (private) oluşturuldu, 117 dosya push edildi. Artık vault'ta yapılan yanlış bir yazma geri alınabilir | — |
-| 5 | **Zamanlanmış iş katmanı yok** | Sekiz karar buna dayanıyor ve hiçbirinde adı geçmiyor. Kodda `IHostedService`/`BackgroundService`/`Hangfire`/`Quartz` **sıfır sonuç**. Çöküş sessiz değil **satışı durdurucu**: süresi dolmayan hold `CHECK (SoldSeats <= Capacity)` yüzünden koltukları kalıcı kilitler, süresi dolmayan teklif seferi `EXCLUDE` kısıtı yüzünden tarihi sonsuza kadar kapatır. **Şemanın en güçlü iki garantisi, iş katmanı yokken sistemi kilitleyen mekanizmalara dönüşüyor** → [[genel-tasiyici-gerekce-taramasi]] | Claude |
+| ~~5~~ | ~~**Zamanlanmış iş katmanı yok**~~ | **2026-08-26'da kapatıldı** (`A-15`). `Application/Jobs/IScheduledJob` + `Infrastructure/Jobs/ScheduledJobRunner`, **altı iş** çalışıyor: hold temizliği, teklif süresi, konuşma kapatma, sefer tamamlama, olay günlüğü bölümü, TCMB kuru. `JobHealthController` durumu dışarı veriyor. Sekiz kararın dayandığı katman artık var → [[api-mimari]] | — |
 | 6 | **`Boats.AverageRating` güncellenmiyor** | Şema iki bölümde **zıt** söylüyor: "önden hesaplı" ↔ "canlı hesaplanır". Güncelleyen yok. Alan `0` kalır, puan filtresi her teknede aynı değeri görür; `IX_Boats_Search` sayesinde **hızlı çalışır ve hata vermez** — sessiz yanlış sonuç → [[genel-tasiyici-gerekce-taramasi]] | Claude |
 | 7 | **KVKK gerekçesi doğrulanmadı** | Kimlik verisi toplamanın tek hukuki dayanağı "yolcu listesi ister" anahtarı; şemada yalnız rezervasyona dondurulan **kopyası** var, kaynak kolon `Boats`/`BoatRentalTypes` listelerinde yok. Yoksa ya hiç istenmez ya herkesten istenir — ikisi de gerekçeyi çökertir → [[genel-tasiyici-gerekce-taramasi]] | Claude |
+| 9 | **Çift rezervasyon açığı** | `POST /api/reservations`'ta **idempotency yok** — istekte `IdempotencyKey`, `ClientRef` benzeri alan yok, `Reservation` entity'sinde de yok. `Payments.IdempotencyKey` **başka bir şeydir** (ödeme sağlayıcısı için) ve bunu kapsamaz; `Reservation.Code` benzersiz ama **sunucuda üretiliyor**, çift göndermeyi durdurmaz. İstemci tarafında da koruma yok: `Button`'da `loading` durumu kapsam dışı bırakıldı. **İki tarafta da açık** — kullanıcı gönder düğmesine iki kez basarsa iki rezervasyon oluşur, ikisi de koltuk düşer. Web oturumu bildirdi, vault oturumu kodda doğruladı | Beraber |
 | ~~8~~ | ~~Yönetim ve işletme detay ekranları erişilemez~~ | **2026-08-23'te koptu, aynı gün kapatıldı.** 23 yönetim + 3 işletme ekranı geri bağlandı ve tarayıcıda doğrulandı. Sonrasında işletmeye 4 ekran daha eklendi (tekne detayı — tasarımda vardı hiç uygulanmamıştı, fiyatlandırma, menü, yeni tekne başvurusu); işletme tarafı **3 değil 7**, yetim ekran kalmadı → [[web-durum]] | — |
 
 ## 🟡 Karara bağlanmamış — genel
@@ -84,6 +85,7 @@ Alan-özgü olanlar kendi dosyalarında: [[api-durum]] · [[web-durum]]
 | ~~i18n yöntemi~~ | **Karara bağlandı 2026-08-23** | Ayrı **çeviri tabloları** (alan çifti değil). Diller TR/EN/DE/RU; özellik ertelendi ama **şema baştan kurulacak** → [[domain-gereksinimler]] |
 | **Dile göre ayrı slug** | Gelecek sürüm | SEO gerekçesi. Mert: *"kesinlikle yapacağız"*. i18n çeviri tabloları kararının uzantısı; şema buna kapatılmayacak → [[domain-gereksinimler]] |
 | **"Kararı platform değil tekne sahibi verir"** | Tasarım ilkesi | Ayarlanabilir olan **işletme tarzıdır**; komisyon, iptal politikası ve kupon platformda kalır. Yeni bir ayar eklenirken bu ayrım sorulur → [[domain-gereksinimler]] |
+| **`S-12` artık iki alanı birden kesiyor** | Mert'te | Müşteri kaynaklı iptalde iade oranı kararlaşmadı. Bugüne kadar API sorusuydu; iptal e-posta şablonunda `RefundFormatted` ve `RefundDays` yer tutucuları olduğu için **web tarafında da bağımlılık doğdu**. ⚠️ Cevap gelmeden iptal e-postası **gönderilmemeli** — yanlış tutar yazan e-posta geri alınamaz → [[api-durum]] · [[web-durum]] |
 | Deploy | Karar yok | CI/CD, hosting, ortam yönetimi konuşulmadı |
 | **Sezonluk AI analiz raporları** | Gelecek sürüm | ⚠️ **Analiz ertelenir, VERİ TOPLAMA ertelenemez** — olay günlüğü şemaya bugün girmeli, geçmişe dönük üretilemez → [[domain-gereksinimler]] |
 | **AI otomasyonları** | Gelecek sürüm | E-postaya kişiye göre otomatik cevap, haftalık otomatik blog yazısı → [[domain-gereksinimler]] |
@@ -100,29 +102,28 @@ Alan-özgü olanlar kendi dosyalarında: [[api-durum]] · [[web-durum]]
 
 ## ⚠️ Vault ↔ kod çelişkileri
 
-**2026-08-26 — `dogrula.py` şu an 2 bulgu veriyor, bu beklenen durumdur.**
+**2026-08-26 — `dogrula.py` TEMİZ.** Kontrol 15 (mimari bayatlığı) bugün eklendi, iki
+gerçek bulgu üretti, ikisi de aynı gün kapandı:
 
-Kontrol 15 (mimari bayatlığı) bugün eklendi ve iki gerçek bulgu üretti:
-
-| Dosya | Beyan | Koddaki gerçek |
+| Dosya | Bulgu | Sonuç |
 |---|---|---|
-| `02-API/api-mimari.md` | `guncelleme: 2026-08-24`, "iş uç noktası hâlâ yok", 8 migration, 74 entity | 8 controller, 19 migration, 75 entity, 194 dosya eklendi/silindi |
-| `03-Web/web-mimari.md` | `guncelleme: 2026-08-21` | 87 dosya eklendi/silindi |
+| `02-API/api-mimari.md` | 194 dosya eklendi/silindi; "iş uç noktası hâlâ yok" derken 8 controller vardı | backend düzeltti — 75 entity, 19 migration, 27 uç nokta, zamanlanmış işler ve dış servisler eklendi |
+| `03-Web/web-mimari.md` | 87 dosya; rota envanteri "sadece `/`" diyordu | web oturumu düzeltti — dosya listesi yerine **katman** yazıldı |
 
-**Bu dosyalar alan oturumlarına aittir** — vault oturumu içeriklerini düzeltmez, yalnız
-bildirir. İkisine de `SendMessage` gönderildi. Düzeltilene kadar `dogrula.py` kırmızı
-kalır; **kırmızı doğrudur, susturulmaz.**
+Sebep disiplin hatası değil, kuralda boşluktu: `*-mimari.md` ne okuma ne yazma
+tablosundaydı → [[genel-desenler]] "Tetikleyicisi olmayan dosya çürür". Boşluk
+`CLAUDE.md` + `acilis.md`'de kapatıldı, denetimi kontrol 15 yapıyor.
 
-Sebep bir disiplin hatası değil, kuralda boşluktu → [[genel-desenler]] "Tetikleyicisi
-olmayan dosya çürür". Boşluk `CLAUDE.md`'de kapatıldı (okuma + yazma tetikleyicisi).
+**Kontrol ilk gününde üçüncü bir şey buldu:** düzeltme için dosya açılınca ölü bir uç
+nokta çıktı — `GET /api/auth/yetki-denemesi`, *"geçici, A-03 bitince kaldırılacak"*
+yorumuyla yazılmış, koşul gerçekleştiği hâlde ayakta kalmıştı. Kaldırıldı, 146 test
+geçiyor. Kuralın değeri bakmayı zorlamasından geliyor →
+[[genel-desenler]] "Koşullu geçici şeyin koşulu panoya yazılır"
 
-
-Bir not koda aykırı çıkarsa buraya yazılır; sessizce düzeltilmez.
-
-| Tarih | Not | Çelişki | Çözüm |
-|---|---|---|---|
-| 2026-08-24 | [[domain-gereksinimler]] — "Cevap bekleyenler" tablosu | Tablo 35b/38/39/40/41'i **açık** gösteriyordu; beşi de 22–23 Ağustos'ta cevaplanmış, cevaplar **aynı dosyanın gövdesinde** duruyordu. Dosya kendi kendisiyle çelişiyordu; iki oturum bunları blocker sandı | Tablo 2026-08-24'te kapanış yerleriyle yeniden yazıldı. `dogrula.py` bunu **yakalayamaz** (semantik çelişki); korunma yolu `domain-karari` skill'i — cevap geldiğinde tabloyu aynı turda düşürür |
-| 2026-08-22 | [[proje]] — "davranışı tersine mühendislikle çıkarılmış bir şartnameyle belgelendi" | Belge diskte **yok**; `~/Desktop`, `~/Documents`, `~/Downloads` ve proje klasörü tarandı. Bu dosyaya yapılan "PRD 14. kural" türü atıflar dayanaksız | Backend sıfırdan tasarlanacak → [[api-kararlar]] 2026-08-22. İş tanımı geçerli, davranış atıfları doğrulanmamış sayılır |
+**Dokuzuncu "build temiz ≠ görünüm doğru" örneği:** `rounded-circle` beş yerde ölü
+sınıftı — `--r-circle` `:root`'ta vardı ama `@theme inline`'a bağlanmamıştı,
+`border-radius: 0` üretiyordu. **Build, lint ve tip denetimi üçü de temiz geçti** →
+[[web-baglanmamis-token-tuzagi]]
 
 ## Delete-zone — bilerek silinenler
 
