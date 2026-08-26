@@ -220,6 +220,24 @@ kurmak yerine, korunmayan şeyi korunan yere taşı.**
 Yorumdaki koşul yeterli değildir; yorumu okuyacak bir tetikleyici yok →
 [[genel-desenler]] "Tetikleyicisi olmayan dosya çürür" ile aynı sınıf.
 
+### Yardımcıya çıkarılan kod, çıkarılırken alan kaybedebilir
+
+Bir sonuç nesnesini ortak yardımcıya taşırken alanlardan biri sabit değere
+(`null`, `0`, `false`) yazılırsa derleyici susar, tipler tutar, testlerin çoğu geçer.
+Kayıp yalnız o alanı **okuyan** bir test varsa görülür.
+
+2026-08-26: `PricingService`'te sonuç nesnesi yardımcıya çıkarılırken
+`CouponRejectionReason` sabit `null` yazıldı — kuponu reddedilen müşteri sebebini
+göremiyordu. Mevcut bir test yakaladı. Refactor'ün kendisi doğruydu, taşıma sırasında
+bir alan düştü.
+
+**Bunu yakalayan şey inceleme değil, var olan testlerdir.** Sonuç: davranışı olan her
+alanın onu **okuyan** bir testi olmalı; yoksa refactor sırasında sessizce düşer ve
+tip sistemi haber vermez — `null` geçerli bir `string?` değeridir.
+
+Aynı sınıftan: [[genel-desenler]] "Yazılı olan doğru, yazılmamış olan kayıp" —
+doğru rapor, doğru yan etki anlamına gelmez.
+
 ## Kendi çıkarımım, karar değildir
 
 `domain-gereksinimler.md`'de `*(çıkarım)*` etiketli maddeler var — Mert'in söylediği

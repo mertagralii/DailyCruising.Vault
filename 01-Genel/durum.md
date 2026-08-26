@@ -72,12 +72,16 @@ Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 | ~~5~~ | ~~**Zamanlanmış iş katmanı yok**~~ | **2026-08-26'da kapatıldı** (`A-15`). `Application/Jobs/IScheduledJob` + `Infrastructure/Jobs/ScheduledJobRunner`, **altı iş** çalışıyor: hold temizliği, teklif süresi, konuşma kapatma, sefer tamamlama, olay günlüğü bölümü, TCMB kuru. `JobHealthController` durumu dışarı veriyor. Sekiz kararın dayandığı katman artık var → [[api-mimari]] | — |
 | 6 | **`Boats.AverageRating` güncellenmiyor** | Şema iki bölümde **zıt** söylüyor: "önden hesaplı" ↔ "canlı hesaplanır". Güncelleyen yok. Alan `0` kalır, puan filtresi her teknede aynı değeri görür; `IX_Boats_Search` sayesinde **hızlı çalışır ve hata vermez** — sessiz yanlış sonuç → [[genel-tasiyici-gerekce-taramasi]] | Claude |
 | 7 | **KVKK gerekçesi doğrulanmadı** | Kimlik verisi toplamanın tek hukuki dayanağı "yolcu listesi ister" anahtarı; şemada yalnız rezervasyona dondurulan **kopyası** var, kaynak kolon `Boats`/`BoatRentalTypes` listelerinde yok. Yoksa ya hiç istenmez ya herkesten istenir — ikisi de gerekçeyi çökertir → [[genel-tasiyici-gerekce-taramasi]] | Claude |
-| 9 | **Çift rezervasyon açığı** | `POST /api/reservations`'ta **idempotency yok** — istekte `IdempotencyKey`, `ClientRef` benzeri alan yok, `Reservation` entity'sinde de yok. `Payments.IdempotencyKey` **başka bir şeydir** (ödeme sağlayıcısı için) ve bunu kapsamaz; `Reservation.Code` benzersiz ama **sunucuda üretiliyor**, çift göndermeyi durdurmaz. İstemci tarafında da koruma yok: `Button`'da `loading` durumu kapsam dışı bırakıldı. **İki tarafta da açık** — kullanıcı gönder düğmesine iki kez basarsa iki rezervasyon oluşur, ikisi de koltuk düşer. Web oturumu bildirdi, vault oturumu kodda doğruladı | Beraber |
+| ~~9~~ | ~~**Çift rezervasyon açığı**~~ | **2026-08-26'da açıldı ve aynı gün kapatıldı** (`baf71a7`). `Reservations.IdempotencyKey` **zorunlu**, benzersiz indeksli — `Payments` deseninin aynısı. Kanıt: aynı gövdeyle eşzamanlı iki `curl` → **201/201, aynı kod `XGEZ4GBE`, veritabanında tek satır**; anahtarsız istek **400**; farklı anahtar iki ayrı rezervasyon açıyor. 153 test geçiyor. **Zorunlu seçildi çünkü** isteğe bağlı olsaydı göndermeyi unutan istemci sessizce korumasız kalır, bunu ancak bir müşteri iki kod aldığında fark ederdik → [[api-kararlar]] | — |
 | ~~8~~ | ~~Yönetim ve işletme detay ekranları erişilemez~~ | **2026-08-23'te koptu, aynı gün kapatıldı.** 23 yönetim + 3 işletme ekranı geri bağlandı ve tarayıcıda doğrulandı. Sonrasında işletmeye 4 ekran daha eklendi (tekne detayı — tasarımda vardı hiç uygulanmamıştı, fiyatlandırma, menü, yeni tekne başvurusu); işletme tarafı **3 değil 7**, yetim ekran kalmadı → [[web-durum]] | — |
 
 ## 🟡 Karara bağlanmamış — genel
 
 Alan-özgü olanlar kendi dosyalarında: [[api-durum]] · [[web-durum]]
+
+⚠️ **2026-08-26'da Mert karar almayı backend oturumuna bıraktı.** O gün alınan teknik
+kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor ve
+**topluca onay bekliyor** — onaylanmadan kalıcı sayılmazlar.
 
 | Konu | Durum | Not |
 |---|---|---|
