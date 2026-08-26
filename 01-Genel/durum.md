@@ -100,6 +100,23 @@ Alan-özgü olanlar kendi dosyalarında: [[api-durum]] · [[web-durum]]
 
 ## ⚠️ Vault ↔ kod çelişkileri
 
+**2026-08-26 — `dogrula.py` şu an 2 bulgu veriyor, bu beklenen durumdur.**
+
+Kontrol 15 (mimari bayatlığı) bugün eklendi ve iki gerçek bulgu üretti:
+
+| Dosya | Beyan | Koddaki gerçek |
+|---|---|---|
+| `02-API/api-mimari.md` | `guncelleme: 2026-08-24`, "iş uç noktası hâlâ yok", 8 migration, 74 entity | 8 controller, 19 migration, 75 entity, 194 dosya eklendi/silindi |
+| `03-Web/web-mimari.md` | `guncelleme: 2026-08-21` | 87 dosya eklendi/silindi |
+
+**Bu dosyalar alan oturumlarına aittir** — vault oturumu içeriklerini düzeltmez, yalnız
+bildirir. İkisine de `SendMessage` gönderildi. Düzeltilene kadar `dogrula.py` kırmızı
+kalır; **kırmızı doğrudur, susturulmaz.**
+
+Sebep bir disiplin hatası değil, kuralda boşluktu → [[genel-desenler]] "Tetikleyicisi
+olmayan dosya çürür". Boşluk `CLAUDE.md`'de kapatıldı (okuma + yazma tetikleyicisi).
+
+
 Bir not koda aykırı çıkarsa buraya yazılır; sessizce düzeltilmez.
 
 | Tarih | Not | Çelişki | Çözüm |

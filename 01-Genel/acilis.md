@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-08-24
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -47,6 +47,7 @@ front-end'de 19 dosya commit'lenmemiş
 | `Back-End/` altında dosya değiştirmeden ÖNCE | [[api-desenler]] + [[api-araclar]] + [[api-gorevler]] |
 | `Front-End/` altında dosya değiştirmeden ÖNCE | [[web-desenler]] + [[web-araclar]] + [[web-gorevler]] |
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
+| **Yapıya dokunacağım** — yeni katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — dokunmadan önce oku, dokunduktan sonra yaz |
 | Tekrar eden bir soruna takıldım | ilgili `*-notlar.md` hub'ı |
 | Domain / iş kuralı konuşulacak | [[domain-gereksinimler]] — kanonik kaynak |
 | Yeni bir özellik veya sistem tasarlanacak | [[genel-araclar]] |

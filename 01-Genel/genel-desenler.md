@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-08-24
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -166,6 +166,36 @@ teknik muhakeme gerektirir; onu `database-reviewer` ajanı yakaladı — **araç
 zincirinin inceleme adımı** → [[genel-araclar]]. Yani biçimi betik, anlamı ajan
 denetler. İnceleme adımı bu yüzden atlanmaz: *"kod çalışıyor"* ile *"gerekçe
 tutarlı"* farklı şeylerdir.
+
+## Tetikleyicisi olmayan dosya çürür
+
+Bir bölme açarken iki soruya cevap zorunlu: **ne zaman okunur, ne zaman yazılır?**
+İkisinin de cevabı yoksa bölme açılmaz — çünkü açılırsa bayatlamaktan başka bir şey
+yapamaz.
+
+2026-08-26'da ölçüldü: `*-mimari.md` ne okuma ne yazma tablosundaydı. API'de on
+commit boyunca beş dosya **her görevde** güncellendi, `api-mimari.md` hiç
+güncellenmedi; "iş uç noktası hâlâ yok" derken sekiz controller yazılmıştı. Aynı
+tarama `web-mimari.md`'yi de bayat buldu (87 dosya).
+
+**Bunu disiplin hatası saymak yanlış olurdu.** İki dosyanın ortak özelliği tetikleyicisiz
+olmalarıydı; aynı oturum tetikleyicisi olan dosyaları düzenli güncelledi. Ayrım önemli:
+
+| Sınıf | Belirti | Çözüm |
+|---|---|---|
+| **Kural boşluğu** | tetikleyicisi olan dosya güncel, olmayan bayat | kuralı değiştir |
+| **Disiplin** | aynı kural altındaki dosyaların bir kısmı güncel, bir kısmı değil | hatırlat |
+
+İkisini karıştırmak pahalıdır: kural boşluğuna "daha dikkatli ol" demek hiçbir şeyi
+düzeltmez, çünkü dikkat edilecek bir kural yoktur.
+
+**Ölçüt beyandır, dosya damgası değil.** `dogrula.py` kontrol 15 bayatlığı
+frontmatter'daki `guncelleme` ile kod reposundaki yapısal değişimi karşılaştırarak
+ölçer — `mtime` değil. Dosyaya dokunmak onu doğru yapmaz; beyan edilen tarih ile
+kodun gerçeği karşılaştırılır. Aynı sebeple yalnız **eklenen/silinen** dosyalar sayılır:
+içerik değişikliği yapıyı değiştirmez.
+
+İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Kendi çıkarımım, karar değildir
 

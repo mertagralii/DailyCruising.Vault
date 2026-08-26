@@ -1,7 +1,7 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-08-21
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -32,6 +32,7 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | `DailyCruising.Back-End/` altında dosya değiştirmeden ÖNCE | `02-API/api-desenler.md` + `02-API/api-araclar.md` + `02-API/api-gorevler.md` |
 | `DailyCruising.Front-End/` altında dosya değiştirmeden ÖNCE | `03-Web/web-desenler.md` + `03-Web/web-araclar.md` + `03-Web/web-gorevler.md` |
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
+| **Yapıya dokunacağım** — yeni proje, katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — "ne var" sorusunun tek cevabı |
 | Domain / iş kuralı konuşulacak | `01-Genel/domain-gereksinimler.md` + `01-Genel/durum.md` |
 | Vault'ta ne var, tam liste | `00-Index.md` |
 
@@ -66,12 +67,28 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | Her dosyada tekrar uygulanan kural | `<alan>-desenler.md` |
 | Yapılacak / yapılıyor / biten iş | `<alan>-gorevler.md` |
 | Hangi durumda hangi plugin, skill, MCP | `<alan>-araclar.md` |
+| **Yapının kendisi değişti** — proje, katman, controller, uç nokta, migration, dış servis eklendi/kaldırıldı | `<alan>-mimari.md` (sayılar dahil: kaç entity, kaç migration) |
 | **Alanın güncel durumu** | `02-API/api-durum.md` · `03-Web/web-durum.md` — o alanda çalışan oturum buraya yazar |
 | **Genel durum, "nerede kaldık"** | `01-Genel/durum.md` — **tek otorite**, yalnız vault oturumu yazar |
 | Cevapsız soru / blocker / çelişki / silinen şey | `01-Genel/durum.md` |
 | **Kendi gözlemim** — tuzak, denenip olmayan, beklenmedik davranış | `<alan>/notlar/` altında yeni dosya + hub'ına link |
 | O günün çalışma kaydı (arşiv) | `04-Oturumlar/<YYYY-AA-GG>.md` |
 | Başka bir harness'a (Codex, Cursor) devir | `ecc memory handoff` → [[genel-kararlar]] |
+
+### Tetikleyicisi olmayan dosya çürür
+
+`*-mimari.md` 2026-08-26'ya kadar **ne okuma ne yazma tablosunda** vardı. Sonuç:
+API'de on commit boyunca beş dosya her görevde güncellendi, `api-mimari.md` hiç
+güncellenmedi ve "iş uç noktası hâlâ yok" derken sekiz controller yazılmıştı.
+
+Bu bir disiplin hatası **değildi** — dosyanın bayatlamaktan başka yapabileceği bir
+şey yoktu. Ders: **bir dosyayı vault'a koymak onu canlı tutmaz; onu canlı tutan
+tetikleyicisidir.** Yeni bölme açılırken iki soru zorunlu: *ne zaman okunur, ne
+zaman yazılır?* İkisinin de cevabı yoksa bölme açılmaz.
+
+`_araclar/dogrula.py` (kontrol 15) bunu artık ölçüyor: mimari dosyasının
+`guncelleme` tarihinden bu yana kod reposunda eklenen/silinen kaynak dosyaları
+sayar. Kural yazılı olmakla kalmaz, denetlenir.
 
 ### Oturumu bitirmeden
 

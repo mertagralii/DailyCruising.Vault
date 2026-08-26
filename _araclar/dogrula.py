@@ -15,6 +15,9 @@ Tarar:
  10. acilis.md karakter tavani
  11. durum.md tazeligi
  12. Arac tablosunda bos "Neden" hucresi
+ 13. Tek yonlu tasiyici gerekce (Dayanak var, geri referans yok)
+ 14. Gorev kimligi kaybi (tum git gecmisine karsi)
+ 15. Mimari bayatligi (kod reposundaki yapisal degisime karsi)
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -328,6 +331,65 @@ if _git(["rev-parse", "--git-dir"]) is not None:
                 f"[gorev kimligi kayboldu] {rel}: {', '.join(kayip)} "
                 f"panonun gecmisinde vardi, simdi yok — iptal edilen gorev silinmez, "
                 f"'iptal' olarak Tamamlandi'ya tasinir")
+
+
+# 15: mimari bayatligi — vault'a degil KODA karsi olculur
+# 2026-08-26: `*-mimari.md` ne okuma ne yazma tablosundaydi. On commit boyunca
+# api-mimari.md hic guncellenmedi ve "is uc noktasi hala yok" derken sekiz
+# controller yazilmisti. Disiplin hatasi degildi — dosyanin bayatlamaktan baska
+# yapabilecegi bir sey yoktu. Tetikleyici CLAUDE.md'ye eklendi; olcumu bu yapar.
+#
+# Olcut mtime DEGIL frontmatter'daki `guncelleme` — dosyaya dokunmak onu dogru
+# yapmaz, beyan edilen tarih ile kodun gercegi karsilastirilir. Eklenen/silinen
+# kaynak dosya sayilir: yeni dosya = yapi degisti. Icerik degisikligi yapiyi
+# degistirmez, o yuzden --diff-filter=AD.
+MIMARI_REPO = {
+    "02-API": ("api-mimari.md", "DailyCruising.Back-End",
+               (".cs", ".csproj", ".slnx")),
+    "03-Web": ("web-mimari.md", "DailyCruising.Front-End",
+               (".ts", ".tsx", ".js", ".jsx", ".css")),
+}
+YAPISAL_ESIK = 10
+YOL_DISI = ("obj/", "bin/", "node_modules/", ".next/", "dist/", "Migrations/Designer")
+
+
+def _git_repo(repo, args):
+    try:
+        r = subprocess.run(["git", "-C", str(repo)] + args,
+                           capture_output=True, text=True, timeout=15)
+        return r.stdout if r.returncode == 0 else None
+    except Exception:
+        return None
+
+
+for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
+    yol = VAULT / alan / dosya
+    repo = VAULT.parent / repo_adi
+    if not yol.exists() or not repo.exists():
+        continue
+    fm = frontmatter(yol.read_text(encoding="utf-8")) or {}
+    tarih = fm.get("guncelleme")
+    if not tarih or not re.match(r"^\d{4}-\d{2}-\d{2}$", tarih):
+        sorunlar.append(f"[mimari tarihsiz] {alan}/{dosya}: frontmatter'da "
+                        f"gecerli `guncelleme` yok — bayatlik olculemiyor")
+        continue
+    if _git_repo(repo, ["rev-parse", "--git-dir"]) is None:
+        continue
+    cikti = _git_repo(repo, ["log", f"--since={tarih}", "--diff-filter=AD",
+                             "--name-only", "--format="])
+    if cikti is None:
+        continue
+    degisen = {
+        s.strip() for s in cikti.splitlines()
+        if s.strip() and s.strip().endswith(uzantilar)
+        and not any(h in s for h in YOL_DISI)
+    }
+    if len(degisen) >= YAPISAL_ESIK:
+        sorunlar.append(
+            f"[mimari bayat] {alan}/{dosya}: `guncelleme: {tarih}` tarihinden bu "
+            f"yana {repo_adi} icinde {len(degisen)} kaynak dosya eklendi/silindi. "
+            f"Yapi degisti, mimari yazilmadi — dosya 'ne var' sorusuna yanlis cevap veriyor")
+
 
 
 print(f"Vault: {VAULT}")
