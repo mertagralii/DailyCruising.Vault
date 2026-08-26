@@ -197,6 +197,29 @@ içerik değişikliği yapıyı değiştirmez.
 
 İlgili: [[genel-esszamanli-oturumlar]]
 
+### Koşullu geçici şeyin koşulu panoya yazılır
+
+"Geçici" diye yazılan kodun kaldırılmasını tetikleyen hiçbir şey yoktur. Kod
+çalışır, test geçer, kimse rahatsız olmaz — kaldırılması gerektiğini yalnız onu
+yazan bilir ve o bilgi oturumla birlikte kaybolur.
+
+2026-08-26'da bulundu: `GET /api/auth/yetki-denemesi` ucu *"geçici, A-03 bitince
+gerçek uçlar aynı kalıbı kullanacak"* yorumuyla yazılmıştı. A-03'ün ilgili dilimi
+bitti, `PartnerStaffController` o kalıbı üretimde kullanıyordu — ucun işi bitmişti
+ama aylarca ayakta kaldı. Kimliği doğrulanmamış bir deneme ucu olarak.
+
+**Kural:** koşulu yazılı geçici bir şey (`X bitince kaldırılacak`) üretiliyorsa,
+o kaldırma işi **panoya görev olarak girer** — `Bağımlı: X` satırıyla.
+
+Buna yeni bir denetim yazılmadı ve bilerek yazılmadı: iki kod reposunda toplam
+**bir** geçici işaret var, yani nüfus denetim yazmayı hak etmiyor. Bunun yerine iş
+zaten denetlenen mekanizmaya bağlanıyor — pano `dogrula.py` kontrol 9 ve 14
+tarafından korunuyor, kimlik kaybı yakalanıyor, `Kanıt:` zorunlu. **Yeni makine
+kurmak yerine, korunmayan şeyi korunan yere taşı.**
+
+Yorumdaki koşul yeterli değildir; yorumu okuyacak bir tetikleyici yok →
+[[genel-desenler]] "Tetikleyicisi olmayan dosya çürür" ile aynı sınıf.
+
 ## Kendi çıkarımım, karar değildir
 
 `domain-gereksinimler.md`'de `*(çıkarım)*` etiketli maddeler var — Mert'in söylediği
