@@ -371,11 +371,29 @@ for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
     tarih = fm.get("guncelleme")
     if not tarih or not re.match(r"^\d{4}-\d{2}-\d{2}$", tarih):
         sorunlar.append(f"[mimari tarihsiz] {alan}/{dosya}: frontmatter'da "
-                        f"gecerli `guncelleme` yok — bayatlik olculemiyor")
-        continue
+                        f"gecerli `guncelleme` yok — insan okuru icin gerekli")
     if _git_repo(repo, ["rev-parse", "--git-dir"]) is None:
         continue
-    cikti = _git_repo(repo, ["log", f"--since={tarih}", "--diff-filter=AD",
+
+    # Olcut: mimari dosyasinin VAULT'taki commit zaman damgasi.
+    # 2026-08-27: ilk surum `guncelleme` beyanini (gun cozunurlugu) kullaniyordu ve
+    # yanlis pozitif verdi — web-mimari.md 08-27 03:25'te commit'lenmisti, sayilan
+    # 20 dosya 08-26 04:15'te eklenmisti, yani mimari koddan 23 saat SONRA
+    # guncellenmisti. Gun cozunurlugu bunu goremiyor ve **kontrolun ogrettigi
+    # davranisi cezalandiriyordu**: ayni gun hem kod yazip hem mimariyi guncelleyen
+    # oturum ertesi gun kirmizi goruyordu.
+    #
+    # Commit zamani mtime DEGILDIR: dosyaya dokunmak commit uretmez, icerik
+    # degismeden git kayit tutmaz. Yani "beyan olculur, dokunma olculmez" ilkesi
+    # korunuyor, yalniz cozunurluk saniyeye iniyor.
+    kirli = (_git(["status", "--porcelain", "--", yol.relative_to(VAULT).as_posix()]) or "").strip()
+    if kirli:
+        continue          # az once yazilmis, vault commit'i bekliyor — taze say
+    zaman = (_git(["log", "-1", "--format=%cI", "--",
+                   yol.relative_to(VAULT).as_posix()]) or "").strip()
+    if not zaman:
+        zaman = tarih     # hic commit'lenmemis: beyana geri dus
+    cikti = _git_repo(repo, ["log", f"--since={zaman}", "--diff-filter=AD",
                              "--name-only", "--format="])
     if cikti is None:
         continue
@@ -386,7 +404,7 @@ for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
     }
     if len(degisen) >= YAPISAL_ESIK:
         sorunlar.append(
-            f"[mimari bayat] {alan}/{dosya}: `guncelleme: {tarih}` tarihinden bu "
+            f"[mimari bayat] {alan}/{dosya}: son vault commit'inden ({zaman[:16]}) bu "
             f"yana {repo_adi} icinde {len(degisen)} kaynak dosya eklendi/silindi. "
             f"Yapi degisti, mimari yazilmadi — dosya 'ne var' sorusuna yanlis cevap veriyor")
 

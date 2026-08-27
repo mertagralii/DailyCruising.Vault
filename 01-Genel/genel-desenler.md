@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-08-26
+guncelleme: 2026-08-27
 durum: guncel
 ---
 
@@ -237,6 +237,30 @@ tip sistemi haber vermez — `null` geçerli bir `string?` değeridir.
 
 Aynı sınıftan: [[genel-desenler]] "Yazılı olan doğru, yazılmamış olan kayıp" —
 doğru rapor, doğru yan etki anlamına gelmez.
+
+### Denetim, öğrettiği davranışı cezalandırmamalı
+
+Bir kontrol yanlış pozitif veriyorsa asıl zarar gürültü değildir — **doğru davranan
+oturumun cezalandırılmasıdır.** Ceza öğreniliyor: iki kez boşuna kırmızı gören
+oturum üçüncüde ya eşiği yükseltir ya kontrolü kapatır. Denetim o an ölür.
+
+2026-08-27, kontrol 15'in ilk sürümü: ölçüt `guncelleme` beyanıydı ve o bir
+**tarih** (`YYYY-AA-GG`), kod commit'i ise bir **zaman damgası**. Aynı gün hem kod
+yazıp hem mimariyi güncelleyen oturum ertesi gün kırmızı görüyordu — ölçüldü,
+`web-mimari.md` koddan **23 saat sonra** güncellenmişti ve kontrol bunu göremedi.
+Yani kontrol, tam da kendi öğrettiği davranışı cezalandırıyordu.
+
+**Düzeltme çözünürlükte, ölçütte değil.** Ölçüt artık dosyanın **vault'taki commit
+zaman damgası**. Bu `mtime` değildir: dosyaya dokunmak commit üretmez, içerik
+değişmeden git kayıt tutmaz. *"Beyan ölçülür, dokunma ölçülmez"* ilkesi duruyor,
+yalnız saniyeye iniyor. Henüz commit'lenmemiş dosya **taze sayılır** — az önce
+yazılmıştır, vault commit'i bekliyordur.
+
+**Genel kural:** yanlış pozitif veren denetim susturulmaz ama **düzeltilmeden de
+bırakılmaz**. Üçüncü seçenek yok; bırakılırsa kendini iptal ettirir.
+
+Bunu kontrolü yazan değil, **cezalandırılan oturum** yakaladı. Ölçüsünü koyanın
+kendi ölçüsünün fazla kaba olduğunu görmesi zordur → [[genel-esszamanli-oturumlar]]
 
 ## Kendi çıkarımım, karar değildir
 
