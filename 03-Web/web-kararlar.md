@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: web
-guncelleme: 2026-08-26
+guncelleme: 2026-08-27
 durum: guncel
 ---
 
@@ -586,3 +586,153 @@ engel #1), yani bayrağın bugün getirisi sıfır. Kimlik doğrulama gelince
 **Yan bulgu — dokümana bakmasam yanlış yazacaktım:** Next 16'da `error.tsx`'in
 ikinci prop'u `reset` **değil** `retry`. Eğitim verimdeki ad eski.
 Kaynak: `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/error.md`
+
+---
+
+## 2026-08-27 — Rota koruması: jetonlar `httpOnly` çerezde, proxy yalnız kapı
+
+**Karar:** Kimlik akışı Next rota işleyicilerinden geçiyor. Giriş formu backend'i
+doğrudan çağırmıyor; `/api/auth/login`'e POST ediyor, jetonlar orada alınıp
+`httpOnly` çereze yazılıyor ve **tarayıcıya hiç dönmüyor**.
+
+**Neden:** Jeton `localStorage`'da ya da JS'ten okunabilir bir çerezde dursaydı
+tek bir XSS açığı tüm oturumları çalardı. `httpOnly` ile JS jetonu göremiyor —
+tarayıcıda ölçüldü, `document.cookie` boş.
+
+**Rol ayrı çerezde (`dc_role`), jetonun içinden okunmuyor.** Backend'de `role`
+diye bir alan **yok**; rol üç alandan türetiliyor. Türetmeyi girişte bir kez
+yapıp sonucu saklamak, proxy'nin her istekte JWT çözmesinden hem hızlı hem
+sağlam — proxy jetonun iç yapısına hiç bakmıyor, sözleşme değişse etkilenmiyor.
+
+**Proxy bir yetki sınırı değildir.** Jetonun imzasını doğrulamıyor; sahte
+çerezle geçilebilir ama geçilince bir şey elde edilmez — asıl kapı API'de, her
+istek Bearer ile gidiyor ve backend yeniden doğruluyor. Proxy'nin işi (1)
+oturumsuz kullanıcıyı boş panele sokmak yerine girişe almak, (2) savunma
+derinliği. **Bu ayrım yazılı olmazsa ileride "proxy var, güvendeyiz" denir.**
+
+**Next 16'da dosya adı `proxy.ts`** — `middleware.ts` kullanımdan kalktı.
+Dokümana bakmasam yanlış dosyayı yazacaktım; dosya sessizce hiç çalışmazdı.
+
+---
+
+## 2026-08-27 — Rol modeli backend'e uyduruldu: `staff` var, `admin`/`support` yok
+
+**Karar:** Roller `customer` · `owner` · `staff`. `/admin` ve `/support-panel`
+**aynı** role bakıyor.
+
+**Neden:** İlk taslakta `admin` ve `support` ayrı iki rol yazmıştım — tasarımda
+iki ayrı panel olduğu için. Backend'in gerçek modeli farklı: ikisi de
+`isPlatformStaff === true` koşuluna bakıyor, ayrım **rotada değil ekran içinde**
+ve `permissions` dizisinden yapılıyor (`boat.read`, `staff.manage`, …).
+
+Ayrı iki rol tanımlasaydım backend'de karşılığı olmayan bir ayrım uydurmuş
+olurdum: `dc_role=admin` ile `dc_role=support` arasındaki fark bizim
+kurgumuz olurdu, sunucu ikisini de aynı görürdü. **Uydurma ayrım, olmayan bir
+güvenlik hissi verir.**
+
+`staff` ile `owner` aynı anda doğru olamaz — platform personelinin `partnerId`'si
+yok, bu backend'de zorunlu kural.
+
+---
+
+## 2026-08-27 — Başarısız jeton yenileme asla tekrar denenmez
+
+**Karar:** `refreshOnce` eşzamanlı yenilemeleri tek çağrıya bağlıyor ve
+**başarısız yenileme tekrar denenmiyor**; çerezler silinip kullanıcı girişe
+alınıyor.
+
+**Neden:** Backend'de ölçüldü (2026-08-27): aynı yenileme jetonu ikinci kez
+gönderilirse yalnız o istek düşmüyor, **oturum zinciri komple kapanıyor** — bir
+önceki adımda alınan taze jeton da ölüyor. Tasarım böyle: çalınmış jeton
+saptanınca zincir kapatılıyor.
+
+Sonuç iki kural: (1) eşzamanlı iki `401` aynı jetonla yenilemeye giderse
+kullanıcı **kesin** çıkışa düşer, sıraya alma şart; (2) **"hata olursa bir daha
+dene" kodu yazılmayacak** — burada yeniden deneme, düzeltmeye çalıştığı şeyi
+kesinleştirir.
+
+Kapsam uyarısı: tek-uçuş kilidi **süreç içi**. Birden fazla sunucu örneğinde
+yarış yine mümkün; ölçeklenince paylaşılan kilit gerekir.
+
+---
+
+## 2026-08-27 — Backend'in beş ayrı hata şekli var, hepsi tek yerde ele alınıyor
+
+**Karar:** `api.ts` içindeki `hataOku` beş şekli de tanıyor.
+
+| Durum | Gövde |
+|---|---|
+| Uygulama hatası | `{ error }` |
+| Eşzamanlılık çakışması | `{ error, code: "ConcurrencyConflict" }` |
+| JWT ara katmanı 401 | **boş** + `WWW-Authenticate: Bearer` |
+| Doğrulama 400 | RFC 7807 `{ type, title, status, errors, traceId }` |
+| Hız sınırı 429 | **boş**, `Retry-After` **yok** |
+
+**Neden:** Son ikisini backend saymamıştı, ölçerken çıktı. İkisi de gövdesiz ya
+da farklı şekilde; `res.json()` doğrudan çağrılsa ikisinde de patlardı.
+
+**429 özellikle ayrı ele alınıyor:** kullanıcıya "tekrar dene" demek yanlış
+olurdu — tekrar dener, yine 429 alır ve sayacı uzatır. `Retry-After` olmadığı
+için "birkaç dakika" demekten başka seçenek yok, bu backend'e bildirildi.
+
+**Giriş hatasında backend'in metni aynen geçirilmiyor:** "böyle bir kullanıcı
+yok" ile "parola yanlış" ayrımı hesap sayımına (user enumeration) izin verir.
+Tek ve aynı mesaj dönüyor.
+
+---
+
+## 2026-08-27 — Çift gönderim kapısı `useState`'te değil `ref`'te
+
+**Karar:** `useSubmitGuard` kilidi bir `useRef` üzerinde tutuyor. `busy` durumu
+yalnız **görünüm** için var — kapı için değil.
+
+**Neden:** `setBusy(true)` eşzamanlı değil. Aynı kare içinde gelen iki tıklama
+da `busy === false` görür ve **ikisi de geçer**; durum güncellemesi henüz
+uygulanmamıştır. Ref anında yazılır, ikinci çağrı oradan döner.
+
+Bu, "düğmeyi `disabled` yaparım, yeter" varsayımının da cevabı: `disabled`
+render'dan sonra devreye giriyor ve forma **Enter** ile de gelinebiliyor. Kapı
+görünümde değil mantıkta durmak zorunda.
+
+**Ölçüldü:** vitrinde aynı karede üç tıklama → **1 istek**. `useState` tabanlı
+bir kapıda 3 olurdu.
+
+**Sınır:** Bu istemci koruması, sunucu idempotency'sinin yerini **tutmaz**.
+Ağ tekrarı, sekme kopyalama ve geri tuşu bu kapıdan geçmez. Gerçek çözüm
+`POST /api/reservations`'a idempotency anahtarı eklemek → `durum.md` engel 9.
+
+---
+
+## 2026-08-27 — Rezervasyon düğmesi `Button` primitifine taşınmadı
+
+**Karar:** `booking-form.tsx`'teki "Ödemeye geç" düğmesi ham `<button>` kaldı.
+
+**Neden:** Tasarımdaki ölçüsü 330×55, dolgu 16px, kenarlık yok. `Button`
+primitifi `h-12`/`h-14` sabit yükseklik ve `px-5`/`px-7` veriyor. Eşitlemek için
+`h-auto p-4 border-0` geçmek gerekirdi — ama **`cn()` tailwind-merge değil, düz
+birleştirme**: `h-14` ile `h-auto` aynı sınıf dizesinde durur ve hangisinin
+kazandığını sınıf sırası değil **CSS dosyasındaki sıra** belirler. Öngörülemez.
+
+Aynı sebeple giriş formunun 52px'lik düğmesi de sarılmadı.
+
+**Sonuç:** Yükleme davranışı primitife bağlı değil, **kancaya** bağlı. Ham
+düğmeler de `useSubmitGuard` + `Spinner` kullanarak aynı korumayı alıyor.
+Primitifi kullanamamak korumayı kaybettirmiyor.
+
+---
+
+## 2026-08-27 — Yükleme etiketi: genişlik sabitliği çağıranın seçimi
+
+**Karar:** `Button`'da `loading` etiketi **korur**, gösterge üstüne biner ve
+genişlik sabit kalır. `loadingLabel` verilirse etiket değişir ve genişlik oynar.
+
+**Neden:** İkisi de bazen doğru. Tabloda ya da yan yana düğmelerde genişlik
+oynaması yerleşimi sıçratır; tek başına duran bir gönder düğmesinde
+"Gönderiliyor…" yazması daha açıklayıcıdır. Tek doğru olmadığı için seçim
+çağıranda bırakıldı.
+
+**Erişilebilirlik tuzağı — yakalandı ve düzeltildi:** İlk sürümde hem görünür
+`loadingLabel` hem de `role="status"` canlı bölgesi basılıyordu. Ekran okuyucu
+metni **iki kez** okurdu; `textContent` de `"Gönderiliyor…Gönderiliyor…"`
+çıkıyordu. Canlı bölge artık **yalnız etiket görünmediğinde** basılıyor.
+Ölçümde yakalandı, gözle görülmüyordu.

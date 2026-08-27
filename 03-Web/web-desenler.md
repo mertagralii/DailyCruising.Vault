@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-26
+guncelleme: 2026-08-27
 durum: guncel
 ---
 
@@ -74,6 +74,37 @@ Tasarım kaynağında yok, token setinden türetildi -> [[web-kararlar]] 2026-08
   görselini gösterir, yoksa yer tutucu çizer
 - **`src/emails/*.html` sabit hex kuralının istisnasıdır** — e-posta istemcileri
   CSS değişkeni desteklemiyor. Marka rampası değişirse elle güncellenir
+
+## Kimlik ve korunan rotalar
+
+- **Jeton hiçbir zaman istemciye dönmez.** Giriş `/api/auth/login` rota
+  işleyicisinden geçer, jetonlar `httpOnly` çereze yazılır. Bileşenler jetonu
+  görmez, göremez
+- **`proxy.ts` yetki sınırı değildir** — imza doğrulamaz, yalnız yönlendirir.
+  Asıl kapı API'de. Yeni korunan rota eklerken `GUARDED` listesine yazılır ve
+  `matcher` güncellenir; **ikisinden biri unutulursa rota sessizce açık kalır**
+- **Next 16'da dosya adı `proxy.ts`**, `middleware.ts` kullanımdan kalktı
+- **Başarısız jeton yenilemesi tekrar denenmez** — backend zinciri kapatıyor,
+  ikinci deneme kullanıcıyı kesin olarak dışarı atar → [[web-kararlar]]
+- **Backend'in beş ayrı hata şekli var**, ikisi gövdesiz. `res.json()` doğrudan
+  çağrılmaz; gövde okunup boşsa ayrıştırılmaz
+- **Giriş hatasında backend metni aynen gösterilmez** — "kullanıcı yok" ile
+  "parola yanlış" ayrımı hesap sayımına izin verir
+
+## Gönderim ve yükleme
+
+- **Her gönderim `useSubmitGuard`'dan geçer.** Kilit `ref`'te, `useState`'te
+  değil: aynı karede gelen iki tıklama `busy === false` görür ve ikisi de geçer
+- **`disabled` tek başına yetmez** — render'dan sonra devreye giriyor ve forma
+  Enter ile de gelinebiliyor
+- **`Button.loading`** etiketi korur, gösterge üstüne biner (genişlik sabit).
+  `loadingLabel` verilirse etiket değişir; hangisinin doğru olduğu yere göre
+  değişir, seçim çağıranda
+- **Ham `<button>`'lar da korunabilir** — tasarım ölçüsü primitife uymuyorsa
+  sarma, `useSubmitGuard` + `Spinner` kullan. `cn()` tailwind-merge **değil**;
+  `h-14` ile `h-[52px]`'yi aynı dizeye koymak sonucu CSS sırasına bırakır
+- ⚠️ **İstemci kapısı sunucu idempotency'sinin yerini tutmaz** — ağ tekrarı,
+  sekme kopyalama ve geri tuşu buradan geçmez
 
 ## Tek kaynaklar
 

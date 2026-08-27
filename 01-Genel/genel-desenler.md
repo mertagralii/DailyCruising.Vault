@@ -282,6 +282,30 @@ sayılır.
 Değişken adı hatası derleyicisiz dillerde sessizdir; `eski`/`eski2` gibi ardışık
 adlar bu hatayı davet eder. Ayrı ve anlamlı ad kullan.
 
+### Okunup yazılmayan dosya, hiç okunmayandan kötüdür
+
+Tetikleyicisiz dosya çürür — ama çürümenin iki farklı ağırlığı var:
+
+| Durum | Sonuç | Örnek |
+|---|---|---|
+| Ne okunur ne yazılır | **Sessizce** yalan söyler; ancak biri açınca görülür | `api-mimari.md` |
+| **Okunur ama yazılmaz** | Yalanı **her oturuma enjekte eder** | `acilis.md` |
+
+2026-08-27'de ölçüldü: `acilis.md` her oturumda `SessionStart` hook'uyla otomatik
+yükleniyordu ve *"API: yalnız `/api/health` çalışıyor, sırada şema"* diyordu — o an
+21 controller, 69 yol, 106 tablo vardı. **Beş iddiasının beşi de yanlıştı.**
+
+Okuma tetikleyicisi vardı (en güçlüsü: otomatik), yazma tetikleyicisi yoktu. Yani
+dosya sıcaktı ama beslenmiyordu. Her yeni oturum bayat bilgiyle başlıyor, ilk
+kararlarını ona göre veriyordu.
+
+**Kural: bir dosyanın okunma sıklığı arttıkça yazma tetikleyicisinin sıkılığı da
+artmalı.** En sıcak dosya en sıkı tetikleyiciyi ister; tersi felakettir.
+`acilis.md` artık `durum.md` her değiştiğinde aynı oturumda güncellenir ve
+`dogrula.py` kontrol 16 aradaki açığı ölçer.
+
+Aynı sınıftan: [[genel-desenler]] "Tetikleyicisi olmayan dosya çürür"
+
 ## Kendi çıkarımım, karar değildir
 
 `domain-gereksinimler.md`'de `*(çıkarım)*` etiketli maddeler var — Mert'in söylediği

@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: web
-guncelleme: 2026-08-26
+guncelleme: 2026-08-27
 durum: guncel
 ---
 
@@ -21,12 +21,46 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 - [ ] **W-06** `brand.ts` kurumsal verilerinin gerçekleriyle değişmesi
       Kabul: telefon, e-posta, adres, TÜRSAB no Mert tarafından onaylanmış değerler
       Bağımlı: G-10
+- [ ] **W-12** `A-07b` — `openapi.json`'dan TypeScript tip üretimi
+      Kaynak: `../DailyCruising.Back-End/openapi.json` (69 path, 57 şema)
+      Uyarı: `GET /api/health/jobs` ve `/api/auth/*` yanıtları **anonim tip**,
+      şemaları yok — elle yazılacak, üretimden gelmeyecek
+- [ ] **W-14** Parola sıfırlama ekranı
+      Backend hazır: `POST /api/account/forgot-password` + `/reset-password`
+      Şu an giriş sayfasındaki "Şifremi unuttum" boş bağlantı — tasarımda da öyleydi
 
 ## 🟡 Yapılıyor
 
 
 
 ## 🟢 Tamamlandı
+
+- [x] **W-13** Çift gönderim kapısı · bitti: 2026-08-27 · `durum.md` engel 9
+      Kanıt: tarayıcıda ölçüldü — **aynı karede 3 tıklama → 1 istek**.
+      Kilit `useState`'te değil `ref`'te; `useState` olsaydı 3 istek giderdi
+      (durum güncellemesi eşzamanlı değil) → [[web-kararlar]]
+      `Button.loading`: genişlik 142px'te sabit, `aria-busy="true"`, gösterge
+      var, ekran okuyucuya "İşleniyor" duyuruluyor, bitince devre dışılık kalkıyor.
+      1280×730 ve 390px'te yatay taşma yok — yükleme sırasında da yok.
+      Düzeltilen hata: `loadingLabel` verildiğinde etiket **iki kez** basılıyordu
+      (görünür metin + canlı bölge), ekran okuyucu iki kez okurdu.
+      ⚠️ **Sunucu idempotency'sinin yerini tutmaz** — ağ tekrarı ve sekme
+      kopyalama bu kapıdan geçmez, engel 9 kapanmadı.
+
+- [x] **W-11** Rota koruması — panel rotaları kimlik doğrulamayla kapatıldı
+      · bitti: 2026-08-27 · `durum.md` blocker 1
+      Kanıt: **canlı API'ye karşı** (localhost:5163) ölçüldü, mock değil.
+      Oturumsuz 5 korunan rota → `/login?next=…` (307); 5 korumasız rota → 200.
+      Rol matrisi 16/16 doğru (sahte çerezle): `customer` panellerden
+      `/forbidden`'a, `owner` yalnız `/owner-panel`, `staff` üçüne de girer.
+      Rol çerezi yok/uydurma → girişe döner.
+      Gerçek kullanıcı kaydedilip giriş yapıldı: rol `customer` türetildi,
+      3 çerez de `httpOnly` yazıldı, tarayıcıda `document.cookie` **boş**.
+      Çıkış çerezleri sildi, kapı tekrar devreye girdi.
+      Açık yönlendirme: `//evil.com`, `https://evil.com`, `javascript:` süzülüyor
+      — hiçbir `href`/`src`/`action` içinde görünmüyor.
+      `npm run build` + `npm run lint` temiz, `ƒ Proxy (Middleware)` kayıtlı.
+      Not: **proxy yetki sınırı değil** — asıl kapı API'de → [[web-kararlar]]
 
 - [x] **W-10** Geri bildirim katmanı: toast, modal, hata sayfaları, iskelet,
       boş durum, sayfalama, dosya yükleme, rezervasyon başarı ekranı, QR biniş

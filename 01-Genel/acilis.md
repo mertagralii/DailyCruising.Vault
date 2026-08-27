@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-08-26
+guncelleme: 2026-08-27
 durum: guncel
 ---
 
@@ -27,15 +27,21 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 
 ## Şu an ne oluyor
 
-- **Web:** tasarım uygulanmış, sayfaların tasarıma göre piksel denetimi sürüyor (W-01)
-- **API:** iskelet var, yalnız `/api/health` çalışıyor. Domain görüşmesi bitti,
-  sırada **şema** (A-01, sekiz bölüm)
-- **Genel:** context havuzu yeniden düzenleniyor (G-09)
+- **API:** 21 controller · 69 yol · 85 işlem · 106 tablo · 39 migration · 441 test
+  yeşil. Ödeme uçtan uca çalışıyor (gerçek İyzico sandbox). Panoda **Mert'e bağlı
+  olmayan iş kalmadı**
+- **Web:** 25 rota, geri bildirim katmanı bitti (`W-10`). Sırada **rota koruması**,
+  sonra gerçek API'ye bağlanma (`W-04`)
+- **Genel:** 68 not, `dogrula.py` 15 kontrol
 
 Aktif engeller (ayrıntı -> [[durum]]):
-kimlik doğrulama yok, panel rotaları herkese açık · API yok, her şey mock ·
-fiyat sunucuda doğrulanmıyor · 1 domain sorusu Mert'te (çevrimdışı biniş, G-12) ·
-front-end'de 19 dosya commit'lenmemiş
+**panel rotaları korumasız — yalnız frontend** (`middleware.ts` yok, guard yok;
+API gerçek veri döndürdüğü için bedeli arttı) · **KVKK yolcu listesi dayanağı**
+doğrulanmadı
+
+Mert'te bekleyenler: `A-41` (alt üye iş yeri — para bugün işletmeye gitmiyor) ·
+`S-18` (kupon kırpma çelişkisi) · `S-12` (iade oranı, iptal e-postasını kilitliyor) ·
+testlerdeki iki ad değişikliği · [[api-benim-kararlarim]] toplu onayı
 
 ## Okuma tetikleyicileri — koşulsuz
 

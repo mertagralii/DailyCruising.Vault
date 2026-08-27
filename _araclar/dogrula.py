@@ -18,6 +18,7 @@ Tarar:
  13. Tek yonlu tasiyici gerekce (Dayanak var, geri referans yok)
  14. Gorev kimligi kaybi (tum git gecmisine karsi)
  15. Mimari bayatligi (kod reposundaki yapisal degisime karsi)
+ 16. acilis.md durum.md'nin gerisinde mi
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -407,6 +408,34 @@ for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
             f"[mimari bayat] {alan}/{dosya}: son vault commit'inden ({zaman[:16]}) bu "
             f"yana {repo_adi} icinde {len(degisen)} kaynak dosya eklendi/silindi. "
             f"Yapi degisti, mimari yazilmadi — dosya 'ne var' sorusuna yanlis cevap veriyor")
+
+
+
+# 16: acilis.md, durum.md'nin gerisinde kalmis mi
+# acilis.md her oturuma OTOMATIK yuklenir; durum.md'nin ozetidir. 2026-08-27'de
+# olculdu: "API: yalniz /api/health calisiyor, sirada sema" diyordu — o an 21
+# controller, 69 yol, 106 tablo vardi. Bes iddiasinin besi de yanlisti.
+#
+# Bu, api-mimari.md'nin bayatlamasindan DAHA agir: o dosya ne okunuyor ne
+# yaziliyordu, sessizce curudu. acilis.md **her oturumda okunuyor** ama hicbir
+# tetikleyici onu yazmiyordu — yani bayat bilgi her oturumun baglamina
+# enjekte ediliyordu. **Okunup yazilmayan dosya, hic okunmayandan kotudur.**
+ACILIS_ESIK = 3
+if _git(["rev-parse", "--git-dir"]) is not None:
+    a_yol, d_yol = VAULT / "01-Genel/acilis.md", VAULT / "01-Genel/durum.md"
+    if a_yol.exists() and d_yol.exists():
+        a_rel, d_rel = "01-Genel/acilis.md", "01-Genel/durum.md"
+        kirli_a = (_git(["status", "--porcelain", "--", a_rel]) or "").strip()
+        a_zaman = (_git(["log", "-1", "--format=%cI", "--", a_rel]) or "").strip()
+        if not kirli_a and a_zaman:
+            n = len((_git(["log", f"--since={a_zaman}", "--format=%H",
+                           "--", d_rel]) or "").split())
+            if n >= ACILIS_ESIK:
+                sorunlar.append(
+                    f"[acilis geride] 01-Genel/acilis.md son commit'inden "
+                    f"({a_zaman[:16]}) bu yana durum.md {n} kez degisti. "
+                    f"acilis her oturuma otomatik yuklenir — bayat kalirsa yanlis "
+                    f"bilgi her oturumun baglamina girer")
 
 
 
