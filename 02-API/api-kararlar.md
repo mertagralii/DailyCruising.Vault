@@ -2802,3 +2802,38 @@ olurdu. `A-38`'in "muafiyetin bedeli okumada da ödenir" kuralının devamı.
 
 ⚠️ **Akış başa sarılıyor.** İmza için okunan baytlar geri verilmeseydi
 yükleme, eksik bir akışla devam eder ve dosya **bozuk yazılırdı**.
+
+---
+
+## 2026-08-27 — API arayüzü: Scalar, Swagger değil
+
+**Karar (Mert):** Tarayıcıdan tıklanabilir bir API arayüzü. **Scalar** seçildi.
+
+**Neden Swagger/Swashbuckle değil:** Belgeyi zaten .NET 10'un yerleşik
+`Microsoft.AspNetCore.OpenApi`'si üretiyor. Swashbuckle'a dönmek, aynı işi
+yapan ikinci bir üretici, ek bağımlılık ve ek bakım demekti. Scalar yalnız
+GÖRÜNTÜLEYİCİ: mevcut belgeyi okuyor, üretimine karışmıyor.
+
+**Lisans doğrulandı:** MIT — paketin kendi `nuspec`'inden okundu, tahmin
+edilmedi. ImageSharp'ta bu adım atlansaydı ücretli bir lisansa bağlanmış
+olacaktık; aynı kontrolü burada da yaptım.
+
+⚠️ **`AddOpenApi()` GÜVENLİK ŞEMASINI KENDİLİĞİNDEN EKLEMİYOR.**
+`BearerSecurityTransformer` yazmak zorunlu oldu. Onsuz Scalar'ın jeton alanı
+hiç çıkmaz, uçların çoğu yetki istediği için her istek 401 döner ve arayüz
+**sessizce işe yaramaz** olurdu — hiç arayüz olmamasından kötü bir durum.
+
+⚠️ **Şema belgeye ekleniyor, uçlara ZORUNLU işaretlenmiyor.** Kimliksiz uçlar
+(arama, tekne detayı, rezervasyon, ödeme) gerçekten kimliksiz; hepsine "jeton
+gerekli" damgası vurmak belgeyi yalancı yapar ve frontend gereksiz yere jeton
+beklerdi.
+
+⚠️ **İKİ KATMAN, çünkü ortam değişkenine güvenilmiyor.** `IsDevelopment()`
+koşulu tek başına yeterli değil: yanlış ayarlanmış bir sunucu kendini
+Development sanabilir. `ApiReference:Enabled` üretimde açıksa uygulama HİÇ
+AÇILMIYOR. Üretime sızan bir arayüz, yetki isteyen 85 işlemin **tam
+haritasını** herkese verir — saldırgana keşif işini hazır sunmak olurdu.
+
+⚠️ `Microsoft.OpenApi` v2.7.5'te tipler kök ad alanına taşındı;
+`Microsoft.OpenApi.Models` her yerdeki örneklerde geçtiği için kolayca yanlış
+yazılıyor. Assembly'den doğrulandı.

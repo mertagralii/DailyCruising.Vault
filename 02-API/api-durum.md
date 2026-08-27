@@ -13,6 +13,12 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-08-27 — `A-63`: API arayüzü kuruldu.** `/scalar/v1`, yalnız
+Development. Jeton yapıştırılıp yetkili uç çağrılabiliyor (tarayıcıda
+doğrulandı: `200 OK`). Üretimde açılmaya çalışılırsa uygulama açılmıyor.
+Swagger/Swashbuckle kullanılmadı → [[api-kararlar]]
+
+
 **2026-08-27 — `A-62` BİTTİ.** Dosya beyanı içerik imzasıyla doğrulanıyor,
 evraklar yetkili uçlardan indiriliyor, `FileKey` dışarı hiç verilmiyor.
 **441 test geçiyor, 69 yol.**

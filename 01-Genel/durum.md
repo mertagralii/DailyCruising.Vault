@@ -57,8 +57,9 @@ o da Mert'e bağlı; üçüncüsü (`A-07`) frontend alanı.
 Bugün tahsilat **platform hesabına** yapılıyor, hakediş defterde duruyor ama
 işletmeye para geçmiyor. `A-58` de buna bağlı.
 
-Frontend `W-04` için hâlâ bekliyor: **katalog ve arama uçları yok** — sisteme
-tekne girilemiyor, müşteri tekne arayamaz. 106 tabloya karşı 69 yol.
+Frontend `W-04` için artık **API tarafında engel yok** — katalog ve arama uçları
+`A-33`/`A-34` ile 26 Ağustos'ta bitmiş. ⚠️ Bunu bu sabah ölçmeden "yok" diye
+yazmıştım; blocker metnini kopyaladım, kaynağa bakmadım. Backend düzeltti.
 
 ⚠️ **Mert'te bekleyen kararlar:** `A-41` (İyzico pazaryeri) · `S-18` (kupon
 kırpma çelişkisi, `S-10` ile `S-15` birbirini bozuyor) · `S-12` (müşteri
@@ -76,13 +77,13 @@ Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 
 | # | Konu | Neden blocker | Kimde |
 |---|---|---|---|
-| 1 | **Kimlik doğrulama yok** | `/admin`, `/owner-panel`, `/support-panel`, `/account` **herkese açık**. Gerçek veriye bağlanmadan önce mutlaka kapatılmalı — bu bir güvenlik açığı | Beraber |
-| 2 | **Katalog ve arama uçları yok** | **2026-08-26'da yeniden ölçüldü, metin değişti, blocker duruyor.** Rezervasyon oluştur/iptal, fiyat teklifi, QR biniş, personel uçları **yazıldı** (8 controller, 27 uç nokta). Ama **katalog** (tekne, kiralama tipi, fiyat girişi) ve **arama** uçları yok — yani bugün sisteme tekne girilemiyor, müşteri tekne arayamaz. Gerçek ölçü: **102 tablo, 27 uç nokta**. `W-04` buna bağlı bekliyor → [[api-mimari]] | Beraber |
+| 1 | **Panel rotaları korumasız — yalnız FRONTEND** | **2026-08-27'de yeniden ölçüldü, sahibi değişti.** Backend'de kimlik doğrulama **var**; `A-42`+`A-44` ile işletme paneli kapısı da kapandı (`Active` değilse 403, damga değişince 401). Açık olan Next.js tarafı: `middleware.ts` **yok**, `requireAuth`/`useAuth`/`getSession` benzeri koruma **sıfır dosyada**. `/admin`, `/owner-panel`, `/support-panel`, `/account` doğrudan açılıyor → [[web-gorevler]] | **Web** |
+| ~~2~~ | ~~**Katalog ve arama uçları yok**~~ | **2026-08-27'de kapatıldı** (`A-33` katalog, `A-34` arama). Kanıt: `SearchController`, `BoatsController`, `PartnerBoatsController`, `PartnerPricingController` ayakta; `/api/search`, `/api/boats`, `/api/partner/boats`, `/api/partner/documents`, `/api/partner/reviews` yolları var. **21 controller · 69 yol · 85 işlem.** "Sisteme tekne girilemiyor, müşteri arayamaz" cümlesi artık doğru değil | — |
 | ~~3~~ | ~~**Fiyat sunucuda doğrulanmıyor**~~ | **2026-08-24'te kapatıldı** (`A-04`). `POST /api/pricing/quote` ayakta. Kanıt: istemci `grandTotalTry:1` ve `discountAmountTry:9999` gönderdi, sunucu **1000.00 ve 0** döndü — `QuoteRequest`'te tutar alanı **yok**, yani alanlar reddedilmedi, **hiç okunmadı**. 42 test geçiyor | — |
 | ~~4~~ | ~~**Vault'un yedeği yok**~~ | **2026-08-24'te kapatıldı.** `mertagralii/DailyCruising.Vault` (private) oluşturuldu, 117 dosya push edildi. Artık vault'ta yapılan yanlış bir yazma geri alınabilir | — |
 | ~~5~~ | ~~**Zamanlanmış iş katmanı yok**~~ | **2026-08-26'da kapatıldı** (`A-15`). `Application/Jobs/IScheduledJob` + `Infrastructure/Jobs/ScheduledJobRunner`, **altı iş** çalışıyor: hold temizliği, teklif süresi, konuşma kapatma, sefer tamamlama, olay günlüğü bölümü, TCMB kuru. `JobHealthController` durumu dışarı veriyor. Sekiz kararın dayandığı katman artık var → [[api-mimari]] | — |
-| 6 | **`Boats.AverageRating` güncellenmiyor** | Şema iki bölümde **zıt** söylüyor: "önden hesaplı" ↔ "canlı hesaplanır". Güncelleyen yok. Alan `0` kalır, puan filtresi her teknede aynı değeri görür; `IX_Boats_Search` sayesinde **hızlı çalışır ve hata vermez** — sessiz yanlış sonuç → [[genel-tasiyici-gerekce-taramasi]] | Claude |
-| 7 | **KVKK gerekçesi doğrulanmadı** | Kimlik verisi toplamanın tek hukuki dayanağı "yolcu listesi ister" anahtarı; şemada yalnız rezervasyona dondurulan **kopyası** var, kaynak kolon `Boats`/`BoatRentalTypes` listelerinde yok. Yoksa ya hiç istenmez ya herkesten istenir — ikisi de gerekçeyi çökertir → [[genel-tasiyici-gerekce-taramasi]] | Claude |
+| ~~6~~ | ~~**`Boats.AverageRating` güncellenmiyor**~~ | **2026-08-27'de kapatıldı** (`A-16`). `sync_boat_rating` tetikleyicisi veritabanında kurulu (`20260824134807_A16_TekneOrtalamaPuani`) ve çalışıyor — `AverageRating > 0` olan tekne var. Şemanın "önden hesaplı ↔ canlı hesaplanır" çelişkisi tetikleyiciyle çözüldü | — |
+| 7 | **KVKK gerekçesi doğrulanmadı** | **2026-08-27: hâlâ açık, kapsamı daraldı.** Mert 19/20 numaralı sorularda TCKN ve adres için "yer tutucu kalsın" dedi — ödeme adımı kapsam dışı. Ama **yolcu listesi tarafı doğrulanmadı**: kimlik verisi toplamanın tek dayanağı "yolcu listesi ister" anahtarı, şemada yalnız rezervasyona dondurulan kopyası var, kaynak kolon `Boats`/`BoatRentalTypes` listelerinde yok → [[genel-tasiyici-gerekce-taramasi]] | Mert |
 | ~~9~~ | ~~**Çift rezervasyon açığı**~~ | **2026-08-26'da açıldı ve aynı gün kapatıldı** (`baf71a7`). `Reservations.IdempotencyKey` **zorunlu**, benzersiz indeksli — `Payments` deseninin aynısı. Kanıt: aynı gövdeyle eşzamanlı iki `curl` → **201/201, aynı kod `XGEZ4GBE`, veritabanında tek satır**; anahtarsız istek **400**; farklı anahtar iki ayrı rezervasyon açıyor. 153 test geçiyor. **Zorunlu seçildi çünkü** isteğe bağlı olsaydı göndermeyi unutan istemci sessizce korumasız kalır, bunu ancak bir müşteri iki kod aldığında fark ederdik → [[api-kararlar]] | — |
 | ~~8~~ | ~~Yönetim ve işletme detay ekranları erişilemez~~ | **2026-08-23'te koptu, aynı gün kapatıldı.** 23 yönetim + 3 işletme ekranı geri bağlandı ve tarayıcıda doğrulandı. Sonrasında işletmeye 4 ekran daha eklendi (tekne detayı — tasarımda vardı hiç uygulanmamıştı, fiyatlandırma, menü, yeni tekne başvurusu); işletme tarafı **3 değil 7**, yetim ekran kalmadı → [[web-durum]] | — |
 

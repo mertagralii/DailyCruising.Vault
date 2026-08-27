@@ -34,6 +34,32 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ### Panodaki diğer işler
 
+- [x] **A-63** API arayüzü — Scalar · bitti: 2026-08-27
+      Mert (2026-08-27): *"Swagger gibi kullanabileceğimiz ne var"* → Scalar
+      `Scalar.AspNetCore` 2.17.1 · **MIT** (paketin `nuspec`'inden
+      doğrulandı, tahmin edilmedi — ImageSharp'ta bu adım atlansaydı
+      ücretli bir lisansa bağlanacaktık)
+      Adres: `/scalar/v1` — yalnız Development
+      Kanıt: **tarayıcıda uçtan uca** — jeton yapıştırıldı,
+      `GET /api/platform/partners` **200 OK, 53 ms**, gerçek veri döndü
+      Kanıt: üretim kapısı ateşliyor — `ApiReference:Enabled=true` ile
+      uygulama AÇILMIYOR; kapalıyken açılıyor (ölçüldü,
+      `--no-launch-profile` ile)
+      Kanıt: 441 test geçiyor
+
+      ⚠️ **Swagger/Swashbuckle KULLANILMADI.** .NET 10'un yerleşik
+      `Microsoft.AspNetCore.OpenApi`'si zaten belgeyi üretiyordu; Scalar
+      yalnız görüntüleyici. Swashbuckle ailesinden paket geri gelmedi
+      ⚠️ **JWT şeması için `BearerSecurityTransformer` yazmak ZORUNLU oldu.**
+      .NET'in yerleşik `AddOpenApi()`'si güvenlik şemasını kendiliğinden
+      EKLEMİYOR; onsuz Scalar'ın jeton alanı hiç çıkmaz, her istek 401 döner
+      ve arayüz sessizce işe yaramaz olurdu
+      ⚠️ Şema belgeye ekleniyor ama uçlara ZORUNLU işaretlenmiyor: kimliksiz
+      uçlar gerçekten kimliksiz, hepsine "jeton gerekli" damgası vurmak
+      belgeyi yalancı yapardı
+      ⚠️ `Microsoft.OpenApi` v2.7.5'te tipler **kök ad alanına taşındı**
+      (`Microsoft.OpenApi.Models` DEĞİL) — assembly'den doğrulandı
+
 ### Mert'in 2026-08-26 kararlarından doğan işler
 
 > 23 sorunun hepsi cevaplandı; 6'sı onaylandı (kod değişmiyor), **17'si iş
