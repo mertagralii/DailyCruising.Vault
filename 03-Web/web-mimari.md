@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-21
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -25,13 +25,17 @@ Kaynaklar `src/` altında, import alias `@/*`.
 
 ```
 src/app/          App Router kökü
-  layout.tsx      kök layout
-  page.tsx        ana sayfa (şablon içeriği, değiştirilmedi)
-  globals.css     Tailwind girişi
-public/           statik varlıklar (şablon SVG'leri)
+  layout.tsx      kök layout — ToastProvider · RouteProgress · perde · header/footer
+  globals.css     token'lar + Tailwind teması + keyframe'ler + baskı stilleri
+  error.tsx · global-error.tsx · not-found.tsx     hata sınırları
+src/components/   ui · layout · feedback · home · boats · account · panel · auth
+src/lib/          brand · routes · nav · cn · cookie-consent · use-scroll-past · data/
+src/emails/       back-end'in dolduracağı HTML e-posta şablonları
+public/           statik varlıklar
 ```
 
-Rota envanteri: sadece `/` ve otomatik `/_not-found`. İş sayfası yok.
+**Rota envanteri: 25.** Sayım için `npm run build` çıktısına bakılır — burada
+liste tutulmaz, bayatlar.
 
 ## API erişimi
 
@@ -43,6 +47,10 @@ gizli bilgi konmaz.
 
 Henüz yazılmış bir API istemcisi/fetch katmanı **yok**. OpenAPI'den tip üretimi
 kurulmadı → [[durum]]
+
+`src/lib/data/*.ts` içindeki alan adları API sözleşmesinin taslağı sayılır.
+2026-08-26 itibarıyla sözleşmeye girmesi beklenen iki ad: rezervasyon yanıtında
+`qrImageUrl`, rezervasyon başarı ekranında `booking-success.ts` alanları.
 
 ## Paket adı
 
@@ -253,3 +261,55 @@ kırılımları gösterdiği vitrin, gerçek sayfa değil.
 `components/ui/wave-stitch.tsx` — "dalga dikişi", markanın imza öğesi.
 Hero altında (`ink`) ve footer üstünde (`action`) kullanılıyor.
 Kaynak: `Rihtim Foundations.dc.html` → [[web-imza-oge-dalga-dikisi]]
+
+## Geri bildirim katmanı (2026-08-26)
+
+Tasarım kaynağında olmayan, token setinden türetilen ortak parçalar
+→ [[web-kararlar]] 2026-08-26.
+
+```
+src/components/feedback/
+  toast.tsx        ToastProvider + useToast + görünüm penceresi (4 ton)
+  modal.tsx        Modal (odak tuzağı, ESC, kaydırma kilidi) + ConfirmDialog
+  skeleton.tsx     Skeleton · SkeletonText · SkeletonCard · SkeletonCardGrid · SkeletonRows
+  empty-state.tsx  EmptyState — "blank" (hiç kayıt yok) / "filtered" (sonuç yok)
+  pagination.tsx   Pagination + LoadMore
+  file-upload.tsx  sürükle-bırak, istemci tarafı tür/boyut doğrulaması
+src/components/layout/
+  route-progress.tsx  üst ilerleme çubuğu
+  error-page.tsx      404/500/403/503'ün paylaştığı iskelet
+src/components/ui/
+  qr-code.tsx      API'den gelen QR görseli, yoksa yer tutucu
+src/components/account/print-button.tsx
+src/components/design-system/feedback-demo.tsx
+```
+
+`ToastProvider` **kök yerleşimde**; istemci gezinmesinde ayakta kaldığı için
+toast rota değişse de ekranda kalır. Modal `createPortal` ile `document.body`
+üzerine kurulur — panel rotalarının `overflow` kapları kırpmasın.
+
+**Hata sayfaları.** `not-found.tsx` (404) · `error.tsx` (500, segment sınırı) ·
+`global-error.tsx` (kök yerleşim çökerse — kendi `<html>`/`<body>`'si ve satır
+içi stilleri var, token'lara güvenilemez) · `app/forbidden/page.tsx` (403,
+deneysel dosya sözleşmesi yerine normal rota) · `app/maintenance/page.tsx` (503).
+
+**Akış tamamlayıcıları.**
+```
+app/booking/success/page.tsx                       kod + QR + sırada ne var
+app/account/reservations/[code]/voucher/page.tsx   yazdırılabilir biniş belgesi
+app/design-system/emails/page.tsx                  şablon önizlemesi (sandbox iframe)
+src/emails/*.html                                  4 şablon + README
+```
+
+Baskı kuralları `globals.css` `@media print` içinde: gezinme öğeleri
+`data-print-hide`, belge gövdesi `data-print-sheet`.
+
+## Bu dosya nasıl güncel kalır
+
+2026-08-21'den 2026-08-26'ya kadar bu dosyanın **hiçbir tetikleyicisi yoktu** ve
+bayatladı (87 kaynak dosya değişmişti). Artık `CLAUDE.md`'de tetikleyicisi var:
+*"Yapıya dokunacağım — yeni katman, uç nokta, dış servis"*.
+
+**Buraya dosya listesi değil katman yazılır.** Tek tek dosya adı sayan bölümler
+en hızlı bayatlayan bölümlerdir; yukarıdaki eski fazlar (A–E) tarihli kayıt
+olarak duruyor, güncel yapı için bu bölüm okunur.

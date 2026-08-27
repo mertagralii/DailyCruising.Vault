@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: web
-guncelleme: 2026-08-22
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -518,3 +518,71 @@ sıfır — sonradan yapılsaydı yönlendirme tablosu gerekirdi.
 mock veriye bağlılar, değiştirmek ayrı bir karar.
 
 **Ekranda görünen metin Türkçe kalır** — çeviri yalnızca ad ve yol düzeyinde.
+
+---
+
+## 2026-08-26 — Geri bildirim katmanı tasarımdan değil token setinden türetildi
+
+**Karar:** Toast, modal, hata sayfaları, iskelet, boş durum, sayfalama, dosya
+yükleme ve rezervasyon başarı ekranı `Rihtim.dc.html`'e bakılarak değil,
+`globals.css` token setinden türetildi.
+
+**Neden:** Tasarım kaynağında bunların **hiçbiri yok** — 20 ekranın tamamı mutlu
+yol. Hata, yükleme, boş durum ve onay katmanı hiç çizilmemiş. Uydurmamak için
+her biçim kararı var olan bir tasarım öğesinden alındı: modal perdesi
+`--surface-overlay`, hata sayfası iskeleti tasarımın koyu bölüm dilinden,
+başarı ekranı rezervasyon detayının `1fr 360px` yerleşiminden, hareket süreleri
+yalnız `--dur-fast/base` ve `--ease`'ten.
+
+**Sonuç:** Bunlar "tasarıma birebir" değil **"tasarım diliyle tutarlı"**. Mert
+tasarımı güncellerse bu ekranlar da gözden geçirilmeli — kaynakları yok.
+
+---
+
+## 2026-08-26 — QR kodunu front-end üretmiyor
+
+**Karar:** `QrCode` bileşeni QR **çizmiyor**; API'den gelen görseli (`src`)
+gösteriyor, gelmediğinde ne beklendiğini yazan bir yer tutucu çiziyor.
+
+**Neden:** İki sebep. Birincisi mimari: QR'ın içeriği rezervasyonu doğrulayan
+imzalı bir belirteç, imzayı yalnız API atabilir — istemcide üretilen QR
+doğrulanamaz. İkincisi doğrulanabilirlik: yerel bir QR kodlayıcı yazmak
+mümkündü ama ortamda karşılaştırılacak referans kütüphane yoktu
+(`qrcode`, `segno`, `qrencode` üçü de kurulu değil). **Taranamayan bir QR,
+basılı biniş belgesinde yer tutucudan kötüdür** — çalışıyormuş izlenimi verir.
+
+Yer tutucu bilinçli olarak sahte bir QR **deseni** çizmiyor; ikon + açıklama
+metni basıyor.
+
+**Sözleşme:** Alan adı `qrImageUrl`. Mutlak URL ya da `cid:` eki olmalı —
+Gmail ve Outlook data URI'yi engelliyor.
+
+---
+
+## 2026-08-26 — E-posta şablonlarında sabit renk kodu serbest
+
+**Karar:** `src/emails/*.html` [[web-desenler]]'in "bileşende sabit hex yazılmaz"
+kuralının **tek istisnası**. Renkler token değerlerinden elle kopyalandı.
+
+**Neden:** E-posta istemcilerinin çoğu CSS değişkenini, harici stil sayfasını ve
+sık sık `<style>` bloğunu desteklemez. Aynı sebeple yerleşim `<table>` ile,
+`flex`/`grid` yok, `DM Sans` yedek yığınla veriliyor.
+
+**Bedeli:** Marka rampası değişirse bu dört dosya **elle** güncellenmeli.
+Kaçınılmaz tek çift kayıt noktası budur; `src/emails/README.md` içinde de yazılı.
+
+---
+
+## 2026-08-26 — 403 deneysel dosya sözleşmesiyle değil normal rotayla yapıldı
+
+**Karar:** Yetkisiz erişim ekranı `app/forbidden/page.tsx` — normal bir rota.
+Next 16'nın `forbidden.tsx` dosya sözleşmesi kullanılmadı.
+
+**Neden:** `forbidden.tsx` `experimental.authInterrupts` bayrağını istiyor ve
+doküman `version: experimental` diyor. Kimlik doğrulama henüz yok (→ [[durum]]
+engel #1), yani bayrağın bugün getirisi sıfır. Kimlik doğrulama gelince
+`forbidden()` çağrısına bağlanabilir; o zaman bayrak açılır.
+
+**Yan bulgu — dokümana bakmasam yanlış yazacaktım:** Next 16'da `error.tsx`'in
+ikinci prop'u `reset` **değil** `retry`. Eğitim verimdeki ad eski.
+Kaynak: `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/error.md`

@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-24
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -51,6 +51,29 @@ kart ızgarası 3 → 2 → 1 · panel yan menüsü `248px 1fr` → tek kolon.
 
 *(Kırılım değerleri DailyCruising tasarımına özgü; "hazır ekran adlarını değil
 tasarımın kendi eşiklerini kullan" kuralı her projede geçerli.)*
+
+## Yeni yardımcı sınıf yazarken
+
+**Ham token'ın `:root`'ta olması sınıfın çalışacağı anlamına gelmez.** Tailwind
+yalnız `@theme inline` içine bağlanmış eşlemeler için kural üretir; bağlanmamış
+bir ada karşılık gelen sınıf DOM'da durur ama hiçbir şey yapmaz. Build, lint ve
+tip denetimi üçü de temiz geçer -> [[web-baglanmamis-token-tuzagi]]
+
+## Geri bildirim katmanı
+
+Tasarım kaynağında yok, token setinden türetildi -> [[web-kararlar]] 2026-08-26.
+
+- **Toast ve modal `ToastProvider` üzerinden**; sağlayıcı kök yerleşimde, her
+  sayfa ve panel `useToast()` çağırabilir
+- **Modal açılırken kaydırma çubuğu genişliği kadar sağ dolgu bırakılır**
+  (`--scrollbar-w`), yoksa arkadaki sayfa 15px sıçrar
+- **Hata varsayılan olarak kendiliğinden kapanmaz** (`duration: 0`), diğer
+  tonlar 5 sn. Ekranda en fazla 3 toast durur
+- **Yıkıcı eylem `ConfirmDialog` ile sorulur**, doğrudan yapılmaz
+- **QR front-end'de üretilmez** — `QrCode` bileşeni API'den gelen `qrImageUrl`
+  görselini gösterir, yoksa yer tutucu çizer
+- **`src/emails/*.html` sabit hex kuralının istisnasıdır** — e-posta istemcileri
+  CSS değişkeni desteklemiyor. Marka rampası değişirse elle güncellenir
 
 ## Tek kaynaklar
 

@@ -1,7 +1,7 @@
 ---
 rol: not
 kapsam: web
-guncelleme: 2026-08-22
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -253,6 +253,24 @@ doğrulanmadan "fark var" denmemeli.
 - `<textarea>` `block` yapılmazsa altında 8px taban çizgisi boşluğu kalıyor
 - Adım kartlarında 1px çerçeve
 
+
+## Sonsuz animasyon `finish()`'i patlatır (2026-08-26)
+
+Kayıtlı reçete `document.getAnimations().forEach(a => a.finish())` idi. Sayfada
+**sonsuz** bir animasyon varsa (iskelet yükleyicinin parlaması gibi) bu satır
+`InvalidStateError: Cannot finish Animation with an infinite target effect end`
+atar ve **ölçüm script'inin tamamı düşer** — ölçüm alınmadığı için "sorun yok"
+sanılabilir.
+
+Sonlu olanları süz:
+
+```js
+document.getAnimations().forEach(a => {
+  const t = a.effect?.getComputedTiming?.();
+  if (t && Number.isFinite(t.endTime)) { try { a.finish(); } catch {} }
+});
+```
+
 İlgili: [[web-notlar]] · [[web-kararlar]] · [[durum]]
 
 ### 390px ölçmek: `chrome-devtools` yetmiyor (2026-08-23)
@@ -271,4 +289,3 @@ yok ediyor.
 Tasarımı 390'da açmanın **anlamı yok**: tasarımın tek kırılımı 1180 ve 390'da
 kendi ızgaraları taşıyor. Mobil referansı `isBreak` ekranındaki 390/834
 maketleri → [[web-kararlar]]
-

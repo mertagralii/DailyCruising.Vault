@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: web
-guncelleme: 2026-08-24
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -27,6 +27,20 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 
 ## 🟢 Tamamlandı
+
+- [x] **W-10** Geri bildirim katmanı: toast, modal, hata sayfaları, iskelet,
+      boş durum, sayfalama, dosya yükleme, rezervasyon başarı ekranı, QR biniş
+      belgesi, e-posta şablonları · bitti: 2026-08-26
+      Kanıt: 25 rota derleniyor (öncesi 20), `npm run build` + `npm run lint`
+      temiz. 1280×730'da modal 560px ortalı, perde `rgba(0,0,0,.5)`, kaydırma
+      kilidi 15px telafiyle sıçramasız, ESC kapatıyor, odak çağırana dönüyor.
+      Toast en fazla 3, hata `role="alert"` diğerleri `role="status"`.
+      390px'te yedi yeni sayfada yatay taşma 0; modal alttan çıkan sayfaya
+      dönüşüyor (üst köşe 16px, alt 0). 404 gerçekten HTTP 404 dönüyor.
+      Baskı kuralları: 4 kural ayrıştı, seçiciler eşleşti, uygulandığında
+      gezinme öğeleri gizlendi ve gölge kalktı.
+      Bulunan ve düzeltilen hata: `rounded-circle` ölü sınıftı
+      -> [[web-baglanmamis-token-tuzagi]]
 
 - [x] **W-01** 19 sayfanın tasarıma göre piksel denetimi · bitti: 2026-08-24
       Kanıt: 16 misafir/hesap sayfasının 12'si birebir, kalanı ≤4px · yönetim

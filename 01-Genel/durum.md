@@ -40,22 +40,33 @@ yazılmaz** — yazılacaksa önce o oturuma sorulur → [[genel-esszamanli-otur
 
 ## ➡️ Şu an nerede duruyoruz
 
-**Tasarım bitti, şema bitti, uç noktalar başlamadı.** Frontend'de 19 ekranın
-tamamı uygulanıp ölçüldü ve `origin/main`'e alındı. Backend'de veritabanı şemasının
-sekiz bölümü de çıkarıldı ve Mert'in onayından geçti.
+**2026-08-27: Backend'de Mert'in kararına bağlı olmayan iş kalmadı.**
 
-Şema `main`'e birleştirildi (`8bbb04f`, `c5b4b87`), dal silindi.
+Pano: **Yapılacak 3 · Yapılıyor 0 · Tamamlandı 74.** Kalan üçün ikisi `A-41`'e,
+o da Mert'e bağlı; üçüncüsü (`A-07`) frontend alanı.
 
-**Kritik yol:** rezervasyon oluşturma ucu (`A-22`) → zamanlanmış iş katmanı
-(`A-15`, 5 numaralı blocker) → kimlik doğrulamanın kalanı (`A-03`) → frontend'in
-gerçek veriye bağlanması (`W-04`).
+| Alan | Ölçü |
+|---|---|
+| API | 21 controller · 69 yol · 85 işlem · 106 tablo · 39 migration → [[api-mimari]] |
+| Web | 25 rota, geri bildirim katmanı bitti (`W-10`) → [[web-mimari]] |
 
-`A-04` bitti ama **`PricingService`'i çağıran bir uç henüz yok** — fiyat
-hesaplaması yazıldı, kullanılmıyor. `A-22` bu yüzden sırada.
+Ödeme uçtan uca çalışıyor: **gerçek İyzico sandbox'ına karşı** rezervasyon →
+ödeme → geri dönüş → `Paid`, ve iade → `Refunded`, defter 0.00 kapanıyor (`A-29`).
 
-⚠️ **Mert'in cevabını bekleyen sekiz soru var** (`S-1`…`S-8`) → [[api-durum]].
-Son ikisi varsayımla ilerlendi: kuponun matrahı (tur + ek hizmet varsayıldı) ve
-fiyat ucunda hız sınırı (dakikada 60 kondu, onaylanmadı).
+**Kritik yol artık tek düğümde:** `A-41` (alt üye iş yeri ve hakediş transferi).
+Bugün tahsilat **platform hesabına** yapılıyor, hakediş defterde duruyor ama
+işletmeye para geçmiyor. `A-58` de buna bağlı.
+
+Frontend `W-04` için hâlâ bekliyor: **katalog ve arama uçları yok** — sisteme
+tekne girilemiyor, müşteri tekne arayamaz. 106 tabloya karşı 69 yol.
+
+⚠️ **Mert'te bekleyen kararlar:** `A-41` (İyzico pazaryeri) · `S-18` (kupon
+kırpma çelişkisi, `S-10` ile `S-15` birbirini bozuyor) · `S-12` (müşteri
+kaynaklı iptalde iade oranı — iptal e-postasını da kilitliyor).
+
+⚠️ **2026-08-26'da Mert karar almayı backend oturumuna bıraktı.** O gün alınan
+teknik kararlar `02-API/api-benim-kararlarim.md` içinde güven damgasıyla duruyor
+ve **topluca onay bekliyor** — onaylanmadan kalıcı sayılmazlar.
 
 Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 

@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: web
-guncelleme: 2026-08-24
+guncelleme: 2026-08-26
 durum: guncel
 ---
 
@@ -27,6 +27,23 @@ Kalan sapmaların ortak kaynağı koyu başlık bandındaki kicker satırı (+2p
 panelde de aynı). Metin farkı yalnızca iki bilinçli sapma: tasarımdaki bozuk `i̇`
 karakteri ve gerçek `<input placeholder>` kullanımı → [[web-kararlar]]
 
+## ✅ Geri bildirim katmanı bitti (2026-08-26)
+
+Tasarım kaynağında **olmayan** ortak parçalar token setinden türetildi (`W-10`):
+toast · modal + onay diyaloğu · 404/500/403/503 · iskelet · boş durum · sayfalama
+· üst ilerleme çubuğu · dosya yükleme · rezervasyon başarı ekranı · yazdırılabilir
+QR biniş belgesi · 4 e-posta şablonu → [[web-kararlar]]
+
+Rota sayısı 20 → **25**. Hepsi 1280×730 ve 390px'te ölçüldü, taşma yok.
+
+**Bu ekranlar "tasarıma birebir" değil "tasarım diliyle tutarlı".** Kaynakları
+olmadığı için Mert tasarımı güncellerse ayrıca gözden geçirilmeleri gerekir.
+
+Kapsam dışı bırakılan iki parça (Mert seçmedi): satır içi uyarı bandı ve
+`Button`'a `loading` durumu. İkincisi hâlâ açık bir risk — kullanıcı gönder
+düğmesine iki kez basarsa çift rezervasyon oluşabilir; sunucu tarafı
+`A-22`'de bunu engelliyorsa sorun yok, engellemiyorsa istemcide de gerekir.
+
 ## 🔜 Sıradaki iş
 
 **API bekleniyor.** Mert backend'i geliştiriyor, bitince haber verecek. O gelince:
@@ -47,6 +64,9 @@ API beklerken yapılabilecek iki iş var, ikisi de Mert'e bağlı: gerçek görs
 | `brand.ts` kurumsal verileri | Yer tutucu | Telefon, e-posta, adres, TÜRSAB no tasarımdan geldi. Yayın öncesi doğrulanmalı |
 | `/design-system` rotası | Yayına çıkıyor | Bileşen vitrini; geliştirme sayfası olduğu hâlde derlemede statik rota olarak üretiliyor. Yayın öncesi kaldırılmalı veya korunmalı → [[web-mimari]] |
 | Frontend↔API sözleşmesi | Yok | OpenAPI üretiliyor ama istemci tarafında tip üretimi yok → `A-07` (API panosunda, web değil) |
+| E-posta şablonları gerçek istemcide | Denenmedi | Tarayıcıda `/design-system/emails` üzerinden görüldü; Gmail, Outlook, Apple Mail'de gerçek gönderimle **doğrulanmadı**. Sağlayıcı seçilince test gönderimi şart |
+| İptal e-postasındaki iade oranı | Bilinmiyor | Şablonda `RefundFormatted` ve `RefundDays` var ama müşteri kaynaklı iptalde iade oranı kararlaşmadı → API'nin `S-12` sorusu. Cevap gelmeden iptal e-postası gönderilmemeli |
+| `Button` yükleme durumu | Yok | Çift gönderim mümkün; Mert kapsam dışı bıraktı |
 
 ## ⚠️ Hata değil — bilinçli davranış
 
@@ -66,6 +86,13 @@ Bunlar rapor edilirse "bug" sanılmasın:
 - Mobil kırılım 19 rotada 390px'te tarandı, yatay taşma yok; 834px'te iki kart.
   Ölçüm **Playwright** ile yapıldı — `chrome-devtools` `resize_page` 390'a inemiyor
   → [[web-tasarimi-tarayicida-acmak]]
-- Tüm çalışma `origin/main`'de — son commit `eb40c7e`
+- Modal: 560px ortalı, perde `rgba(0,0,0,.5)`, kaydırma kilidi 15px telafiyle
+  sıçramasız, ESC kapatıyor, odak çağırana dönüyor. 390px'te alttan çıkan sayfa
+- Toast: en fazla 3, hata `role="alert"` diğerleri `role="status"`
+- 404 gerçekten HTTP 404 dönüyor; baskı kuralları seçici bazında doğrulandı
+- **Düzeltilen hata:** `rounded-circle` ölü sınıftı — `--r-circle` `:root`'ta
+  vardı ama `@theme inline`'a bağlanmamıştı, `border-radius: 0` üretiyordu.
+  Build, lint ve tip denetimi üçü de temiz geçti
+  → [[web-baglanmamis-token-tuzagi]]
 
 İlgili: [[durum]] · [[web-gorevler]] · [[web-kararlar]] · [[web-desenler]] · [[web-araclar]] · [[web-notlar]]

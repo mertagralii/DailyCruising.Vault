@@ -729,9 +729,18 @@ sahibinden komisyon **geri istenmez**, sadece hiç kazanılmamış olur.
 `Coupons`: `Code, Percentage numeric(5,2), ValidFrom, ValidTo, MaxRedemptions,
 UsedCount, Scope, IsActive`
 
-**Kupon oranı komisyon oranını aşamaz** — global kontrol edilemez, çünkü komisyon iş
-ortağı bazında. Doğrulama kuponun uygulandığı an, o rezervasyonun ortağının oranına
-karşı yapılır. Aşan kupon o teknede **geçersiz sayılır, kırpılmaz**.
+~~**Kupon oranı komisyon oranını aşamaz**~~ — **BU KURAL 2026-08-25'te KALDIRILDI**
+(Mert / S-10, `A-26`). Kural bir sızıntı üretiyordu: aynı kuponun bir teknede geçip
+diğerinde geçmemesi, kimliksiz bir çağırana iki işletmenin komisyon oranını
+sıralatıyordu. `trg_coupon_within_commission` tetikleyicisi düşürüldü.
+
+**Yerine gelen:** indirimin bedelini **kuponu oluşturan taraf** karşılıyor (S-14).
+`Coupons.FundedBy` (`Platform` | `Partner`) — kapsam alanı `PartnerId`'den AYRI ve
+ondan türetilmez. Rezervasyona `CouponFundedBy` olarak dondurulur.
+→ [[api-kararlar]] 2026-08-25
+
+⚠️ Hakedişin negatife düşmesini engelleyen bir kısıt **yok**; soru `S-15` olarak
+Mert'te ve `A-18` bu cevap gelmeden yazılamaz → [[api-durum]]
 
 ### `Invoices`
 
