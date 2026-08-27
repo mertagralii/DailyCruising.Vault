@@ -262,6 +262,26 @@ bırakılmaz**. Üçüncü seçenek yok; bırakılırsa kendini iptal ettirir.
 Bunu kontrolü yazan değil, **cezalandırılan oturum** yakaladı. Ölçüsünü koyanın
 kendi ölçüsünün fazla kaba olduğunu görmesi zordur → [[genel-esszamanli-oturumlar]]
 
+### Denetimden geçen düzenleme doğru olmayabilir
+
+`dogrula.py` biçim ve bağlantı denetler; **tablo bütünlüğünü denetlemez.**
+2026-08-27: bir düzenleme betiğinde `eski2` yerine `eski` yazdım. Sonuç: "Deploy"
+satırı **silindi** ve `## 🟢 Tamamlananlar` başlığı tablonun ortasına girdi. Doğrulayıcı
+**TEMİZ** dedi, commit'lendi, push edildi. Hatayı bir sonraki düzenlemede tabloya
+bakınca gördüm.
+
+Aynı sınıftan üçüncü olay: 2026-08-24'te aralıkla silme beş görevi yok etmiş ve
+doğrulayıcı yine TEMİZ demişti (kontrol 14 o yüzden yazıldı).
+
+**Kural: metin bloğu taşıyan her betik, yazdıktan sonra taşıdığı şeyi geri saymalı.**
+Görev taşırken kimlik kümesini saydım ve kayıp olmadığını kanıtladım — bu doğruydu.
+Tabloya satır eklerken saymadım — bu yanlıştı. Ölçüm alışkanlığı **iş türüne göre
+değil, işlem türüne göre** uygulanır: dosyaya çok satırlı blok yazan her işlem
+sayılır.
+
+Değişken adı hatası derleyicisiz dillerde sessizdir; `eski`/`eski2` gibi ardışık
+adlar bu hatayı davet eder. Ayrı ve anlamlı ad kullan.
+
 ## Kendi çıkarımım, karar değildir
 
 `domain-gereksinimler.md`'de `*(çıkarım)*` etiketli maddeler var — Mert'in söylediği
