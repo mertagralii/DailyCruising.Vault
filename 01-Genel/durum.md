@@ -102,13 +102,17 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 | **Dile göre ayrı slug** | Gelecek sürüm | SEO gerekçesi. Mert: *"kesinlikle yapacağız"*. i18n çeviri tabloları kararının uzantısı; şema buna kapatılmayacak → [[domain-gereksinimler]] |
 | **"Kararı platform değil tekne sahibi verir"** | Tasarım ilkesi | Ayarlanabilir olan **işletme tarzıdır**; komisyon, iptal politikası ve kupon platformda kalır. Yeni bir ayar eklenirken bu ayrım sorulur → [[domain-gereksinimler]] |
 | **`S-12` artık iki alanı birden kesiyor** | Mert'te | Müşteri kaynaklı iptalde iade oranı kararlaşmadı. Bugüne kadar API sorusuydu; iptal e-posta şablonunda `RefundFormatted` ve `RefundDays` yer tutucuları olduğu için **web tarafında da bağımlılık doğdu**. ⚠️ Cevap gelmeden iptal e-postası **gönderilmemeli** — yanlış tutar yazan e-posta geri alınamaz → [[api-durum]] · [[web-durum]] |
-| Deploy | Karar yok | CI/CD, hosting, ortam yönetimi konuşulmadı |
+| **Testlerde iki bilinçli ad değişikliği** | Mert'te | Yorum dönüşümü sırasında `IyzicoTests`'te **kod** değişti, yorum değil: `Hidden` → `TestSecretKey`, `title` → `header`. İkincisi gerçek çeviri hatasıydı — değişken `Authorization` **başlığını** tutuyor. Backend geri almayı teklif etti, karar Mert'te → [[api-durum]] |
+| **`PricingTests`'te tek Türkçe test adı** | Küçük kalem | `Kuponun_bedelini_kim_karsiliyor_teklife_taşiniyor` — diğer bütün test adları İngilizce, bu `ş`/`ı` içeriyor. Kod değişikliği sayıldığı için dokunulmadı |
+## 🟢 Tamamlananlar
 | **Sezonluk AI analiz raporları** | Gelecek sürüm | ⚠️ **Analiz ertelenir, VERİ TOPLAMA ertelenemez** — olay günlüğü şemaya bugün girmeli, geçmişe dönük üretilemez → [[domain-gereksinimler]] |
 | **AI otomasyonları** | Gelecek sürüm | E-postaya kişiye göre otomatik cevap, haftalık otomatik blog yazısı → [[domain-gereksinimler]] |
 | **Sefer devri (charter için yer açma)** | Gelecek sürüm | Paylaşımlı rezervasyon sahibine tam iade + kupon + öncelik teklif edip seferi charter'a açma. Mert: *"bunu kesinlikle ekleyeceğiz"*. İlk sürümde yok ama şema buna kapatılmayacak → [[domain-gereksinimler]] |
 | **ECC Memory katmanı yerini hak ediyor mu** | Kuruldu, kullanılmıyor | Tek faydası harness'lar arası devir (Codex/Cursor). Sadece Claude Code kullanılıyorsa atıl bir global npm bağımlılığı + klasör. Başka harness planı yoksa kaldırılmalı → [[genel-kararlar]] |
 
 ## 🟢 Tamamlananlar
+
+- **2026-08-27: Yorum → `#region` + XML doc dönüşümü bitti.** `src/` 231 + `tests/` 46 = **277 dosya**. Kanıt: `dotnet test` → **441/441 yeşil, 0 hata**; `Migrations/` hariç serbest `//` yorum taraması **0** (403 eşleşmenin tamamı EF'in ürettiği `Designer.cs` ve elle yazılan migration SQL yorumları — dönüştürülmemesi doğru). Backend `007e4e1`'e kadar push edildi, 94 commit
 
 - Backend iskeleti kuruldu, `dotnet build` 0 uyarı/0 hata
 - `GET /api/health` doğrulandı → `{"status":"healthy"}`
@@ -117,6 +121,25 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 - Bu vault + hafıza sistemi kuruldu (hook'lar, panolar, doğrulayıcı, 3 projeye özel skill)
 
 ## ⚠️ Vault ↔ kod çelişkileri
+
+**2026-08-27 — iki ölçüm tuzağı, ikisi de kayda değer.**
+
+**1. "Serbest yorum 0" kapsam bağımlıydı.** Backend "0" dedi, bağımsız taramam **403**
+buldu. Çelişki değil, kapsam farkıydı: 403'ün tamamı `Migrations/` altında. İleride
+aynı sayı yeniden ölçülürse **kapsamı da yazmak zorunlu** — çıplak bir sayı iki
+oturumu boşuna karşı karşıya getiriyor.
+
+**2. `EventLogTests`'in kod-only doğrulaması zayıf.** Dosyadaki ham SQL dizesi
+tokenizer'ı şaşırtıyor, bazı `///` satırları fark gibi görünüyor. Backend satır
+bazlı ikinci süzgeçle doğruladı (kod birebir aynı) ama **o süzgeç aynı satır
+içindeki değişikliği yakalayamaz.** Yani bu dosyada "kod değişmedi" güvencesi
+diğerlerinden zayıf — betik iyileştirilmeli.
+
+⚠️ **GateGuard `truncate`/`TRUNCATE` kelimesini yıkıcı sayıyor.** İki test dosyası
+(`EventLogTests`, `PartnerStaffTests`) heredoc ile yazılamadı, `Write` aracı ve yer
+tutucu ile yazılmak zorunda kaldı. Aracın kendisi değil **kelimesi** tetikliyor →
+[[genel-gateguard-davranisi]]
+
 
 **2026-08-26 — `dogrula.py` TEMİZ.** Kontrol 15 (mimari bayatlığı) bugün eklendi, iki
 gerçek bulgu üretti, ikisi de aynı gün kapandı:

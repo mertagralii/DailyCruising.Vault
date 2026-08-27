@@ -32,6 +32,16 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[api-launchsettings-ortami-eziyor]] — üretim kapısı denemesi aslında Development'ı ölçüyor
 - [[api-mv-ile-geri-alma-eski-dll]] — `mv` ile geri alınan mutasyon eski ikiliyi koşturuyor
 
+### Gerekçe arşivi (2026-08-27)
+
+Kod içi ⚠️ yorumları silinmeden önce birebir taşındı. Bir kararın *niçin*'ini
+ararken önce [[api-kararlar]]'a, orada yoksa buraya bak.
+
+- [[api-gerekce-arsivi-domain]] — varlıklar ve şema değişmezleri (23 blok)
+- [[api-gerekce-arsivi-application]] — iş kuralları ve servisler (249 blok)
+- [[api-gerekce-arsivi-infrastructure]] — EF, depolar, işler, dış servisler (152 blok)
+- [[api-gerekce-arsivi-api]] — controller, yetki, boru hattı (90 blok)
+
 İlgili: [[00-Index]] · [[api-kararlar]] · [[api-mimari]] · [[durum]]
 
 ## Bu alanın diğer bölmeleri

@@ -2837,3 +2837,170 @@ haritasını** herkese verir — saldırgana keşif işini hazır sunmak olurdu.
 ⚠️ `Microsoft.OpenApi` v2.7.5'te tipler kök ad alanına taşındı;
 `Microsoft.OpenApi.Models` her yerdeki örneklerde geçtiği için kolayca yanlış
 yazılıyor. Assembly'den doğrulandı.
+
+## 2026-08-27 — Test kodu İngilizce isimlendirme, yorumlar Türkçe
+
+**Karar (Mert):** Test projesindeki **isimlendirmeler** İngilizce.
+`FiyatTests` → `PricingTests`, `FiyatEkleAsync` → `SeedPriceAsync`,
+`Kisi_basi_fiyat_yas_kirilimiyla_hesaplanir` →
+`Per_person_price_is_computed_by_age_band`. 46 dosya, 330 tanımlayıcı,
+~250 test metodu. Dosya adları sınıf adlarına uyduruldu (`git mv`).
+
+**Yorumlar Türkçe KALDI** — Mert'in açık talebi: *"Olm yorum satırları
+falan türkçe kalabilir ben genel olarak isimlendirmelerin ingilizce
+olmasını istemiştim."* Dokuz dosyanın yorumu çevrilmişti, geri alındı ve
+yorumların HEAD ile birebir aynı olduğu programatik olarak doğrulandı.
+
+**Neden:** Gerekçe metni `src/` ile aynı dilde kalıyor; kod içi isimler
+ise dilden bağımsız okunuyor.
+
+⚠️ **Hata mesajı dizgileri de Türkçe kaldı.** Üretim kodu Türkçe mesaj
+döndürüyor; `Assert.Contains("zaten", error.Message)` gibi doğrulamalar
+çevrilseydi testler geçer ama **hiçbir şey ölçmezdi**. Çeviri betiği bu
+yüzden dizgileri ve yorumları maskeleyip yalnız kod bölgesine dokundu.
+
+⚠️ **C# ayrılmış sözcükleri tuzağı.** `olay → event` ve `ozel → private`
+derlemeyi patlattı (`event` ve `private` ayrılmış). `add`, `remove`,
+`value`, `record` bağlamsal olduğu için sorun çıkarmadı. Toplu yeniden
+adlandırmada hedef adlar **önce anahtar sözcük listesine karşı**
+süzülmeli → [[api-notlar]]
+
+⚠️ **Üretim üyesi adını test haritasına koymak.** `ManualAsync`,
+`MaskelemeEsigi`, `Gecerlilik`, `Maske`, `ContactMasker.Mask` `src/`
+içinde yaşıyor; haritaya girdikleri için test tarafında var olmayan
+adlara çevrildiler ve derleme kırıldı. Ders: harita hedefleri `src/`
+tanımlayıcı kümesinden **düşülmeli**.
+
+⚠️ **Enterpolasyon delikleri ilk geçişte atlandı.** `$"...{ilk}..."`
+içindeki kimlikler dizgi sayıldığı için çevrilmedi; bildirim yeniden
+adlandı, kullanım kalmadı → 40+ `CS0103`. İkinci geçiş `{...}`
+deliklerini de çeviriyor. Delik içinde tırnak varsa
+(`{string.Join(", ", x)}`) regex hâlâ erken kesiyor — kalan 7 yer elle
+düzeltildi.
+
+**Kanıt:** `dotnet test` → 441/441 yeşil (28 s). Yorumların
+değişmediği, HEAD'deki yorum listesiyle karşılaştırılarak doğrulandı:
+0 fark. Commit `f36f5ce`, push edildi.
+
+## 2026-08-27 — `src/` tanımlayıcıları da İngilizce
+
+**Karar (Mert):** Test tarafındaki kural üretim koduna da uygulandı:
+**isimler İngilizce, yorumlar Türkçe.** 104 dosya, ~410 tanımlayıcı.
+`Calistir` → `ExecuteAsync`, `YazAsync` → `WriteEventAsync`,
+`MaskelemeEsigi` → `MaskingThreshold`, `IlkIsim` → `FirstNameOf`.
+
+**Neden:** Test tarafı İngilizce isimlendirmeye geçince kod tabanı iki
+dile bölünmüştü; aynı kavram iki adla yaşıyordu (`Calistir` /
+`ExecuteAsync`). Gerekçe metni Türkçe kalıyor çünkü kararın *niçin*'i
+Mert'in dilinde daha doğru anlatılıyor; kod içi isimler ise dilden
+bağımsız okunuyor ve dış kütüphanelerle aynı sözlüğü paylaşıyor.
+
+**Riskli bölgeler ÖNCE ölçüldü, sonra dokunuldu:**
+
+1. **`Domain/` içinde tek bir Türkçe tanımlayıcı yoktu.** Entity
+   property'lerinin hepsi zaten İngilizceydi → **hiçbir DB kolonu
+   yeniden adlandırılmadı, migration gerekmedi.** Bu ölçülmeden
+   başlansaydı 39 migration'lık şemayı kırma riski vardı.
+2. **Dışa dönen DTO'larda Türkçe alan adı yoktu.** Public üye taraması
+   yalnız dört Türkçe sabit buldu (`Gecerlilik`, `Kategoriler`,
+   `Maske`, `MaskelemeEsigi`) ve hiçbiri serileşmiyor.
+3. **`Migrations/` klasörü kapsam dışı bırakıldı** — migration sınıf
+   adı `__EFMigrationsHistory` kimliğine bağlı.
+4. **Olay payload anahtarları dizgi.** `EventPayloadPolicy` izin
+   listesinde Türkçe anahtar olmadığı doğrulandı; anonim üye adı
+   değişen tek yer `JobHealthController`.
+
+⚠️ **DİZGİ İÇİNDEKİ AD SESSİZCE KIRILIR.** `FakePaymentProvider`
+yönlendirme adresini `$"?islem={operationId}"` diye **dizgi** olarak
+kuruyordu. Controller parametresi `islem` → `operation` olunca dizgi
+Türkçe kaldı ve iki uç birbirini bulamaz hâle geldi. **Testler bunu
+yakalamadı** — testler `CompleteAsync`'i doğrudan çağırıyor, sorgu
+dizesinden geçmiyor. Yakalayan şey `openapi.json`'un yeniden üretilip
+**eskisiyle diff'lenmesi** oldu. Ders: toplu yeniden adlandırmadan
+sonra sözleşme dosyasını üret ve diff'le; derleyici dizgi görmez.
+
+**Bilinçli iki sözleşme değişikliği:**
+- `POST /api/payments/callback` sorgu parametresi `islem` → `operation`
+- `GET /api/health/jobs` yanıt alanları (`sonCalisma` → `lastRun`,
+  `gecenSure` → `elapsed`, `basarili` → `succeeded`, `islenen` →
+  `processed`, `isSayisi` → `jobCount`, `basarisiz` → `failed`,
+  `isler` → `jobs`). Anonim tip olduğu için `openapi.json`'da şeması
+  yok; front-end henüz başlamadığı için tüketen kimse yok →
+  [[web-durum]] için not gerekiyor.
+
+**Kanıt:** `dotnet build` temiz · `dotnet test` 441/441 · 310 dosyada
+yorum farkı **0** · uygulama ayağa kaldırılıp ölçüldü:
+`/api/health/jobs` kimliksiz **401**, `/api/boats/olmayan-tekne`
+**404** + Türkçe gövde, `/api/partners/apply` boş gövde **400** ·
+`openapi.json` yeniden üretildi, tek fark yukarıdaki parametre adı.
+Commit `689869b`, push edildi.
+
+## 2026-08-27 (3) — İfade gövdeli üye (`=>`) kullanılmıyor
+
+**Karar (Mert):** Üye gövdeleri `=>` ile YAZILMAZ, blok gövde kullanılır.
+567 yer çevrildi (metot, property, ctor).
+
+**Neden:** Mert'in kendi ifadesiyle *"böyle olduğunda ben kod okumakta
+zorlanıyorum."* Kod okunmak için var; okuyanı zorlayan bir kısaltma,
+kazandırdığı satırdan daha pahalı.
+
+**Kapsam üç yapıdan yalnız birini içeriyor** — bu ayrım kararın kendisi
+kadar önemli:
+
+| Yapı | Örnek | Karar |
+|---|---|---|
+| Üye gövdesi | `public string Name => "x";` | **Bloğa çevrildi** |
+| Lambda | `.Where(b => b.PartnerId == id)` | **Dokunulmadı** |
+| `switch` kolu | `{ SqlState: "23505" } => "..."` | **Dokunulmadı** |
+
+Lambda'yı bloğa çevirmek LINQ zincirlerini okunmaz hâle getirirdi —
+yani aynı gerekçe ters yönde çalışıyor. `=>` sayısı 1736 → 1169;
+kalan 1169 bu iki kategoriden.
+
+⚠️ **DÖNÜŞÜM REGEX'LE YAPILMADI.** `=>` üç ayrı dil yapısında geçiyor ve
+ifadenin nerede bittiğini (çok satırlı, iç içe lambda, dizgi içinde `;`)
+metin işleme ile bulmak güvenilir değil. Roslyn'in kendi düzeltmesi
+kullanıldı: `dotnet format style --diagnostics IDE0021 IDE0022 IDE0023
+IDE0024 IDE0025 IDE0026 IDE0027 IDE0061 --severity info`.
+
+⚠️ ~~**KURAL `.editorconfig`'E YAZILDI.**~~ **İPTAL — aşağıdaki
+2026-08-27 (4) girişine bak.** Dosya aynı gün Mert'in isteğiyle
+kaldırıldı; kural yazılı ama **otomatik denetlenmiyor**.
+
+**Roslyn çıktısı iki yerde elle düzeltildi:**
+1. `=> ` (3 karakter) → `return ` (7 karakter) olunca Roslyn devam
+   satırlarını **4 boşluk sağa kaydırıyor**. 67 dosyada 1151 satırın
+   girintisi, HEAD'deki metinle satır-satır eşleştirilerek orijinaline
+   geri çekildi (`difflib`, yalnız boşluk farkı olan satırlar).
+2. Erişimciler yedi satıra açılıyordu
+   (`get` / `{` / `return x;` / `}`). Mert'in seçtiği biçim tek satır:
+   177 erişimci `get { return x; }` hâline indirildi.
+
+**Kanıt:** `dotnet build` temiz · `dotnet test` **441/441** · 116 değişen
+dosyada **yorum farkı 0** · `openapi.json` yeniden üretildi, **fark yok**
+(imzalar değişmedi) · canlı: `/api/health/jobs` kimliksiz **401**,
+olmayan tekne **404**, boş gövdeyle apply **400**, `/api/search` **200**.
+Commit `0a59632`, push edildi.
+
+
+## 2026-08-27 (4) — `.editorconfig` kaldırıldı
+
+**Karar (Mert):** *"istemiyorum onu kaldır."* Bir önceki girişteki
+`.editorconfig` silindi (`c3062dc`).
+
+**Neden:** Mert deponun kök dizininde araç zincirine kural dayatan bir
+dosya istemiyor. Karar onun; gerekçesini sormadım.
+
+**İPTAL EDİLEN:** Yalnız DAYATMA mekanizması. `=>` üye gövdesi
+kullanmama kararı (2026-08-27 (3)) **yürürlükte** ve koddaki 567
+dönüşüm yerinde duruyor.
+
+⚠️ **KURAL ARTIK KORUNMUYOR.** IDE uyarı vermiyor, `dotnet format`
+denetleyemiyor. Yeni yazılan kodda `=>` üye gövdesi geri gelirse
+kimse fark etmez — bunu yakalayacak tek şey bu notu okumak.
+Bu, [[api-mimari]]'deki *"bir dosyayı vault'a koymak onu canlı tutmaz;
+onu canlı tutan tetikleyicisidir"* dersinin bilinçli olarak kabul
+edilmiş hâli: tetikleyici kaldırıldı, kural notta kaldı.
+
+**Kanıt:** `dotnet build` temiz, `dotnet test` **441/441** — dosya
+silindikten sonra ölçüldü. Commit `c3062dc`, push edildi.
