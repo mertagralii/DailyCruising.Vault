@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-08-27
+guncelleme: 2026-08-28
 durum: guncel
 ---
 
@@ -30,14 +30,13 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 - **API:** 21 controller · 69 yol · 85 işlem · 106 tablo · 39 migration · 441 test
   yeşil. Ödeme uçtan uca çalışıyor (gerçek İyzico sandbox). Panoda **Mert'e bağlı
   olmayan iş kalmadı**
-- **Web:** 25 rota, geri bildirim katmanı bitti (`W-10`). Sırada **rota koruması**,
-  sonra gerçek API'ye bağlanma (`W-04`)
-- **Genel:** 68 not, `dogrula.py` 15 kontrol
+- **Web:** 25 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
+  `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
+  Pano 11 yapılacak / 33 tamamlandı
+- **Genel:** 68 not, `dogrula.py` 16 kontrol
 
-Aktif engeller (ayrıntı -> [[durum]]):
-**panel rotaları korumasız — yalnız frontend** (`middleware.ts` yok, guard yok;
-API gerçek veri döndürdüğü için bedeli arttı) · **KVKK yolcu listesi dayanağı**
-doğrulanmadı
+Aktif engel tek (ayrıntı -> [[durum]]): **KVKK yolcu listesi dayanağı**
+doğrulanmadı — Mert'te.
 
 Mert'te bekleyenler: `A-41` (alt üye iş yeri — para bugün işletmeye gitmiyor) ·
 `S-18` (kupon kırpma çelişkisi) · `S-12` (iade oranı, iptal e-postasını kilitliyor) ·

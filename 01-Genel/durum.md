@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-08-24
+guncelleme: 2026-08-28
 durum: guncel
 ---
 
@@ -40,15 +40,23 @@ yazılmaz** — yazılacaksa önce o oturuma sorulur → [[genel-esszamanli-otur
 
 ## ➡️ Şu an nerede duruyoruz
 
-**2026-08-27: Backend'de Mert'in kararına bağlı olmayan iş kalmadı.**
+**2026-08-28: aktif blocker sayısı 1'e indi — kalan tek engel Mert'te.**
 
-Pano: **Yapılacak 3 · Yapılıyor 0 · Tamamlandı 74.** Kalan üçün ikisi `A-41`'e,
-o da Mert'e bağlı; üçüncüsü (`A-07`) frontend alanı.
+Panolar (28 Ağustos, alan oturumlarının kendi ölçümü):
+
+| Alan | Yapılacak | Tamamlandı |
+|---|---|---|
+| API | 3 | 74 |
+| Web | 11 | 33 |
+| Genel | 6 | 9 |
+
+Backend'de Mert'in kararına bağlı olmayan iş kalmadı; kalan üçün ikisi `A-41`'e
+bağlı, üçüncüsü (`A-07`) frontend alanı.
 
 | Alan | Ölçü |
 |---|---|
 | API | 21 controller · 69 yol · 85 işlem · 106 tablo · 39 migration → [[api-mimari]] |
-| Web | 25 rota, geri bildirim katmanı bitti (`W-10`) → [[web-mimari]] |
+| Web | 25 rota · rota koruması (`proxy.ts`) çalışıyor · gerçek API'ye bağlandı (`W-04`) → [[web-mimari]] |
 
 Ödeme uçtan uca çalışıyor: **gerçek İyzico sandbox'ına karşı** rezervasyon →
 ödeme → geri dönüş → `Paid`, ve iade → `Refunded`, defter 0.00 kapanıyor (`A-29`).
@@ -57,9 +65,14 @@ o da Mert'e bağlı; üçüncüsü (`A-07`) frontend alanı.
 Bugün tahsilat **platform hesabına** yapılıyor, hakediş defterde duruyor ama
 işletmeye para geçmiyor. `A-58` de buna bağlı.
 
-Frontend `W-04` için artık **API tarafında engel yok** — katalog ve arama uçları
-`A-33`/`A-34` ile 26 Ağustos'ta bitmiş. ⚠️ Bunu bu sabah ölçmeden "yok" diye
-yazmıştım; blocker metnini kopyaladım, kaynağa bakmadım. Backend düzeltti.
+Frontend `W-04` **bitti** — web artık gerçek API'ye bağlı; `W-10`, `W-03` (tekne
+görselleri) ve `W-55`'in büyük kısmı da 24–28 Ağustos arasında kapandı.
+
+⚠️ **Bu dosya dört gün geride kaldı** (`guncelleme` 24 Ağustos, bugün 28'i) ve bu
+sürede 1 numaralı blocker'ı yanlış yere yazılı tuttu. İki hata aynı kökten:
+blocker metnini kopyaladım, kaynağa bakmadım — 27 Ağustos'ta katalog uçları için,
+28'inde `middleware.ts` için. **Ölçüt kopyalanmaz, yeniden ölçülür.** İkisini de
+alan oturumları yakaladı → [[genel-desenler]]
 
 ⚠️ **Mert'te bekleyen kararlar:** `A-41` (İyzico pazaryeri) · `S-18` (kupon
 kırpma çelişkisi, `S-10` ile `S-15` birbirini bozuyor) · `S-12` (müşteri
@@ -77,7 +90,7 @@ Alan ayrıntıları kendi dosyalarında: [[api-durum]] · [[web-durum]]
 
 | # | Konu | Neden blocker | Kimde |
 |---|---|---|---|
-| 1 | **Panel rotaları korumasız — yalnız FRONTEND** | **2026-08-27'de yeniden ölçüldü, sahibi değişti.** Backend'de kimlik doğrulama **var**; `A-42`+`A-44` ile işletme paneli kapısı da kapandı (`Active` değilse 403, damga değişince 401). Açık olan Next.js tarafı: `middleware.ts` **yok**, `requireAuth`/`useAuth`/`getSession` benzeri koruma **sıfır dosyada**. `/admin`, `/owner-panel`, `/support-panel`, `/account` doğrudan açılıyor → [[web-gorevler]] | **Web** |
+| ~~1~~ | ~~**Panel rotaları korumasız — yalnız FRONTEND**~~ | **2026-08-28'de kapatıldı; blocker metni yanlıştı, sonucu değil ölçütü.** "`middleware.ts` yok" cümlesi doğru ama **Next 16'da `middleware.ts` kaldırıldı, adı `proxy.ts` oldu** — dosya var (`src/proxy.ts`), korunan önekler `src/lib/auth/config.ts` içindeki `GUARDED` listesinde (`/admin`+`/support-panel` → `staff`, `/owner-panel` → `owner`, `/account` → giriş yapmış herkes). Jetonlar `httpOnly` çerezde (`dc_at`/`dc_rt`/`dc_role`), süresi dolan jeton proxy'de yenileniyor. Kanıt: web oturumu 28 Ağustos'ta canlı doğruladı — girişsiz `/owner-panel` açılmıyor, girişle açılıyor; ben de dosyaları ve `GUARDED` listesini okudum. ⚠️ `proxy.ts` **yetki sınırı değil**, imza doğrulamıyor, yalnız yönlendiriyor — asıl kapı API'de (`A-42`+`A-44`) ve orada kapalı → [[web-durum]] | — |
 | ~~2~~ | ~~**Katalog ve arama uçları yok**~~ | **2026-08-27'de kapatıldı** (`A-33` katalog, `A-34` arama). Kanıt: `SearchController`, `BoatsController`, `PartnerBoatsController`, `PartnerPricingController` ayakta; `/api/search`, `/api/boats`, `/api/partner/boats`, `/api/partner/documents`, `/api/partner/reviews` yolları var. **21 controller · 69 yol · 85 işlem.** "Sisteme tekne girilemiyor, müşteri arayamaz" cümlesi artık doğru değil | — |
 | ~~3~~ | ~~**Fiyat sunucuda doğrulanmıyor**~~ | **2026-08-24'te kapatıldı** (`A-04`). `POST /api/pricing/quote` ayakta. Kanıt: istemci `grandTotalTry:1` ve `discountAmountTry:9999` gönderdi, sunucu **1000.00 ve 0** döndü — `QuoteRequest`'te tutar alanı **yok**, yani alanlar reddedilmedi, **hiç okunmadı**. 42 test geçiyor | — |
 | ~~4~~ | ~~**Vault'un yedeği yok**~~ | **2026-08-24'te kapatıldı.** `mertagralii/DailyCruising.Vault` (private) oluşturuldu, 117 dosya push edildi. Artık vault'ta yapılan yanlış bir yazma geri alınabilir | — |

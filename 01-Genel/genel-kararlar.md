@@ -363,3 +363,29 @@ anlamsızdır ve `/seo` yer tutucu kurumsal veriyle çalıştırılırsa yanlı�
 motoruna işlenir.
 
 İlgili: [[web-araclar]] · [[genel-araclar]] · [[durum]]
+
+## 2026-08-28 — Yön tersine çevrildi: tasarımı backend gerçeği yönlendirir
+
+Mert'in talimatı, üç durum:
+
+1. **Uç var, verisi eksik** → backend tamamlar. Boş dönen bir uç "bitti" sayılmaz.
+2. **Uç var, verisi var, sayfada karşılığı yok** → web sayfayı o uca göre yapar
+   veya var olanı uca bağlar.
+3. **Tasarım eksik olabilir** — bir temel olsun diye yapıldı, kısıt değil. Çelişki
+   çıkarsa **backend gerçeği kazanır**, tasarım ona göre genişletilir.
+
+**Neden:** Tasarım 22 Ağustos'ta, API'nin çoğu ondan sonra yazıldı — tasarım
+yazıldığı gün doğruydu, bugün API'nin gerisinde. Yön "tasarım → kod" kaldığı
+sürece 69 yolun karşılığı olmayan kısmı görünmez kalıyor ve iş, kimsenin
+ölçmediği bir taslağa göre budanıyor. Kaynağın hangisi olduğu yazılmazsa her
+oturum kendi kaynağını seçer.
+
+Bu, [[web-kararlar]]'daki "tasarımdan sapma yasağı" kuralını **iptal etmez**:
+sapma yasağı var olan ekranın görünümü içindir; bu karar **olmayan ekranın** var
+edilmesi içindir. İkisi çakışırsa: var olan ekranın görünümü tasarıma sadık kalır,
+eksik ekran API'ye göre yeni yazılır.
+
+Ölçüm ve dağıtım: `03-Web/web-gorevler.md` içinde karşılığı olmayan uçlar için
+görev açılır; veri boşlukları `02-API/api-gorevler.md`'ye düşer.
+
+İlgili: [[web-kararlar]] · [[web-gorevler]] · [[api-gorevler]] · [[durum]]
