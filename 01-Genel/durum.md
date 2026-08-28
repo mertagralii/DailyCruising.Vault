@@ -47,8 +47,12 @@ Panolar (28 Ağustos, alan oturumlarının kendi ölçümü):
 | Alan | Yapılacak | Tamamlandı |
 |---|---|---|
 | API | 3 | 74 |
-| Web | 11 | 33 |
+| Web | **17** | 33 |
 | Genel | 6 | 9 |
+
+Web'in 11'den 17'ye çıkması **kötüye gitme değil, görünürlük**: 28 Ağustos'ta
+API yolları ile front-end çağrıları karşılaştırıldı, **74 yolun 21'inde çağrı
+yok** çıktı. O 21 yol dün de bağlı değildi, panoda görünmüyordu.
 
 Backend'de Mert'in kararına bağlı olmayan iş kalmadı; kalan üçün ikisi `A-41`'e
 bağlı, üçüncüsü (`A-07`) frontend alanı.
@@ -64,6 +68,18 @@ bağlı, üçüncüsü (`A-07`) frontend alanı.
 **Kritik yol artık tek düğümde:** `A-41` (alt üye iş yeri ve hakediş transferi).
 Bugün tahsilat **platform hesabına** yapılıyor, hakediş defterde duruyor ama
 işletmeye para geçmiyor. `A-58` de buna bağlı.
+
+**Yeni yön ilk gününde iki gerçek boşluk buldu** (Mert'in "backend gerçeği
+tasarımı yönlendirir" talimatı → [[genel-kararlar]]). İkisinin de bedeli somut:
+
+- **İşletme kendi fiyatını giremiyor.** Tarife bugün yalnız veritabanına elle
+  yazılarak oluşuyor; 12 işlemin ekran karşılığı yok (`W-58`).
+- **Platform personeli başvuru onaylayamıyor.** Tekne eklemek sözleşmeye bağlı
+  olduğu için bu, yeni bir işletmenin sisteme girişini **baştan sona kesiyor**
+  (`W-59`).
+
+Kalan dördü: personel yazma tarafı (`W-60`), destek talebi detayı (`W-61`), belge
+görüntüleme (`W-62`), yoruma yanıt (`W-63`) → [[web-gorevler]]
 
 Frontend `W-04` **bitti** — web artık gerçek API'ye bağlı; `W-10`, `W-03` (tekne
 görselleri) ve `W-55`'in büyük kısmı da 24–28 Ağustos arasında kapandı.
@@ -136,6 +152,20 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 - Bu vault + hafıza sistemi kuruldu (hook'lar, panolar, doğrulayıcı, 3 projeye özel skill)
 
 ## ⚠️ Vault ↔ kod çelişkileri
+
+**2026-08-28 — panel ucu ile müşteri ucu ayrışmış.**
+`GET /api/partner/boats/{id}/rental-types` yanıtında `rentalTypeKey` var ama
+**`name` yok**; müşteri tarafındaki `GET /api/boats/{slug}` çevrilmiş `name`
+döndürüyor. Fiyat ekranı bugün yazılsa işletmeye `gunluk-tekne` diye ham anahtar
+gösterirdi. Aynı yanıtta bilinen iki eksik duruyor: `extras[].name` boş, `program`
+null. `W-58`'in ek hizmet yarısı **ad gelmeden kurulamaz**. Web bunu doğrudan
+backend oturumuna bildirdi.
+
+**2026-08-28 — "web tarafında yapılabilir iş kalmadı" cümlesi yanlıştı.**
+`03-Web/web-durum.md`'de duruyordu; web oturumu düzeltti. Cümle yanlış değil
+**ölçülmemişti** — pano boş olduğu için "iş yok" sanılmıştı, oysa 21 yolun
+karşılığı hiç panoya girmemişti. Panonun boş olması işin bittiğini göstermez,
+yalnızca **panoya yazılmadığını** gösterir.
 
 **2026-08-27 — iki ölçüm tuzağı, ikisi de kayda değer.**
 

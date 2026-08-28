@@ -319,5 +319,38 @@ değil, benim doldurduğum boşluklar. Bunlar zamanla karar gibi okunmaya başl�
 - Mert'in söylediği ile benim çıkarımım **aynı paragrafta karışmaz**; karışırsa
   altı ay sonra hangisinin kim olduğu bilinmez
 
+## Gevşek ölçüt, ölçmemekten kötüdür
+
+**Ölçüt yanlışsa ölçüm "temiz" der ve aramayı durdurur.** Hiç ölçmemek en azından
+soruyu açık bırakır.
+
+2026-08-28'de web oturumu "API yollarının front-end'de karşılığı var mı" sorusunu
+ölçtü. İlk ölçüt **uç adının kaynakta geçip geçmediğiydi** — o kadar gevşekti ki
+`rental-types` diye bir *bileşen adı* bile eşleşme sayıldı. Sonuç: **"hepsi bağlı".**
+Doğru ölçüt — `api()`/`dcFetch()` çağrısında **yolun kendisi** — 24 boşluk buldu;
+üçü elle elendi (dinamik değişkenle kurulan yollar, `offers/${id}/${eylem}`), geriye
+**21 bağlanmamış yol** kaldı. Beşinin ekranı zaten vardı, mock veriyle çalışıyordu.
+
+İlk sonuç raporlansaydı `durum.md`'ye o gün yalan girecekti — ve "hepsi bağlı"
+cümlesi kimseyi bir daha bakmaya itmezdi.
+
+**Kural:** bir ölçüt ilk kez kullanılıyorsa, ölçümden önce **negatif kontrol**
+çalıştırılır — bilerek eşleşmemesi gereken bir örnek verilir. Eşleşirse ölçüt
+gevşektir. Ve **"hepsi temiz" çıkan ilk ölçüm şüphelidir**: bu alanda temiz sonuç
+kuraldır değil istisnadır, çünkü kimse daha önce bakmamıştır.
+
+Bu, [[genel-kararlar]]'daki "ölçüt kopyalanmaz, yeniden ölçülür" kuralının
+tamamlayıcısıdır: kopyalanan ölçüt yanlış olabilir, **kendi kurduğum ölçüt de**.
+
+## Panonun boş olması işin bittiğini göstermez
+
+`03-Web/web-durum.md` 2026-08-28'e kadar **"web tarafında yapılabilir iş kalmadı"**
+diyordu. Cümle yanlış değildi, **ölçülmemişti** — pano boştu, o yüzden iş yok
+sanılmıştı; oysa 21 API yolunun karşılığı hiç panoya girmemişti.
+
+Boş pano iki şeyden birini gösterir: iş bitti, ya da **iş panoya yazılmadı**.
+İkisini ayırmanın tek yolu panoya değil **kaynağa** bakmaktır. "Yapılacak iş
+kalmadı" cümlesi, ancak son ölçümün tarihi ve ölçütü yanına yazılırsa bir iddiadır;
+yalnız başına bir tahmindir.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
