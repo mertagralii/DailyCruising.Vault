@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: api
-guncelleme: 2026-08-25
+guncelleme: 2026-08-31
 durum: guncel
 ---
 
@@ -3004,3 +3004,320 @@ edilmiş hâli: tetikleyici kaldırıldı, kural notta kaldı.
 
 **Kanıt:** `dotnet build` temiz, `dotnet test` **441/441** — dosya
 silindikten sonra ölçüldü. Commit `c3062dc`, push edildi.
+
+---
+
+## 2026-08-28 — Tekne görselinde tek varyant saklanıyor, üçü değil
+
+`IImageProcessor` üç genişlik üretiyor (400/800/1600) ama `BoatMedia` satırında
+**tek** `FileKey` alanı var. Yükleme en büyük varyantı saklıyor, diğer ikisi
+atılıyor. `PublicBoatDetail.Media` ve `SearchResultItem.CoverUrl` tek adres
+döndürüyor.
+
+**Neden:** Üç varyantı saklamanın iki yolu vardı ve ikisi de kötüydü.
+
+1. **Ada göre türetme** (`{anahtar}-400.webp`) — örtük sözleşme. `TargetWidths`
+   ileride değişirse eski satırların türetilmiş adresleri **sessizce** kırılır;
+   kimse fark etmez çünkü satır sağlam görünür. Kırık görsel, biraz büyük
+   görselden kötüdür.
+2. **Şemaya varyant alanı eklemek** — sonradan eklenirse yüklenmiş bütün
+   görsellerin yeniden işlenmesi gerekir.
+
+Arayüz `next/image` kullanıyor ve yeniden boyutlandırmayı kendi yapıyor; web
+oturumu bundan vazgeçme ihtimali olmadığını yazılı olarak teyit etti
+(2026-08-28). Yeniden boyutlandırmayı istemci katmanında tutmak, genişlik
+listesi değiştiğinde şemayı kırmıyor.
+
+**Bedeli kabul edildi:** yükleme başına iki varyantın işlem maliyeti boşa
+gidiyor. Yükleme seyrek bir işlem, bu maliyet ölçülebilir değil.
+
+**Değişirse:** arayüz `next/image`'tan vazgeçerse bu karar iptal edilmeli ve
+şemaya varyant alanı eklenmeli — o noktada mevcut görsellerin yeniden
+işlenmesi de gerekir.
+
+`Width`/`Height` **saklanan** dosyanın ölçüleridir, yüklenenin değil. Arayüz
+en-boy oranını bunlardan hesaplayıp görsel inmeden yer ayırıyor; orijinalin
+ölçüsü yazılsaydı oran yanlış çıkar ve yerleşim sıçraması düzelmezdi.
+
+İlgili: [[api-mimari]] · [[api-durum]]
+
+---
+
+## 2026-08-28 (2) — Şablon metni taşır, ticari koşulları taşımaz
+
+`ContractTemplates` yalnız `Name`, `BodyHtml`, `Version` taşır. Komisyon oranı ve
+hakediş periyodu **`Contracts` satırındadır**, sözleşme başına. Şablona varsayılan
+komisyon/periyot alanı **eklenmeyecek**.
+
+**Neden:** Mert'in cümlesi — *"Komisyon ve periyot alanı sitemizde sabit değil, her
+bir işletmeciye farklı periyotlar ve farklı komisyonlar tanımlayabiliriz."* Oran ve
+periyot pazarlık konusu. Şablona varsayılan konsaydı pazarlık gizli bir sayıya
+sabitlenir, personel değiştirmeyi unuttuğunda işletme yanlış oranla bağlanır ve bu
+**imzalanmış bir belgede** kalırdı. Boş alan durdurur, yanlış varsayılan durdurmaz.
+
+Şemaya dokunurken bu ayrım korunacak.
+
+## 2026-08-28 (3) — Sözleşme metni sunucuda temizlenmiyor
+
+`GET /api/platform/contracts/{id}` `bodyHtmlSnapshot` alanını **ham HTML** olarak
+döndürüyor. Sunucu tarafında sanitize edilmiyor.
+
+**Neden:** Metin gönderim anında dondurulmuş bir belgedir. Temizlemek onu
+**değiştirmek** olurdu; işletmenin onayladığı belge ile panelde görünen belge
+ayrışırsa bir uyuşmazlıkta hangisinin geçerli olduğu tartışmalı hale gelir.
+
+Risk kabul edildi ve **gösteren tarafa** devredildi: şablonu platform personeli
+yazıyor, ama bir şablon bir kez kötü yazılır ya da dışarıdan içe aktarılırsa metni
+basan her ekranda o personelin oturumunda çalışır. Web oturumu metni `sandbox`
+özniteliği boş bir `<iframe srcdoc>` içinde basıyor — betik çalışmaz, üst pencereye
+erişemez (2026-08-28'de kararlaştırıldı).
+
+Alan adları ayrımı taşıyor: sözleşmede `bodyHtmlSnapshot` (gönderim anının kopyası),
+şablonda `bodyHtml` (yaşayan hâli). **Yeni bir uç metin döndürecekse aynı ayrımı ve
+aynı yalıtma yükümlülüğünü taşımalı.**
+
+İlgili: [[api-mimari]] · [[api-durum]]
+
+---
+
+## 2026-08-28 (4) — Depo görünürlüğü nesne izniyle değil önek politikasıyla
+
+`IFileStorage.PutAsync` `publiclyReadable` parametresi alıyor ama
+`S3FileStorage` onu **isteğe yansıtmıyor** ve yansıtılmayacak. Dosya
+görünürlüğünü **kova politikası** belirliyor; kural: açık okuma **yalnız
+`boat-media/*`** önekine verilir, diğer bütün önekler kapalıdır ve yalnız
+yetkili uçlardan iner.
+
+**Neden nesne izni eklenmedi:** kova politikası `s3:GetObject` iznini herkese
+veriyorsa nesne izni ne olursa olsun dosya iner. Parametreye bir izin
+konsaydı kod korunuyormuş gibi görünür ama korunmazdı — **yanlış güven,
+korumasızlıktan kötüdür.** Bayrak yine de anlamlı: hangi dosyanın hangi
+önekte durması ve dağıtımın hangi öneki açması gerektiğini söylüyor.
+
+**Nasıl bulundu:** tekne belgesi ucu yazıldıktan sonra depo adresi kimliksiz
+denendi ve `200` döndü. Geliştirme kovası bütün nesnelere açık okuma
+veriyordu. Aynı açık, aylardır yayında olan **işletme evrakını** da
+kapsıyordu — vergi levhası ve kimlik fotokopisi. Dosyayı koruyan tek şey
+anahtarın içerikten türetilmiş olmasıydı, yani tahmin edilemezlik; erişim
+denetimi değil.
+
+Geliştirme politikası daraltıldı ve ölçüldü: belge `403`, galeri `200`,
+yetkili indirme uçları `200`. **Üretim kovasının politikası ayrıca
+doğrulanmalı** → [[api-durum]] S-24.
+
+İlgili: [[api-mimari]] · [[api-durum]]
+
+## 2026-08-28 (5) — Ödeme geri çağrısı özeti, üye listesiyle aynı satır tipini döndürür
+
+`POST /api/payments/callback` yanıtı `{succeeded, reservation}` oldu.
+`reservation`, üye listesinin ve misafir sorgusunun döndürdüğü
+`MyReservationItem`'ın ta kendisi — geri çağrıya özel yeni bir tip
+yazılmadı.
+
+**Neden:** Uç yalnız `succeeded` döndürüyordu. Ödeme sağlayıcısından
+dönen misafirin elinde oturum da yok, rezervasyon kodu da yok — yalnız
+işlem kimliği var. Dönüş sayfasının gösterecek gerçek verisi olmadığı
+için **aylarca sabit veriden okudu**: ödemesini yapan müşteri ekranda
+BAŞKASININ rezervasyon kodunu ve tutarını gördü. Bu, tek bir eksik alanın
+kullanıcıya kadar taşınmasının en pahalı örneği.
+
+Yeni bir tip yerine mevcut satır tipi seçildi çünkü arayüz aynı
+rezervasyonu üç yerde gösteriyor; üçü ayrı şekilde dönseydi arayüz üç ayrı
+eşleme yazardı ve biri değişince diğer ikisi sessizce eskirdi.
+
+**Özet iletişim bilgisi ve biniş jetonu taşımaz.** Bu uç kimlik
+doğrulamıyor ve `AllowAnonymous`; elindeki tek kanıt sağlayıcının işlem
+kimliği. Alınmayan alan sızdırılamaz → [[api-desenler]]
+
+Ödeme zaten başarılıyken erken dönen dal da özeti dolduruyor. Doldurmasaydı
+sayfayı yenileyen misafir dolu ekrandan boş ekrana düşerdi — parası
+alınmış birinin göreceği en kötü şey.
+
+`succeeded` alanı korundu; mevcut çağıranlar kırılmasın diye.
+
+## 2026-08-28 (6) — Biniş QR ucu YAZILMADI, jetonun tek seferlik olması korundu
+
+Frontend'in birinci önceliği `qrImageUrl` idi. Yazılmadı.
+
+**Neden:** `CreateReservationResult.BoardingToken` düz metni **yalnız
+oluşturma yanıtında ve yalnız bir kez** dönüyor; veritabanında yalnız özeti
+saklanıyor ve kaybolursa yeniden üretilemez. Bu, koda sonradan sızmış bir
+eksiklik değil, XML belgesinde yazılı kasıtlı bir özellik: jetonu
+sonradan okuyabilen bir uç, veritabanını okuyabilen herkesin biniş
+jetonunu okuyabilmesi demek.
+
+QR ucu açmak için jetonun düz metninin saklanması gerekirdi. Karar Mert'in
+→ `S-25` [[api-durum]]. Ara çözüm önerim: QR'ı **oluşturma yanıtından
+istemcide üretmek** — jeton zaten orada bir kez geçiyor, sunucuda hiçbir
+şey değişmiyor.
+
+**Yapmadığımı yaptım sanmamak için not:** bu karar ölçülerek değil
+belgeden okunarak verildi; jetonun geri üretilemezliği kodda `Hash`
+karşılaştırmasıyla doğrulandı.
+
+## 2026-08-28 (7) — QR'ın istemcide üretilmesi önerisi GERİ ÇEKİLDİ
+
+`2026-08-28 (6)`'da ara çözüm olarak "QR'ı oluşturma yanıtındaki jetondan
+istemcide üret" önerilmişti. Frontend oturumu uygulamadı ve gerekçesi
+öneriden güçlü çıktı; öneri geri çekiliyor.
+
+**Neden:** Ödeme arada dış sağlayıcıya tam sayfa yönlendirmesi yapıyor.
+Jetonu başarı ekranına taşımak için tarayıcı depolamasına yazmak gerekir —
+geri üretilemeyen bir doğrulama sırrını diske yazmak. Ama asıl sebep bu
+değil: **QR yalnız ödemeden hemen sonraki sekmede olurdu.** Müşteri sayfayı
+kapatırsa, telefonundan açarsa, belgeyi ertesi gün yazdırırsa QR bir daha
+hiç olmazdı.
+
+"Bazı müşteride var, bazısında yok" bir biniş belgesi, hiç QR olmamasından
+kötüdür: destek hattı "benim QR'ım nerede" çağrısıyla dolar ve sebebi kimse
+bulamaz, çünkü sebep müşterinin sekmeyi kapatıp kapatmadığıdır.
+
+Bugünkü hâl: QR yerine yer tutucu, kod büyük ve kopyalanabilir, kaptan elle
+okutuyor. **Eksik ama tutarlı** — her müşteride aynı.
+
+Ders, QR'dan bağımsız olarak geçerli: **yalnız bir yoldan gelene çalışan bir
+özellik, hiç olmayan özellikten kötü olabilir.** Tutarlılık burada
+tamlıktan önce geliyor.
+
+`S-25` buna göre yeniden yazıldı → [[api-durum]]
+
+## 2026-08-28 (8) — Bir alan iki soruya cevap veremez: `memberCount` yanında `canDelete`
+
+Rol listesi `memberCount` döndürüyordu ve arayüz bunu iki şey için
+kullanıyordu: "kaç kişi çalışıyor" ve "silinebilir mi". İkincisi için
+yanlış sayıydı ve panel "0 kişi" gösterip silme isteği reddediliyordu.
+
+**Neden sayı düzeltilmedi:** ikisi de doğru, ama ayrı sorular.
+`memberCount` yalnız aktif çalışanı sayıyor ve "bu rolde kaç kişi
+çalışıyor" sorusunun doğru cevabı bu. Silinebilirlik ise çıkarılmış
+çalışanın duran satırını da hesaba katmak zorunda, çünkü veritabanındaki
+kısıtlayıcı yabancı anahtar onu sayıyor — silmeyi gevşetmek uygulamanın
+elinde değil.
+
+Sayıya pasifleri eklemek "kaç kişi çalışıyor" cevabını bozardı;
+silmeyi gevşetmek mümkün değildi. Üçüncü yol: **eksik olan soruyu ayrı
+alan olarak vermek.** `canDelete`, silmenin reddettiği iki koşulun tam
+tersinden hesaplanıyor ve kaynağı silmenin kullandığı koşulun aynısı
+(`RolesInUseAsync` ≡ `RoleInUseAsync`). İki ayrı yazım olsaydı biri
+değişince diğeri sessizce eskirdi — zaten olan buydu.
+
+**Genel kural:** bir alanın iki soruya birden cevap verdiği her yer, o iki
+sorunun ayrışacağı bir durum bekliyor demektir. Ayrışma ortaya çıkana kadar
+alan "çalışıyor" görünür.
+
+**Ölçüm notu:** alan her zaman `false` dönseydi bütün olumsuz sınamalardan
+geçerdi. Bu yüzden kullanılmayan bir rolün `canDelete=true` dönüp gerçekten
+`204` ile silindiği ayrıca ölçüldü → [[api-durum]] "olumlu durum" kuralı.
+
+## 2026-08-28 (9) — Hız sınırı kimlik doğrulamadan SONRA uygulanır
+
+`UseRateLimiter` artık `UseAuthentication` ve `UseAuthorization`'dan
+sonra çağrılıyor.
+
+**Neden:** önceki sırada `context.User` bölümleme anahtarı hesaplanırken
+henüz doldurulmamış oluyordu. `FindFirst(ClaimTypes.NameIdentifier)`
+daima `null` dönüyor, yani `panel`, `rezervasyonSorgu` ve `personelEkle`
+politikalarının "kullanıcıya göre böl" niyeti hiçbir zaman
+gerçekleşmiyordu — hepsi IP'ye göre bölünüyordu.
+
+Yayında bunun bedeli: NAT ya da mobil operatör CGNAT'ı arkasındaki
+kullanıcılar tek IP olarak görünür. Tek bir gürültülü istemci, aynı çıkış
+adresini paylaşan herkesin panelini dakikada 120 istekte kilitlerdi.
+
+**Kabul edilen bedel:** kimlik doğrulama artık sınırdan önce çalışıyor,
+yani bir sel jeton doğrulama işi yaptırabiliyor. Jetonsuz istekte bu iş
+neredeyse sıfır (doğrulanacak jeton yok) ve kimliksiz çağıran hâlâ IP
+kovasına düşüyor. Kimliksiz uçların sınırlı kaldığı ayrıca ölçüldü.
+
+**Bu kusurun sınıfı `publiclyReadable` ile aynı:** kontrol yazılmış, hiç
+uygulanmamış, testler geçmiş. Ortak sebep de aynı — **tek kullanıcıyla
+iki bölümleme aynı görünür**, tıpkı tek kovayla iki politika gibi. Bir
+ayrımı sınamak için ayrımın iki tarafını da üretmek gerekiyor.
+
+**Testin kendisi doğrulandı:** yeni test eski sıra geri getirilerek
+çalıştırıldı ve BAŞARISIZ oldu. Geçen bir test, geçmemesi gereken durumda
+da geçiyorsa hiçbir şey ölçmüyor demektir → [[api-durum]]
+
+## 2026-08-30 — İşletme rezervasyon listesi iletişim bilgisi taşır, kimlik bilgisi taşımaz
+
+`GET /api/partner/reservations` satırları müşterinin adı, e-postası ve
+telefonunu döndürüyor; yolcuların kimlik bilgisini (TCKN, pasaport)
+döndürmüyor.
+
+**Neden taşıyor:** işletme turu yapan taraftır. Hava muhalefetinde iptal,
+kalkış gecikmesi, buluşma noktası değişikliği — hepsinde müşteriye
+ulaşması gerekir. Ulaşamayan bir işletme müşteriyi iskelede bekletir.
+
+**Neden kimlik bilgisi taşımıyor:** yetki kataloğu bu ayrımı ZATEN
+yapıyor — `reservation.read` ve `passenger.read` ayrı yetkiler. Yani
+"rezervasyonu yapana ulaşmak" ile "yolcuların kimliğini görmek" projenin
+kendi tasarımında farklı sorular. Bu uç yalnız birincisini istiyor.
+
+**Ölçüldü, varsayılmadı:** bugüne kadar işletme yalnız müşterinin ADINI
+görüyordu (biniş ekranı `ContactFullName` döndürüyor). E-posta ve telefon
+YENİ bir açılım, mevcut bir davranışın tekrarı değil — bu yüzden `S-27`
+olarak Mert'e teyit sorusu açıldı ve engelleyici sayılmadı: panel bu
+bilgiler olmadan çalışmıyor ve gerekçe sözleşmenin ifası.
+
+Sayfa boyutu tavanı (50) burada ayrıca bir koruma: sınırsız sayfa boyutu,
+bütün müşteri listesini tek istekte dışarı almanın yolu olurdu.
+
+`includeCancelled` AYRI bir alan, `status` içine gizlenmiş varsayılan
+değil. Gizli olsaydı "3 turum var" diyen bir ekranda iptallerin neden
+sayılmadığı hiçbir yerde görünmezdi; ayrı alan olunca davranış OpenAPI
+belgesinde de okunuyor → [[api-durum]] `S-27`
+
+## 2026-08-31 — İşletme ayarları: sınır bir `if` değil, isteğin tipi
+
+`PUT /api/partner/profile` yalnız beş alan yazıyor: `displayName`,
+`email`, `phone`, `address`, `city`.
+
+**Neden yasal kimlik yazılamıyor:** unvan, vergi numarası, vergi dairesi
+ve iş yeri türü başvuruda doğrulandı, imzalı sözleşmede yazılı ve ödeme
+sağlayıcısındaki alıcı kaydına gönderildi (`RegisterPayeeAsync`). Tek
+taraflı değişmeleri kaydı sözleşmeyle çelişkiye düşürürdü; vergi
+numarasının ayrıca tekil indeksi var.
+
+**Neden IBAN yazılamıyor:** paranın gideceği hesap. Hesabı ele geçiren
+biri IBAN'ı değiştirip bütün gelecek hakedişleri yönlendirebilirdi. Bu
+değişiklik kendi akışını hak ediyor — parola teyidi, olay günlüğü ve
+bildirim ile, tıpkı sahiplik devrinde olduğu gibi. Kataloğun
+`payout.manage` yetkisini platforma kapalı tutması da bu yönü destekliyor.
+
+**Sınırın biçimi:** yasaklı alanlar `UpdatePartnerProfileRequest`
+kaydında BULUNMUYOR, yani bağlanamıyorlar. Kod içinde bir süzgeç olsaydı
+bir gün biri kaydı genişletip süzgeci güncellemeyi unuturdu. Canlıda
+denendi: gövdeye `legalName`, `taxNumber`, `iban`, `status` eklendi,
+hiçbiri değişmedi.
+
+**Okuma yazmadan fazla alan döndürüyor** ve bu kasıtlı: işletme vergi
+numarasının yanlış girildiğini GÖRMELİ, düzeltmeyi platformdan
+isteyebilmeli. Yalnız yazılabilenler dönseydi hatayı fark edemezdi.
+IBAN'ın son dört hanesi dönüyor — "doğru hesap mı" sorusuna yetiyor,
+tamamını okutmuyor.
+
+**Yeni yetkinin geri doldurulması zorunluydu.** Sahip rolü bütün
+atanabilir yetkileri BAŞVURU ANINDA topluca alıyor
+(`GetAssignablePermissionIdsAsync`). Sonradan eklenen bir yetki, o
+tarihten önce kaydolmuş hiçbir sahibe düşmez: uç açılır, mevcut
+işletmelerin hepsi `403` alır ve sebebi hiçbir ekranda görünmez.
+Migration 11 sahip rolünü doldurdu. **Yeni yetki eklerken bu adım her
+seferinde gerekli** → [[api-desenler]]
+
+## 2026-08-31 (2) — Olay günlüğü yükü dizi kabul etmiyor
+
+`changedFields` önce `List<string>` olarak gönderildi. Satır yazıldı,
+uç `200` döndü, **yük BOŞ kaldı.**
+
+**Neden:** `EventPayloadPolicy` iç içe değerleri (dizi ve nesne) kasten
+düşürüyor ve düşürürken uyarı yazıyor. Yani sistem doğru davrandı ve
+sebebini de söyledi; hata bendeydi — politikayı okumadan liste gönderdim.
+
+**Yanıta bakarak görünmezdi.** `200` dönüyordu ve satır da yazılıyordu;
+eksik olan yalnız yükün içeriğiydi. Veritabanı satırına bakınca görüldü.
+
+Çözüm: virgülle birleştirilmiş metin → `{"changedFields": "phone"}`.
+
+**Kural:** olay günlüğüne yalnız SKALER değer gönderilir. Birden çok
+değer taşınacaksa birleştirilmiş metin kullanılır → [[api-desenler]] ·
+[[api-yazilmis-ama-uygulanmamis-kontrol]]

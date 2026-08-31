@@ -387,11 +387,27 @@ for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
     # Commit zamani mtime DEGILDIR: dosyaya dokunmak commit uretmez, icerik
     # degismeden git kayit tutmaz. Yani "beyan olculur, dokunma olculmez" ilkesi
     # korunuyor, yalniz cozunurluk saniyeye iniyor.
+    #
+    # 2026-08-31: ikinci yanlis — `kirli` olan dosya "az once yazilmis" sayilip
+    # ATLANIYORDU. Bu, vault oturumunun bakis acisiydi: yaz, hemen commit'le.
+    # Ama KURAL GEREGI alan oturumlari vault'a yazar ve **commit atmaz** —
+    # commit'i vault oturumu atar. Yani api-mimari.md ve web-mimari.md gunlerce
+    # kirli durur ve kontrol tam da izlemesi gereken dosyalar icin **kalici olarak
+    # susar**. Nitekim api-mimari.md "21 controller" derken 28 vardi, "katalog,
+    # arama, mesajlasma HALA YOK" derken sekizi de yazilmisti — kontrol 15
+    # calisiyordu ve hicbir sey demedi. Bulan, kontrol 17'nin yan etkisiydi.
+    #
+    # Duzeltme: kirli dosyada olcut **mtime**. Bu, "dokunma olculmez" ilkesini
+    # bozmaz — `git status` dosyayi ancak ICERIGI HEAD'den farkliysa kirli
+    # gosterir. Salt dokunma kirli uretmez, dolayisiyla mtime burada gercek bir
+    # icerik degisikliginin zamanidir.
     kirli = (_git(["status", "--porcelain", "--", yol.relative_to(VAULT).as_posix()]) or "").strip()
     if kirli:
-        continue          # az once yazilmis, vault commit'i bekliyor — taze say
-    zaman = (_git(["log", "-1", "--format=%cI", "--",
-                   yol.relative_to(VAULT).as_posix()]) or "").strip()
+        zaman = datetime.datetime.fromtimestamp(
+            yol.stat().st_mtime).astimezone().isoformat()
+    else:
+        zaman = (_git(["log", "-1", "--format=%cI", "--",
+                       yol.relative_to(VAULT).as_posix()]) or "").strip()
     if not zaman:
         zaman = tarih     # hic commit'lenmemis: beyana geri dus
     cikti = _git_repo(repo, ["log", f"--since={zaman}", "--diff-filter=AD",
@@ -405,7 +421,7 @@ for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
     }
     if len(degisen) >= YAPISAL_ESIK:
         sorunlar.append(
-            f"[mimari bayat] {alan}/{dosya}: son vault commit'inden ({zaman[:16]}) bu "
+            f"[mimari bayat] {alan}/{dosya}: son yazimindan ({zaman[:16]}) bu "
             f"yana {repo_adi} icinde {len(degisen)} kaynak dosya eklendi/silindi. "
             f"Yapi degisti, mimari yazilmadi — dosya 'ne var' sorusuna yanlis cevap veriyor")
 

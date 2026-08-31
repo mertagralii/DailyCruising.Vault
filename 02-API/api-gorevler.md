@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: api
-guncelleme: 2026-08-26
+guncelleme: 2026-08-31
 durum: guncel
 ---
 
@@ -31,34 +31,6 @@ Biçim ve gerekçe -> [[genel-desenler]]
 > `A-21`'in kalan altı olay türü buraya dağıtıldı — her biri ilgili ucun kabul
 > ölçütü. Olay türü tek başına bir görev olamaz, çünkü yazacak bir çağrı yeri
 > yok → [[api-benim-kararlarim]]
-
-### Panodaki diğer işler
-
-- [x] **A-63** API arayüzü — Scalar · bitti: 2026-08-27
-      Mert (2026-08-27): *"Swagger gibi kullanabileceğimiz ne var"* → Scalar
-      `Scalar.AspNetCore` 2.17.1 · **MIT** (paketin `nuspec`'inden
-      doğrulandı, tahmin edilmedi — ImageSharp'ta bu adım atlansaydı
-      ücretli bir lisansa bağlanacaktık)
-      Adres: `/scalar/v1` — yalnız Development
-      Kanıt: **tarayıcıda uçtan uca** — jeton yapıştırıldı,
-      `GET /api/platform/partners` **200 OK, 53 ms**, gerçek veri döndü
-      Kanıt: üretim kapısı ateşliyor — `ApiReference:Enabled=true` ile
-      uygulama AÇILMIYOR; kapalıyken açılıyor (ölçüldü,
-      `--no-launch-profile` ile)
-      Kanıt: 441 test geçiyor
-
-      ⚠️ **Swagger/Swashbuckle KULLANILMADI.** .NET 10'un yerleşik
-      `Microsoft.AspNetCore.OpenApi`'si zaten belgeyi üretiyordu; Scalar
-      yalnız görüntüleyici. Swashbuckle ailesinden paket geri gelmedi
-      ⚠️ **JWT şeması için `BearerSecurityTransformer` yazmak ZORUNLU oldu.**
-      .NET'in yerleşik `AddOpenApi()`'si güvenlik şemasını kendiliğinden
-      EKLEMİYOR; onsuz Scalar'ın jeton alanı hiç çıkmaz, her istek 401 döner
-      ve arayüz sessizce işe yaramaz olurdu
-      ⚠️ Şema belgeye ekleniyor ama uçlara ZORUNLU işaretlenmiyor: kimliksiz
-      uçlar gerçekten kimliksiz, hepsine "jeton gerekli" damgası vurmak
-      belgeyi yalancı yapardı
-      ⚠️ `Microsoft.OpenApi` v2.7.5'te tipler **kök ad alanına taşındı**
-      (`Microsoft.OpenApi.Models` DEĞİL) — assembly'den doğrulandı
 
 ### Mert'in 2026-08-26 kararlarından doğan işler
 
@@ -113,6 +85,154 @@ Biçim ve gerekçe -> [[genel-desenler]]
 _(boş)_
 
 ## 🟢 Tamamlandı
+
+- [x] **A-63** API arayüzü — Scalar · bitti: 2026-08-27
+      Mert (2026-08-27): *"Swagger gibi kullanabileceğimiz ne var"* → Scalar
+      `Scalar.AspNetCore` 2.17.1 · **MIT** (paketin `nuspec`'inden
+      doğrulandı, tahmin edilmedi — ImageSharp'ta bu adım atlansaydı
+      ücretli bir lisansa bağlanacaktık)
+      Adres: `/scalar/v1` — yalnız Development
+      Kanıt: **tarayıcıda uçtan uca** — jeton yapıştırıldı,
+      `GET /api/platform/partners` **200 OK, 53 ms**, gerçek veri döndü
+      Kanıt: üretim kapısı ateşliyor — `ApiReference:Enabled=true` ile
+      uygulama AÇILMIYOR; kapalıyken açılıyor (ölçüldü,
+      `--no-launch-profile` ile)
+      Kanıt: 441 test geçiyor
+      ⚠️ **Swagger/Swashbuckle KULLANILMADI.** .NET 10'un yerleşik
+      `Microsoft.AspNetCore.OpenApi`'si zaten belgeyi üretiyordu; Scalar
+      yalnız görüntüleyici. Swashbuckle ailesinden paket geri gelmedi
+      ⚠️ **JWT şeması için `BearerSecurityTransformer` yazmak ZORUNLU oldu.**
+      .NET'in yerleşik `AddOpenApi()`'si güvenlik şemasını kendiliğinden
+      EKLEMİYOR; onsuz Scalar'ın jeton alanı hiç çıkmaz, her istek 401 döner
+      ve arayüz sessizce işe yaramaz olurdu
+      ⚠️ Şema belgeye ekleniyor ama uçlara ZORUNLU işaretlenmiyor: kimliksiz
+      uçlar gerçekten kimliksiz, hepsine "jeton gerekli" damgası vurmak
+      belgeyi yalancı yapardı
+      ⚠️ `Microsoft.OpenApi` v2.7.5'te tipler **kök ad alanına taşındı**
+      (`Microsoft.OpenApi.Models` DEĞİL) — assembly'den doğrulandı
+
+- [x] **A-73** İşletme ayarları — yalnız değiştirilebilir alanlar · bitti: 2026-08-31
+      `GET`/`PUT /api/partner/profile`. Mert: *"ayarlar ucunu da yaz, sadece
+      işletmenin değiştirebileceği alanlar"*. Yazılabilen beş alan:
+      `displayName, email, phone, address, city`.
+      Kanıt: PUT gövdesine `legalName`/`taxNumber`/`iban`/`status`
+      **eklenerek denendi — hiçbiri değişmedi**, veritabanından doğrulandı
+      Kanıt: kimliksiz `401`, yetkisiz müşteri `403`, sahip `200`
+      Kanıt: e-posta küçük harfe normalleştiriliyor; IBAN'ın yalnız son
+      dört hanesi dönüyor
+      Kanıt: değişiklik yokken ikinci `PUT` günlüğe satır YAZMIYOR
+      Kanıt: migration 1 yetki + **11 mevcut sahip rolü** + 1 platform
+      yöneticisi doldurdu
+      Kanıt: 484 test geçiyor
+      ⚠️ Yeni yetki `partner.settings`. Geri doldurma ZORUNLUYDU: sahip
+      rolü atanabilir yetkileri BAŞVURU ANINDA topluca alıyor, sonradan
+      eklenen yetki eski işletmelere hiç düşmezdi
+
+- [x] **A-72** İşletmenin kendi rezervasyon listesi · bitti: 2026-08-30
+      `GET /api/partner/reservations`. Panelin rezervasyon modülü bu uç
+      olmadan HİÇ yazılamıyordu: müşteri listesi `UserId`'ye bağlı, işletme
+      oradan tek satır göremiyordu. `reservation.read` yetkisi 2026-08-24'ten
+      beri kataloğdaydı ve **hiçbir uç kullanmıyordu** — verilebilen ama
+      hiçbir şey açmayan bir yetki.
+      Kanıt: kimliksiz → `401`; `reservation.read` olmayan müşteri → `403`;
+      işletme sahibi → `200` ve gerçek satırlar
+      Kanıt: varsayılan `totalCount` 2, `includeCancelled=true` ile 3 —
+      iptal gerçekten eleniyor ve sayı da süzgeçle hesaplanıyor
+      Kanıt: `from/to` süzgeci 1 satır, `status=Boarded` 1 satır,
+      `pageSize=5000` → 50 (tavan)
+      Kanıt: kapsam testi karşı işletmenin kaydını KENDİ listesinde de
+      görüyor — hiçbir şey döndürmeyen bozuk sorgu böyle eleniyor
+      Kanıt: 478 test geçiyor
+      ⚠️ Müşteri iletişim bilgisi DÖNÜYOR, yolcu kimlik bilgisi dönmüyor
+      → `S-27`
+
+- [x] **A-71** Kiralama tipi listesi çevirilerin ham hâlini döndürüyor · bitti: 2026-08-30
+      **Okuma şekli geçerli bir yazma gövdesi üretemiyordu.** `GET` düz
+      `name`/`program` (çözülmüş hâl) döndürüyor, `PUT` ise dil koduna göre
+      sözlük bekliyor ve sözlüğü TAM kabul ediyor. Cevabı okuyup geri
+      gönderen panel sözlüğü dolduramıyor, metinleri SİLİYOR ve `204`
+      alıyor — hata yok, kayıp var.
+      Kanıt: canlı uçta `program` yazma denendi → `204`, alan `null` geldi
+      Kanıt: canlı, düzeltmeden sonra → `translations: {}` dönüyor ve düz
+      `name` hâlâ katalog adına düşüyor; ikisinin ayrı sorular olduğu ölçüldü
+      Kanıt: yeni test — okunan sözlük olduğu gibi geri yazılınca metinler
+      korunuyor
+      Kanıt: ikinci test — boş sözlükte metinler SİLİNİYOR; korumanın
+      sözlüğü okumaktan geldiğini kanıtlıyor, yoksa eşitleme hiç silmiyor da
+      olabilir ve ilk test bunu ayırt edemezdi
+      Kanıt: 472 test geçiyor
+      ⚠️ Silme davranışı DEĞİŞTİRİLMEDİ — kasıtlı ve belgeli. Ek hizmetlerin
+      listesi `Translations`'ı zaten döndürüyordu; iki kardeş özellik
+      ayrışmıştı
+
+- [x] **A-70** On dört üretim açılış kapısı sınanıyor · bitti: 2026-08-30
+      `A-69`'un açığa çıkardığı sınıf arandı: yazılmış ama uygulandığı hiç
+      ölçülmemiş kontrol. `Program.cs`'te on dört üretim kapısı vardı,
+      **hiçbirinin testi yoktu.** Kapılar sessizce bozulsa fark ettirecek
+      bir şey yoktu.
+      Kurgu: kapılar sırayla açılıyor — her adımda bir ayar düzeltilip
+      hatanın BİR SONRAKİ kapıya ilerlediği ölçülüyor. Böylece hem her kapı
+      ateşliyor hem de seçici olduğu kanıtlanıyor. Üretim sunucusu hiç TAM
+      ayağa kalkmıyor (kalksa zamanlanmış işler dış servise istek atardı).
+      Kanıt: 14 kapının 14'ü sırayla ateşliyor
+      Kanıt: hız sınırı kapısı geçici devre dışı → test **BAŞARISIZ**
+      (`Assert.Contains Failure`) → testin kapıyı gerçekten ölçtüğü
+      doğrulandı, sonra geri getirildi
+      Kanıt: 470 test geçiyor
+
+- [x] **A-69** 🔴 Hız sınırı kimlik çözülmeden uygulanıyordu · bitti: 2026-08-28
+      `UseRateLimiter` `UseAuthentication`'dan ÖNCEYDİ; `context.User` o
+      noktada boş olduğu için kullanıcıya göre bölünmesi gereken BÜTÜN
+      politikalar (`panel`, `rezervasyonSorgu`, `personelEkle`) sessizce
+      IP'ye düşüyordu. Kod "kullanıcıya göre" diyor, davranış IP'ye göreydi.
+      Kanıt: düzeltmeden ÖNCE — kimliksiz 130 istek sonrası **geçerli
+      jetonlu** istek `429`
+      Kanıt: düzeltmeden SONRA — aynı sel sonrası geçerli jetonlu istek `200`
+      Kanıt: kimliksiz uçlar hâlâ sınırlı — `/api/partners/apply` 10 geçti,
+      11 ve 12 → `429`
+      Kanıt: yeni test ESKİ sırada BAŞARISIZ (`Expected: Not TooManyRequests,
+      Actual: TooManyRequests`), yeni sırada geçiyor — testin kusuru
+      gerçekten ölçtüğü doğrulandı
+      Kanıt: 469 test geçiyor
+
+- [x] **A-68** Rol özetine `canDelete` eklendi · bitti: 2026-08-28
+      Panel bir rolü silinebilir sanıp uçtan ret alıyordu: `memberCount`
+      yalnız AKTİF çalışanı sayıyor, silme kontrolü çıkarılmış çalışanın
+      duran kaydını da sayıyor (kısıtlayıcı yabancı anahtar onu sayıyor).
+      Sayının anlamı DEĞİŞTİRİLMEDİ; eksik olan soru ayrı alan oldu.
+      Kanıt: rol + aktif çalışan → `memberCount=1 canDelete=false`
+      Kanıt: çalışan pasife alındı → `memberCount=0 canDelete=false`
+      (**ayrışma**) ve `DELETE` → `400 RoleInUse`; panel artık önceden biliyor
+      Kanıt: kullanılmayan rol → `memberCount=0 canDelete=true`, `DELETE`
+      → `204` — alan her zaman `false` dönseydi üstteki üç ölçüm de geçerdi
+      Kanıt: sahip rolü → `canDelete=false`
+      Kanıt: 468 test geçiyor; ayrışma ve olumlu durum ikisi de sınanıyor
+
+- [x] **A-67** Ödeme geri çağrısı rezervasyon özeti döndürüyor · bitti: 2026-08-28
+      `POST /api/payments/callback` artık `{succeeded, reservation}` dönüyor;
+      `reservation`, üye listesi ve misafir sorgusuyla AYNI satır tipi
+      (`MyReservationItem`). Frontend'in 2 numaralı önceliğiydi: dönüş sayfası
+      gösterecek gerçek veri bulamadığı için aylarca sabit veriden okumuş.
+      Kanıt: canlı `:5163`, sahte sağlayıcı — 200 ve gövdede gerçek kayıt
+      (`code NBSSMUFM`, `status Paid`, `boatName A04 Teknesi`,
+      `grandTotalTry 1000.0`, `paidAt` dolu)
+      Kanıt: **gövdede iletişim bilgisi ve biniş jetonu YOK** — uç kimlik
+      doğrulamıyor, elindeki tek şey sağlayıcının işlem kimliği
+      Kanıt: aynı jetonla ikinci çağrı da 200 ve AYNI özeti döndürüyor —
+      sayfayı yenileyen misafir dolu ekrandan boş ekrana düşmüyor
+      Kanıt: tanınmayan jeton `400 "Ödeme kaydı bulunamadı."`, jetonsuz istek
+      `400 "İşlem kimliği yok."`
+      Kanıt: **başarısız ödemede de özet dönüyor** — canlı, işlem kimliği
+      `fake-fail-*` yapılıp çağrıldı: `{"succeeded":false, code "VZNR9X85",
+      status "Pending", grandTotalTry 500.0}`. İlk yazımda `null` dönüyordu;
+      hata sayfası hangi rezervasyonun düştüğünü söyleyemiyordu
+      Kanıt: **uçtan uca, tarayıcıda tıklanarak** — misafir rezervasyon açtı,
+      ödemeyi onayladı, `/booking/success?code=MC5GU38F` gerçek kaydı gösterdi
+      (Bodrum Marina · 21 Kasım 2026 09:00 · 2 yetişkin 1 çocuk · ₺2.300);
+      sayfa yenilendi, özet durdu. Sunucu tarafından bağımsız doğrulandı:
+      `Paid · 2300.00 · 2+1 · PaidAt dolu · 4 defter satırı · toplam 0.00`
+      Kanıt: 468 test geçiyor (`Callback_returns_the_reservation_summary_every_time`)
+      ⚠️ `qrImageUrl` **kasten yapılmadı** → `S-25`, [[api-kararlar]]
 
 - [x] **A-62** Dosya erişimi ve içerik doğrulama · bitti: 2026-08-27
       `FileSignature` (magic bytes) + iki indirme ucu:

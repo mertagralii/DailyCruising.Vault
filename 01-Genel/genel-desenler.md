@@ -383,4 +383,31 @@ biter; ikincisi **o güne kadar biriken hataların hepsini aynı anda** ortaya d
 durum değeri, hepsi aynı uzunlukta ad. Çeşitliliği olmayan sahte veri test değil,
 **körlük üreticisidir**.
 
+## Muafiyet kalıcı olduğu yerde kör nokta olur
+
+`dogrula.py` kontrol 15, mimari dosyasının kodun gerisinde kalıp kalmadığını
+ölçer. İçinde bir muafiyet vardı: *dosya çalışma ağacında kirliyse atla — az önce
+yazılmış, commit bekliyor, taze say.*
+
+Bu muafiyet **vault oturumunun bakış açısıyla** yazılmıştı: yaz, hemen commit'le,
+kirlilik saniyeler sürer. Ama vault'un kendi kuralı şunu söylüyor: **alan oturumları
+vault'a yazar ve commit atmaz** — commit'i vault oturumu atar. Yani `api-mimari.md`
+ve `web-mimari.md` günlerce kirli durur.
+
+Sonuç: kontrol, izlemesi gereken iki dosya için **kalıcı olarak sustu.**
+`api-mimari.md` "21 controller" derken 28 vardı, *"katalog, arama, mesajlaşma HÂLÂ
+YOK"* derken sekizi de yazılmıştı. Kontrol 15 her gün çalıştı ve hiçbir şey demedi;
+çürümeyi bulan, kontrol 17'nin bir yan etkisi oldu.
+
+**Kural:** bir denetime muafiyet yazarken tek soru sorulur — *"bu koşul kimde
+kalıcı hâle gelir?"* Muafiyetin varsayımı (kirlilik geçicidir) sistemin bir
+bölümünde yanlışsa, denetim orada yok demektir. Ve muafiyetler **denetimin en çok
+gerektiği yerde** kalıcılaşma eğilimindedir: en çok yazılan dosya, en uzun kirli
+kalandır.
+
+İkinci ders: **denetimin sessizliği kanıt değildir.** Kontrol 15 iki kez yanıldı —
+önce gün çözünürlüğüyle yanlış pozitif verdi (bunu fark ettik, çünkü konuştu),
+sonra muafiyetle yanlış negatif verdi (bunu üç gün fark etmedik, çünkü sustu).
+**Konuşan denetim denetlenir, susan denetim denetlenmez** → [[genel-kararlar]]
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

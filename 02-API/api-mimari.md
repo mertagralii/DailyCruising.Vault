@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-08-27
+guncelleme: 2026-08-31
 durum: guncel
 ---
 
@@ -31,8 +31,8 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 |---|---|---|
 | `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **79 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
-| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **39 migration**, **13 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp** |
-| `DailyCruising.Api` | Application + Infrastructure | **21 controller, 69 yol / 85 işlem**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **42 migration**, **13 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp** |
+| `DailyCruising.Api` | Application + Infrastructure | **28 controller, 93 yol**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 
@@ -69,6 +69,12 @@ Infrastructure paketleri: `Npgsql.EntityFrameworkCore.PostgreSQL` ·
 | POST | `/api/pricing/quote` | Dönen tutar **bağlayıcı değil**; rezervasyonda yeniden hesaplanıyor |
 | POST | `/api/reservations` | Koltukları 15 dk tutuyor, onay e-postası + SMS gönderiyor |
 | POST | `/api/reservations/{code}/cancel` | Kod + e-posta/telefon eşleşmesi |
+| POST | `/api/reservations/{code}/lookup` | **Misafirin TEK görüntüleme yolu.** Okuma ama gövdeli: kimlik sorgu dizesinde gitseydi erişim günlüklerine düz metin yazılırdı. Hız sınırı `rezervasyonSorgu` — koda göre, `iptal` kovasından AYRI (paylaşsalardı bakan müşteri iptal hakkını tüketirdi) |
+| GET | `/api/reservations` | `[Authorize]`, üyenin kendi listesi. Misafir kaydı burada **görünmez** — kullanıcı alanı boş |
+| GET | `/api/lookups` | Kimliksiz referans listeleri (bölge, tekne tipi, kiralama tipi, olanak, kural) + çeviri. Arayüz süzgeç menülerini bununla dolduruyor. `A63` ile tohumlandı 2026-08-28 |
+| GET/POST | `/api/partner/boats/{id}/media` | Galeri. Yükleme `boat.write`, okuma `boat.read`. Görsel yeniden kodlanıyor (gömülü konum/cihaz verisi düşüyor), **en büyük varyant saklanıyor** — arayüz yeniden boyutlandırıyor |
+| DELETE | `/api/partner/boats/{id}/media/{mediaId}` | Kapak silinirse sıradaki devralır |
+| PUT | `/api/partner/boats/{id}/media/order` | Sıra + kapak TEK istekte. `IX_BoatMedia_SingleCover` ertelenebilir değil → kapak temizleme ve yazma ayrı `SaveChanges`, tek işlem |
 | POST | `/api/payments/start` · `/callback` | Sonuç istemciden DEĞİL sağlayıcıdan teyit ediliyor |
 
 **İşletme paneli** — yetki gerektiriyor, kapsam `ICurrentUser.PartnerId`'den
@@ -99,15 +105,39 @@ Infrastructure paketleri: `Npgsql.EntityFrameworkCore.PostgreSQL` ·
 | GET/POST | `/api/platform/reviews` · `/{id}/moderate` | `review.moderate` **+ platform personeli** |
 | POST | `/api/payments/refund` | `refund.manage` — **iptalden ayrı yetki**, kasadan para çıkarıyor |
 
+**İşletme paneli** (2026-08-30/31'de eklenenler)
+
+| Metot | Yol | Not |
+|---|---|---|
+| GET | `/api/partner/reservations` | `reservation.read`. İşletmenin KENDİ rezervasyonları; müşteri listesi `UserId`'ye bağlı olduğu için işletme oradan tek satır göremiyordu. **Müşteri iletişim bilgisi taşır**, yolcu kimliği taşımaz → `S-27`. `includeCancelled` ayrı alan, varsayılan `false` |
+| GET/PUT | `/api/partner/profile` | `partner.settings`. Yalnız beş alan yazılabilir: `displayName, email, phone, address, city`. Yasal kimlik, IBAN, durum, komisyon **istek tipinde bulunmuyor**, yani bağlanamıyor. Okuma yazmadan fazla alan döndürür (işletme vergi numarası hatasını görebilmeli); IBAN'ın son dört hanesi |
+| GET/POST/PUT/DELETE | `/api/partner/boats/{id}/media` · `/documents` · `/calendar` · `/rental-types` · `/prices` · `/extras` | Katalog, galeri, evrak ve takvim |
+| GET | `/api/partner/finance/summary` · `/entries` · `/payouts` | `payout.read` — `ledger.read` platforma kapalı olduğu için değiştirildi |
+
 **Sağlık**
 
 | GET | `/api/health` · `/api/health/jobs` |
 |---|---|
 
-⚠️ **HÂLÂ YOK ve ürün bunlarsız çalışmıyor:** katalog (tekne / kiralama tipi /
-fiyat / ek hizmet girişi), arama ve listeleme, yorumlar, mesajlaşma ve
-teklifler, destek talepleri, hakediş ve fatura, bildirim tercihleri, blog,
-platform yönetim paneli. **106 tablo var, 69 yol / 85 işlem.** → [[durum]]
+⚠️ **2026-08-31'de ölçülerek düzeltildi.** Bu satır "katalog, arama, yorumlar,
+mesajlaşma, teklifler, destek, hakediş, platform paneli yok" diyordu ve
+sayısı **69 yol**tu; ölçüldüğünde hepsi vardı ve **93 yol** çıktı. Dosya
+bayatlamıştı — CLAUDE.md'deki *"tetikleyicisi olmayan dosya çürür"*
+dersinin ikinci örneği.
+
+**Gerçekten YOK olanlar** (2026-08-31 ölçümü → [[api-uc-envanteri-2026-08-30]]):
+
+| Eksik | Durum |
+|---|---|
+| Favoriler | uç yok, **tablo da yok** — Mert'ten evet/hayır bekliyor |
+| Bildirim tercihleri | uç yok, **tablo da yok**. Tablo generic kurulursa tür listesi şemayı belirlemez |
+| "Kuponlarım" | `Coupons` tablosu VAR ama **`UserId` kolonu YOK** — kupon kişiye ait değil, kapsamı işletme/tekne. Bu şemada ifade edilemiyor; ürün sorusu |
+| Blog | uç yok — statik mi API mi kararı Mert'te |
+| Yönetim panelinin 9 modülü | müşteriler, personel, kuponlar, bölgeler, reklam, e-posta, SMS, log, aktivite |
+| Yorum yanıtı düzenleme/silme | yalnız `POST .../reply` — tek atış |
+| IBAN değiştirme akışı | kasten yok; parola teyidi + bildirim isteyen ayrı akış olmalı |
+
+**106 tablo, 93 yol, 48 yetki.** → [[durum]]
 
 ## Zamanlanmış işler
 

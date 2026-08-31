@@ -50,3 +50,7 @@ ararken önce [[api-kararlar]]'a, orada yoksa buraya bak.
 - [[api-gorevler]] — yapılacak / yapılıyor / tamamlandı
 - [[api-araclar]] — hangi durumda hangi plugin, skill, MCP
 - [[api-benim-kararlarim]] — Mert'in toplu onayını bekleyen, benim aldığım kararlar
+- [[api-sessiz-yutulan-hatalar]] — hatanın boş sonuca çökmesi API'de yok; denetim, sınır ve boşluk
+- [[api-hiz-siniri-tetikleme]] — kova ömürleri, 429 tarifi, jetonsuz isteklerin de sayılması
+- [[api-yazilmis-ama-uygulanmamis-kontrol]] — üç kez çıkan kusur sınıfı ve onu yakalayan iki soru
+- [[api-uc-envanteri-2026-08-30]] — web panosundaki 12 iş için ölçülmüş uç envanteri ve eksikler

@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: api
-guncelleme: 2026-08-26
+guncelleme: 2026-08-31
 durum: guncel
 ---
 
@@ -12,6 +12,18 @@ durum: guncel
 > Genel dosya bu dosyayı özetler → [[durum]]
 
 ## Nerede duruyoruz
+
+**2026-08-28 — `A-67`: ödeme geri çağrısı artık rezervasyon özeti taşıyor.**
+Frontend'in `/booking/success` sayfası uçtan yalnız `succeeded` aldığı için
+gösterecek gerçek veri bulamamış ve **aylarca sabit veriden okumuş** — ödeme
+yapan müşteri ekranda başkasının rezervasyon kodunu ve tutarını görüyordu.
+Özet, iletişim bilgisi ve biniş jetonu içermiyor; uç kimlik doğrulamıyor.
+Canlı ölçüldü, 468 test geçiyor → [[api-gorevler]] `A-67`
+
+⚠️ Frontend'in 1 numaralı isteği olan **`qrImageUrl` yapılmadı** — biniş jetonu
+tasarım gereği yalnız oluşturma anında, yalnız bir kez dönüyor ve geri
+üretilemiyor. Ürün/güvenlik kararı, Mert'e soruldu → `S-25`
+
 
 **2026-08-27 — `A-63`: API arayüzü kuruldu.** `/scalar/v1`, yalnız
 Development. Jeton yapıştırılıp yetkili uç çağrılabiliyor (tarayıcıda
@@ -196,6 +208,52 @@ girmiyor.
 
 ## 🟢 Cevap bekleyenler — şemayı bloke eden YOK
 
+**2026-08-28 ölçüldü — misafir sorgusu ikinci faktörü zorluyor, kod tek başına
+yetmiyor.** Arayüz biniş belgesini `/account` korumalı önekinden çıkarınca
+"kodu bilen belgeyi görür mü" sorusu doğdu; canlı ölçüldü: iletişim bilgisi
+boş → `400`, yanlış e-posta → `400` **aynı metinle** (yanlış koddan ayırt
+edilemiyor, kod taranarak "bu kod var" bilgisi çıkarılamıyor), doğru e-posta
+→ `200` ve gövdede iletişim alanı YOK. Sunucu tarafında kaçış yolu yok.
+
+**Aynı gün, ikinci soru: "giriş yapmış BAŞKA bir üye, başkasının kodunu
+açarsa?"** Arayüz oturumu bunu ölçemedi — ekran doğru sonucu verdi ama o
+sırada `GET /api/reservations` `429` dönüyordu, yani "liste yüklendi ve kod
+bulunamadı" değil "liste hiç yüklenmedi" ölçülmüştü. **Ölçüm eksik değil,
+yanıltıcıydı:** gerçek bir sızıntı olsaydı da aynı ekran görünürdü.
+
+Sunucudan kanıtlandı: `ListForUserAsync` `Where(r => r.UserId == userId)` ile
+başlıyor, kapsam sorgunun İÇİNDE. `MC5GU38F` → `UserId IS NULL`; geliştirmede
+`UserId` boş 67 rezervasyon var; kaydı herhangi bir kullanıcıyla eşleştiren
+satır sayısı **0**. `NULL` hiçbir `userId`'ye eşit olmadığından misafir
+rezervasyonu hiçbir üyenin listesinde görünemez — gözlem değil, sorgunun
+yapısından çıkan sonuç.
+
+Arayüz oturumu kova açılınca ölçümü tekrarladı, liste bu kez `200` yüklendi:
+anonim + misafir kodu, üye + BAŞKA üyenin kodu (`VBNGJXM2`), üye + misafir
+kodu — üçü de engellendi; üye + KENDİ kodu (`RPAJWZCH`) açıldı. Üç kodun
+sahipliği veritabanından doğrulandı (`MISAFIR` / `UYE:01a03c2e` /
+`UYE:01a0454c`): matris gerçekten üç ayrı durum, ikisi aynı şeyin kopyası
+değil.
+
+Üye-üye ve üye-misafir kapsamı **tek kısıttan** çıkıyor
+(`Where(r => r.UserId == userId)`) — ayrı iki koruma değil. Birini delen bir
+değişiklik ikisini birden deler; o `Where`'i taşıyan her düzenlemede bu
+akılda tutulmalı.
+
+**Ders:** bir ölçüm "doğru sonucu yanlış sebepten" verebilir. Hız sınırı,
+kimlik hatası, boş liste — üçü de beklenen ekranı üretir ve sınanan şeyin
+sınanmadığını gizler. İki kural birlikte geçerli:
+
+1. Bir olumsuz sonuç, **olumsuz olmasının sebebi ölçülmeden** kanıt sayılmaz.
+2. **Olumlu durum ölçülmeden, olumsuz sonuçların hiçbiri kanıt değildir** —
+   her şeyi reddeden bozuk bir yol bütün olumsuz sınamalardan geçer.
+
+2026-08-28'de bulunan kusurların hepsi ikinci kuralın alanındaydı: misafirin
+biniş belgesine hiç erişememesi, ödeme ekranının sabit veri göstermesi,
+`publiclyReadable`'ın hiç uygulanmaması. Üçü de "engelleniyor mu" diye bakan
+bir gözden kaçardı → [[api-desenler]]
+
+
 **Şemayı bloke eden soru YOK.** 35b/38/39/40/41 kapalı — beşi de 22–23 Ağustos'ta
 cevaplanmıştı, [[domain-gereksinimler]] "Cevap bekleyenler" tablosu güncellenmediği
 için açık görünüyordu; 2026-08-24'te düzeltildi.
@@ -204,6 +262,15 @@ için açık görünüyordu; 2026-08-24'te düzeltildi.
 |---|---|---|
 | 41 | Ödeme sağlayıcı (sanal POS) seçimi — şemayı bloke etmiyor | Mert |
 | G-13 | Fatura modelinin mali müşavirle teyidi | Mert |
+| S-18 | `A63_ReferansKatalogu` bölge listesi — domain belgesi bölgeleri saymıyor, 10 mavi tur bölgesi ÖNERDİM, onay yok | Mert |
+| S-19 | `ForwardedHeaders` `KnownProxies` — Next sunucusunun yayındaki IP'si/ağı ne? Liste boşken hiçbir başlık güvenilmiyor, yazılmadan hız sınırı vekil arkasında site geneli çalışır | Mert |
+| S-20 | Rezervasyona KDV oranı dondurulacak mı? Diğer beş alan donduruluyor; sonradan eklenirse geçmiş satırların oranı bilinemez hale gelir. Görüşüm: evet, bugün | Mert |
+| S-21 | Komisyon KDV DAHİL tutardan alınıyor (`grandTotal`) — yani platform, işletmenin devlete borçlu olduğu vergiden de komisyon alıyor. Kasıtlı mı? | Mert |
+| S-22 | `a04-*` referans satırları geliştirme veritabanında duruyor ve `lookups` cevabında ham anahtar olarak görünüyor. Bağlı bir test teknesi olduğu için migration silemedi. Temizlensin mi? | Mert |
+| S-24 | ⚠️ **GÜVENLİK — dağıtım kararı.** `S3FileStorage` `publiclyReadable` parametresini hiç kullanmıyor; görünürlüğü yalnız kova politikası belirliyor. Üretimde açık okuma **yalnız `boat-media/*`** önekine verilmeli; `boat-documents/*` ve `partner-documents/*` kapalı kalmalı. Geliştirmede daraltıldı ve ölçüldü (belge 403, galeri 200). Üretim kovasının politikası doğrulanmalı | Mert |
+| S-27 | ⚠️ **KVKK — teyit.** `GET /api/partner/reservations` işletmeye müşterinin **adı, e-postası ve telefonunu** döndürüyor. Gerekçe: turu yapan taraf hava muhalefetinde/gecikmede müşteriye ulaşamazsa onu iskelede bekletir. Yetki kataloğu ayrımı zaten yapıyor — `reservation.read` (rezervasyonu yapana ulaşmak) ile `passenger.read` (yolcuların kimliği) ayrı yetkiler ve bu uç yalnız birincisini istiyor; yolcu kimlik verisi `W-40`/KVKK kararını beklemeye devam ediyor. **Bugün işletme yalnız ADI görüyordu** (biniş ekranı), e-posta/telefon YENİ açılım. Teyit iste: sözleşmenin ifası için gerekli veri olarak kabul ediliyor mu? | Mert |
+| S-25 | ⚠️ **ÜRÜN + GÜVENLİK. Soru "QR ucu açalım mı" DEĞİL: "biniş jetonu geri üretilebilir olsun mu?"** Jetonun düz metni bugün yalnız rezervasyon oluşturulurken, yalnız bir kez dönüyor; veritabanında yalnız özeti var ve kaybolursa üretilemez — kasıtlı tasarım. Seçenekler: (a) düz metin saklansın (veritabanını okuyan herkes biniş jetonunu okur), (b) ayrı, kısa ömürlü biniş bileti üretilsin — jeton dokunulmadan kalır, (c) bugünkü hâl korunsun, biniş belgesinde QR yerine büyük ve kopyalanabilir kod dursun. **Görüşüm artık (b) veya (c); (a) hayır.** Bu cevaplanınca QR, voucher sayfası ve kaptan tarafı üçü birden çözülür. **(b) seçilirse biletin ömrü tur BİTİŞİNE kadar değil, kalkıştan makul bir süre SONRASINA kadar olmalı** — bitişte ölen bilet, geç kalkan ya da uzayan turda kaptanın elinde ölür ve o an kimse destek hattı arayacak durumda olmaz. **Belge YAZDIRILIP iskeleye götürülüyor:** kağıda basılmış eksik ya da yanlış bilgi ekrandakinden zor fark edilir ve geri alınamaz — "bazı müşteride QR var, bazısında yok" hâli burada ekrandakinden daha pahalı | Mert |
+| S-23 | Tekne detayında **donanım/kural ataması yok** — `lookups` katalogu veriyor ama hangi teknede hangisi olduğunu hiçbir uç döndürmüyor. Aramada da `AmenityIds` süzgeci yok. `W-55` ile birlikte yapılacak | API |
 
 **Çıkarımla şema kurulmaz** — kurulursa altı ay sonra "Mert böyle demişti" diye
 anılır → [[api-desenler]].

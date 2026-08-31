@@ -181,6 +181,25 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 
 ## ⚠️ Vault ↔ kod çelişkileri
 
+**2026-08-31 — `api-mimari.md` ikinci kez çürümüştü, denetim susmuştu.**
+Dosya *21 controller · 69 yol · 39 migration* diyordu; gerçek **28 · 93 · 42**.
+Daha kötüsü, içindeki *"HÂLÂ YOK ve ürün bunlarsız çalışmıyor"* listesi katalog,
+arama, yorumlar, mesajlaşma, teklifler, destek talepleri, hakediş ve platform
+yönetim panelini sayıyordu — **sekizi de yazılmıştı.** Bu, `CLAUDE.md`'de
+kayıtlı 26 Ağustos olayının **aynı dosyada birebir tekrarı**.
+
+Asıl bulgu şu: **kontrol 15 bunu ölçmek için vardı ve sustu.** İçindeki
+"dosya kirliyse taze say" muafiyeti, alan oturumlarının vault'a yazıp commit
+atmaması yüzünden kalıcı hâle gelmişti. Muafiyet kaldırıldı — kirli dosyada
+ölçüt artık `mtime`. Düzeltilir düzeltilmez ikinci gerçek bulguyu verdi:
+`web-mimari.md` 28 Ağustos'tan beri yazılmamış, front-end'de **67 kaynak dosya**
+eklenmiş/silinmiş. Backend `api-mimari.md`'yi düzeltti; `web-mimari.md` web
+oturumunda → [[genel-desenler]] "Muafiyet kalıcı olduğu yerde kör nokta olur"
+
+Yan bulgu, uç eksiği değil **şema sorusu**: "kuponlarım" ekranı yazılamıyor
+çünkü `Coupons` tablosunda `UserId` kolonu yok — kupon kişiye ait değil. `W-39`
+bu yüzden açık.
+
 **2026-08-31 — mock veri, kodun kendi hatasını gizliyordu.** Web'in kısa tarih
 biçimi **yılı atlıyordu**; tasarımdan gelen sahte kayıtların hepsi aynı yıl olduğu
 için hata hiç görünmedi. Gerçek uca bağlanır bağlanmaz `2027-06-17` kalkışlı bir
