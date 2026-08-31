@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-27
+guncelleme: 2026-08-28
 durum: guncel
 ---
 
@@ -44,10 +44,10 @@ Tailwind'in hazır ekran adları bu tasarımla uyuşmuyor. Temaya iki kırılım
 Izgara kuralları (tasarımdan birebir): istatistik 4 → darda 2 · çift blok 2 → 1 ·
 kart ızgarası 3 → 2 → 1 · panel yan menüsü `248px 1fr` → tek kolon.
 
-- **Geniş tablo kabı yalnızca dar ekranda kaydırır:** `overflow-x-auto
-  wide:overflow-x-visible`. Her ölçüde açık bırakılırsa tarayıcı 15px kaydırma
-  çubuğu ekliyor ve masaüstü ölçümü tasarımdan sapıyor; tasarımda kaydırma kabı
-  yok, geniş tablo kartın dışına taşıyor -> [[web-kararlar]]
+- **Geniş tablo kabı her ölçüde kaydırır:** `overflow-x-auto`.
+  2026-08-28'de değişti — eskiden masaüstünde kartın dışına taşıyordu (tasarıma
+  uymak için) ama **sayfanın tamamını 63px yana kaydırıyordu**
+  -> [[web-kararlar]] 2026-08-28
 
 *(Kırılım değerleri DailyCruising tasarımına özgü; "hazır ekran adlarını değil
 tasarımın kendi eşiklerini kullan" kuralı her projede geçerli.)*
@@ -105,6 +105,33 @@ Tasarım kaynağında yok, token setinden türetildi -> [[web-kararlar]] 2026-08
   `h-14` ile `h-[52px]`'yi aynı dizeye koymak sonucu CSS sırasına bırakır
 - ⚠️ **İstemci kapısı sunucu idempotency'sinin yerini tutmaz** — ağ tekrarı,
   sekme kopyalama ve geri tuşu buradan geçmez
+
+## Oturum ve veri erişimi
+
+- **Sunucu bileşeni** `@/lib/api/client` kullanır · **tarayıcı**
+  `@/lib/api/browser` üzerinden `/api/dc/*` vekilinden geçer. Bileşenler
+  backend'i doğrudan çağırmaz — jeton `httpOnly` çerezde
+- **Oturum `oturumKullanicisi()`'nden okunur**, rotadan tahmin edilmez.
+  `cache()` ile sarılı: aynı render'da tek istek
+- **Vekile yeni bir yol önekinin eklenmesi gerekir** — listede olmayan `404`
+- **Zaman damgaları UTC gelir**, `@/lib/api/format` üzerinden basılır. Ham
+  basılırsa 3 saat kayar; sadece-tarih alanlarına çevrim **uygulanmaz**
+- **Backend'in Türkçe hata metni doğrudan gösterilmez** — `hataMetni()` bilinen
+  `code` değerlerini kendi metnimize çevirir
+
+## Elle yazılan yanıt tipleri
+
+`openapi.json` **hiçbir işlem için yanıt şeması taşımıyor**; bütün yanıt
+tipleri elle yazılıyor ve uçla uyuşmadıklarında `tsc`, `lint`, `build`
+üçü de temiz geçiyor.
+
+- **Her yeni yanıt tipi uca istek atılarak doğrulanır.** Kaynak kodu okumak
+  yetmez: sözleşme sınıfının adı ile telde giden ad ayrışabilir
+- **İsteğe bağlı alanlar en tehlikelisi** — yanlışlığı normal kullanımda
+  görünmez, yalnız formu tam dolduran kullanıcıda patlar
+- **Katalog/kimlik listeleri koda gömülmez**, uçtan okunur. Gömülen anahtar
+  bugün çalışsa da katalog değişince sessizce yanlış olur
+  → [[web-elle-yazilan-tip-yalan-soyler]]
 
 ## Tek kaynaklar
 

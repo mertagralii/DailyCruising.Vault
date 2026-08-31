@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: web
-guncelleme: 2026-08-27
+guncelleme: 2026-08-28
 durum: guncel
 ---
 
@@ -736,3 +736,613 @@ oynaması yerleşimi sıçratır; tek başına duran bir gönder düğmesinde
 metni **iki kez** okurdu; `textContent` de `"Gönderiliyor…Gönderiliyor…"`
 çıkıyordu. Canlı bölge artık **yalnız etiket görünmediğinde** basılıyor.
 Ölçümde yakalandı, gözle görülmüyordu.
+
+---
+
+## 2026-08-27 — `W-04` bölündü: "API bağlantısı" tek görev olamaz
+
+**Karar:** `W-04` iptal edildi, yerine **on üç yapılabilir + on API bekleyen**
+görev açıldı (`W-14`, `W-15`…`W-30`, `W-31`…`W-40`, `W-42`).
+
+**Neden:** Tek satır olarak durduğu sürece hangi parçanın **bugün
+yapılabildiği**, hangisinin **uç beklediği** görünmüyordu. Backend görüşmesi ve
+canlı ölçüm sonrası ikisi kesin olarak ayrıldı: bir kısmının uçları hazır, bir
+kısmının **hiç yok** ve yazılmadan başlanırsa sahte veriyle ikinci kez yapılır.
+
+Ölçüm üç bağımsız kaynaktan yapıldı ve **üçü de aynı sonucu verdi**: backend
+oturumunun canlı ölçümü, `openapi.json` + controller kaynağı taraması, ve
+front-end mock veri haritası. Tek kaynağa güvenilmedi.
+
+---
+
+## 2026-08-27 — Üretilen TypeScript tiplerine körlemesine güvenilmeyecek
+
+**Karar:** `W-12` tip üretimi yazılacak ama **yanıt tipleri elle yazılacak** ve
+üretilen istek tipleri de gözden geçirilecek.
+
+**Neden — dördü de ölçüldü:**
+
+1. **Yanıt şeması hiç yok.** 85 işlemin tamamı `"200": {"description":"OK"}`.
+   Controller'lar `Task<IActionResult>` dönüyor, `[ProducesResponseType]`
+   hiçbirinde yok. Üretilen istemci `unknown` yanıt verir
+2. **Enum'lar belgede `integer`, telde `string`.** `SearchSort` belgede
+   `{"type":"integer"}` ama canlıda `?sort=PriceAsc` çalışıyor. Üretilen tip
+   `number` der, gönderilmesi gereken `string` — **derleyici bunu yakalamaz,
+   çalışma zamanında 400 alınır**
+3. **`decimal` → `["number","string"]` union.** Her para alanı `number | string`
+   çıkar, doğrudan aritmetik yapılamaz
+4. **Sayfalama casing'i iki uçta farklı:** `/api/search` PascalCase
+   (`Page`/`PageSize`), `/api/boats/{slug}/reviews` camelCase
+
+**İyi haber:** yanıtların çoğunun C# `record` karşılığı var
+(`Application/**/*Contracts.cs`). Elle yazmak tahmin değil **birebir çeviri**;
+gerçekten anonim olan yalnız 18 uç.
+
+**Sonuç:** "tip üretimi kurulunca sözleşme güvenli olur" varsayımı bu projede
+**yanlış**. Üretim, elle yazımın yerine değil **yanına** geliyor.
+
+---
+
+## 2026-08-27 — Zaman damgaları UTC, arayüzde çevrilecek
+
+**Karar:** API'den gelen her `date-time` `Europe/Istanbul`'a çevrilerek
+gösterilecek; ham damga hiçbir yerde basılmayacak.
+
+**Neden:** Bütün damgalar `+00:00` geliyor. Kiralama tipi **09:00–17:00** olarak
+tanımlıyken yanıtta `06:00:00+00:00`–`14:00:00+00:00` çıkıyor. Ham basılırsa
+müşteriye **3 saat erken** söylenir — iskeleye yanlış saatte giden müşteri
+demektir. Sadece-tarih alanları (`departureDate`) offset taşımıyor, onlara
+çevrim uygulanmaz; ikisi karıştırılırsa tarih bir gün kayar.
+
+---
+
+## 2026-08-27 — Otorite tasarımdan backend'e geçti
+
+**Karar (Mert):** *"Tasarımımız eksik olabilir çünkü bir temel olması adına
+yaptık zaten. Sen çoğunlukla back-end tarafına odaklanarak ona göre tasarım
+kısmını geliştir."*
+
+Bu, 2026-08-21'den beri süren **"tasarıma birebir"** ilkesini iş kapsamı
+açısından **değiştirir**: uç noktası varsa ekran yazılır, tasarımda karşılığı
+olmaması artık gerekçe değil **görev**.
+
+**Neyi değiştirmez:** var olan 19 ekranın tasarıma sadakati. Uygulanmış bir
+ekranı "daha iyi" diye değiştirmek hâlâ sapmadır. Değişen, **olmayan ekranlar**
+için ne yapılacağı.
+
+**Neden:** Tasarım 2026-08-21'de çizildi; domain kararlarının çoğu 22–24
+Ağustos'ta alındı. Yani tasarım, kendisinden **sonra** verilmiş kararları
+bilemezdi. En net örnek: 23 Ağustos'ta *"iletişim telefonla değil sistem içi
+mesajlaşmayla"* kararı alındı ve backend 7 uç yazdı — tasarımda o ekran yok,
+olamazdı da.
+
+**Görev listesi bu ayrıma göre yeniden kuruldu** → [[web-gorevler]]:
+bağla (13) · ekran yaz (11) · veri eksik (2) · uç yok (12) · altyapı (1).
+
+**Ekran yazarken kaynak:** `globals.css` token seti ve var olan bileşenler.
+Geri bildirim katmanı (`W-10`) aynı yolla yapıldı ve tutarlı çıktı — yöntem
+kanıtlı → 2026-08-26 kararı.
+
+---
+
+## 2026-08-27 — Eksik ekranların en kritiği: biniş (QR okutma)
+
+**Bulgu:** `POST /api/boarding/scan` ve `/manual` hazır, izin `boarding.scan`
+tanımlı — ama **işletme panelinde biniş modülü hiç yok.**
+
+**Neden önemli:** Tasarımın her yerinde "iskelede QR'ını okut, varışın anında
+onaylanır" yazıyor. Ana sayfada adım anlatımı var, rezervasyon detayında QR
+kartı var, e-posta şablonunda QR var. **Müşteri tarafı baştan sona anlatılmış;
+tekne sahibinin okutacağı ekran hiç çizilmemiş.**
+
+Yani QR akışı tasarımda **yarım**: kod üretiliyor, gösteriliyor, e-postayla
+gönderiliyor — ama okutulacak yer yok. Bu, tasarımın "temel" olduğunu gösteren
+en net örnek.
+
+`W-43` olarak açıldı: kamera · klavye/el terminali · elle giriş.
+
+---
+
+## 2026-08-27 — Tarayıcı backend'i doğrudan çağırmaz, vekilden geçer
+
+**Karar:** İki istemci var. Sunucu bileşenleri `lib/api/client.ts` kullanır;
+tarayıcı `lib/api/browser.ts` üzerinden `/api/dc/*` vekiline gider.
+
+**Neden:** Jetonlar `httpOnly` çerezde — tarayıcıdaki JS onları **okuyamıyor**.
+Okuyabilseydi tek bir XSS açığı bütün oturumları çalardı. Jetonu tarayıcıya
+vermemenin bedeli bir vekil katman; karşılığı XSS'e kapalı bir oturum. Ölçüldü:
+vekil eklendikten sonra da `document.cookie` **boş**.
+
+**Vekil yetki yükseltmesi değil:** eklenen jeton kullanıcının kendi jetonu,
+backend her istekte yeniden yetkilendiriyor. Buranın işi jetonu göstermeden
+isteğe iliştirmek.
+
+**Yine de izinli yol listesi var.** Serbest bir vekil her ucu çağrılabilir
+yapardı; ayrıcalık kazandırmaz ama niyet edilmemiş bir yüzeyi açık bırakmanın
+faydası da yok. Listede olmayan yol `404` döner — ölçüldü.
+
+**Alternatif elendi:** jetonu `localStorage`'a ya da JS'ten okunabilir çereze
+koymak. Vekil katmanını ortadan kaldırırdı ama XSS'te oturum çalınabilir olurdu.
+
+---
+
+## 2026-08-27 — Backend'in Türkçe hata metni doğrudan basılmaz
+
+**Karar:** `hataMetni()` bilinen `code` değerlerini kendi metnimize çeviriyor;
+backend'in mesajı yalnız **bilinmeyen kod** için son çare.
+
+**Neden — üçü de ölçülmüş:**
+1. Backend metinleri **sözleşme değil**; 2026-08-27'de yorum dönüşümü sırasında
+   elden geçtiler, yarın yine değişebilirler
+2. Bazı durumlarda **gövde hiç yok** — `401` (JWT ara katmanı) ve `429` (hız
+   sınırı) `content-length: 0` dönüyor. Basılacak metin yok, üretmek zorundayız
+3. Giriş hatasında backend'in ayrımını geçirmek **hesap sayımına** izin verir
+
+**`429` özel:** `Retry-After` başlığı gelmiyor, süre bilinmiyor. "Birkaç dakika"
+deniyor, **sayı uydurulmuyor**; "tekrar dene" düğmesi de konmuyor çünkü tekrar
+deneme sayacı uzatıyor.
+
+---
+
+## 2026-08-28 — Oturum başlıkta rotadan değil çerezden okunuyor
+
+**Karar:** `SiteHeader` ve `MobileMenu` gerçek oturum kullanıcısını prop olarak
+alıyor. Kök yerleşim `oturumKullanicisi()` ile bir kez okuyup geçiriyor.
+
+**Neden — önceki hâli bir tahmindi:**
+
+```ts
+const authed = ["/account", "/support", "/owner-panel", "/support-panel", "/admin"]
+  .some((r) => pathname === r || pathname.startsWith(`${r}/`));
+```
+
+Yani *"hesap sayfasındaysa giriş yapmıştır"*. Kimlik doğrulama yokken tek
+seçenekti ve tasarımın o ekranlarda başlığı oturum açık göstermesini taklit
+ediyordu. Artık gerçek çerez var; tahmin kalırsa **çıkış yapmış kullanıcı
+`/account`'a gidince kendini giriş yapmış görür.**
+
+**`cache()` ile sarıldı:** aynı render geçişinde başlık, sayfa ve panel kabuğu
+üçü de çağırsa `GET /api/auth/me` **bir kez** gidiyor.
+
+**Misafirde hiç istek atılmıyor** — `erisimJetonu()` çerez yoksa doğrudan `null`
+döner. Ölçüldü: oturumsuz ana sayfa yüklemesinde dev günlüğünde `auth/me`
+çağrısı **0**.
+
+---
+
+## 2026-08-28 — "Onaylı hesap" mührü gerçek doğrulamaya bağlandı
+
+**Karar:** Hesap sayfasındaki mavi onay mührü yalnız `emailVerified === true`
+ise basılıyor.
+
+**Neden:** Tasarımda mühür **koşulsuz** duruyordu — her hesap onaylı görünürdü.
+`GET /api/auth/me` gerçek alanı döndürüyor ve yeni kayıtlarda `false` geliyor.
+Doğrulanmamış hesaba "onaylı" mührü basmak **yanlış bilgi**; kullanıcı e-posta
+doğrulama adımını atlamış olduğunu fark edemez.
+
+Başlıktaki açılır menüye de "E-posta doğrulanmadı" satırı eklendi. Doğrulama
+akışının kendisi ayrı görev (`W-44`).
+
+---
+
+## 2026-08-28 — Çıkış düğmesi tasarımda vardı ama çıkış yapmıyordu
+
+**Karar:** İki yerdeki "Çıkış yap" bağlantısı `LogoutButton` bileşenine
+çevrildi; `/api/auth/logout`'a POST edip çerezleri sildiriyor.
+
+**Neden:** İkisi de `<Link href="/">` idi — **görünüşte çıkış, gerçekte yalnız
+ana sayfaya gidiş.** Kullanıcı çıktığını sanır, oturumu açık kalırdı. Ortak
+bilgisayarda bunun bedeli, bir sonraki kişinin hesaba erişmesi.
+
+Ağ hatasında da çerezler siliniyor: kullanıcıyı ekranda tutmak, sunucudaki
+yenileme zincirinin açık kalmasından kötü — o zincir zaten ilk yenileme
+denemesinde `401` alıp temizlenir.
+
+Bu, tasarımın "temel" olduğunu gösteren ikinci örnek: düğme çizilmiş, davranışı
+yok. (Birincisi biniş ekranıydı — `W-43`.)
+
+**`router.refresh()` şart:** başlık sunucu bileşeninden besleniyor. Yalnız
+yönlendirme yapılsa kullanıcı çıkmış ama **adı ekranda durur** görünürdü.
+
+---
+
+## 2026-08-28 — Kimliksiz uçlar vekilden geçmez, doğrudan çağrılır
+
+**Karar:** `pricing/quote`, `reservations`, `payments/*` tarayıcıdan
+**doğrudan** backend'e gidiyor. Vekil (`/api/dc/*`) yalnız **jeton gerektiren**
+uçlar için.
+
+**Neden — bu bir hız sınırı gereği, mimari tercih değil.** Backend'in kimliksiz
+politikaları `RemoteIpAddress` ile bölümleniyor ve `rezervasyon` kovası
+**15 dakikada 10**. Vekilden geçen her istek backend'e **Next sunucusunun
+IP'siyle** ulaşır — yani **bütün site tek kullanıcı sayılır ve 15 dakikada 10
+rezervasyonla sınırlanır.** Geliştirmede hiç görünmez; yayında ilk yoğun
+saatte görünür ve suçsuz kullanıcılar `429` alır.
+
+Vekilin tek işi `httpOnly` çerezdeki jetonu iliştirmek. **Jeton gerektirmeyen
+uçta vekilin faydası yok, zararı var.**
+
+**`X-Forwarded-For` göndermiyoruz.** Backend `ForwardedHeaders` +
+`KnownProxies` ile karşı tarafı hazırlamadan gönderilen başlık ya işe yaramaz
+ya da sınırı tamamen deler. Bu bir güvenlik sınırı ve backend'in alanı.
+
+**Kalan risk:** `/boats` araması sunucuda render ediliyor, yani `fiyat` kovası
+(dk/60) hâlâ tek IP'den tüketiliyor. Bilinçli: sunucu render'ı SEO ve ilk
+yükleme için gerekli. Backend `KnownProxies` çözümünü uygulayınca kapanacak.
+
+---
+
+## 2026-08-28 — Rezervasyon üç adımlı sihirbaz değil tek ekran
+
+**Karar:** Tasarımın üç adımlı akışı (tur+kişi → iletişim → ödeme) **tek
+ekrana** indirildi.
+
+**Neden:** Gerçek uçlar üç adım gerektirmiyor. `pricing/quote` **bağlayıcı
+değil** — saklanacak bir teklif yok, fiyat rezervasyon anında yeniden
+hesaplanıyor. Rezervasyon ve ödeme başlatma tek gönderimde zincirleniyor.
+Üç adımlı sihirbaz kullanıcıya iki gereksiz tıklama ve iki ekran daha
+yaptırırdı; karşılığında hiçbir şey kazandırmıyordu.
+
+**Sıra dışı yanıt yarışı:** parametreler hızlı değiştiğinde eski teklif sonra
+dönüp **yanlış fiyatı ekranda bırakabiliyordu**. Her istek `AbortController`
+ile iptal ediliyor ve yanıt yalnız kendi parametre anahtarıyla eşleşirse
+yazılıyor. Ayrı bir "yükleniyor" durumu tutulmuyor; yüklenme, yüklenmiş
+anahtarın geçerli anahtardan farklı olmasından türetiliyor.
+
+---
+
+## 2026-08-28 — Geniş tablolar her ölçüde kart içinde kaydırılıyor
+
+**2026-08-23 kararını iptal eder.**
+
+**Karar:** Panel tablolarının kabı artık her ölçüde `overflow-x-auto`;
+`wide:overflow-x-visible` kaldırıldı.
+
+**Neden eski karar verilmişti:** Tasarımda kaydırma kabı yoktu ve geniş tablo
+kartın dışına taşıyordu; her ölçüde `overflow-auto` vermek 15px kaydırma
+çubuğu ekleyip **sayfa yüksekliğini tasarımdan saptırıyordu**. O zaman ölçüt
+tasarıma birebir uymaktı.
+
+**Neden değişti:** Mert 2026-08-27'de otoriteyi tasarımdan backend'e taşıdı
+(*"tasarımımız eksik olabilir, bir temel olması adına yaptık"*). "Tasarım da
+böyle yapıyor" artık bir gerekçe değil.
+
+Ve gerçek maliyet ölçüldü: 1280px'de işletme panelinin finans modülünde
+**sayfanın tamamı 63px yana kayıyordu**. Kartın içinde kaydırılması gereken bir
+tablo, bütün sayfayı kaydırıyordu — masaüstünde açık bir kusur.
+
+**Ölçüldü:** değişiklikten sonra genel bakış, finans, rezervasyonlar ve
+değerlendirmeler modüllerinin dördünde de yatay taşma **0**.
+
+**Eski kararın uyarısı hâlâ geçerli:** kaydırma çubuğunun yer kaplaması
+işletim sistemi ayarına bağlı; "bir anda 15px büyüdü" belirtisi görülürse önce
+bu akla gelmeli.
+
+---
+
+## 2026-08-28 — Hakediş ekranı kapatıldı, uyarı yeterli değildi
+
+**Karar:** İşletme panelinin finans bölümü tamamen kaldırıldı; yerine
+"hazırlanıyor" mesajı ve destek telefonu kondu.
+
+**Neden:** Bölümde "Ödendi", "Aktarıldı" ve "3 iş günü içinde IBAN'ınıza"
+yazıyordu; hepsi tasarımdan gelen mock ve **hiçbir şeye dayanmıyordu**.
+`LedgerEntries` ve `Payouts` dolu ama okuyan uç yok; üstelik `A-41` açılana
+kadar para işletmeye **zaten gitmiyor**.
+
+**Önce uyarı bandı eklendi, sonra yetersiz bulundu:** uyarının altında hâlâ
+sahte tutarlar ve "Ödendi" rozetleri duruyordu. İşletme sahibinin parasının
+yolda olduğunu sanması, ekranın hiç olmamasından kötü. Backend oturumu da
+bağımsız olarak aynı sonuca vardı ve kapatılmasını istedi.
+
+**Bu, diğer mock bölümlerden farklı:** öbürleri eksik ekran, bu **yanlış bilgi
+gösteren** ekrandı. Ayrım önemli — eksik bölümler yerinde bırakıldı.
+
+---
+
+## 2026-08-28 — Görsel optimize edici yerel IP'ye yalnız adres yerelse açılıyor
+
+**Karar:** `next.config.ts` içinde `images.dangerouslyAllowLocalIP`, ortam
+değişkenine değil **`NEXT_PUBLIC_MEDIA_URL`'in kendi ana makine adına** bakarak
+açılıyor:
+
+```ts
+const yerelKaynak = ["localhost", "127.0.0.1", "::1", "[::1]"].includes(hostname);
+```
+
+**Neden:** Next 16 optimize ediciye özel IP'ye çözülen adresi vermiyor
+(`hostname resolved to private IP` → **400**), çünkü kapı açık olsaydı biri
+bizim `/_next/image` uç noktamıza iç ağ adresi verip ağ taraması yapabilirdi —
+klasik SSRF. Geliştirmede MinIO tam olarak orada (`localhost:9000`) durduğu
+için kapının açılması gerekiyor.
+
+**Neden `NODE_ENV` değil:** `NODE_ENV` yanlış ayarlanabilir ve o zaman kapı
+yayında açık kalır. Adresin kendisine bakmak bunu imkânsız kılıyor: yayında
+`NEXT_PUBLIC_MEDIA_URL` gerçek bir alan adı olacak, koşul kendiliğinden `false`
+olacak. Karar bir **ortam tahmini** değil, **ölçülebilir bir olgu** üzerine
+kuruldu.
+
+---
+
+## 2026-08-28 — Sıralama isteğinde `coverId` gönderilmiyor
+
+**Karar:** `PUT /api/partner/boats/{id}/media/order` çağrılırken `coverId`
+alanı **yalnız kapak gerçekten değiştirilecekse** gönderiliyor. Sürükleme /
+sıra değiştirme isteklerinde alan hiç konmuyor.
+
+**Neden:** Bu uçta 2026-08-28'e kadar `coverId` yoksa **yeni sıranın ilk
+elemanı kapak oluyordu**. Yani sırayı değiştiren kullanıcı, seçtiği kapağı
+istemeden kaybediyordu — belirtmediği, ekranda görmediği, geri alamayacağı bir
+değişiklik. Backend'in kendi XML belgesi bile bu yanlış davranışı doğru diye
+tarif ediyordu.
+
+Backend oturumuna sorulunca kaynağa bakıldı, davranış **hata olarak kabul
+edilip düzeltildi**: `coverId` yoksa mevcut kapak korunuyor. İki kalıcı test
+eklendi.
+
+**Bizim tarafta da niyeti açık tutuyoruz:** kapak değişecekse söyleriz,
+değişmeyecekse alanı hiç koymayız. Backend davranışı yarın tekrar değişse bile
+bizim isteğimiz belirsiz kalmaz.
+
+**Ölçüldü:** kapağı ikinci sıraya taşıyan bir sıralamadan sonra sunucuda
+`sortOrder 1 · isCover true` — kapak görselle birlikte taşındı, ilk sıraya
+atlamadı.
+
+---
+
+## 2026-08-28 — Kiralama tipi seçicisi yok, her tipin kendi düğmesi var
+
+**Karar:** Tekne detayında kiralama tipleri **liste** olarak basılıyor; her
+satırın kendi fiyatı ve kendi "Rezervasyona geç" bağlantısı var. Bir seçici
+(radyo / sekme) konmadı, yan panel seçime bağlanmadı.
+
+**Neden:** Üç sebep, sırayla:
+
+1. **JavaScript'siz çalışmaz.** Seçici istemci durumu ister; her satırın kendi
+   bağlantısı olması sunucu render'ında da doğru çalışır.
+2. **Seçili fiyat kaydırınca görünmez olur.** Yan panel yapışkan; kullanıcı
+   tipler listesine indiğinde hangi tipin seçili olduğunu göremez ve yukarıda
+   yazan tutarın hangisi olduğunu bilemez.
+3. **Tipler karşılaştırmalı bir şey.** Ölçümde bir teknede kişi başı günlük tur
+   (₺500) ile tekne başı 3 günlük konaklamalı (₺10.000) yan yanaydı. Seçici
+   ikisinden birini gizler; liste ikisini de gösterir.
+
+Yan panel yine de bir tutar gösteriyor — **en ucuz tipin fiyatı**, "başlangıç
+fiyatı" etiketiyle. Bu, aramadaki `fromPrice` ile aynı anlam.
+
+**Yan etki:** Detay sayfasındaki fazladan arama isteği kalktı. Detay ucu fiyat
+vermediği için her açılışta **elli kayıtlık bir `/api/search`** çağrılıp tekne
+içinden bulunuyordu; üstelik arama tekne başına tek tip döndürdüğü için birden
+çok tipi olan tekne yanlış görünüyordu. `aramaKaydi()` silindi.
+
+---
+
+## 2026-08-28 — Fiyatı olmayan teknede ödeme metinleri basılmıyor
+
+**Karar:** Tarifesi tanımlanmamış teknede yan paneldeki "KDV dahil · tarih ve
+kişi sayısına göre değişir" ve "Ödeme 3D Secure ile alınır" satırları
+**gösterilmiyor**. Yerine "Bu teknenin tarifesi henüz tanımlanmadı." yazıyor.
+
+**Neden:** İkisi de gösterilmeyen bir tutardan söz ediyordu. "Ödeme 3D Secure
+ile alınır" ise telefon numarası düğmesinin altında duruyordu — olmayan bir
+ödeme akışı varmış gibi. [[web-kararlar]] 2026-08-28 hakediş kararıyla aynı
+ayrım: **eksik bölüm kalır, yanlış bilgi kalmaz.**
+
+---
+
+## 2026-08-28 — Donanım süzgeci geri kondu, bir gün beklemişti
+
+**Karar:** `/boats` filtre panelindeki "Teknede neler olsun" bölümü açıldı;
+seçimler `?AmenityIds=a&AmenityIds=b` olarak gidiyor.
+
+**Neden bir gün beklemişti:** Donanım listesi 2026-08-27'de dolmuştu ama
+`GET /api/search` donanıma göre süzmüyordu. Filtre o gün **bilerek konmadı**:
+*sessizce çalışmayan filtre, olmayan filtreden kötüdür* — kullanıcı seçtiğini
+sanır, sonuç değişmez ve bunu bir hata olarak bile bildiremez. `AmenityIds`
+gelince koşul ortadan kalktı.
+
+**Kutular `append` ile yazılıyor, `set` ile değil.** Aynı adı paylaşan
+denetimlerde `set` yalnız sonuncuyu bırakır; çoklu seçim sessizce tek seçime
+düşerdi. Bu, yukarıdaki "sessizce çalışmayan filtre" kusurunun tam olarak
+kendisi olurdu — bu kez kendi tarafımızda.
+
+**Kullanıcıya VE mantığı yazıyla söyleniyor** ("Seçtiklerinin hepsi teknede
+olmalı"). İki olanak seçip sıfır sonuç alan kullanıcı, süzgecin bozuk
+olduğunu değil seçimini daralttığını anlamalı.
+
+---
+
+## 2026-08-28 — Kural üç halli, iki değil
+
+**Karar:** İşletme panelindeki kural düzenlemesi **belirtilmedi / serbest /
+kabul edilmiyor** olarak üç halli. Onay kutusu (var-yok) kullanılmadı.
+
+**Neden:** Backend kural listesini **tam** kabul ediyor — gönderilmeyen kural
+siliniyor. İki halli bir arayüzde "işaretsiz" hem *"bu kural yok"* hem
+*"bu kural yasak"* anlamına gelirdi ve ikisi farklı şeyler: yasak bir kural
+tekne sayfasında **"Kabul edilmiyor"** rozetiyle görünür, belirtilmemiş kural
+hiç görünmez.
+
+Müşteri tarafında da aynı ayrım korunuyor: `isAllowed` metnin kendisinde
+geçiyor, yalnız renkte değil. "Evcil hayvan" satırını kırmızıya boyayıp yasak
+olduğunu ima etmek renk göremeyen kullanıcıya hiçbir şey söylemez.
+
+---
+
+## 2026-08-28 — Komisyon oranı ve hakediş periyodu ön doldurulmuyor
+
+**Karar:** Sözleşme gönderme formunda şablon, komisyon oranı ve hakediş
+periyodu **üçü de boş** açılıyor. Hiçbirine varsayılan konmadı.
+
+**Neden:** Şablon bu iki değeri taşımıyor (backend ölçtü); yani bir varsayılan
+koymak **uydurmak** olurdu. Komisyon oranı bir iş kararıdır ve sözleşme metnine
+yazılır: personel değiştirmeyi unutursa işletme yanlış oranla bağlanır ve bu,
+imzalanmış bir belgede durur. Boş alan personeli durdurur, yanlış varsayılan
+durdurmaz.
+
+Sınırlar backend'den alındı ve istemcide de tutuluyor — komisyon 0–100,
+periyot 1–90 gün. Formu doldurup gönderdikten sonra `400` görmek gereksiz.
+
+**Mert cevapladı — 2026-08-28, karar kapandı:**
+
+> *"Komisyon ve periyot alanı sitemizde sabit değil, her bir işletmeciye farklı
+> periyotlar ve farklı komisyonlar tanımlayabiliriz."*
+
+Yani şablona varsayılan **eklenmeyecek**. Boş açılan form bir eksiklik değil,
+iş modelinin doğrudan karşılığı: oran ve periyot işletmeye göre pazarlık
+konusu. Varsayılan koymak, pazarlığı gizli bir sayıya sabitlerdi.
+
+Bu aynı zamanda `ContractTemplates`'e alan ekleme fikrini kapatıyor —
+şablon **metni** taşır, **ticari koşulları** değil. Koşullar `Contracts`
+satırında, sözleşme başına.
+
+---
+
+## 2026-08-28 — Sözleşme metni `sandbox` iframe içinde basılıyor
+
+**Karar:** `Contracts.bodyHtmlSnapshot` ve şablon `bodyHtml` alanları
+`dangerouslySetInnerHTML` ile **basılmaz**; `sandbox` özniteliği **boş** bir
+`<iframe srcDoc>` içine verilir.
+
+**Neden sunucu temizlemiyor:** Backend bunu bilerek yapmıyor ve gerekçesi
+sağlam — **temizlemek dondurulmuş bir belgeyi değiştirmek olurdu.** İşletmenin
+onayladığı metinle panelde görünen metin ayrışırsa, bir uyuşmazlıkta hangisinin
+geçerli olduğu tartışmaya açılır. Yani yalıtma yükümlülüğü **bizde**.
+
+**Neden gerekli:** Şablonu platform personeli yazıyor, yani ilk bakışta
+"kendi kendine XSS" görünüyor. Ama bir kez kötü yazılan (ya da dışarıdan içe
+aktarılan) şablon, o sözleşmeyi açan **her** personelin oturumunda çalışır —
+ve o oturumlar bütün işletmeleri görebilen oturumlardır.
+
+Boş `sandbox` her yetkiyi kapatır: betik çalışmaz, form gönderilmez, üst
+pencereye ve çereze erişilmez. **Tarayıcıda doğrulandı:** `contentWindow.document`
+erişimi `SecurityError` ile reddediliyor.
+
+⚠️ **Yeni bir uç sözleşme, şablon ya da başka bir yerden gelen HTML
+döndürürse aynı yalıtım zorunludur.** Bu kural bir kez uygulanıp geçilecek
+bir önlem değil; metin taşıyan her uç için yeniden sorulur.
+
+---
+
+## 2026-08-28 — Biniş QR'ı istemcide üretilmiyor
+
+**Karar:** Backend'in önerdiği "QR'ı rezervasyon oluşturma yanıtındaki
+`boardingToken`'dan istemcide üret" ara çözümü **uygulanmadı**.
+
+**Neden:** Jeton düz metin olarak **yalnız bir kez**, oluşturma yanıtında
+dönüyor. Ödeme akışı arada dış bir sağlayıcıya tam sayfa yönlendirmesi
+yapıyor, yani jetonu başarı ekranına taşımak için tarayıcı depolamasına
+yazmak gerekirdi — ve o, **kaybedilirse geri üretilemeyen bir doğrulama
+sırrını** diske yazmak demek.
+
+Daha ağırı: sonuç **tutarsız** olurdu. QR yalnız ödemeden hemen sonraki
+sekmede görünür; müşteri sayfayı kapatırsa, telefonundan açarsa ya da biniş
+belgesini sonra yazdırırsa **QR bir daha hiç olmaz**. "Bazı müşterilerde
+var, bazılarında yok" bir biniş belgesi, hiç QR olmamasından kötü: destek
+hattı "benim QR'ım nerede" çağrılarıyla dolar ve kimse sebebini bilemez.
+
+**Bugünkü davranış:** QR yerine yer tutucu, rezervasyon kodu **büyük ve
+kopyalanabilir**. Kaptan elle kod okutabiliyor (`boarding/manual`), yani
+biniş kilitli değil.
+
+**Doğrusu sunucuda:** imzalı bir QR ucu ya da jetonun yeniden üretilebilir
+olması. Backend `S-25` olarak Mert'e sordu → `W-66`.
+
+---
+
+## 2026-08-28 — Biniş belgesi korunan alandan çıkarıldı, erişim koda değil sahipliğe bağlı
+
+**Karar:** Belge `/account/reservations/{kod}/voucher` yerine
+`/reservations/{kod}/voucher` adresinde. `/account` korunan bir önek ve
+**misafir kendi belgesini hiç açamıyordu** — giriş sayfasına düşüyordu.
+
+**Neden:** Misafir rezervasyonu domainde birinci sınıf senaryo; o müşterinin
+biniş belgesine erişememesi kabul edilemez. Belge zaten hesaba değil **koda**
+bağlı ve sayfa sunucudan başkasının kaydını çekmiyor — korunan alanda
+tutulması, koruduğu şeyden çok engellediği şeyle tanımlıydı.
+
+**Kod tek başına hiçbir şey açmıyor.** Sayfa iki kaynaktan okuyor:
+
+1. **Sunucu** — giriş yapmış kullanıcının **kendi** rezervasyon listesi.
+   Kapsam sorgunun içinde (`Where(r => r.UserId == userId)`), bellekte
+   süzülmüyor.
+2. **Tarayıcı** — ödeme dönüşünde ya da sorgulama sonucunda oturum
+   depolamasına yazılan özet. Kayıttaki kod adresteki kodla uyuşmuyorsa
+   yok sayılıyor.
+
+**`lookup` ucu ÇAĞRILMIYOR** ve bu bilinçli: çağrılsaydı ikinci faktörü
+(e-posta/telefon) nereden alacağı sorusu çıkardı ve tek makul cevap onu
+tarayıcıda saklamak olurdu — korumayı kendi elimizle zayıflatmak.
+
+**Ölçüm matrisi** (giriş yapmış kullanıcının listesi gerçekten yüklüyken —
+ilk denemede hız sınırı yüzünden liste hiç yüklenmemişti ve ekran **doğru
+sonucu yanlış sebepten** veriyordu):
+
+| Durum | Sonuç |
+|---|---|
+| Anonim, depo boş, misafir kodu | engellendi |
+| Üye, liste **200**, başka üyenin kodu (`VBNGJXM2`) | engellendi |
+| Üye, liste **200**, misafir kodu (`MC5GU38F`) | engellendi |
+| Üye, kendi kodu (`RPAJWZCH`) | **açıldı** |
+
+⚠️ **Ölçümün kendisi yanıltıcı olabilir.** İlk turda ekran "engellendi"
+diyordu ama sebebi listenin `429` alması, kapsam denetimi değildi. Gerçek
+bir sızıntı olsaydı o ekran "her şey yolunda" diyecekti.
+
+**İki parçalı kural — ikisi birden gerekli:**
+
+> Bir olumsuz sonuç, **olumsuz olmasının sebebi ölçülmeden** kanıt sayılmaz.
+> Ve **olumlu durum ölçülmeden**, olumsuz sonuçların hiçbiri kanıt değildir.
+
+İkincisi 2026-08-28'de üç kez karşılığını buldu: misafirin biniş belgesine
+hiç erişememesi, ödeme ekranının sahte veri göstermesi, dosya deposundaki
+`publiclyReadable` parametresinin hiç uygulanmaması. Üçü de "engelleniyor
+mu" diye bakan bir gözden kaçardı; üçü de **olumlu durumun sessizce ölmesi**
+idi.
+
+⚠️ Üye-üye ve üye-misafir kapsamı **tek bir kısıttan** çıkıyor
+(`Where(r => r.UserId == userId)`). Birini delen değişiklik ikisini birden
+deler — o sorguya dokunan her düzenlemede dört satırlık matris yeniden
+ölçülür.
+
+---
+
+## 2026-08-28 — Okuma hatası mock veriye ya da boş listeye düşmüyor
+
+**Karar:** Bir liste okunamadığında ekran **ne mock veri ne boş durum**
+basıyor; ayrı bir "okunamadı" kutusu basıyor.
+
+**Neden:** İkisi de bir **olgu iddiasıdır** ve okuma başarısızken edilemez.
+
+- **Mock'a düşmek**: işletme sahibi kendi panelinde *"Gulet Işıl", "Mavi
+  Rüzgar", "Deniz Yıldızı"* teknelerini görüyordu — hiçbiri onun değil.
+  Ödeme ekranındaki kusurun aynısı, başka yerde.
+- **Boş listeye düşmek**: mesajlaşmada *"Henüz mesajın yok"*, personelde
+  *"Henüz personel yok"*. Domain'e göre iletişim **yalnız** sistem içi
+  mesajlaşmayla oluyor; tekne sahibine kimsenin yazmadığını söylemek,
+  cevaplanmamış bir müşteriyi görünmez yapar.
+
+**`null` ile `undefined` ayrı tutuluyor:** `undefined` = prop hiç geçilmedi
+(tasarım önizlemesi) → mock meşru. `null` = okuma başarısız → mock yasak.
+`??` ikisini aynı sayıyordu; ayrım bu yüzden kayboldu.
+
+**Ölçüm sırası kusur üretti:** ilk yazışta hata denetimini "yükleniyor"
+denetiminden **sonra** koydum ve ekran sonsuza kadar "Yükleniyor…" yazdı.
+Liste `null` kalıyor çünkü artık hata halinde doldurulmuyor. Ölçülmeseydi
+"düzelttim" diye geçilecekti.
+
+**Sunucu tarafı hâli de ölçüldü** (2026-08-28, backend'in tarifiyle):
+`panel` kovası **dakikada 120** ve jetonsuz istekler de aynı kovadan yiyor,
+yani `429` üretmek için oturuma gerek yok. 130 kimliksiz istekten sonra
+panel açıldı:
+
+| Bölüm | Ekran |
+|---|---|
+| Tekne listesi | **"Tekne listesi okunamadı"** — mock tekneler **yok** |
+| Değerlendirmeler | **"okunamadı"** |
+| Belgelerim | okuma geçti → gerçek boş durum |
+
+Üçünün ayrı davranması doğru: bir listenin düşmesi diğerlerini
+karartmıyor. Kova 60 saniyede açıldı, sayfa yenilendi ve **gerçek tekneler
+döndü** — olumlu hâl de ölçüldü, yoksa "her zaman hata gösteren" bir ekran
+da bu sınamadan geçerdi.

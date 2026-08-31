@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-26
+guncelleme: 2026-08-31
 durum: guncel
 ---
 
@@ -304,6 +304,54 @@ src/emails/*.html                                  4 şablon + README
 Baskı kuralları `globals.css` `@media print` içinde: gezinme öğeleri
 `data-print-hide`, belge gövdesi `data-print-sheet`.
 
+## Ekranların veri kaynağı değişti (2026-08-30/31)
+
+Bu, dosyaya yazılması gereken **yapısal** değişiklik: 30–31 Ağustos'ta ekranların
+çoğu tasarım verisinden gerçek uçlara geçti. Katman değişmedi, **beslendiği yer**
+değişti — ve bununla birlikte iki yeni kural yerleşti.
+
+### Kural 1 — `undefined` ile `null` ayrı şeyler
+
+Panel bileşenleri gerçek veriyi sunucudan prop olarak alıyor:
+
+| Değer | Anlamı | Ekran ne yapar |
+|---|---|---|
+| `undefined` | Sunucu prop'u hiç geçmedi (tasarım önizlemesi) | mock basabilir |
+| `null` | **Okuma başarısız** (`ApiError`) | mock **basamaz**, hata kutusu basar |
+| `[]` | Gerçekten kayıt yok | "henüz yok" basar |
+
+Üçü `??` ile birleştirilirse uç düştüğünde kullanıcı başkasının verisini görüyor.
+28 Ağustos'ta tam olarak bu oldu → [[web-kararlar]]
+
+### Kural 2 — kaynağı olmayan modül ne mock ne boş tablo basar
+
+Boş tablo da bir **olgu iddiasıdır** ("kayıt yok") ve okuma yapılamamışken bu
+iddia edilemez. Kaynağı olmayan modül **neden** bağlı olmadığını yazıyla söyler
+ve varsa gerçek verinin nerede olduğunu gösterir.
+
+Bugün bu kural üç panelde birden uygulanıyor: yönetim panelinin 25 modülünün
+21'i, işletme panelinin ayarlar bölümü, hesap alanının dört sekmesi.
+
+### Bugün bağlı olan uçlar — alanlar hâlinde
+
+| Alan | Uçlar |
+|---|---|
+| İşletme paneli | `partner/boats` · `partner/documents` · `partner/reviews` · `partner/finance/*` · `partner/reservations` · `partner/profile` · `partner/boats/{id}/calendar` · `partner/roles·permissions·members` |
+| Yönetim paneli | `platform/partners*` · `platform/reviews` · `platform/contract*` · `support/tickets` · `health/jobs` |
+| Müşteri | `search` · `boats/{slug}` · `pricing/quote` · `reservations` · `payments` · `boarding/*` · `reviews/*` |
+
+Bağlı **olmayan** alanlar (uç yok): favoriler, kuponlarım, bildirim tercihleri,
+blog, platform geneli finans/rezervasyon/müşteri listesi, genel tekne listesi.
+
+### Bir tuzak: mock, kendi hatasını gizler
+
+Gerçek uca bağlanmak yalnız veriyi düzeltmedi, **kodda duran bir hatayı da
+görünür kıldı**. Kısa tarih biçimi yılı atlıyordu; mock kayıtların hepsi aynı
+yılda olduğu için hata o kümede ifade edilemiyordu. Gerçek veride
+`2027-06-17` kalkış "17 Haz" görünüp geçmiş sanıldı → [[web-mock-hatayi-gizler]]
+
+Sonuç: **bir ekranı "mock'la çalışıyor" diye doğrulanmış sayma.**
+
 ## Bu dosya nasıl güncel kalır
 
 2026-08-21'den 2026-08-26'ya kadar bu dosyanın **hiçbir tetikleyicisi yoktu** ve
@@ -313,3 +361,44 @@ bayatladı (87 kaynak dosya değişmişti). Artık `CLAUDE.md`'de tetikleyicisi 
 **Buraya dosya listesi değil katman yazılır.** Tek tek dosya adı sayan bölümler
 en hızlı bayatlayan bölümlerdir; yukarıdaki eski fazlar (A–E) tarihli kayıt
 olarak duruyor, güncel yapı için bu bölüm okunur.
+
+## API ve oturum katmanı (2026-08-27/28)
+
+Backend'e bağlanmanın tek yolu. Bileşenler `fetch` çağırmaz.
+
+```
+src/lib/api/
+  errors.ts    ApiError + parseError — backend'in BEŞ hata şekli
+  format.ts    UTC→Europe/Istanbul · para · KDV ayrıştırma
+  client.ts    sunucu istemcisi (server-only), jeton ekler
+  browser.ts   tarayıcı istemcisi → /api/dc/* vekili + hataMetni()
+src/app/api/dc/[...path]/route.ts   vekil, izinli yol listesiyle
+src/lib/auth/user.ts                oturumKullanicisi() — cache()'li
+src/components/auth/logout-button.tsx
+```
+
+**Neden iki istemci:** jetonlar `httpOnly` çerezde, tarayıcıdaki JS okuyamıyor.
+Sunucu bileşeni doğrudan çağırır; tarayıcı vekilden geçer. Vekil yetki
+yükseltmesi değil — eklediği jeton kullanıcının kendi jetonu.
+
+**Yanıt tipleri elle yazılır.** `openapi.json`'da 85 işlemin **hiçbirinde**
+yanıt şeması yok → [[web-kararlar]] 2026-08-27.
+
+## Geri bildirim ve etkileşim katmanı (2026-08-26/27)
+
+```
+src/components/feedback/   toast · modal · skeleton · empty-state ·
+                           pagination · file-upload
+src/components/ui/         + spinner.tsx · qr-code.tsx
+src/lib/use-submit-guard.ts   çift gönderim kapısı (kilit ref'te)
+src/proxy.ts                  rota kapısı (Next 16: middleware DEĞİL)
+```
+
+## Hata ve akış rotaları (2026-08-26)
+
+```
+app/not-found.tsx · error.tsx · global-error.tsx
+app/forbidden/ · app/maintenance/
+app/booking/success/ · app/account/reservations/[code]/voucher/
+app/design-system/emails/ · src/emails/*.html
+```

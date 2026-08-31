@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-26
+guncelleme: 2026-08-28
 durum: guncel
 ---
 
@@ -28,7 +28,12 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[web-gizli-sekmede-scroll-olayi]] — gizli sekmede scroll olayının yayınlanmaması
 - [[web-yuzde-yukseklik-grafik]] — yüzdelik yükseklikli çubukların görünmemesi
 - [[web-imza-oge-dalga-dikisi]] — hedefte listelenmeyen dosyadaki imza öğesinin atlanması
+- [[web-vekil-multipart-boundary]] — vekilin `Blob`'a düşürdüğü `boundary` ve bozulan dosya yükleme
+- [[web-elle-yazilan-tip-yalan-soyler]] — şemasız uçta uydurulmuş alan adlarının sessizce geçmesi
+- [[web-render-sirasinda-cerez]] — render'da çerez yazmanın 15 dakika sonra patlaması
+- [[web-hiz-siniri-yoklamasi]] — reddedilen isteğin de sayılması, yoklamayı kalıcı kilide çevirmesi
 - [[web-baglanmamis-token-tuzagi]] — `@theme inline`'a bağlanmamış token'ın sessizce ölü sınıf üretmesi
+- [[web-mock-hatayi-gizler]] — mock verinin yanlış bilgi göstermesi değil, **hatanın kendisini görünmez yapması**
 
 - [[web-eksik-detay-ekranlari]] — liste var, detay ekranı yok; 106 bölüm eksikti
 - [[web-tasarimi-tarayicida-acmak]] — tasarımı localhost'ta açıp hesaplanmış stilleri karşılaştırma

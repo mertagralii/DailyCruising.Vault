@@ -399,8 +399,18 @@ Sonuç: kontrol, izlemesi gereken iki dosya için **kalıcı olarak sustu.**
 YOK"* derken sekizi de yazılmıştı. Kontrol 15 her gün çalıştı ve hiçbir şey demedi;
 çürümeyi bulan, kontrol 17'nin bir yan etkisi oldu.
 
+**Muafiyet yanlış değildi — eksikti.** Vault oturumu için doğruydu, alan
+oturumları için hiç doğru olmadı. Hata muafiyetin kendisinde değil, **muafiyeti
+yazarken kullanıcının tek tip sanılmasındaydı**.
+
+Bu, aynı gün mock veride bulunan şeyle **aynı hata**: mock'un tüm kayıtları aynı
+yıldaydı, muafiyetin tüm kullanıcıları aynı oturum tipiydi. İkisi de *dar bir
+örnekten genel kural çıkarmak*. Sahte veride bu körlük üretiyor, muafiyette
+sessizlik.
+
 **Kural:** bir denetime muafiyet yazarken tek soru sorulur — *"bu koşul kimde
-kalıcı hâle gelir?"* Muafiyetin varsayımı (kirlilik geçicidir) sistemin bir
+kalıcı hâle gelir?"* — ve bu soru **"kimde" kısmı çoğul kabul edilerek** sorulur:
+muafiyeti yazan oturum tipi, muafiyetin geçerli olduğu tek tip olabilir. Muafiyetin varsayımı (kirlilik geçicidir) sistemin bir
 bölümünde yanlışsa, denetim orada yok demektir. Ve muafiyetler **denetimin en çok
 gerektiği yerde** kalıcılaşma eğilimindedir: en çok yazılan dosya, en uzun kirli
 kalandır.
