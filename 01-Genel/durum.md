@@ -181,6 +181,20 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 
 ## ⚠️ Vault ↔ kod çelişkileri
 
+**2026-08-31 — `a1d6689` commit gövdesinde yanlış sayı duruyor.** Backend
+"485 test" yazdı, ölçüm **484**'tü; sayı çalıştırılmadan önce yazılmış. Commit
+amend edilmedi — paylaşılan dalda geçmiş yeniden yazmak bir sayı için orantısız
+bulundu, kapı da durdurdu. **Doğrusu 484 ve test sayısı artmadı**, mevcut bir test
+düzeltildi. Bu satır o commit'in düzeltmesidir; `a1d6689`'u okuyan buraya baksın.
+
+**2026-08-31 — "susan denetim" beşinci kez çıktı, üç ayrı katmanda.** Kontrol 15
+(muafiyetle susuyordu), `Coupon_below_the_share_can_be_created` (iddiası örtüktü:
+"patlamadıysa geçmiştir" — satırın yazılmasıyla yazma çağrısının sessizce hiçbir
+şey yapmamasını ayırt edemiyordu; düzeltildi, `a1d6689`), `publiclyReadable`, hız
+sınırı bölümlemesi, üretim kapıları. Beşi de tek bir soruyla bulundu: **"bu kontrol
+çalışmasaydı ne farklı görünürdü?"** → [[genel-desenler]] "Bir kontrolün varlığı,
+çalıştığının kanıtı değil"
+
 **2026-08-31 — `api-mimari.md` ikinci kez çürümüştü, denetim susmuştu.**
 Dosya *21 controller · 69 yol · 39 migration* diyordu; gerçek **28 · 93 · 42**.
 Daha kötüsü, içindeki *"HÂLÂ YOK ve ürün bunlarsız çalışmıyor"* listesi katalog,

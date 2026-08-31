@@ -410,4 +410,42 @@ kalandır.
 sonra muafiyetle yanlış negatif verdi (bunu üç gün fark etmedik, çünkü sustu).
 **Konuşan denetim denetlenir, susan denetim denetlenmez** → [[genel-kararlar]]
 
+## Bir kontrolün varlığı, çalıştığının kanıtı değil
+
+2026-08-31 haftasında **beş** örnek çıktı, üç ayrı katmandan:
+
+| Kontrol | Vardı ama | Nasıl bulundu |
+|---|---|---|
+| `dogrula.py` kontrol 15 | muafiyet yüzünden izlediği iki dosya için kalıcı olarak susuyordu | kontrol 17'nin yan etkisi |
+| `Coupon_below_the_share_can_be_created` | iddiası **örtük**ti: "patlamadıysa geçmiştir" | 484 testin taranması |
+| `publiclyReadable` | — | *"çalışmasaydı ne farklı görünürdü?"* |
+| Hız sınırı bölümlemesi | — | aynı soru |
+| Üretim kapıları | — | aynı soru |
+
+Beşi de aynı aileden: **kontrol yazılmıştı, doğru soruyu soruyordu, ve cevabı
+hiçbir yere ulaşmıyordu.** Yeşil bir test, sessiz bir denetim ve var olmayan bir
+kontrol dışarıdan **birbirinin aynısı** görünür.
+
+**Teşhis sorusu — beşini de bu buldu:**
+
+> *Bu kontrol çalışmasaydı, ne farklı görünürdü?*
+
+Cevap **"hiçbir şey"** ise kontrol zaten susuyordur. Bu soru bir kontrolü yazarken
+de sorulmalı, yazıldıktan sonra da: kontrol 15 doğru yazılmıştı, **sonradan**
+sustu — vault'un kuralı (alan oturumları commit atmaz) muafiyetin varsayımını
+geçersiz kıldı. Yani cevap zamanla değişebilir.
+
+**İki alt biçimi ayırt et**, çünkü fark ediliş süreleri farklı:
+
+- **Örtük iddia** — "istisna atmadıysa geçmiştir". Satırın gerçekten yazılmasını,
+  yazma çağrısının sessizce hiçbir şey yapmamasından ayırt edemez. Testi taramakla
+  bulunur.
+- **Kalıcılaşmış muafiyet** — kontrol çalışır, koşula takılır, atlar. Testte
+  görünmez, çıktıda görünmez; **yalnızca beklediğin bir uyarının gelmediğini fark
+  etmekle** bulunur. Kontrol 15'te üç gün sürdü.
+
+Bu, [[genel-kararlar]]'daki "araç gerekli koşuldur, yeterli değildir" kuralının en
+sert hâli: burada araç gerekli koşulu bile sağlamıyor, yalnız sağlıyor **gibi**
+görünüyor.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

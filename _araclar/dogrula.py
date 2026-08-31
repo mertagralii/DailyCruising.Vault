@@ -33,6 +33,9 @@ BAYAT_GUN = 60                      # mutable notlar icin esik
 MUTABLE_ROLLER = {"map", "status", "not"}  # kararlar/gorev/arsiv bayatlamaz
 
 sorunlar = []
+# 2026-08-31: susan denetim gorunmez oldugu icin susar. Her olcum, sorun
+# uretmese de yazilir — "0/10" ile hicbir satir ayni sey degildir.
+olcumler = []
 
 
 def kodu_ayikla(text):
@@ -419,6 +422,10 @@ for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
         if s.strip() and s.strip().endswith(uzantilar)
         and not any(h in s for h in YOL_DISI)
     }
+    olcumler.append(
+        f"kontrol 15 · {alan}/{dosya}: olcut {zaman[:16]} "
+        f"({'kirli, mtime' if kirli else 'commit'}) -> "
+        f"{len(degisen)}/{YAPISAL_ESIK} yapisal dosya")
     if len(degisen) >= YAPISAL_ESIK:
         sorunlar.append(
             f"[mimari bayat] {alan}/{dosya}: son yazimindan ({zaman[:16]}) bu "
@@ -472,7 +479,9 @@ PANO_DOSYALARI = [
 for rel in PANO_DOSYALARI:
     yol = VAULT / rel
     if not yol.exists():
+        olcumler.append(f"kontrol 17 · {rel}: DOSYA YOK — taranmadi")
         continue
+    _bakilan = 0
     metin = yol.read_text(encoding="utf-8")
     # Yalniz "Yapilacak" bolumunun govdesi
     bloklar = re.split(r"^## ", metin, flags=re.M)
@@ -482,17 +491,24 @@ for rel in PANO_DOSYALARI:
         for satir in blok.split("\n"):
             if not re.match(r"^- \[[ x~]\] \*\*", satir):
                 continue
+            _bakilan += 1
             kimlik = re.search(r"\*\*([A-ZĞÜŞİÖÇ]+-\d+[a-z]?)\*\*", satir)
             kimlik = kimlik.group(1) if kimlik else "?"
             if satir.startswith("- [x]") or "bitti:" in satir:
                 sorunlar.append(
                     f"[pano kaymasi] {rel}: {kimlik} Yapilacak bolumunde ama "
                     f"bitmis gorunuyor — Tamamlandi'ya tasinmali")
+    olcumler.append(f"kontrol 17 · {rel}: {_bakilan} acik gorev incelendi")
 
 
 
 print(f"Vault: {VAULT}")
 print(f"Not sayisi: {len(notlar)}")
+if olcumler:
+    print()
+    print("OLCUM OZETI — sorun uretmeyen kontroller de burada:")
+    for o in olcumler:
+        print("  " + o)
 print()
 if sorunlar:
     print(f"SORUN: {len(sorunlar)}")
