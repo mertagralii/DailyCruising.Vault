@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: genel
-guncelleme: 2026-08-24
+guncelleme: 2026-08-31
 durum: guncel
 ---
 
@@ -14,6 +14,9 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 Karar bekleyenlerde "kimde" satırı vardır; **Mert'te olan işler Claude tarafından
 tamamlanamaz.**
+
+## 🔵 Yapılacak
+
 
 ## 🔵 Yapılacak
 
@@ -63,24 +66,6 @@ tamamlanamaz.**
 
 - [ ] **G-13** Fatura modelinin mali müşavirle teyidi · kimde: **Mert**
       Aracılık modeli seçildi; teyit gelene kadar şema esnek kurulacak
-- [x] **G-03** Ödeme sağlayıcı kararı · **CEVAPLANDI** 2026-08-25
-      Mert: **İyzico** — *"ama sonrasında bunu değiştirebilirim, ona göre bir yapı
-      kuralım; Paratika, Param, PayTR veya benzeri sanal postlarla da çalışabilirim."*
-      Kanıt: şema zaten sağlayıcı-bağımsız — `Payments.Provider` ·
-      `ProviderTransactionId` · `RawResponse (jsonb)` · `IdempotencyKey` (benzersiz)
-      ⚠️ Uygulama `A-29` olarak API panosunda; iki tuzak orada yazılı (eski
-      ödemelerin iadesi eski sağlayıcıdan geçmek zorunda, ve pazaryeri
-      bölüştürme semantiği sağlayıcılar arasında AYNI DEĞİL)
-- [x] **G-04** E-posta ve SMS sağlayıcı kararı · **CEVAPLANDI** 2026-08-25
-      Mert: e-posta **Postmark**, SMS **Netgsm**, yerel test **Mailpit**
-      Verimor önerilmedi ve seçilmedi — eski sistemde canlıda IP whitelist
-      hatası veriyordu
-      Kanıt: Mailpit (Docker) ayakta, rezervasyon onayı gerçekten yakalandı —
-      `musteri@ornek.com | Rezervasyonunuz alındı — Y4YABQ7N`
-      Kanıt: SMS gövdesi de üretiliyor (geliştirmede günlüğe)
-      ⚠️ Netgsm gönderici başlığı operatörden ÖNCEDEN onaylı olmalı, onay
-      birkaç gün sürüyor — canlıya çıkmadan başlatılmalı
-      ⚠️ Postmark'ta `FromEmail` DOĞRULANMIŞ olmak zorunda
 - [ ] **G-07** Deploy, CI/CD ve ortam yönetimi
 - [ ] **G-08** ECC Memory katmanının kalıp kalmayacağına karar verilmesi
       Kuruldu, kullanılmıyor. Başka harness planı yoksa kaldırılmalı -> [[genel-kararlar]]
@@ -92,6 +77,26 @@ tamamlanamaz.**
 _(boş)_
 
 ## 🟢 Tamamlandı
+
+- [x] **G-03** Ödeme sağlayıcı kararı · **CEVAPLANDI** 2026-08-25
+      Mert: **İyzico** — *"ama sonrasında bunu değiştirebilirim, ona göre bir yapı
+      kuralım; Paratika, Param, PayTR veya benzeri sanal postlarla da çalışabilirim."*
+      Kanıt: şema zaten sağlayıcı-bağımsız — `Payments.Provider` ·
+      `ProviderTransactionId` · `RawResponse (jsonb)` · `IdempotencyKey` (benzersiz)
+      ⚠️ Uygulama `A-29` olarak API panosunda; iki tuzak orada yazılı (eski
+      ödemelerin iadesi eski sağlayıcıdan geçmek zorunda, ve pazaryeri
+      bölüştürme semantiği sağlayıcılar arasında AYNI DEĞİL)
+
+- [x] **G-04** E-posta ve SMS sağlayıcı kararı · **CEVAPLANDI** 2026-08-25
+      Mert: e-posta **Postmark**, SMS **Netgsm**, yerel test **Mailpit**
+      Verimor önerilmedi ve seçilmedi — eski sistemde canlıda IP whitelist
+      hatası veriyordu
+      Kanıt: Mailpit (Docker) ayakta, rezervasyon onayı gerçekten yakalandı —
+      `musteri@ornek.com | Rezervasyonunuz alındı — Y4YABQ7N`
+      Kanıt: SMS gövdesi de üretiliyor (geliştirmede günlüğe)
+      ⚠️ Netgsm gönderici başlığı operatörden ÖNCEDEN onaylı olmalı, onay
+      birkaç gün sürüyor — canlıya çıkmadan başlatılmalı
+      ⚠️ Postmark'ta `FromEmail` DOĞRULANMIŞ olmak zorunda
 
 - [x] **G-06** Veri göçü kararı · bitti: 2026-08-24
       Kanıt: Mert *"sıfırdan kuruyoruz zaten"* — göç YOK, dönüştürme betiği

@@ -353,4 +353,34 @@ Boş pano iki şeyden birini gösterir: iş bitti, ya da **iş panoya yazılmad�
 kalmadı" cümlesi, ancak son ölçümün tarihi ve ölçütü yanına yazılırsa bir iddiadır;
 yalnız başına bir tahmindir.
 
+## Başarılı yanıt, doğru yazdığının kanıtı değil
+
+2026-08-31'de iki oturum aynı hatayı **yapısal olarak** aynı biçimde yaşadı:
+
+- **Web:** kısa tarih biçimi yılı atlıyordu. Ekran çalışıyordu, hata görünmüyordu.
+- **Backend:** olay günlüğü ucu `200` dönüyordu, ama yük boş kaydediliyordu.
+
+İkisinde de "işlem başarılı" sinyali vardı ve ikisi de yanlıştı. Doğrulama her iki
+durumda da **yazdığın şeyi başka bir yerden okumayı** gerektirdi — ekranı değil
+listeyi, yanıt kodunu değil kaydı.
+
+**Kural:** bir yazma işlemi, yazılanı **ayrı bir yoldan geri okumadan** doğrulanmış
+sayılmaz. `200`, `build temiz` ve `ekran açılıyor` üçü de aynı sınıfta: gerekli
+koşul, yeterli değil → [[web-mock-hatayi-gizler]]
+
+## Sahte veri, kodun kendi hatasını gizler
+
+Yukarıdaki web hatasının **neden aylarca görünmediği** ayrı bir derstir: tasarımdan
+gelen mock kayıtların **hepsi aynı yıldaydı**. Yılı atlayan biçimlendirici o veri
+kümesinde asla yanlış çıktı üretemezdi. Hata koddaydı, ama **veri onu ifade
+edilemez kılıyordu**.
+
+Mock veri iki zarar verir, ikincisi daha sinsi: (1) ekranda yanlış bilgi gösterir,
+(2) **kodun hatalarını görünmez yapar**. Birincisi gerçek uca bağlanınca kendiliğinden
+biter; ikincisi **o güne kadar biriken hataların hepsini aynı anda** ortaya döker.
+
+**Kural:** mock veri, gerçeğin *dar* bir örneği olmamalı — tek yıl, tek şehir, tek
+durum değeri, hepsi aynı uzunlukta ad. Çeşitliliği olmayan sahte veri test değil,
+**körlük üreticisidir**.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

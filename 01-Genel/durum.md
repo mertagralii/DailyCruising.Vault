@@ -46,13 +46,17 @@ Panolar (28 Ağustos, alan oturumlarının kendi ölçümü):
 
 | Alan | Yapılacak | Tamamlandı |
 |---|---|---|
-| API | 3 | 74 |
-| Web | **17** | 33 |
-| Genel | 6 | 9 |
+| API | 3 | 81 |
+| Web | **5** | 49 |
+| Genel | 6 | 11 |
 
-Web'in 11'den 17'ye çıkması **kötüye gitme değil, görünürlük**: 28 Ağustos'ta
-API yolları ile front-end çağrıları karşılaştırıldı, **74 yolun 21'inde çağrı
-yok** çıktı. O 21 yol dün de bağlı değildi, panoda görünmüyordu.
+⚠️ **Bu sayılar panodan okunamıyordu, sayılarak bulundu.** Üç panoda birden
+**bitmiş görevler Yapılacak bölümünde duruyordu**; web "5 kaldı" derken pano 9
+gösteriyordu, aradaki 4 taşınmamış satırdı. `dogrula.py` **kontrol 17** artık
+bunu ölçüyor (ilk çalıştırmada 7 kayma buldu) → [[genel-desenler]]
+
+Web'in 11 → 17 → 5 seyri **iş miktarının değişmesi değil**: 21 bağlanmamış yol
+28 Ağustos'ta görünür oldu, 30–31 Ağustos'ta on üçü kapandı.
 
 Backend'de Mert'in kararına bağlı olmayan iş kalmadı; kalan üçün ikisi `A-41`'e
 bağlı, üçüncüsü (`A-07`) frontend alanı.
@@ -68,6 +72,16 @@ bağlı, üçüncüsü (`A-07`) frontend alanı.
 **Kritik yol artık tek düğümde:** `A-41` (alt üye iş yeri ve hakediş transferi).
 Bugün tahsilat **platform hesabına** yapılıyor, hakediş defterde duruyor ama
 işletmeye para geçmiyor. `A-58` de buna bağlı.
+
+**2026-08-31: web tarafında Mert'e bağlı olmayan iş kalmadı.** Kalan beşi de karar
+bekliyor: `W-38` blog (statik mi API mi), `W-39` favori/kupon/bildirim tercihi
+(tablo bile yok), `W-40` yolcu listesi (KVKK — blocker 7'ye bağlı), `W-66` biniş
+QR'ı (`S-25`), `W-06` `brand.ts` (`G-10`).
+
+30–31 Ağustos'ta kapananlar: `W-37` yönetim paneli, `W-36a`/`W-36b` işletme paneli
+gerçek veriye bağlandı ve yazılabilir oldu, `W-39a` hesap sayfası, `W-41` tarih
+biçimi, `W-55` tekne detay ucu, `W-61` destek talebi detayı, `W-63` yorum denetimi,
+`W-67` destek talepleri, `W-68` kurumsal sayfalardaki uydurma sayılar.
 
 **Yeni yön ilk gününde iki gerçek boşluk buldu** (Mert'in "backend gerçeği
 tasarımı yönlendirir" talimatı → [[genel-kararlar]]). İkisinin de bedeli somut:
@@ -93,6 +107,20 @@ alan oturumları yakaladı → [[genel-desenler]]
 ⚠️ **Mert'te bekleyen kararlar:** `A-41` (İyzico pazaryeri) · `S-18` (kupon
 kırpma çelişkisi, `S-10` ile `S-15` birbirini bozuyor) · `S-12` (müşteri
 kaynaklı iptalde iade oranı — iptal e-postasını da kilitliyor).
+
+**2026-08-31'de iki yeni soru açıldı, ikisi de sayfada duran uydurma sayı**
+(ayrıntı → [[web-durum]]):
+
+- `S-26` — `/add-boat` sayfasındaki **"%12 komisyon" ve "3 gün ödeme"** vaatleri.
+  İkisi de sözleşme başına tanımlı ve canlı veride **herkes %15'te**. Aynı sayfadaki
+  üç "kaptan görüşü" de ad ve şehirle **uydurulmuştu**.
+- `S-29` — `brand.ts`'teki **"340+ onaylı tekne"**. Backend geliştirme veritabanını
+  ölçtü: **10 yayında tekne, 7 aktif işletme, 2 onaylı yorum** — otuz kat fark. Bu
+  ibare **her sayfanın üst şeridinde** duruyor. `W-06`/`G-10` ile zaten Mert'te,
+  ama artık kararı verecek sayı ölçülmüş durumda.
+
+Bu ikisi tasarım hatası değil: tasarım yer tutucu koymuştu, **kod onu vaat olarak
+yayına taşıdı**. `S-28` cevaplandı — backend ucu yazdı, ekran bağlandı.
 
 ⚠️ **2026-08-26'da Mert karar almayı backend oturumuna bıraktı.** O gün alınan
 teknik kararlar `02-API/api-benim-kararlarim.md` içinde güven damgasıyla duruyor
@@ -152,6 +180,19 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 - Bu vault + hafıza sistemi kuruldu (hook'lar, panolar, doğrulayıcı, 3 projeye özel skill)
 
 ## ⚠️ Vault ↔ kod çelişkileri
+
+**2026-08-31 — mock veri, kodun kendi hatasını gizliyordu.** Web'in kısa tarih
+biçimi **yılı atlıyordu**; tasarımdan gelen sahte kayıtların hepsi aynı yıl olduğu
+için hata hiç görünmedi. Gerçek uca bağlanır bağlanmaz `2027-06-17` kalkışlı bir
+tur listede "17 Haz" görünüp **geçmiş sanıldı**. Aynı gün backend yapısal olarak
+aynı şeyi yaşadı: olay günlüğü `200` dönüyordu ama yük boş kalıyordu. Ortak ders
+[[genel-desenler]]'e yazıldı → [[web-mock-hatayi-gizler]]
+
+**2026-08-31 — pano tarihleri ile takvim ayrıştı.** `03-Web/web-gorevler.md` ve
+`web-durum.md` frontmatter'ında `guncelleme: 2026-08-28` yazıyor, oysa içindeki
+görev satırları `2026-08-30`/`2026-08-31`. Uzun süren bir oturumun "bugün"ü
+başladığı gün donuyor. **Tarih yazan her satır takvimden okunmalı**, oturumun
+belleğinden değil. Düzeltme web oturumunda (kendi alanı).
 
 **2026-08-28 — panel ucu ile müşteri ucu ayrışmış.**
 `GET /api/partner/boats/{id}/rental-types` yanıtında `rentalTypeKey` var ama

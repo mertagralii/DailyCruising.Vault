@@ -168,6 +168,46 @@ ama komisyon eksik hesaplanmasın diye görünür olmalı.
 
 ## Fiyatlandırma
 
+### 2026-08-27 — Fiyatlara KDV **dahildir**
+
+**Karar (Mert):** *"Fiyatlarda KDV dahil olsun."*
+
+Tekne sahibinin girdiği fiyat, müşterinin gördüğü fiyat ve tahsil edilen tutar
+**aynı sayıdır**; üstüne vergi eklenmez.
+
+**Neden soruldu:** 2026-08-27'de backend ve web oturumları bağımsız olarak aynı
+boşluğa çarptı — şemada KDV alanı yok, fiyat tek sayı. İkisi de "bilmiyorum"
+dedi ve tahmin etmedi. Karar Mert'e soruldu.
+
+**Tasarım zaten bunu varsaymış ve matematiği tutuyor.** Rezervasyon ekranında
+`KDV dahil` yazıyor (`booking-form.tsx`), fatura dökümünde `KDV (%20, dahil)
+₺1.087` satırı var. ₺6.525 üzerinden %20 **dahil** KDV = 6.525 × 20/120 =
+**₺1.087,50**. Yani tasarımcı içermeli varsaymış, hesabı da doğru yapmış —
+karar tasarımı değiştirmiyor, **doğruluyor**.
+
+**Sonuçları:**
+- Arayüzde fiyatın yanına "KDV dahil" yazılır; ayrı bir vergi satırı **eklenmez**
+- Fatura dökümünde KDV **ayrıştırılarak gösterilir** (dahil tutardan geriye
+  hesapla: `tutar × oran / (100 + oran)`), çünkü fatura yasal olarak ayrımı ister
+- API'nin döndürdüğü `grandTotalTry` ve `fromPrice` **KDV dahil** tutarlardır;
+  istemci üstüne bir şey eklemez
+
+**⚠️ Açık kalan — cevaplanmadı, çıkarım yapılmadı:**
+
+1. **KDV oranı sabit %20 mi?** Tasarım %20 yazıyor ama bu bir tasarım
+   yer tutucusu olabilir. Turizm hizmetlerinde farklı oran uygulanan kalemler
+   olabilir (konaklamalı turlar, yiyecek-içecek menüsü). **Şemada oran alanı
+   tutulmalı mı, sabit mi kabul edilecek** — sorulmadı
+2. **Komisyon KDV dahil tutar üzerinden mi hesaplanıyor?** Bugün komisyon
+   `grandTotal` üzerinden alınıyor; o tutar artık KDV dahil olduğuna göre
+   platform, tekne sahibinin devlete ödeyeceği verginin üzerinden de komisyon
+   almış oluyor. Bu **bilinçli bir tercih olabilir** ama teyit edilmedi
+3. **Menü ve ek hizmetlerde oran aynı mı?** Yiyecek-içecek farklı orana tabi
+   olabilir
+
+Üçü de "Cevap bekleyenler"e eklendi. *(Bunlar çıkarım değil, sorulmamış
+sorulardır — cevapsız bırakmak, uydurmaktan iyidir.)*
+
 ### 2026-08-22 — Fiyatı tekne sahibi, kiralama tipi başına, mutlak değer olarak girer
 
 Fiyat **(tekne × kiralama tipi)** kırılımında tanımlanır. Tekne sahibi kendi girer.
@@ -1368,9 +1408,13 @@ Tablo güncellenmediği için başka oturumlar bunları blocker sanıyordu.
 | 39 | Tarih farkı | ✅ Fark müşteriden istenmez, 2026-08-22 |
 | 40 | Hava iptalini kim ilan eder | ✅ Alan bırakılıyor; eşik bir sezon sonra (D5) |
 | 41 | Ödeme sağlayıcı | 🟡 Ertelendi — **şemayı bloke etmiyor**, sanal POS seçilince |
+| 57 | KDV oranı sabit %20 mi, şemada oran alanı tutulacak mı | 🔴 Açık — 2026-08-27'de KDV dahil kararıyla doğdu |
+| 58 | Komisyon KDV dahil tutar üzerinden mi alınıyor | 🔴 Açık — platform, verginin üzerinden de komisyon alıyor olabilir |
+| 59 | Menü ve ek hizmetlerde KDV oranı aynı mı | 🔴 Açık — yiyecek-içecek farklı orana tabi olabilir |
 
-**Şu an şemayı bloke eden açık madde yok.** Tek cevapsız domain sorusu
-**çevrimdışı biniş** (iskelede internet yoksa QR ne olur) → `G-12`.
+**Şu an şemayı bloke eden açık madde yok.** ⚠️ 2026-08-27'de üç yeni soru
+açıldı (57–59), üçü de KDV kararının **arkasından** doğdu ve şemayı
+etkileyebilir — özellikle 57 (oran alanı tutulacak mı).
 
 
 ---

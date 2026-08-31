@@ -438,6 +438,42 @@ if _git(["rev-parse", "--git-dir"]) is not None:
                     f"bilgi her oturumun baglamina girer")
 
 
+# ---------------------------------------------------------------------------
+# 17: Yapilacak bolumunde bitmis gorev duruyor mu
+#
+# 2026-08-28'de api-gorevler.md'de 21 bitmis gorev Yapilacak bolumunde bulundu;
+# 2026-08-31'de ayni sey uc panoda birden vardi. Sonuc sayim hatasi: web oturumu
+# "5 kaldi" derken pano 9 gosteriyordu, aradaki 4 bitmis isti.
+#
+# Bu bir disiplin hatasi degil — gorevi bitirirken kanit satirini yazmak akilda
+# kaliyor, bolumler arasi tasimak kalmiyor. Olculmedigi surece pano her gun biraz
+# daha yaniltir: "yapilacak" sayisi isin degil, tasinmamis satirin sayisidir.
+PANO_DOSYALARI = [
+    "01-Genel/genel-gorevler.md",
+    "02-API/api-gorevler.md",
+    "03-Web/web-gorevler.md",
+]
+for rel in PANO_DOSYALARI:
+    yol = VAULT / rel
+    if not yol.exists():
+        continue
+    metin = yol.read_text(encoding="utf-8")
+    # Yalniz "Yapilacak" bolumunun govdesi
+    bloklar = re.split(r"^## ", metin, flags=re.M)
+    for blok in bloklar:
+        if not blok.lstrip().startswith(("🔵", "Yapılacak")):
+            continue
+        for satir in blok.split("\n"):
+            if not re.match(r"^- \[[ x~]\] \*\*", satir):
+                continue
+            kimlik = re.search(r"\*\*([A-ZĞÜŞİÖÇ]+-\d+[a-z]?)\*\*", satir)
+            kimlik = kimlik.group(1) if kimlik else "?"
+            if satir.startswith("- [x]") or "bitti:" in satir:
+                sorunlar.append(
+                    f"[pano kaymasi] {rel}: {kimlik} Yapilacak bolumunde ama "
+                    f"bitmis gorunuyor — Tamamlandi'ya tasinmali")
+
+
 
 print(f"Vault: {VAULT}")
 print(f"Not sayisi: {len(notlar)}")

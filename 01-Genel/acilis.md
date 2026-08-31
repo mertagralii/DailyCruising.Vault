@@ -27,13 +27,13 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 
 ## Şu an ne oluyor
 
-- **API:** 21 controller · 69 yol · 85 işlem · 106 tablo · 39 migration · 441 test
+- **API:** pano 3/81 · 21 controller · 69 yol · 85 işlem · 106 tablo · 39 migration · 441 test
   yeşil. Ödeme uçtan uca çalışıyor (gerçek İyzico sandbox). Panoda **Mert'e bağlı
   olmayan iş kalmadı**
 - **Web:** 25 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
-  Pano 11 yapılacak / 33 tamamlandı
-- **Genel:** 68 not, `dogrula.py` 16 kontrol
+  Pano **5 yapılacak / 49 tamamlandı** — kalan beşi de **Mert'in kararında**
+- **Genel:** 78 not, `dogrula.py` 17 kontrol
 
 Aktif engel tek (ayrıntı -> [[durum]]): **KVKK yolcu listesi dayanağı**
 doğrulanmadı — Mert'te.
