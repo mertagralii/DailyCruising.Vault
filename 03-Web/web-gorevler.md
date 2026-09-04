@@ -53,25 +53,41 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 
 
-- [ ] **W-38** Blog — uç yok, statik mi API mi karar verilmedi
+- [ ] **W-38** Blog — **karar verildi (2026-09-04), uç bekleniyor**
+      ✅ `S-30` kapandı. Mert: *"bloglar bu arada uç yazılsın blog
+      yazılabilecek çünkü siteden"* — statik kalmıyor, yazı **siteden**
+      yazılacak. Gerekçe ve akış → [[domain-gereksinimler]] 2026-09-04
+      **Şema zaten tam**: `BlogPosts` (13 kolon), `BlogPostTranslations`,
+      `BlogCategories`, `BlogCategoryTranslations` — çeviri, kategori,
+      kapak, görüntülenme sayacı ve onay akışı dahil. Yetkiler katalogda:
+      `blog.write`, `blog.approve`. Eksik olan yalnız **uç**.
+      `Bağımlı:` backend ucu (`A-` numarası backend panosunda)
+      Web tarafında yazılacak üç parça:
+      · `/blog` ve `/blog/{slug}` gerçek uca bağlanır — bugün 7 statik
+        yazı basıyor, kaynağı `src/lib/data/`
+      · **Yazı yazma ekranı** — işletme panelinde `blog.write` yetkisiyle;
+        başlık, içerik, kategori, kapak görseli, çeviri
+      · **Onay ekranı** — yönetim panelinde `blog.approve` ile bekleyen
+        yazı yayınlanır/reddedilir (2026-08-24 kararı)
+      **Kabul ölçütü:** panelden yazılan bir yazı onaydan geçip `/blog`
+      listesinde canlı görünüyor; onaysız yazı listede **yok**; okuma
+      başarısızsa bölüm basılmıyor (boş liste "yazı yok" iddiasıdır)
+      ⚠️ Bugünkü 7 statik yazının veritabanına girip girmeyeceği
+      **kararlaşmadı** — soru 60, çıkarım yapılmadı. Uç gelene kadar
+      statik kalıyorlar
 - [ ] **W-39** Favoriler, kuponlarım, bildirim tercihleri — **uç yok**
       Ekranlar uydurma veri basmıyor artık (`W-39a`); kalan iş uçlar
       yazılınca. Favori ve bildirim tercihi için tablo da yok, kupon
       tablosu var ama okuyan uç yok
-- [ ] **W-40** Yolcu listesi — ölçüldü, **bir uç hatası çıktı**
-      Uyarı kutusu tekne detay sayfasında **zaten var ve çalışıyor**
-      (`requiresPassengerList` bayrağı `true` yapılıp ölçüldü). Eksik olan
-      **rezervasyon akışı**: müşteri karar verip ödediği ekranda görmüyor.
-      Akışa koyacaktım, koymadım — ölçünce `pricing/quote` bu bayrağı
-      **her zaman `false`** döndürüyor (aynı tekne, aynı an: tekne detayı
-      `true`, işletme detayı `true`, quote `false`). Akış zaten quote
-      çağırdığı için uyarıyı oradan kurmak en doğal seçimdi; kursaydım
-      **hiç görünmeyen bir uyarı** yayına girecekti ve tekne sayfasında
-      çalıştığı için "çalışıyor" diyecektim.
-      Ayrıca `passengerListReminderHours` müşteri ucunda hiç dönmüyor
-      (işletme ucunda `24` var) — "kalkıştan X saat önce" yazılamıyor.
-      İkisi de backend'e bildirildi. Veri toplama kısmı KVKK'da (Mert)
-      `requiresPassengerList` **tekne detayında geliyor**, form ucu yok
+- [ ] **W-40** Yolcu listesi — **uyarı tamam**, veri toplama Mert'te
+      Uyarı rezervasyon akışında, ödeme formundan önce; kaynağı **teklif**
+      olduğu için hiçbir koşulda kaybolmuyor, süre ("kalkıştan en geç 24
+      saat önce") varsa ekleniyor (`8daecfc`).
+      Kalan iş yolcu **verisini toplamak**: form ucu yok ve KVKK dayanağı
+      Mert'te. ⚠️ Backend'in açtığı ek karar: düzeltme **geriye dönük
+      değil** — bayrak rezervasyona donduruluyor, geliştirmede 10
+      rezervasyon hâlâ yanlış damgalı. Mevcut satırlar düzeltilsin mi,
+      Mert'in kararı
 - [ ] **W-06** `brand.ts` kurumsal verileri · **Mert'te** (G-10)
 
 ### 🟦 E — Altyapı
@@ -79,6 +95,100 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 ## 🟡 Yapılıyor
 
 ## 🟢 Tamamlandı
+
+- [x] **W-73** Kart rozetinde tekne tipinin adı · 2026-09-04
+      Ana sayfadaki öne çıkan kartlar ve blog yazısının kenar sütunu tur
+      tipi rozetinde **marina adı** basıyordu. Yanlış bilgi değildi ama
+      sorulan bilgi de değildi — `GET /api/search` tip adını hiç
+      döndürmüyordu, yalnız `boatTypeId` vardı.
+      Backend ekledi (`52579a7`). **`lookups` ile eşleme yapılmadı**:
+      çeviri mantığı iki yere bölünürse biri kaydığında arama sonucu ile
+      süzgeç menüsü **sessizce ayrışır**.
+      Kanıt: canlı uç ölçüldü, **iki dalın ikisi de** —
+      çevrilmiş tip → `Gulet`, çevirisiz tohum satırı → ham anahtar
+      `a04-gulet` (**boş dönmüyor**, yer tutucu gerekmiyor). Ana sayfada
+      rozet 4 kartta doğru basılıyor, dört bağlantının dördü de **HTTP
+      200**; blog yazısında da aynı. `tsc` 0 hata, `eslint` temiz.
+      ⚠️ Ham anahtar `a04-gulet` artık **ana sayfada görünüyor** — istemci
+      tarafında "anahtar gibi duruyorsa gizle" sezgisi konmadı, o ayrım
+      uydurma olurdu. Kaynağı geliştirme veritabanındaki tohum çöpü,
+      `S-22` ile backend'de. `a2f54c4`
+
+- [x] **W-72** Blog yazısındaki 404 veren tekne kartları · 2026-08-31
+      `W-71`'deki kusurun aynısı yazının içinde de vardı: "Bu koylara
+      çıkan tekneler" listesi dört tekne basıyor ve **dördünün de
+      bağlantısı 404** veriyordu. Yazıyı okuyup "bu tekneye bakayım"
+      diyen ziyaretçi, tam ilgilendiği anda ölü sayfaya düşüyordu.
+      Altındaki "Bodrum'daki 96 tekneyi gör" bağlantısı da uydurma sayı
+      taşıyordu (10 tekne var).
+      Gerçek katalogdan besleniyor; okuma başarısızsa bölüm hiç
+      basılmıyor.
+      **Tarama yapıldı:** veri dosyalarındaki tüm sabit slug'lar `/api/boats`
+      ucuna karşı denendi — tekneye işaret eden başka 404 bağlantı yok.
+      Kanıt: yazı canlı → dört uydurma ad ve "96 tekneyi" yok; kenar
+      sütunundaki dört bağlantı gerçek tekneye gidiyor, **dördü de HTTP
+      200**. Taşma 0. `80479f7`
+
+- [x] **W-71** Ana sayfadaki uydurma iddialar ve **404 veren kartlar** · 2026-08-31
+      ⚠️ Bu oturumun en ciddi bulgusu: ana sayfanın "öne çıkan tekneler"
+      bölümü **üç uydurma tekne** basıyordu ve üçünün bağlantısı da
+      **404** veriyordu (`gulet-isil`, `poyraz-kaptan`, `mavi-yelken-ii`).
+      Sitenin en görünür kartları ziyaretçiyi ölü sayfaya götürüyordu.
+      Artık `GET /api/search`'ten geliyor; okuma başarısızsa bölüm hiç
+      basılmıyor — uydurma tekne de "tekne yok" iddiası da yanlış olurdu.
+      Aynı sınıftan: üst şeritteki "340+ onaylı tekne" (ölçülen **10**;
+      **her sayfada** duruyordu, sitedeki en çok okunan yanlış oydu),
+      "4.812 doğrulanmış yorum · 4,8/5" (ölçülen **2** onaylı yorum),
+      "4,8 ★ (2.140 değerlendirme)" (uygulama yayında değil), bölge
+      kartlarındaki tekne sayıları (Bodrum 96 · Marmaris 74 · Fethiye 68,
+      toplam 10 tekne varken) ve üç isimli misafir yorumu.
+      **"Yakında" ayrımı gerçekti, korundu:** `boatCount: 0` yerine
+      `soon` bayrağı kondu — sayı uydurmaydı ama ayrım değildi.
+      `brand.ts`'te yalnız doğrulanamayan sayılar çıktı; telefon, adres,
+      TÜRSAB numarası `W-06` ile Mert'te, dokunulmadı.
+      Kanıt: ana sayfa canlı → uydurma dizelerin hiçbiri yok; öne çıkan
+      dört kartın dördü de gerçek tekneye gidiyor ve **dördü de HTTP
+      200**. Konsol temiz, taşma 0. `5c7abc3`
+
+- [x] **W-70** Yolcu listesi uyarısı teklife bağlandı, sessiz delik kapandı · 2026-08-31
+      `W-69`'da uyarı `boat=<slug>` sorgu parametresinden okunuyordu —
+      `pricing/quote` bayrağı yanlış döndürdüğü için mecburen. Uç
+      düzeltildi (bayrak tekneden okunuyor, tur süresinden türetilmiyor),
+      kaynak teklife taşındı.
+      **Kapatılan delik:** yer imine alınmış bağlantıda `boat` eksik
+      kalırsa uyarı hiç çıkmıyordu. Teklif her durumda çağrılıyor.
+      Süre teklif yanıtında yok, yalnız tekne detayında; bu yüzden ikisi
+      ayrıldı — **kritik iddia her zaman görünür, ayrıntı zarifçe düşer.**
+      Kanıt: üç durum canlı ölçüldü — `true` + `boat` var → tek uyarı,
+      "kalkıştan en geç 24 saat önce"; `true` + `boat` **yok** → uyarı
+      yine çıkıyor, yalnız süre düşüyor (**kapatılan delik tam olarak
+      bu**); `false` → uyarı yok, form çalışıyor. Konsol temiz, taşma 0.
+      Ölçüm sırasında bir kez "süre gelmiyor" görüldü — hata değil,
+      tekne detayının 60 sn önbelleğiydi; hata ilan etmeden önce
+      tekrar ölçüldü. `8daecfc`
+
+- [x] **W-69** Yolcu listesi uyarısı karar anına taşındı · 2026-08-31
+      Uyarı tekne detay sayfasında vardı ama **sayfanın altında**,
+      Kurallar ile Değerlendirmeler arasında. Müşteri yukarıdaki panelden
+      doğrudan ödemeye gidiyor ve bu turun kimlik bilgisi isteyeceğini
+      **ödeme sonrasına kadar hiç görmüyordu.**
+      ⚠️ **Neredeyse sessizce çalışmayan bir uyarı yayına alıyordum.**
+      Bayrak `pricing/quote` yanıtında da var ve akış zaten quote
+      çağırıyor — oradan kurmak en doğal seçimdi. Ölçünce quote bu
+      bayrağı **aynı tekne için yanlış** döndürüyor:
+      `boats/{slug}` → `true`, `partner/boats/{id}` → `true`,
+      `pricing/quote` → **`false`**. Kursaydım uyarı hiç görünmeyecek ve
+      tekne sayfasındaki uyarı çalıştığı için "çalışıyor" diyecektim.
+      Bunun yerine bağlantıda **zaten geçen ama okunmayan** `boat`
+      parametresinden tekne detayı çekiliyor.
+      Sınır kodda ve panoda yazılı: `boat` yoksa uyarı basılamaz —
+      yer imine alınmış bağlantıda eksik kalır. Sağlam çözüm quote'un
+      düzelmesi; uç düzelince bu okuma yedeğe düşer.
+      Kanıt: üç durum canlı ölçüldü — bayrak `true` teknede uyarı
+      **formun üstünde**; `false` teknede basılmıyor, form çalışıyor;
+      `boat` parametresiz hata yok, form çalışıyor. Konsol temiz,
+      taşma 0. Pozitif durum için tohum teknesinin bayrağı `true`
+      yapıldı (katalogda hiçbiri `true` değildi). `f0d4697`
 
 - [x] **W-61** Destek talebi detayı ve yanıt · bitti: 2026-08-30
       Talep satırına **"Aç"** düğmesi; detay modalı mesaj dizisini ve

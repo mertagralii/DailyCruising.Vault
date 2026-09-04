@@ -469,6 +469,12 @@ oturumu okurken gördü.
 kopyalamaz. Kopyalanan sayı, kopyalandığı anda ikinci bir bakım yükü doğurur ve
 o yük hiç kimseye atanmaz.
 
+**Bu kuralın uygulanışı görünmezdir** ve bu onu kırılgan yapar. Web oturumu pano
+sayısını `web-durum.md`'ye **bilerek yazmıyor**; doğru davranış burada *yazılmayan
+bir şey*, dolayısıyla dosyaya bakan biri kuralın uygulandığını göremez — yalnızca
+bir boşluk görür ve iyi niyetle doldurur. Bu yüzden kaçınma **gerekçesiyle** kayda
+geçer: eksik değil, karar.
+
 **İstisna — arşiv satırı bayatlamaz:** tarihli bir kanıt cümlesi ("27 Ağustos'ta
 kapatıldı, o gün 21 controller vardı") güncel iddia değildir, **o tarihe ait bir
 ölçümdür** ve güncellenmez; güncellenirse kanıt olmaktan çıkar. Ayrım şudur:

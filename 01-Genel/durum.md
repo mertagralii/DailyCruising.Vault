@@ -73,8 +73,12 @@ bağlı, üçüncüsü (`A-07`) frontend alanı.
 Bugün tahsilat **platform hesabına** yapılıyor, hakediş defterde duruyor ama
 işletmeye para geçmiyor. `A-58` de buna bağlı.
 
-**2026-08-31: web tarafında Mert'e bağlı olmayan iş kalmadı.** Kalan beşi de karar
-bekliyor: `W-38` blog (statik mi API mi), `W-39` favori/kupon/bildirim tercihi
+**2026-09-04: `S-30` kapandı — blog uç yazılacak.** Mert karar verdi: blog
+statik kalmıyor, siteden yazılabilecek. `W-38` artık **karar değil uç bekliyor**
+(`Bağımlı: backend ucu`), yani web'in beklediği şey Mert'ten backend'e geçti.
+Gerekçe ve elenen alternatif → [[domain-gereksinimler]] 2026-09-04
+
+**Web panosunda kalan dördü hâlâ Mert'te:** `W-39` favori/kupon/bildirim tercihi
 (tablo bile yok), `W-40` yolcu listesi (KVKK — blocker 7'ye bağlı), `W-66` biniş
 QR'ı (`S-25`), `W-06` `brand.ts` (`G-10`).
 
@@ -107,6 +111,16 @@ alan oturumları yakaladı → [[genel-desenler]]
 ⚠️ **Mert'te bekleyen kararlar:** `A-41` (İyzico pazaryeri) · `S-18` (kupon
 kırpma çelişkisi, `S-10` ile `S-15` birbirini bozuyor) · `S-12` (müşteri
 kaynaklı iptalde iade oranı — iptal e-postasını da kilitliyor).
+
+**2026-09-04'te dört soru açıldı** (60–63 → [[domain-gereksinimler]]). Biri
+diğerlerinden farklı, çünkü ürün sorusu:
+
+- **61 — `Coupons.UserId`.** "Kuponlarım" ekranı **bugünkü şemada ifade edilemiyor**;
+  kupon kişiye ait değil. Bu bir uç eksiği değil, kuponun ne olduğuna dair bir
+  karar — cevaplanmadan `W-39` yazılamaz.
+- **60** — front-end'deki 7 statik blog yazısı veritabanına girecek mi. 4 Eylül
+  blog kararının **kapsamadığı** parça; çıkarım yapılmadı, sorulacak.
+- **62** blocker 7'nin kendisi · **63** `brand.ts` kurumsal verisi (`W-06`/`G-10`).
 
 **2026-08-31'de iki yeni soru açıldı, ikisi de sayfada duran uydurma sayı**
 (ayrıntı → [[web-durum]]):

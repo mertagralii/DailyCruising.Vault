@@ -36,7 +36,11 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 - **Genel:** 79 not, `dogrula.py` 18 kontrol
 
 Aktif engel tek (ayrıntı -> [[durum]]): **KVKK yolcu listesi dayanağı**
-doğrulanmadı — Mert'te. İki panoda da Mert'e bağlı olmayan iş kalmadı.
+doğrulanmadı — Mert'te.
+
+**2026-09-04:** blog uç yazılacak (`S-30` kapandı) — `W-38` artık Mert'i değil
+**backend ucunu** bekliyor. API panosunda Mert'e bağlı olmayan iş yok; web'de
+`W-38` uç gelince açılıyor.
 
 ## Yön: tasarımı backend gerçeği yönlendirir
 

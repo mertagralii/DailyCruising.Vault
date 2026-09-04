@@ -1411,6 +1411,10 @@ Tablo güncellenmediği için başka oturumlar bunları blocker sanıyordu.
 | 57 | KDV oranı sabit %20 mi, şemada oran alanı tutulacak mı | 🔴 Açık — 2026-08-27'de KDV dahil kararıyla doğdu |
 | 58 | Komisyon KDV dahil tutar üzerinden mi alınıyor | 🔴 Açık — platform, verginin üzerinden de komisyon alıyor olabilir |
 | 59 | Menü ve ek hizmetlerde KDV oranı aynı mı | 🔴 Açık — yiyecek-içecek farklı orana tabi olabilir |
+| 60 | Front-end'deki 7 statik blog yazısı veritabanına girecek mi | 🔴 Açık — 2026-09-04 blog kararının **kapsamadığı** parça; çıkarım yapılmadı |
+| 61 | Kupon kişiye bağlanacak mı (`Coupons.UserId`) | 🔴 Açık — "kuponlarım" ekranı bugünkü şemada **ifade edilemiyor**; uç eksiği değil |
+| 62 | Yolcu listesi kimlik verisinin KVKK dayanağı | 🔴 Açık — blocker 7; `W-40`'ın veri toplama yarısını kilitliyor |
+| 63 | `brand.ts` kurumsal verisi: telefon, adres, TÜRSAB no | 🔴 Açık — Mert'in kendi verisi (`W-06`/`G-10`) |
 
 **Şu an şemayı bloke eden açık madde yok.** ⚠️ 2026-08-27'de üç yeni soru
 açıldı (57–59), üçü de KDV kararının **arkasından** doğdu ve şemayı
@@ -1524,3 +1528,55 @@ zaman konuşulur; birinci yol seçilirse hiçbir şey değişmez.
 + otomasyonlar. AI entegrasyonlarının listesi bu dosyada zaten var; SaaS bunları
 ayrı bir ürün özelliği değil, **paketin parçası** yapıyor.
 
+
+---
+
+## Blog — 2026-09-04
+
+### 2026-09-04 — Blog uç yazılacak; yazı SİTEDEN yazılabilecek (`S-30` kapandı)
+
+Mert: *"bloglar bu arada uç yazılsın blog yazılabilecek çünkü siteden"*
+
+**Karar (Mert):** Blog statik kalmıyor. API ucu yazılacak ve yazı **site üzerinden**
+oluşturulacak — yani yazma arayüzü panelde olacak, dosyaya elle yazma değil.
+
+Bu, 2026-08-22 (*"hem platform hem tekne sahipleri yazabilir"*) ve 2026-08-24
+(*"tekne sahibinin yazısı platform onayından geçer"*) kararlarını **iptal etmez,
+uygular**. Üçü birlikte akışı tamamlıyor:
+
+| Kim | Ne yapar | Onay |
+|---|---|---|
+| Platform yönetimi | Yazar, yayınlar | Beklemez |
+| İş ortağı (tekne sahibi) | Yazar, onaya gönderir | `blog.approve` yetkisi olan personel |
+
+**Şema zaten var, sıfır satır ve sıfır kod eksik değildi — yalnız uç eksikti.**
+Dört tablo kurulu: `BlogPosts` (13 kolon), `BlogPostTranslations`, `BlogCategories`,
+`BlogCategoryTranslations`. Çeviri, kategori, kapak görseli, görüntülenme sayacı ve
+onay akışı (`ApprovedByUserId`, `ApprovedAt` — 2026-08-24 kararından doğmuş) dahil.
+Yetkiler katalogda hazır: `blog.write`, `blog.approve`.
+
+**Bu yüzden alternatif "statik kalsın" elendi:** statik seçilseydi dört tablonun ya
+düşürülmesi ya "bilerek boş" diye belgelenmesi gerekirdi — ikisi de bugün var olan
+işi çöpe atmak olurdu.
+
+⚠️ **Bugünkü 7 statik yazı ile ilişki kararlaşmadı.** 2026-08-24'te *"46 blog yazısı
+yeni sisteme taşınmayacak"* denmişti; front-end'de duran 7 yazı o karardan sonra
+tasarım verisi olarak yazıldı. Uç gelince bunlar veritabanına girecek mi, yoksa
+statik olarak mı kalacak — **çıkarım yapılmadı**, "Cevap bekleyenler"e eklendi (60).
+
+### 2026-09-04 — Kalan uç işleri backend'e devredildi
+
+Mert: *"tamam yaptır hepsini back-end'e"*
+
+Kalan beş web görevinin **uç tarafı** backend oturumuna geçti: blog (`W-38`), favori
+ve bildirim tercihi tabloları + uçları (`W-39`), biniş QR'ı (`W-66`).
+
+⚠️ **Üç kalem bu devirle kapanmıyor, çünkü backend'in üretebileceği şeyler değil:**
+
+| Ne | Neden backend cevaplayamaz |
+|---|---|
+| `W-06` `brand.ts` — telefon, adres, TÜRSAB numarası | Mert'in kendi kurumsal verisi; uydurulamaz |
+| `W-40` yolcu listesi KVKK dayanağı | Hukuki dayanak kararı |
+| `W-39`'un "kuponlarım" yarısı | `Coupons` tablosunda `UserId` **yok** — kupon kişiye ait değil. Uç eksiği değil, **ürün sorusu**: kupon kişiye mi bağlanacak, yoksa bugünkü gibi kod olarak mı kalacak |
+
+Bu üçü "Cevap bekleyenler"de kalıyor — yarım cevap tam gibi kaydedilmiyor.
