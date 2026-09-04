@@ -500,6 +500,18 @@ for rel in PANO_DOSYALARI:
                     f"bitmis gorunuyor — Tamamlandi'ya tasinmali")
     olcumler.append(f"kontrol 17 · {rel}: {_bakilan} acik gorev incelendi")
 
+    # 18: ayni bolum basligi iki kez varsa biri sessizce gormezden gelinir.
+    # 2026-08-31: genel-gorevler.md'de bos bir ikinci "🔵 Yapilacak" basligi
+    # bulundu — G-03/G-04 tasima betiginin artigi. Kontrol 17 gormedi cunku
+    # yalniz MADDELERE bakiyor, bolum YAPISINA bakmiyordu. Bir gorev yanlis
+    # baslik altina yazilsaydi panodan dusecekti ve hicbir kontrol konusmayacakti.
+    basliklar = [b.strip() for b in re.findall(r"^## (.+)$", metin, re.M)]
+    for b in set(basliklar):
+        if basliklar.count(b) > 1:
+            sorunlar.append(
+                f"[yinelenen baslik] {rel}: '{b}' {basliklar.count(b)} kez var — "
+                f"birine yazilan gorev digerinde gorunmez, pano sessizce eksilir")
+
 
 
 print(f"Vault: {VAULT}")

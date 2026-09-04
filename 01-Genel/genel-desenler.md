@@ -458,4 +458,36 @@ Bu, [[genel-kararlar]]'daki "araç gerekli koşuldur, yeterli değildir" kuralı
 sert hâli: burada araç gerekli koşulu bile sağlamıyor, yalnız sağlıyor **gibi**
 görünüyor.
 
+## Aynı olguyu iki yerde tutan dosya, birinde bayatlar
+
+`durum.md` hem pano sayılarını hem de *"21 controller · 69 yol"* ölçü tablosunu
+taşıyordu; `acilis.md` aynı ölçüyü *28 · 93 · 42* diye yazıyordu. İkisi de vault
+dosyası, ikisi de "güncel" etiketliydi. Çelişkiyi ne kontrol yakaladı ne ben — alan
+oturumu okurken gördü.
+
+**Kural:** bir olgunun **tek yazım yeri** olur; diğer dosyalar ona link verir,
+kopyalamaz. Kopyalanan sayı, kopyalandığı anda ikinci bir bakım yükü doğurur ve
+o yük hiç kimseye atanmaz.
+
+**İstisna — arşiv satırı bayatlamaz:** tarihli bir kanıt cümlesi ("27 Ağustos'ta
+kapatıldı, o gün 21 controller vardı") güncel iddia değildir, **o tarihe ait bir
+ölçümdür** ve güncellenmez; güncellenirse kanıt olmaktan çıkar. Ayrım şudur:
+*şu an böyle* diyen bayatlar, *o gün böyleydi* diyen bayatlamaz.
+
+## Kontrol içeriğe bakıyorsa yapıya da bakmalı
+
+`dogrula.py` kontrol 17 pano maddelerini denetliyordu: bitmiş görev Yapılacak'ta mı.
+Ama **bölümün kendisine** bakmıyordu. 2026-08-31'de `genel-gorevler.md`'de iki adet
+`## 🔵 Yapılacak` başlığı bulundu — biri boştu, artığı bir taşıma betiği bırakmıştı.
+İkincisine yazılan bir görev panodan **sessizce düşerdi** ve hiçbir kontrol
+konuşmazdı.
+
+**Kural:** bir dosyanın içeriğini denetleyen kontrol, o içeriğin **oturduğu yapıyı**
+da denetlemek zorundadır — yinelenen başlık, kayıp bölüm, yanlış sıra. İçerik
+doğru olabilir ve yanlış yerde durabilir; okuyan da denetleyen de onu göremez.
+
+Bu, bugünün diğer dersiyle aynı kökten: kontrol 15 **muafiyet** yüzünden sustu,
+kontrol 17 **kapsam** yüzünden. İkisi de yazıldıkları soruya doğru cevap veriyordu;
+sorun sorunun dar olmasıydı → [[genel-desenler]]
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

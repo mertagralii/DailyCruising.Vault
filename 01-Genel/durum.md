@@ -46,8 +46,8 @@ Panolar (28 Ağustos, alan oturumlarının kendi ölçümü):
 
 | Alan | Yapılacak | Tamamlandı |
 |---|---|---|
-| API | 3 | 81 |
-| Web | **5** | 49 |
+| API | 3 | 84 |
+| Web | 5 | 58 |
 | Genel | 6 | 11 |
 
 ⚠️ **Bu sayılar panodan okunamıyordu, sayılarak bulundu.** Üç panoda birden
@@ -63,7 +63,7 @@ bağlı, üçüncüsü (`A-07`) frontend alanı.
 
 | Alan | Ölçü |
 |---|---|
-| API | 21 controller · 69 yol · 85 işlem · 106 tablo · 39 migration → [[api-mimari]] |
+| API | **28 controller · 93 yol · 42 migration · 484 test** (31 Ağu ölçümü) → [[api-mimari]] |
 | Web | 25 rota · rota koruması (`proxy.ts`) çalışıyor · gerçek API'ye bağlandı (`W-04`) → [[web-mimari]] |
 
 Ödeme uçtan uca çalışıyor: **gerçek İyzico sandbox'ına karşı** rezervasyon →
@@ -180,6 +180,23 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 - Bu vault + hafıza sistemi kuruldu (hook'lar, panolar, doğrulayıcı, 3 projeye özel skill)
 
 ## ⚠️ Vault ↔ kod çelişkileri
+
+**2026-08-31 — ham katalog anahtarı ana sayfada görünüyor.** `a04-gulet` gibi
+tohum çöpü artık müşteriye açık ekranda; istemciye "anahtar gibiyse gizle" sezgisi
+**kasten konmadı** — gizlemek sorunu görünmez yapardı, veriyi düzeltmez. `S-22`
+olarak Mert'te → [[web-durum]]
+
+**2026-08-31 — `durum.md`'nin ölçü tablosu `acilis.md` ile çelişiyordu.** Tablo
+*21 controller · 69 yol* diyordu, açılış *28 · 93 · 42*. Aynı dosyada iki ölçüm
+tutulunca biri mutlaka bayatlıyor; tablo ölçülenle değiştirildi. Blocker 2'nin
+arşiv satırındaki "21 controller" **kasten bırakıldı** — o, 27 Ağustos'ta doğru
+olan tarihli bir kanıttır, güncel iddia değil.
+
+**2026-08-31 — `genel-gorevler.md`'de yinelenen boş başlık bulundu.** İki adet
+`## 🔵 Yapılacak` vardı; ikincisine yazılan bir görev panodan sessizce düşerdi.
+Artığı **kendi taşıma betiğim** bırakmış. Kontrol 17 görmedi çünkü yalnız
+maddelere bakıyor, bölüm yapısına bakmıyordu — `dogrula.py` **kontrol 18** eklendi,
+iki yönde de sınandı → [[genel-desenler]]
 
 **2026-08-31 — `a1d6689` commit gövdesinde yanlış sayı duruyor.** Backend
 "485 test" yazdı, ölçüm **484**'tü; sayı çalıştırılmadan önce yazılmış. Commit

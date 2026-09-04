@@ -17,9 +17,6 @@ tamamlanamaz.**
 
 ## 🔵 Yapılacak
 
-
-## 🔵 Yapılacak
-
 - [ ] **G-16** SaaS / abonelik ürününe dönüştürme · öncelik: **EN SON**
       Mert: *"bu sistemi bir abonelik üzerinden satacağım"* — rezervasyon sistemi +
       AI entegrasyonları komple paket. **Şu anda buna göre hiçbir şey yapılmıyor.**
