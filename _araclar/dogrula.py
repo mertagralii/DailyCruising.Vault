@@ -523,35 +523,59 @@ for rel in PANO_DOSYALARI:
 #
 # Bu bir dikkatsizlik degil, eksik kapi: dosyayi duzenlemek frontmatter'a
 # dokunmayi gerektirmiyordu. Simdi gerektiriyor.
-BEYAN_IZLENEN = [
-    "01-Genel/durum.md", "01-Genel/acilis.md",
-    "02-API/api-durum.md", "03-Web/web-durum.md",
-    "02-API/api-mimari.md", "03-Web/web-mimari.md",
-]
+# 2026-09-05, ayni gun: ilk surum SABIT ALTI DOSYALIK bir liste kullaniyordu.
+# Backend "iki degil alti dosyaydi" diye bildirdi — kontrol dogruyu soyluyordu
+# ama EKSIK soyluyordu. Bu, ayni hafta ucuncu kez cikan sey: kontrol 15 muafiyet
+# yuzunden, kontrol 17 kapsam yuzunden, bu da liste yuzunden dar kaldi.
+# Cozum listeyi buyutmek DEGIL, listeyi kaldirmaktir: `guncelleme` beyan eden
+# HER dosya olculur. Beyanda bulunmak izlenmeyi kabul etmektir.
+BEYAN_TOLERANS = 7
+_b19 = 0
 if _git(["rev-parse", "--git-dir"]) is not None:
-    for rel in BEYAN_IZLENEN:
-        yol = VAULT / rel
-        if not yol.exists():
-            continue
+    _beyanli = sorted(
+        y for y in VAULT.rglob("*.md")
+        if "_araclar" not in y.parts and ".git" not in y.parts
+    )
+    for yol in _beyanli:
+        rel = yol.relative_to(VAULT).as_posix()
         fm = frontmatter(yol.read_text(encoding="utf-8")) or {}
         beyan = fm.get("guncelleme")
         if not beyan or not re.match(r"^\d{4}-\d{2}-\d{2}$", beyan):
             continue          # kontrol 15 zaten tarihsizligi bildiriyor
+        # Olcut dosyanin durumuna gore DEGISIR ve bu kasitlidir:
+        #
+        # KIRLI dosya  -> `mtime` = bu makinedeki gercek yazim ani. Kesin olcum,
+        #                 ve duzeltmenin mumkun oldugu tek an: dosya heniiz
+        #                 commit'lenmeden once oturum beyani duzeltebilir.
+        # TEMIZ dosya  -> yalniz commit tarihi bilinir, ama vault'un KENDI KURALI
+        #                 yazmayi commit'ten ayirir (alan oturumlari yazar, vault
+        #                 oturumu commit'ler). Bir not 24'unde yazilip 27'sinde
+        #                 toplu commit'lenebilir; beyan DOGRU, commit gec olur.
+        #                 Bu yuzden burada tolerans var: ancak belirgin ihmal
+        #                 (BEYAN_TOLERANS gunden fazla) bildirilir.
+        #
+        # 2026-09-05: tolerans yokken kontrol 55 dosya bildirdi ve neredeyse hepsi
+        # toplu commit artefaktiydi. 55 uyari veren bir denetim okunmaz, kapatilir
+        # → [[genel-desenler]] "Denetim, ogrettigi davranisi cezalandirmamali".
         kirli = (_git(["status", "--porcelain", "--", rel]) or "").strip()
         if kirli:
             gercek = datetime.date.fromtimestamp(yol.stat().st_mtime).isoformat()
-            kaynak = "diskteki son yazim"
+            kaynak, tolerans = "diskteki son yazim", 0
         else:
             zaman = (_git(["log", "-1", "--format=%cI", "--", rel]) or "").strip()
             if not zaman:
                 continue
-            gercek, kaynak = zaman[:10], "son commit"
-        if gercek > beyan:
+            gercek, kaynak, tolerans = zaman[:10], "son commit", BEYAN_TOLERANS
+        _fark = (datetime.date.fromisoformat(gercek)
+                 - datetime.date.fromisoformat(beyan)).days
+        if _fark > tolerans:
             sorunlar.append(
                 f"[beyan geride] {rel}: frontmatter `guncelleme: {beyan}` diyor ama "
                 f"{kaynak} {gercek}. Beyan olculen seydir — yanlis beyan diger "
                 f"kontrolleri de yaniltir")
-        olcumler.append(f"kontrol 19 · {rel}: beyan {beyan} / {kaynak} {gercek}")
+        _b19 += 1
+    olcumler.append(f"kontrol 19 · {_b19} dosyanin beyani olculdu "
+                    f"(kirli: tolerans yok · temiz: {BEYAN_TOLERANS} gun)")
 
 
 

@@ -96,6 +96,11 @@ engelleyicisi **karar olarak kapandı, eylem olarak açık**:
 Bunlar blocker listesine **girmiyor**, çünkü kimseyi bugün durdurmuyorlar —
 yayın günü durduracaklar. Karıştırılırsa pano yanlış aciliyet gösterir.
 
+Bu hükmü güvenli kılan şey ikisinin de **açılış kapısı** olması: hesap yoksa
+uygulama açılmıyor, yani yayın günü fark edilmemeleri mümkün değil. **Aynı şey
+`S-24` için geçerli değil** — kova izni eksikse uygulama açılır, sessizce kırılır.
+Bu yüzden yukarıdaki tabloda ayrıca işaretlendi.
+
 API tarafında 4–5 Eylül'de biten dokuz iş: `A-76` blog uçları · `A-77` favoriler ·
 `A-78` bildirim tercihleri · `A-79` (`S-27`) · `A-80` (`S-20`, KDV rezervasyona
 donduruldu) · `A-81`/`A-82` veri düzeltmeleri · `A-83` HTML temizleyici ·
@@ -144,7 +149,7 @@ alan oturumları yakaladı → [[genel-desenler]]
 |---|---|
 | Postmark + Netgsm hesapları | üretimde uygulama bunlarsız **açılmıyor** |
 | **Paratika** hesabı (`A-41`) | İyzico'dan Paratika'ya geçildi; para bugün işletmeye gitmiyor |
-| S3 / DO Spaces kovası (`S-24`) | açık okuma **iki** öneke: `boat-media/*` **ve** `blog-media/*` |
+| S3 / DO Spaces kovası (`S-24`) | ⚠️ **sessiz başarısızlık riski** — açık okuma **iki** öneke verilmezse (`boat-media/*` **ve** `blog-media/*`) blog kapakları kırılır ve uygulama **hiçbir hata üretmez**; hata yalnız tarayıcıda ve nesne deposunda görünür |
 | `W-40` aydınlatma metni + saklama süresi | *"onu ben yazıcam en son"* |
 | `G-13` mali müşavir teyidi | henüz sorulmadı |
 | Veri göçü | ertelendi — önce site ayağa kalksın |

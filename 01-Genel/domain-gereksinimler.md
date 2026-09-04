@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-08-22
+guncelleme: 2026-09-05
 durum: guncel
 ---
 

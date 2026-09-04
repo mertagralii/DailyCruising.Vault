@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-08-27
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -537,8 +537,27 @@ gerçek bayatlık gizlenir.
 
 Bu bir dikkat sorunu değildi, **eksik kapıydı**: dosyayı düzenlemek frontmatter'a
 dokunmayı gerektirmiyordu. `dogrula.py` **kontrol 19** artık beyanı dosyanın gerçek
-son yazımıyla (commit tarihi, kirliyse `mtime`) karşılaştırıyor. İlk çalıştırmada
-**dört dosyada birden** geride kalmış beyan buldu — üç ayrı alanda, yani kimsenin
-disiplin sorunu değil, herkesin.
+son yazımıyla karşılaştırıyor.
+
+**Kontrol aynı gün iki kez dar çıktı, ikisi de öğreticiydi.** Önce sabit altı
+dosyalık listeyle yazıldı — backend "iki değil altı dosyaydı" dedi; kontrol doğru
+söylüyordu ama **eksik** söylüyordu. Çözüm listeyi büyütmek değil **kaldırmak**
+oldu: `guncelleme` beyan eden her dosya ölçülüyor — *beyanda bulunmak izlenmeyi
+kabul etmektir.*
+
+Sonra tersine kaydı: liste kalkınca **55 dosya** bildirdi ve neredeyse hepsi toplu
+commit artefaktıydı. Sebep vault'un **kendi kuralı**: alan oturumları yazar, vault
+oturumu commit'ler — bir not 24'ünde yazılıp 27'sinde commit'lenir, **beyan doğru,
+commit geçtir**. 55 uyarı veren denetim okunmaz, kapatılır.
+
+Ölçüt bu yüzden dosyanın durumuna göre ayrıldı:
+
+| Dosya | Ölçüt | Tolerans | Neden |
+|---|---|---|---|
+| Kirli | `mtime` | yok | bu makinedeki gerçek yazım anı; **düzeltmenin mümkün olduğu tek an** — commit'lenmeden önce |
+| Temiz | son commit | 7 gün | commit tarihi yazım tarihi değildir; yalnız belirgin ihmal bildirilir |
+
+55 → 5, ve beşi de gerçek çıktı. **Bir denetimin doğru eşiği, ürettiği uyarıların
+okunup okunmadığıyla ölçülür** → "Denetim, öğrettiği davranışı cezalandırmamalı"
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
