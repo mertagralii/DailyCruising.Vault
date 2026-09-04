@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-08-31
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -27,20 +27,23 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 
 ## Şu an ne oluyor
 
-- **API:** pano 3/84 · **28 controller · 93 yol · 42 migration · 484 test yeşil**
-  (31 Ağustos'ta ölçüldü; dosya 21/69/39 diyordu, çürümüştü). Ödeme uçtan uca
+- **API:** pano 3/93 · **571 test yeşil**, `openapi.json` güncel (5 Eylül, backend ölçümü). Ödeme uçtan uca
   çalışıyor (gerçek İyzico sandbox). Panoda **Mert'e bağlı olmayan iş kalmadı**
 - **Web:** 25 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
-  Pano **5 yapılacak / 58 tamamlandı** — kalan beşi de **Mert'in kararında**
-- **Genel:** 79 not, `dogrula.py` 18 kontrol
+  Pano **4 yapılacak / 64 tamamlandı** — kalan beşi de **Mert'in kararında**
+- **Genel:** 79 not, `dogrula.py` 19 kontrol
 
 Aktif engel tek (ayrıntı -> [[durum]]): **KVKK yolcu listesi dayanağı**
 doğrulanmadı — Mert'te.
 
-**2026-09-04:** blog uç yazılacak (`S-30` kapandı) — `W-38` artık Mert'i değil
-**backend ucunu** bekliyor. API panosunda Mert'e bağlı olmayan iş yok; web'de
-`W-38` uç gelince açılıyor.
+**2026-09-05 — Mert'in önceliği: kendi makinesinde uçtan uca test.** Yayın
+adımları bilinçli ertelendi. 29 sorunun tamamı 4 Eylül'de cevaplandı.
+
+⚠️ **"Karar bekliyor" ile "hesap bekliyor" ayrı şeydir.** Mert'te kalanların
+hiçbiri artık karar değil: Postmark/Netgsm hesapları · Paratika (`A-41`,
+İyzico'dan geçildi) · S3 kovası (`S-24`) · `W-40` aydınlatma metni ·
+`G-13` mali müşavir. Bunlar bugün kimseyi durdurmuyor, **yayın günü durduracak**.
 
 ## Yön: tasarımı backend gerçeği yönlendirir
 

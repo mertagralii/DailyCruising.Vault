@@ -1411,10 +1411,12 @@ Tablo güncellenmediği için başka oturumlar bunları blocker sanıyordu.
 | 57 | KDV oranı sabit %20 mi, şemada oran alanı tutulacak mı | 🔴 Açık — 2026-08-27'de KDV dahil kararıyla doğdu |
 | 58 | Komisyon KDV dahil tutar üzerinden mi alınıyor | 🔴 Açık — platform, verginin üzerinden de komisyon alıyor olabilir |
 | 59 | Menü ve ek hizmetlerde KDV oranı aynı mı | 🔴 Açık — yiyecek-içecek farklı orana tabi olabilir |
-| 60 | Front-end'deki 7 statik blog yazısı veritabanına girecek mi | 🔴 Açık — 2026-09-04 blog kararının **kapsamadığı** parça; çıkarım yapılmadı |
-| 61 | Kupon kişiye bağlanacak mı (`Coupons.UserId`) | 🔴 Açık — "kuponlarım" ekranı bugünkü şemada **ifade edilemiyor**; uç eksiği değil |
-| 62 | Yolcu listesi kimlik verisinin KVKK dayanağı | 🔴 Açık — blocker 7; `W-40`'ın veri toplama yarısını kilitliyor |
-| 63 | `brand.ts` kurumsal verisi: telefon, adres, TÜRSAB no | 🔴 Açık — Mert'in kendi verisi (`W-06`/`G-10`) |
+| 60 | Front-end'deki 7 statik blog yazısı veritabanına girecek mi | ✅ **Silinsin** (2026-09-04) |
+| 61 | Kupon kişiye bağlanacak mı | ✅ **Üç tür olacak** (2026-09-04) — kullandıklarım · bana özel · genel kampanya |
+| 62 | Yolcu listesi kimlik verisinin KVKK dayanağı | ✅ **Açık rıza** (2026-09-04) — onay kutusu ve saklama süresi gerekiyor |
+| 63 | `brand.ts` kurumsal verisi | 🟡 **Ertelendi** — demo bitince Mert gerçek veriyi verecek |
+| 64 | Biniş belgesi kaybolursa QR yeniden basılabilsin mi (`S-25`) | ✅ **(b) ayrı kısa ömürlü bilet** (2026-09-04) |
+| 65 | Yolcu aydınlatma metni ve saklama süresi | 🟡 **Mert yazacak, en son** — `W-40`/`A-81` park edildi |
 
 **Şu an şemayı bloke eden açık madde yok.** ⚠️ 2026-08-27'de üç yeni soru
 açıldı (57–59), üçü de KDV kararının **arkasından** doğdu ve şemayı
@@ -1580,3 +1582,214 @@ ve bildirim tercihi tabloları + uçları (`W-39`), biniş QR'ı (`W-66`).
 | `W-39`'un "kuponlarım" yarısı | `Coupons` tablosunda `UserId` **yok** — kupon kişiye ait değil. Uç eksiği değil, **ürün sorusu**: kupon kişiye mi bağlanacak, yoksa bugünkü gibi kod olarak mı kalacak |
 
 Bu üçü "Cevap bekleyenler"de kalıyor — yarım cevap tam gibi kaydedilmiyor.
+
+---
+
+## Mert'in 29 cevabı — 2026-09-04
+
+Bir oturumda üç kuyruk birden boşaldı. Aşağıdakiler **Mert'in kendi
+cevaplarıdır**; çıkarım yapılan yerler `*(çıkarım)*` işaretli.
+
+### Çerçeveyi değiştiren cevap: fiyatı işletme koyar, biz aracıyız
+
+> *"İşletmeler teknelerinin fiyatlarını kendileri belirler (KDV dahil ederek
+> fiyatlarını koyarlar) bunları kendileri belirler, biz sadece aracı olduğumuz
+> için ücreti alacağız."*
+
+Bu, `S-21`'i cevaplamakla kalmıyor, **sorunun kurulusunu düzeltiyor.** Soru
+*"platform verginin üzerinden de komisyon alıyor, kasıtlı mı"* diye
+sorulmuştu. Doğru çerçeve şu: **liste fiyatı işletmenin koyduğu, KDV dahil
+fiyattır**; platform o fiyatın yüzdesini alır. Ortada "verginin üzerinden
+komisyon" diye ayrı bir olgu yok, tek bir fiyat var.
+
+Sonuç: bugünkü `grandTotal` üzerinden hesap **doğru**, değişiklik gerekmiyor.
+
+### KDV — üç soru tek karar
+
+| # | Soru | Karar |
+|---|---|---|
+| `S-20`/57 | Oran rezervasyona dondurulsun mu | **Dondurulsun** ("doldursun") |
+| 58 | Komisyon KDV dahilden mi | **Evet** — yukarıdaki çerçeve |
+| 59 | Menü/ek hizmette ayrı oran mı | **Hayır, tek oran** |
+
+> *"günün sonunda ne kadar ücret çıkarsa ona göre bir KDV oranı, her birisi
+> için ayrı ayrı KDV oranları olmayacak"*
+
+Yani ek hizmet satırı kendi oranını taşımıyor; oran **toplam üzerinden**.
+
+### Para akışı
+
+- **Ödeme sağlayıcı: PARATİKA.** *"Paratikaya geçelim, onda pazar yeri
+  özelliği vardı."* İyzico pazaryeri başvurusu iptal — eski sistem zaten
+  Paratika kullanıyordu ve alt üye iş yeri özelliği orada açıktı.
+- **Alt üye iş yeri belgeleri başvuruda toplanacak ve IBAN ZORUNLU.**
+- **Kademeli iadede komisyon tam alınır** (`S-12`'nin açık ucu). İptal
+  maliyeti işletmede kalıyor, platform payını iade etmiyor.
+- **Fatura modeli mali müşavire henüz sorulmadı** — *"biz ilk önce
+  bitirelim, sonrasında soracağım."*
+
+### 2026-09-04 — İşletme müşterinin iletişim bilgisini GÖRMEYECEK (`S-27`)
+
+Karar (Mert): **hayır**, ve gerekçesi bizim düşünmediğimiz bir şeydi:
+
+> *"amaç işletme müşterinin e-posta ve telefonunu görüp kendisi başka yerden
+> rezervasyon yaptırabilir"*
+
+**Neden:** mesele KVKK değil, **aracıdan kaçış**. İşletme müşteriye doğrudan
+ulaşabilirse ikinci turu platform dışında satar ve komisyon kaybolur. Bu,
+platformun varlık nedenine dokunan bir risk.
+
+**Yerine konan akış:** işletme **destek talebi açar**, durumu anlatır,
+**platform müşteriye haber verir**. Yani "hava muhalefetinde müşteriye
+ulaşamama" sorunu çözülüyor ama kanal platformda kalıyor.
+
+**Alternatif elendi:** "yalnız kalkışa 24 saat kala aç" önerisi de kaçışı
+engellemiyordu — 24 saat, bir sonraki turu doğrudan satmak için fazlasıyla
+yeterli.
+
+Uygulama: `GET /api/partner/reservations` yanıtından **e-posta ve telefon
+çıkarılacak**; ad kalıyor.
+
+### 2026-09-04 — Kupon ÜÇ TÜR olacak (`61`)
+
+> *"burada kullandığı kuponlar ve bana özel kuponlar ve genel kuponlar olsun.
+> NOT: Genel kuponlar herkese açık olacak, sitede bazen böyle kampanyalar
+> yapabileceğiz"*
+
+| Tür | Ne | Bugünkü şema |
+|---|---|---|
+| Kullandığım kuponlar | Geçmiş | `CouponRedemptions` var, **yalnız uç** eksik |
+| Bana özel kuponlar | Kişiye tanımlı | **Yok** |
+| Genel kuponlar | Sitede listelenen kampanya | Kupon var ama **okunabilir değil** |
+
+Üçüncüsü yeni bir gereksinim: müşteri kampanyayı **görmeden** kodu giremez,
+yani genel kuponların herkese açık bir listesi olmalı.
+
+⚠️ Backend'in itirazı kayda geçiyor ve hâlâ geçerli: `Coupons` bugün bir
+**kampanya** tablosu. `UserId` eklemek onu hem kampanya hem kişisel kupon
+yapar ve "bu kupon kime ait" sorusunun cevabı satırdan satıra değişir; kupon
+kontrolü yazan her yeni kod yolu bu ayrımı hatırlamak zorunda kalır ve unutan
+biri kişisel kuponu herkese açar — **hata sessizdir**. Tasarım backend'de.
+
+### 2026-09-04 — Statik blog yazıları SİLİNDİ (`60`)
+
+Karar: **silinsinler**, blog gerçek yazılarla sıfırdan dolacak. Front-end'deki
+7 yazı uydurma yazar adları taşıyordu ("Deniz Aksoy"). `src/lib/data/blog.ts`
+silindi. 2026-08-24'teki *"46 blog yazısı taşınmayacak"* kararıyla tutarlı.
+
+### Kalan cevaplar
+
+| # | Konu | Karar |
+|---|---|---|
+| `S-19` | Ters vekil | **Aynı makine**, `127.0.0.1` |
+| — | E-posta / SMS | **Postmark + Netgsm** |
+| `S-24` | Dosya deposu | **S3 ya da DigitalOcean**, başlangıçta **ücretsiz katman**; gerekince ücretliye geçilir |
+| `S-18` | Bölge listesi | **Onaylandı** (10 mavi tur bölgesi) |
+| — | Reddedilen başvuru | **Yeniden başvurabilir** |
+| — | Yorum daveti | **Tur biter bitmez**, ve **hatırlatma gönderilsin** |
+| `62`/`W-40` | Yolcu listesi KVKK | **Açık rıza** — ayrı onay kutusu ve saklama süresi gerekiyor |
+| `S-28` | 10 yanlış damgalı rezervasyon | **Düzeltilsin** |
+| `S-22` | `a04-*` tohum satırları | **Silinsin** |
+| `A-07` | Yanıt şeması | **Hepsine yazılsın** (114 uç) |
+| — | Backend'in 26 Ağustos kararları | **Toplu onaylandı** |
+| — | Testlerdeki iki ad | **Kalsın** — demo aşaması |
+| — | `/design-system` rotası | **Yayında kaldırılsın** |
+| — | Veri göçü | **Ertelendi**, önce site ayağa kalksın |
+| `S-26` | `/add-boat` vaatleri | **Rakam verme** |
+| — | Gerçek fotoğraflar | **İşletmeler yükleyecek** |
+| `63`/`W-06` · `S-29` | Kurumsal veri, "340+ tekne" | **Demo aşaması** — gerçek veriler sonra verilecek |
+
+### 2026-09-04 ⚠️ ÖNCELİK — önce çalışan sistem, sonra gerçek veri
+
+> *"Şu anda bize çalışan her şeyi ayarlanmış bir site lazım, ilk önce bir test
+> edeceğim. Sonrasında artık her şey tamamlandığında sana zaten gerçek
+> verileri vereceğim, sen de ona göre veritabanına ekleyeceksin ve sitedeki
+> genel değerleri, TÜRSAB belgelerini falan ekleyeceğiz."*
+
+**Bu, birkaç soruyu birden kapatıyor.** `W-06` (kurumsal veri), `S-29`
+("340+ tekne"), ana sayfa fiyatları, veri göçü ve gerçek fotoğraflar —
+beşi de **bugün cevaplanacak sorular değil**, teslim sırasına ait. Bunlar
+"cevapsız" sayılmaz, **ertelenmiş** sayılır.
+
+⚠️ Ama **uydurma sayı yayına çıkmaz**: bugün sitede duran rakamlar
+kaldırıldı, yerlerine yer tutucu değil **doğru olduğu ölçülebilen ifade**
+kondu. Gerçek veri gelince rakam eklenir; sıralamayı tersine çevirip
+"şimdilik bir sayı yazalım" denmez.
+
+### `S-25` — hâlâ cevapsız, soru kötü kurulmuştu
+
+Mert *"anlamadım"* dedi ve haklı: soru "biniş jetonu geri üretilebilir olsun
+mu" diye, iç terimle sorulmuştu. Ürün diliyle yeniden soruldu:
+müşteri biniş belgesini kaybederse QR'ı yeniden basabilmeli miyiz, yoksa
+QR'dan vazgeçip okunaklı kod mu kalsın. → soru **63'ten sonraki numarada**
+açık kalıyor.
+
+---
+
+## 2026-09-04 (2) — dört cevap daha
+
+### `S-12` iade komisyonu → (c) ORANTILI, yani bugünkü davranış korunuyor
+
+Karar (Mert): **c**. Kademeli iadede komisyon da orantılı iade ediliyor.
+
+**Neden bu satır ayrı yazılıyor:** 2026-09-04'te aynı gün *"komisyon tam
+alınsın"* (b) cevabı verilmişti; backend kodu okuyup **sorunun dar
+olduğunu** gösterdi ve cevap değişti. Bu giriş o cevabı **iptal eder**.
+
+Soru %50 dilimi üzerinden kurulmuştu ve orada makuldü. Aynı kural %100
+dilimine uygulanınca ₺1.000'lik turda işletme ₺850 kazanıp ₺1.000 geri
+veriyor, yani **defterinde ₺150 eksi kalıyor** — hiç yapılmamış bir turdan
+zarar ediyor. Backend ayrıca `CK_Payouts_Amount >= 0` yüzünden eksi
+bakiyenin **sonraki turun hakedişini de kilitlediğini** ölçtü.
+
+**Ders, karardan büyük:** bir iş kuralı sorusu **tek bir dilim üzerinden**
+sorulursa cevap o dilimde doğru, sınırlarda yanlış olabilir. Para kuralı
+sorarken **uç dilimler sayıyla gösterilmeli** → [[genel-desenler]]
+
+`LedgerService.PostRefundAsync` değişmiyor.
+
+### `S-31` blog gövdesi → zengin metin, **CKEditor** (`*(çıkarım)*` payı var)
+
+Mert: *"b olabilir yada CKEditör de olabilir"* — ikisini de kabul etti,
+seçim teknik tarafa bırakıldı.
+
+**Seçilen: CKEditor.** **Neden:** yazarlar tekne işletmecisi ve kaptan,
+yazılımcı değil. Markdown'da `**kalın**` yazmayı öğrenmek gerçek bir engel
+ve blogun amacı işletmeyi yazmaya **teşvik etmek**. CKEditor'ün araç
+çubuğu tanıdık.
+
+**Bedeli ve ZORUNLU sırası:** CKEditor **HTML üretir** ve backend'de bugün
+hiçbir HTML temizleyici yok (`BlogService.Clean()` yalnız `Trim()`).
+Temizleme **sunucuda, izin listesiyle** yapılmadan HTML basılamaz — aksi
+hâlde `blog.write` yetkisi olan bir işletme çalışanı herkese açık sayfaya
+script gömer ve platform onayı bunu yakalamaz (onaylayan kişi metne bakar,
+kaynağa değil).
+
+Sıra bu yüzden tersine çevrilemez:
+1. Backend yazma yolunda izin listeli temizleyici kurar,
+2. Sonra editör ve HTML basımı açılır.
+
+O güne kadar gövde **düz metin** kalıyor ve ekrandaki *"HTML etiketleri
+olduğu gibi görünür"* ipucu doğru. Temizleyici geldiği gün o cümle
+**yalan olur** ve aynı gün değişmeli.
+
+### `S-25` biniş jetonu → (b) ayrı, kısa ömürlü biniş bileti
+
+Karar (Mert): **b**. Asıl jetona dokunulmuyor; biniş belgesi açıldığında o
+an için geçerli ayrı bir bilet üretiliyor. Böylece belge kaybolursa yenisi
+basılabiliyor ve veritabanını okuyan biri biniş anahtarını **okuyamıyor**.
+
+⚠️ Backend'in uyarısı karara dahil: **biletin ömrü tur bitişine değil,
+kalkıştan makul bir süre SONRASINA kadar olmalı.** Bitişte ölen bilet, geç
+kalkan ya da uzayan turda kaptanın elinde ölür ve o an kimse destek hattı
+arayacak durumda olmaz.
+
+`W-66` (QR ekranı) bu kararla açıldı.
+
+### `W-40` yolcu listesi → aydınlatma metnini **Mert yazacak**, en son
+
+Mert: *"onu ben yazıcam en son."* Metin gelmeden rıza kaydı boş bir sürüm
+etiketi taşır; `W-40` ve `A-81` **park ediliyor**, tahmin edilmiyor.
+
+⚠️ Saklama süresi de aynı pakette ve **silen bir iş** gerektiriyor: süre
+yazılıp silme yazılmazsa yazılı bir vaat olur, uygulaması olmaz.

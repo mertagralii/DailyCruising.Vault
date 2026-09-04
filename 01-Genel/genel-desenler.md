@@ -496,4 +496,49 @@ Bu, bugünün diğer dersiyle aynı kökten: kontrol 15 **muafiyet** yüzünden 
 kontrol 17 **kapsam** yüzünden. İkisi de yazıldıkları soruya doğru cevap veriyordu;
 sorun sorunun dar olmasıydı → [[genel-desenler]]
 
+## Para kuralını tek dilim üzerinden sorma
+
+2026-09-05'te `S-12`'ye (müşteri kaynaklı iptalde iade oranı) *"komisyon tam
+alınsın"* cevabı geldi. Soru **tek dilim** üzerinden sorulmuştu ve o dilimde cevap
+doğruydu. Backend uygulamadan önce sayılaştırdı: **%100 iade diliminde** kural
+işletmeyi komisyon kadar **eksiye** düşürüyor, `CK_Payouts_Amount >= 0` kısıtı da
+**sonraki turun hakedişini kilitliyordu**. Geri soruldu, cevap *(c) orantılı*
+olarak değişti, kod hiç yazılmadı.
+
+**Kural:** bir para kuralı sorulmadan önce **uç değerlerle sayılaştırılır** — %0,
+%100, iade > tahsilat, iki iptal üst üste. Soru "hangi oran" değil, *"şu dört
+senaryoda kim ne alır"* biçiminde sorulur. Tek dilimlik soru, cevabı veren kişiye
+diğer dilimleri **göstermez**; yanlış cevabı veren soru olur.
+
+Bu, uygulamadan önce sayılaştırmanın da gerekçesi: kural yazılıp test edilseydi
+hata testte değil, **ilk %100 iadede** — yani bir işletmenin parasında ortaya
+çıkardı.
+
+## Kendi notun da başkasının notu kadar bayatlar
+
+`api-benim-kararlarim.md`'de 26 Ağustos tarihli *"reddetme ucu YOK"* notu duruyordu.
+Ölçüldüğünde **uç ve yedi testi vardı** — arada başka bir oturum yazmıştı.
+
+Vault'un "not koda aykırıysa kod doğrudur" kuralı **kendi notların için de
+geçerlidir** ve eşzamanlı oturumlarda daha sık geçerlidir: notu yazan sen olsan da,
+o notu geçersiz kılan değişikliği yapan sen olmayabilirsin. **Tarih tazelik değil,
+yalnızca yazılma anıdır** → [[genel-esszamanli-oturumlar]]
+
+## Beyan ölçülen şeyse, beyanı güncellemek işin parçasıdır
+
+`durum.md` dört gün içinde **üç kez** düzenlendi; `guncelleme` alanı hiç
+değişmedi. İçerik güncel, beyan bayattı.
+
+Bu vault'ta zararsız bir tutarsızlık değil: **beyan ölçülen şeydir.** Kontrol 7
+(durum bayatlığı) ve kontrol 15 (mimari bayatlığı) frontmatter'daki tarihe bakar.
+Yanlış beyan yalnızca insanı değil, **diğer kontrolleri de** yanıltır — ve onları
+yanlış yönde yanıltır: dosya bayat sanılıp gereksiz uyarı çıkar, ya da taze sanılıp
+gerçek bayatlık gizlenir.
+
+Bu bir dikkat sorunu değildi, **eksik kapıydı**: dosyayı düzenlemek frontmatter'a
+dokunmayı gerektirmiyordu. `dogrula.py` **kontrol 19** artık beyanı dosyanın gerçek
+son yazımıyla (commit tarihi, kirliyse `mtime`) karşılaştırıyor. İlk çalıştırmada
+**dört dosyada birden** geride kalmış beyan buldu — üç ayrı alanda, yani kimsenin
+disiplin sorunu değil, herkesin.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

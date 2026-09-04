@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-08-28
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -46,8 +46,8 @@ Panolar (28 Ağustos, alan oturumlarının kendi ölçümü):
 
 | Alan | Yapılacak | Tamamlandı |
 |---|---|---|
-| API | 3 | 84 |
-| Web | 5 | 58 |
+| API | 3 | 93 |
+| Web | 4 | 64 |
 | Genel | 6 | 11 |
 
 ⚠️ **Bu sayılar panodan okunamıyordu, sayılarak bulundu.** Üç panoda birden
@@ -72,6 +72,35 @@ bağlı, üçüncüsü (`A-07`) frontend alanı.
 **Kritik yol artık tek düğümde:** `A-41` (alt üye iş yeri ve hakediş transferi).
 Bugün tahsilat **platform hesabına** yapılıyor, hakediş defterde duruyor ama
 işletmeye para geçmiyor. `A-58` de buna bağlı.
+
+## 2026-09-05 — 29 sorunun tamamı cevaplandı, öncelik demo testine döndü
+
+**Mert 4 Eylül'de bekleyen 29 sorunun hepsini cevapladı.** Tam liste
+[[domain-gereksinimler]]; API'yi bağlayanların gerekçeleri
+`02-API/api-kararlar.md` 2026-09-04 altında (10 karar).
+
+**Mert'in bugünkü önceliği kendi makinesinde uçtan uca test.** Kendi cümlesi:
+*"ilk istediğim şey benim makinemde ben tam olarak bir test edeyim kullanayım."*
+Yayın adımları **bilinçli olarak ertelendi**: *"İlk önce projeyi bitirelim tam
+anlamıyla demo test ortamında çalışabilen bir hale getirelim, yayına alacağımız
+vakit dediğin entegrasyonları yaparız."*
+
+⚠️ **Bu, "karar bekliyor" ile "hesap bekliyor" ayrımını doğurdu.** İki yayın
+engelleyicisi **karar olarak kapandı, eylem olarak açık**:
+
+| Konu | Karar | Bugün eksik olan |
+|---|---|---|
+| `S-19` ağ topolojisi | API ve Next aynı makinede, `127.0.0.1` yeterli | — kapandı |
+| E-posta / SMS | **Postmark + Netgsm** | hesaplar |
+
+Bunlar blocker listesine **girmiyor**, çünkü kimseyi bugün durdurmuyorlar —
+yayın günü durduracaklar. Karıştırılırsa pano yanlış aciliyet gösterir.
+
+API tarafında 4–5 Eylül'de biten dokuz iş: `A-76` blog uçları · `A-77` favoriler ·
+`A-78` bildirim tercihleri · `A-79` (`S-27`) · `A-80` (`S-20`, KDV rezervasyona
+donduruldu) · `A-81`/`A-82` veri düzeltmeleri · `A-83` HTML temizleyici ·
+`A-84` biniş bileti (`S-25`) · `A-85` iade önizlemesi + `demo-veri.sh`.
+**571 test yeşil**, `openapi.json` güncel (backend ölçümü).
 
 **2026-09-04: `S-30` kapandı — blog uç yazılacak.** Mert karar verdi: blog
 statik kalmıyor, siteden yazılabilecek. `W-38` artık **karar değil uç bekliyor**
@@ -108,9 +137,24 @@ blocker metnini kopyaladım, kaynağa bakmadım — 27 Ağustos'ta katalog uçla
 28'inde `middleware.ts` için. **Ölçüt kopyalanmaz, yeniden ölçülür.** İkisini de
 alan oturumları yakaladı → [[genel-desenler]]
 
-⚠️ **Mert'te bekleyen kararlar:** `A-41` (İyzico pazaryeri) · `S-18` (kupon
-kırpma çelişkisi, `S-10` ile `S-15` birbirini bozuyor) · `S-12` (müşteri
-kaynaklı iptalde iade oranı — iptal e-postasını da kilitliyor).
+⚠️ **Mert'te bekleyenler — 2026-09-05.** Hiçbiri artık *karar* değil; hepsi
+**hesap, metin veya dış teyit**:
+
+| Ne | Neden bekliyor |
+|---|---|
+| Postmark + Netgsm hesapları | üretimde uygulama bunlarsız **açılmıyor** |
+| **Paratika** hesabı (`A-41`) | İyzico'dan Paratika'ya geçildi; para bugün işletmeye gitmiyor |
+| S3 / DO Spaces kovası (`S-24`) | açık okuma **iki** öneke: `boat-media/*` **ve** `blog-media/*` |
+| `W-40` aydınlatma metni + saklama süresi | *"onu ben yazıcam en son"* |
+| `G-13` mali müşavir teyidi | henüz sorulmadı |
+| Veri göçü | ertelendi — önce site ayağa kalksın |
+
+`S-18` ve `S-12` **cevaplandı**, ayrıntı aşağıda.
+
+**2026-09-05'te iki soru daha açıldı:** `S-32` — KDV oranının kaynağı bugün
+yapılandırma; Mert **tarihli tabloya taşınsın** dedi, henüz yazılmadı (backend
+sırasında). `S-23` — tekne detayında donanım/kural ataması yok, aramada süzgeci
+de yok; **ürün sorusu değil, eksik uç.**
 
 **2026-09-04'te dört soru açıldı** (60–63 → [[domain-gereksinimler]]). Biri
 diğerlerinden farklı, çünkü ürün sorusu:
@@ -194,6 +238,21 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 - Bu vault + hafıza sistemi kuruldu (hook'lar, panolar, doğrulayıcı, 3 projeye özel skill)
 
 ## ⚠️ Vault ↔ kod çelişkileri
+
+**2026-09-05 — para kuralı tek dilim üzerinden sorulunca sınırda bozuluyordu.**
+`S-12`'ye *"komisyon tam alınsın"* cevabı geldi; backend sayıyla baktığında **%100
+iade diliminde işletmeyi komisyon kadar eksiye** düşürdüğü ve `CK_Payouts_Amount >= 0`
+kısıtı yüzünden **sonraki turun hakedişini de kilitlediği** çıktı. Uygulanmadı,
+geri soruldu, cevap **(c) orantılı** olarak değişti ve kod olduğu gibi kaldı.
+Ders: bir para kuralı **tek dilim üzerinden** sorulursa cevap o dilimde doğru,
+**sınırlarda yanlış** olabilir — sormadan önce uç değerlerle sayılaştır
+→ [[genel-desenler]]
+
+**2026-09-05 — kendi notunun tarihi, notun hâlâ doğru olduğunu göstermez.**
+`api-benim-kararlarim.md`'de 26 Ağustos tarihli *"reddetme ucu YOK"* notu
+duruyordu; ölçüldüğünde **uç ve yedi testi vardı** — arada başka bir oturum
+yazmış. Eşzamanlı oturumlarda **kendi notun da başkasının notu kadar bayatlar**;
+tarih tazelik değil, yalnız yazılma anıdır.
 
 **2026-08-31 — ham katalog anahtarı ana sayfada görünüyor.** `a04-gulet` gibi
 tohum çöpü artık müşteriye açık ekranda; istemciye "anahtar gibiyse gizle" sezgisi

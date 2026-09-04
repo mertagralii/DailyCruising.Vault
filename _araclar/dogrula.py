@@ -513,6 +513,47 @@ for rel in PANO_DOSYALARI:
                 f"birine yazilan gorev digerinde gorunmez, pano sessizce eksilir")
 
 
+# ---------------------------------------------------------------------------
+# 19: beyan edilen `guncelleme` ile dosyanin gercek son yazimi ortusuyor mu
+#
+# 2026-09-05: durum.md dort gun boyunca UC KEZ duzenlendi, `guncelleme` hep
+# 2026-08-28 kaldi. Icerik guncel, beyan bayatti — ve vault'ta beyan **olculen
+# seydir**: kontrol 7 (durum bayatligi) ve kontrol 15 ona bakiyor. Yani yanlis
+# beyan yalniz insani degil, diger kontrolleri de yaniltiyordu.
+#
+# Bu bir dikkatsizlik degil, eksik kapi: dosyayi duzenlemek frontmatter'a
+# dokunmayi gerektirmiyordu. Simdi gerektiriyor.
+BEYAN_IZLENEN = [
+    "01-Genel/durum.md", "01-Genel/acilis.md",
+    "02-API/api-durum.md", "03-Web/web-durum.md",
+    "02-API/api-mimari.md", "03-Web/web-mimari.md",
+]
+if _git(["rev-parse", "--git-dir"]) is not None:
+    for rel in BEYAN_IZLENEN:
+        yol = VAULT / rel
+        if not yol.exists():
+            continue
+        fm = frontmatter(yol.read_text(encoding="utf-8")) or {}
+        beyan = fm.get("guncelleme")
+        if not beyan or not re.match(r"^\d{4}-\d{2}-\d{2}$", beyan):
+            continue          # kontrol 15 zaten tarihsizligi bildiriyor
+        kirli = (_git(["status", "--porcelain", "--", rel]) or "").strip()
+        if kirli:
+            gercek = datetime.date.fromtimestamp(yol.stat().st_mtime).isoformat()
+            kaynak = "diskteki son yazim"
+        else:
+            zaman = (_git(["log", "-1", "--format=%cI", "--", rel]) or "").strip()
+            if not zaman:
+                continue
+            gercek, kaynak = zaman[:10], "son commit"
+        if gercek > beyan:
+            sorunlar.append(
+                f"[beyan geride] {rel}: frontmatter `guncelleme: {beyan}` diyor ama "
+                f"{kaynak} {gercek}. Beyan olculen seydir — yanlis beyan diger "
+                f"kontrolleri de yaniltir")
+        olcumler.append(f"kontrol 19 · {rel}: beyan {beyan} / {kaynak} {gercek}")
+
+
 
 print(f"Vault: {VAULT}")
 print(f"Not sayisi: {len(notlar)}")
