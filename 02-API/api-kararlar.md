@@ -4650,3 +4650,145 @@ değil "betiği çalıştır" oldu.
 
 **Kanıt:** üretilen belgede 84 tablonun 84'ünün başlığı var (0 eksik),
 `Partners.District` kolonu ve `CK_Reservations_GrandTotal` kısıtı dahil.
+
+## 2026-09-05 (17) — Paratika kapıları testle bağlandı; `ForcePathStyle` testi YAZILMADI
+
+İki iş, ikisi de aynı dersin uygulaması.
+
+**Yapıldı:** Paratika'nın üç açılış kapısı `ProductionGuardTests` zincirine
+eklendi. Kapılar canlıda ölçülmüştü ama teste bağlı DEĞİLDİ — yani biri
+kapıyı kaldırsa hiçbir şey kırılmazdı. Zincirin son adımı da düzeltildi:
+`Assert.Contains("")` yazmıştım, **her zaman geçen** bir iddia. Gerçek
+mesaja bağlandı.
+
+**Kanıt:** iki mutasyon da yakalandı — kimlik kapısı kaldırıldı (kırmızı),
+ödeme sayfası adresi denetimi kaldırıldı (kırmızı).
+
+**YAPILMADI ve sebebi:** `ForcePathStyle` dalı için test yazmayı denedim.
+Yazdığım test `!string.IsNullOrWhiteSpace(ServiceUrl)` ifadesini **kopyalıyordu**;
+`Program.cs` bozulsa kırmızıya dönmezdi. Yani yeşil bir test, sıfır ölçüm.
+
+Sildim. Gerçeğini yazmak uygulamayı ayağa kaldırıp kapsayıcıdan `IAmazonS3`
+çözmeyi gerektiriyor ve ölçeceği tek şey bir boole; `Y-14` zaten ilk gerçek
+yüklemede kapanıyor. **Sahte testin maliyeti testsizlikten yüksek:** testsiz
+bir dal "doğrulanmadı" diye durur, sahte testli bir dal "doğrulandı" diye
+durur.
+
+**Neden buraya yazıldı:** yapılmayan işin gerekçesi de karardır. Yazılmasa,
+altı ay sonra biri "burada test eksik" der ve ya boşuna yazar ya da aynı
+sahte testi kurar → [[genel-desenler]] *"Testler yeşil demeden önce
+değiştirdiğin satırın koştuğunu ölç"*.
+
+## 2026-09-05 (18) — Katılım akışının kopuk halkası: sözleşme kabul ucu
+
+Web oturumu bildirdi, ben de baştan ürettim: sözleşme gönderilmiş bir işletme
+giriş yapıyor, `GET /api/partner/contracts` **404**, panelin her bölümü
+**403**. Yani sözleşmesini ne görebiliyor ne kabul edebiliyordu — ve **hiçbir
+yeni işletme sisteme giremiyordu.**
+
+**Kusurun şekli, bu projede tekrarlayan desenin en pahalı hâli:** panelin
+`Active` olmayan işletmeye kapalı olması DOĞRU bir kural. Ama işletmeyi
+`Active` yapacak tek eylem de o kapının ardındaydı. Kapı doğru, arkasında
+çıkış yok.
+
+Ayrıca `Contract` varlığında `ApprovedAt`, `ApprovedByUserId`, `ApprovedIp`,
+`ApprovedUserAgent` **zaten vardı** — şema kabulü öngörmüş, uç yazılmamıştı.
+`ConversationReservations` ile aynı aile: yazanı olmayan alan.
+
+### Kararlar
+
+**Neden bu uçlar kapının dışına alındı:** kuralı gevşetmek yerine kapıyı
+korumak da mümkündü — örneğin işletme aktifleşene kadar sözleşmeyi
+e-postayla göndermek. Seçilmedi çünkü ticari bir taahhüdün kabulü,
+kimliği doğrulanmış bir oturumda ve delili kaydedilebilir biçimde
+olmalı; e-posta bağlantısı ikisini de zayıflatırdı. Kapı korunacaksa
+arkasında bir çıkış olmak zorunda, yoksa kural değil tuzak olur.
+
+**Uçlar yetki kapısına DEĞİL yalnız kimliğe bağlı.** İstisna dar tutuldu: iki
+uç, yalnız kendi sözleşmesi, kapsam sorgunun İÇİNDE. Panelin başka hiçbir ucu
+açılmadı — kapı tek tek gevşetilerek erir.
+
+**Parola isteniyor.** Sahiplik devriyle aynı gerekçe ve ondan güçlüsü: bu
+tıklama işletmeyi komisyon oranına ve hakediş dönemine BAĞLIYOR. Açık bırakılan
+bir oturumda yanlışlıkla basılabilecek bir düğmenin arkasına ticari taahhüt
+konulmaz.
+
+**Ayrı "okudum" onay kutusu YOK.** Kabul isteğinin kendisi zaten olumlu
+eylemdir; ikinci bir boole yalnız istemcinin gönderdiği bir iddia olurdu ve
+sunucu onu doğrulayamaz. Delil değeri taşıyan üç şey — an, adres, tarayıcı —
+**sunucuda** üretiliyor. İmzalayanın kendi beyanı, imzanın kanıtı değildir.
+
+**Durum yalnız `ContractSent`'ten `Active`'e geçiyor.** Koşulsuz yazılsaydı
+askıya alınmış bir işletme, elinde gönderilmiş sözleşme kaldıysa kendi askısını
+kaldırabilirdi. Askıyı kaldırmak platformun işi.
+
+**Kabul ile aktifleşme AYNI işlem.** Ayrı adımlara bölünseydi "kabul etmiş ama
+hâlâ giremeyen işletme" oluşurdu — düzeltilen kusurun bir adım ileri hâli.
+
+**Kanıt (canlı):** başvuru → inceleme → sözleşme gönderimi → işletme girişi.
+Sözleşme listesi `200` (unvan, %18 komisyon, 21 gün, metin), panel hâlâ `403`;
+yanlış parola `400 InvalidPassword`; **başka işletmenin sözleşmesi `404`**
+(varlık sızdırmıyor); doğru parola `204` → işletme `Active`, dört delil alanı
+da dolu; kabul sonrası panel `200`.
+**Kanıt (mutasyon):** dördü de yakalandı — parola denetimi kaldırıldı, kapsam
+sorgudan çıkarıldı, durum koşulsuz `Active` yapıldı, sözleşme metni
+döndürülmedi. **605 test yeşil.**
+
+⚠️ İki test bu değişiklikte **kendiliğinden** kırıldı ve ikisi de doğru
+davrandı: `openapi.json` bayat kaldı, yeni olay türünün yük izin listesi
+yoktu. Kapılar işini yaptı.
+
+## 2026-09-05 (19) — Sözleşme reddi: reddedilen SÖZLEŞMEDİR, işletme değil
+
+Mert: *"Reddetme özelliği de olsun."* — `S-36` kapandı.
+
+Ret önerisine itirazım şuydu: ayrı bir "reddedildi" durumu, ileri yolu olmayan
+ölü bir işletme kaydı üretebilir. Mert özelliği istedi; itiraz **tasarımda**
+karşılandı, özellik kısılarak değil.
+
+**Neden:** ret ile işletmenin reddedilmesi iki ayrı şey. Sözleşme reddedilince
+`Contracts.Status = Rejected` oluyor ama **işletme `ContractSent` kalıyor**.
+Böylece platform düzeltilmiş bir sözleşme gönderebiliyor ve pazarlık döngüsü
+kapanıyor. İşletmeyi de reddedilmiş saymak, tam olarak itiraz ettiğim ölü
+kaydı üretirdi.
+
+Mevcut kodun iki yeri bu tasarımı zaten destekliyordu ve değiştirilmedi:
+`HasPendingContractAsync` yalnız `Sent` sayıyor (reddedilmiş sözleşme yeni
+gönderimi engellemiyor) ve `CancelPendingContractsAsync` yalnız `Sent`
+iptal ediyor (ret kaydı geçmişte duruyor).
+
+### `Rejected`, `Cancelled`'dan ayrı bir durum
+
+İptali **platform** yapar (yerine yenisi gönderildiği için), reddi **işletme**
+yapar (şartları kabul etmediği için). Tek değerde toplansaydı *"bu sözleşme
+neden yürürlükte değil"* sorusunun cevabı kaybolurdu.
+
+### Gerekçe zorunlu, parola değil — asimetri bilinçli
+
+**Gerekçe ZORUNLU.** Gerekçesiz bir ret platforma neyi düzelteceğini söylemez;
+ret o zaman akışı ilerletmeyen bir düğmeye dönerdi. Boşluk kırpılıyor: yalnız
+boşluktan oluşan gerekçe, gerekçesizliğin kılık değiştirmiş hâli.
+
+**Parola İSTENMİYOR** — kabulde isteniyor. Kabul işletmeyi komisyon oranına ve
+hakediş dönemine BAĞLIYOR, geri alınamaz. Ret bağlamıyor ve geri alınabilir:
+platform yeni sözleşme gönderir. Geri alınabilir bir eylemin önüne geri
+alınamaz olanın sürtünmesini koymak koruma değil yalnız engel olurdu.
+
+### Kural veritabanında da var
+
+`CK_Contracts_RejectedEvidence`: `Status <> 'Rejected' OR (RejectedAt IS NOT
+NULL AND RejectedByUserId IS NOT NULL AND RejectionReason IS NOT NULL)`.
+Onay tarafındaki `CK_Contracts_ApprovedEvidence` ile aynı güçte, üstüne
+gerekçeyi de istiyor. Uygulama yolu atlansa bile gerekçesiz satır yazılamıyor.
+Durum listesi kısıtı da `Rejected`'ı kapsayacak şekilde `NOT VALID` + `VALIDATE`
+deseniyle güncellendi.
+
+**Kanıt (canlı, pazarlık döngüsünün tamamı):** %25 komisyonlu sözleşme
+gönderildi → gerekçesiz ret `400 ReasonRequired` → gerekçeli ret `204`,
+sözleşme `Rejected`, **işletme `ContractSent` kaldı** → reddedilen sözleşmeyi
+kabul denemesi `404` → platform %15'lik yeni sözleşme gönderdi `201` → liste
+ikisini de gösteriyor (biri `Sent`, biri gerekçesiyle `Rejected`) → kabul
+`204` → işletme `Active` → panel `200`.
+**Kanıt (mutasyon):** üçü de yakalandı — ret işletmeyi de kapattı (2 kırmızı),
+gerekçe zorunluluğu kaldırıldı (2 kırmızı), gerekçe kırpılmadı (1 kırmızı).
+**609 test yeşil.**

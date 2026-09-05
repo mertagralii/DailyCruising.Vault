@@ -58,6 +58,52 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟢 Tamamlandı
 
+- [x] **W-85** Sözleşme okuma ve onay · 2026-09-05
+      🔴 **Mert testte buldu ve katılım akışının kopuk halkasıydı:**
+      *"ben sözleşmeyi gönderdim de gönderdiğim kişi nasıl okuyup
+      onaylayacak?"*
+      Ölçtüm: platform sözleşme gönderiyor, işletme giriş yapıyor ve
+      panelin **her bölümü "okunamadı"** yazıyor — bir sayfada **7 kez**.
+      Sözleşme kelimesi **0 kez**. `partner/contracts` **`404`**,
+      `partner/profile` **`403`**. Yani **hiçbir yeni işletme sisteme
+      giremiyordu** ve ekran bunu "sistem bozuk" diye gösteriyordu.
+      🔴 **Bu, Mert'in daha önce bildirdiği 403'ü de açıkladı.** O zaman
+      üretemeyip *"olmayan bir kusur arıyor olabilirim"* demiştim —
+      **ön koşulu yanlış kurmuşum**: demo işletmesiyle test etmiştim, o
+      `Active`. Mert `ContractSent` bir hesapla test etmiş.
+      Backend iki ucu yazdı (`10097c0`), ekran bağlandı:
+      · Aktif olmayan işletmeye **panel hiç basılmıyor**, yerine sözleşme
+        ekranı geliyor; sözleşme henüz gönderilmemişse **sebebi yazıyla**
+      · Metin `sandbox=""` `<iframe srcDoc>` içinde —
+        `dangerouslySetInnerHTML` yok, gövde temizlenmiyor (`W-64` yolu)
+      · **Komisyon oranı ve periyot metnin dışında da** basılıyor:
+        imzalanan sayı bunlar, metni okumadan onaylayan bile görmeli
+      · Onay kutusu ekranda ama **isteğe alan olarak gitmiyor** —
+        sunucunun doğrulayamayacağı boole güvence değil süs olur
+      Kanıt: canlı, uçtan uca — `ContractSent` hesapla panel yerine
+      sözleşme ekranı geldi (`Test 1788568945 Ltd`, `%15`, `14 gün`,
+      metin iframe'de); **yanlış parola reddedildi**, doğru parolayla
+      onaylandı ve **panel açıldı** (`TOPLAM HAKEDİŞ` göründü).
+      Taşma 0, `npm run build` temiz. `4b475f0`
+      **2026-09-05 devamı — reddetme eklendi** (Mert istedi, `S-36`).
+      **Reddedilen sözleşmedir, işletme değil**: başvuru kapanmıyor,
+      platform gerekçeyi okuyup düzeltilmiş sözleşme gönderebiliyor.
+      ⚠️ **Ret parola İSTEMİYOR, kabul istiyor.** Asimetri bilinçli:
+      kabul işletmeyi komisyon oranına bağlıyor ve geri alınamıyor; ret
+      bağlamıyor ve geri alınabiliyor. Geri alınabilir bir eylemin önüne
+      geri alınamaz olanın sürtünmesini koymak koruma değil engel olurdu.
+      Önceki sözleşmeler **gizlenmiyor** — `Rejected` ile `Cancelled`
+      ayrı anlatılıyor: reddi işletme yapar, iptali platform.
+      🔴 **Ölçerken kendi eksiğimi buldum:** reddettikten sonra geçmiş
+      ekrandan **kayboluyordu** ve işletme az önce ne yaptığını göremiyordu
+      — reddin gidip gitmediğini bilemezdi. Düzeltildi.
+      Kanıt: pazarlık döngüsü canlı ölçüldü — `%25` sözleşme geldi, boş
+      gerekçede düğme **kapalı**, gerekçeyle reddedildi ve uçta
+      `Rejected %25 · "Komisyon oranı yüksek geldi, %15 olabilir mi?"`
+      göründü; platform `%15`'lik yeni sözleşme gönderdi ve ekranda
+      **ikisi birlikte** basıldı: üstte `%15` onay bekliyor, altta
+      *"Sen reddettin · Gerekçen: …"*. `7334f3b`
+
 - [x] **W-84** Şehir alanı il listesine çevrildi · 2026-09-05
       Mert testte istedi: *"`/add-boat` kısmında şehir yerine il ilçe
       olmalı."* İlçe **isteğe bağlı** olacak (Mert, 2026-09-05).

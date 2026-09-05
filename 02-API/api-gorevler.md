@@ -139,6 +139,22 @@ _(boş)_
   kolonda SELECT/UPDATE yetkisi kolon bazında doğrulandı. Canlı: başvuru
   `Muğla/Bodrum` yazdı, profil ucu döndürdü ve `PUT` ile değiştirildi.
   600 test yeşil. → [[api-kararlar]] 2026-09-05 (15)
+- [x] **A-98** Paratika açılış kapıları testle bağlandı · bitti: 2026-09-05
+  Kanıt: iki mutasyon kırmızı verdi (kimlik kapısı, ödeme sayfası adresi).
+  Zincirin `Assert.Contains("")` yazan son adımı gerçek mesaja bağlandı.
+  `ForcePathStyle` testi bilerek YAZILMADI — yazılanı ifadeyi kopyalıyordu.
+  600 test yeşil. → [[api-kararlar]] 2026-09-05 (17)
+- [x] **A-99** İşletme kendi sözleşmesini görüp kabul ediyor · bitti: 2026-09-05
+  Kanıt: canlı akış — sözleşme listesi 200, panel 403, yanlış parola 400,
+  başkasının sözleşmesi 404, doğru parola 204 → Active, dört delil alanı dolu,
+  panel 200. Dört mutasyon da kırmızı verdi. 605 test yeşil.
+  → [[api-kararlar]] 2026-09-05 (18)
+- [x] **A-100** Sözleşme reddi · bitti: 2026-09-05
+  Kanıt: pazarlık döngüsünün tamamı canlı ölçüldü — gerekçesiz ret 400,
+  gerekçeli ret 204 (işletme ContractSent kaldı), reddedileni kabul 404,
+  düzeltilmiş sözleşme 201, kabul 204 → Active, panel 200. Üç mutasyon da
+  kırmızı verdi. Kural veritabanında da var (`CK_Contracts_RejectedEvidence`).
+  609 test yeşil. → [[api-kararlar]] 2026-09-05 (19)
 - [x] **A-92** Bütün tablolar gösterilebilir veriyle dolduruldu · bitti: 2026-09-05
   Kanıt: 82 tablonun 81'i dolu; tek boş kalan `NotificationOutbox` ve o bir
   kuyruk (gönderim işi boşaltıyor). Dört rolde canlı uç taraması yapıldı;

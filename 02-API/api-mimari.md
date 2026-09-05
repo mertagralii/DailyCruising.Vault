@@ -31,8 +31,8 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 |---|---|---|
 | `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **84 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
-| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **53 migration**, **13 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp** |
-| `DailyCruising.Api` | Application + Infrastructure | **37 controller, 116 yol / 146 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **55 migration**, **13 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
+| `DailyCruising.Api` | Application + Infrastructure | **38 controller, 119 yol / 149 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 
