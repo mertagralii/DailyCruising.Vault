@@ -80,6 +80,7 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | Cevapsız soru / blocker / çelişki / silinen şey | `01-Genel/durum.md` |
 | **`durum.md`'de blocker açıldı/kapandı veya kritik yol değişti** | aynı oturumda `01-Genel/acilis.md` — her oturuma yüklenen özet odur |
 | **`dogrula.py`'ye kontrol ekledim veya değiştirdim** | `_araclar/kontrol-testi.py`'ye o kontrol için bozma senaryosu yaz ve çalıştır. **Senaryosu olmayan kontrol ölçülmüyor sayılır** — yazılı olması çalıştığının kanıtı değil |
+| **Vault'a alan/bölme eklendi · klasör adı değişti · bir eşik değiştirildi** | `_araclar/vault.json` — betiklere elle sabit yazma. Makine projeden bağımsızdır, projeye bağlı tek dosya odur |
 | **Migration uygulandı** | `DailyCruising.Back-End/araclar/sema-cikar.py` çalıştır → `02-API/api-sema-guncel.md` yeniden üretilir. **Elle yazma** |
 | **"Bu üretimde şu koşulla çalışır"** cümlesini kurduğum an | `01-Genel/yayin-oncesi.md` — sonraya bırakma, koşullar yan ürün olarak doğar |
 | **Kendi gözlemim** — tuzak, denenip olmayan, beklenmedik davranış | `<alan>/notlar/` altında yeni dosya + hub'ına link |

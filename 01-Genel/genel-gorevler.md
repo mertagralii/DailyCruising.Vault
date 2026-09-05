@@ -75,6 +75,15 @@ _(boş)_
 
 ## 🟢 Tamamlandı
 
+- [x] **G-19** Makine içerikten ayrıldı — `_araclar/vault.json` · bitti: 2026-09-05
+      Alan adları, önekler, kod repoları, pano bölüm adları, işaretler ve dokuz
+      eşik yapılandırmaya taşındı.
+      Kanıt: üç betikte kalan proje sabiti 0 · `dogrula.py` çıktısı refactor
+      öncesiyle **birebir aynı** (diff boş) · `kontrol-testi.py` 21/21 KIRMIZI ·
+      `Belgeler`/`Urun`/`Todo`/`Proof:` alanlı yabancı bir vault'ta çalıştı ve
+      o vault'un gerçek bir kusurunu buldu. → [[genel-desenler]]
+
+
 - [x] **G-18** Notların okunma oranı ölçülür hâle geldi · bitti: 2026-09-05
       `_araclar/okunma.py`: 108 oturum kaydı, ölçüt "yazan oturumun dışında
       açıldı mı".

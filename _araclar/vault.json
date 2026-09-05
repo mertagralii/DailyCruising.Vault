@@ -1,0 +1,63 @@
+{
+  "_aciklama": [
+    "Bu dosya, vault MAKINESININ projeye bagli tek parcasidir. dogrula.py,",
+    "kontrol-testi.py ve okunma.py buradan okur; hicbiri proje adi, klasor adi",
+    "veya esik degeri TASIMAZ.",
+    "Baska bir projeye tasirken degistirilecek tek dosya budur — betikler",
+    "oldugu gibi kopyalanir. Icerik (notlar, kararlar, desenler) TASINMAZ:",
+    "yeni proje, hic sormadigi sorularin cevaplariyla baslamamali."
+  ],
+  "proje": "DailyCruising",
+  "alanlar": {
+    "01-Genel": { "onek": "genel", "kod_repo": null },
+    "02-API":   { "onek": "api",  "kod_repo": "DailyCruising.Back-End",
+                  "kaynak": "src", "uzantilar": [".cs", ".csproj", ".slnx"] },
+    "03-Web":   { "onek": "web",  "kod_repo": "DailyCruising.Front-End",
+                  "kaynak": "src", "uzantilar": [".ts", ".tsx", ".js", ".jsx", ".css"] }
+  },
+  "bolmeler": ["desenler", "gorevler", "araclar"],
+  "notlar_klasoru": "notlar",
+  "arsiv_klasoru": "04-Oturumlar",
+  "denetim_disi": ["README.md"],
+  "yetim_muaf": ["00-Index", "CLAUDE"],
+  "tetikleyici_dosyalari": ["CLAUDE.md", "01-Genel/acilis.md"],
+  "ozel": {
+    "acilis": "01-Genel/acilis.md",
+    "durum": "01-Genel/durum.md",
+    "mimari_soneki": "-mimari.md"
+  },
+  "pano": {
+    "yapilacak": "Yapılacak",
+    "yapiliyor": "Yapılıyor",
+    "tamamlandi": "Tamamlandı",
+    "tamamlandi_basligi": "## 🟢 Tamamlandı",
+    "yapilacak_isareti": "🔵",
+    "kanit": "Kanıt:",
+    "gorev_deseni": "^\\s*-\\s*\\[( |~|x)\\]\\s*\\*\\*([A-Z]-\\d+)\\*\\*",
+    "kimlik_deseni": "\\*\\*([A-Z]-\\d+)\\*\\*"
+  },
+  "isaretler": {
+    "neden": "**Neden",
+    "dayanak": "\\*\\*Dayanak:\\*\\*(.+)",
+    "dayananlar": "\\*\\*Buna dayananlar:\\*\\*(.+)"
+  },
+  "mutable_roller": ["map", "status", "not"],
+  "esikler": {
+    "bayat_gun": 60,
+    "durum_bayat_gun": 7,
+    "beyan_tolerans_gun": 7,
+    "acilis_tavan_karakter": 6000,
+    "acilis_geride_commit": 3,
+    "yapiliyor_en_fazla": 3,
+    "link_esigi": 10,
+    "gorev_gecmisi_commit": 50,
+    "mimari_yapisal_ornek": 10
+  },
+  "oturum_kayit_deseni": "*DailyCruising*",
+  "otomatik_yuklenen": ["acilis"],
+  "kontrol_testi": {
+    "genel_alan": "01-Genel",
+    "kod_alan": "02-API",
+    "ikinci_alan": "03-Web"
+  }
+}

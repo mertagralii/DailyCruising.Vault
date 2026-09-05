@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DailyCruising Vault saglik kontrolu.
+Vault saglik kontrolu. Projeye bagli her sey `_araclar/vault.json`'da.
 
 Tarar:
   1. Eksik/bozuk frontmatter
@@ -29,8 +29,22 @@ import datetime
 from pathlib import Path
 
 VAULT = Path(__file__).resolve().parent.parent
-BAYAT_GUN = 60                      # mutable notlar icin esik
-MUTABLE_ROLLER = {"map", "status", "not"}  # kararlar/gorev/arsiv bayatlamaz
+
+# 2026-09-05: proje adlari, klasor adlari ve esikler betikten cikarildi.
+# Sebep sablonlastirma (`G-15`): makine tasinabilir olmali, icerik tasinmamali.
+# Yapilandirma YOKSA sessizce varsayilana dusulmez — sessiz varsayilan, yanlis
+# projeyi olcen bir denetim demektir; bu vault'ta en pahali kusur biçimi odur.
+import json
+_AYAR_YOLU = Path(__file__).resolve().parent / "vault.json"
+if not _AYAR_YOLU.exists():
+    sys.exit(f"vault.json yok ({_AYAR_YOLU}) — makine yapilandirmasiz calismaz")
+AYAR = json.loads(_AYAR_YOLU.read_text(encoding="utf-8"))
+ESIK = AYAR["esikler"]
+PANO = AYAR["pano"]
+OZEL = AYAR["ozel"]
+
+BAYAT_GUN = ESIK["bayat_gun"]
+MUTABLE_ROLLER = set(AYAR["mutable_roller"])
 
 sorunlar = []
 # 2026-08-31: susan denetim gorunmez oldugu icin susar. Her olcum, sorun
@@ -59,7 +73,7 @@ def frontmatter(text):
 
 # Vault notu olmayan repo belgeleri denetim disi: README GitHub icin yazilir,
 # frontmatter ve hub bagi kurallari ona uygulanmaz.
-DENETIM_DISI = {"README.md"}
+DENETIM_DISI = set(AYAR["denetim_disi"])
 notlar = sorted(p for p in VAULT.rglob("*.md") if p.name not in DENETIM_DISI)
 adlar = {}
 for p in notlar:
@@ -108,15 +122,16 @@ for p in notlar:
             gelen[hedef] += 1
 
 for ad, sayi in gelen.items():
-    if sayi == 0 and ad not in ("00-Index", "CLAUDE"):
+    if sayi == 0 and ad not in set(AYAR["yetim_muaf"]):
         yol = adlar[ad][0]
         # oturum notlari yetim olabilir, sorun degil
-        if not str(yol).startswith("04-Oturumlar"):
+        if not str(yol).startswith(AYAR["arsiv_klasoru"]):
             sorunlar.append(f"[yetim] {yol}: hicbir nottan link verilmemis")
 
 # 7: notlar/ klasoru kurallari — ad oneki, hub baglantisi, cikan link
-ALAN_ONEK = {"01-Genel": "genel-", "02-API": "api-", "03-Web": "web-"}
-ALAN_HUB = {"01-Genel": "genel-notlar", "02-API": "api-notlar", "03-Web": "web-notlar"}
+ALAN_ONEK = {a: v["onek"] + "-" for a, v in AYAR["alanlar"].items()}
+ALAN_HUB = {a: v["onek"] + "-notlar" for a, v in AYAR["alanlar"].items()}
+NOTLAR_KLASORU = AYAR["notlar_klasoru"]
 
 hub_linkleri = {}
 for alan, hub in ALAN_HUB.items():
@@ -132,7 +147,7 @@ for alan, hub in ALAN_HUB.items():
 for p2 in notlar:
     rel = p2.relative_to(VAULT)
     parcalar = rel.parts
-    if len(parcalar) < 3 or parcalar[1] != "notlar":
+    if len(parcalar) < 3 or parcalar[1] != NOTLAR_KLASORU:
         continue
     alan = parcalar[0]
     onek = ALAN_ONEK.get(alan)
@@ -156,22 +171,22 @@ for p in notlar:
     for blok in bloklar:
         baslik = blok.splitlines()[0].strip()
         # "**Neden:**" ya da "**Neden — ...:**" gibi varyantlar kabul
-        if "**Neden" not in blok:
+        if AYAR["isaretler"]["neden"] not in blok:
             sorunlar.append(
                 f"[gerekcesiz karar] {p.relative_to(VAULT)}: '{baslik}' "
                 f"icinde **Neden:** yok")
 
 
 # 8: her alanda desenler / gorevler / araclar var mi
-ALAN_BOLME = {"01-Genel": "genel", "02-API": "api", "03-Web": "web"}
+ALAN_BOLME = {a: v["onek"] for a, v in AYAR["alanlar"].items()}
 for alan, onek in ALAN_BOLME.items():
-    for bolme in ("desenler", "gorevler", "araclar"):
+    for bolme in AYAR["bolmeler"]:
         yol = VAULT / alan / f"{onek}-{bolme}.md"
         if not yol.exists():
             sorunlar.append(f"[bolme yok] {alan}/{onek}-{bolme}.md bulunamadi")
 
 # 9: gorev panosu kurallari
-GOREV_SATIRI = re.compile(r"^\s*-\s*\[( |~|x)\]\s*\*\*([A-Z]-\d+)\*\*")
+GOREV_SATIRI = re.compile(PANO["gorev_deseni"])
 tum_kimlikler = {}
 for alan, onek in ALAN_BOLME.items():
     yol = VAULT / alan / f"{onek}-gorevler.md"
@@ -184,11 +199,11 @@ for alan, onek in ALAN_BOLME.items():
     for satir in metin.splitlines():
         b = satir.strip()
         if b.startswith("## "):
-            if "Yapılacak" in b:
+            if PANO["yapilacak"] in b:
                 bolum = "yapilacak"
-            elif "Yapılıyor" in b:
+            elif PANO["yapiliyor"] in b:
                 bolum = "yapiliyor"
-            elif "Tamamlandı" in b:
+            elif PANO["tamamlandi"] in b:
                 bolum = "tamamlandi"
             else:
                 bolum = None
@@ -206,40 +221,42 @@ for alan, onek in ALAN_BOLME.items():
             yapiliyor += 1
         if bolum == "tamamlandi" and isaret != "x":
             sorunlar.append(f"[gorev] {rel}: '{kimlik}' Tamamlandi'da ama [x] degil")
-    if yapiliyor > 3:
+    if yapiliyor > ESIK["yapiliyor_en_fazla"]:
         sorunlar.append(
-            f"[odak] {rel}: Yapiliyor bolumunde {yapiliyor} gorev var, en fazla 3 olmali")
+            f"[odak] {rel}: Yapiliyor bolumunde {yapiliyor} gorev var, "
+            f"en fazla {ESIK['yapiliyor_en_fazla']} olmali")
     # Tamamlandi bolumundeki her gorevin Kanit satiri olmali
-    if "## 🟢 Tamamlandı" in metin:
-        kuyruk = metin.split("## 🟢 Tamamlandı", 1)[1]
+    if PANO["tamamlandi_basligi"] in metin:
+        kuyruk = metin.split(PANO["tamamlandi_basligi"], 1)[1]
         kuyruk = kuyruk.split("\nİlgili:", 1)[0]
         bloklar = re.split(r"\n(?=\s*-\s*\[)", kuyruk)
         for blok in bloklar:
             m = GOREV_SATIRI.match(blok.strip("\n"))
-            if m and "Kanıt:" not in blok:
+            if m and PANO["kanit"] not in blok:
                 sorunlar.append(
                     f"[kanitsiz gorev] {rel}: '{m.group(2)}' Tamamlandi'da ama "
-                    f"'Kanıt:' satiri yok")
+                    f"'{PANO['kanit']}' satiri yok")
 
 # 10: acilis.md tavani
-acilis = VAULT / "01-Genel" / "acilis.md"
+acilis = VAULT / OZEL["acilis"]
 if not acilis.exists():
-    sorunlar.append("[acilis yok] 01-Genel/acilis.md bulunamadi")
+    sorunlar.append(f"[acilis yok] {OZEL['acilis']} bulunamadi")
 else:
     boy = len(acilis.read_text(encoding="utf-8"))
-    if boy > 6000:
+    if boy > ESIK["acilis_tavan_karakter"]:
         sorunlar.append(
-            f"[acilis sisti] 01-Genel/acilis.md {boy} karakter, tavan 6000 — budanmali")
+            f"[acilis sisti] {OZEL['acilis']} {boy} karakter, "
+            f"tavan {ESIK['acilis_tavan_karakter']} — budanmali")
 
 # 11: durum.md tazeligi
-durum = VAULT / "01-Genel" / "durum.md"
+durum = VAULT / OZEL["durum"]
 if durum.exists():
     fm = frontmatter(durum.read_text(encoding="utf-8")) or {}
     try:
         yas = (bugun - datetime.date.fromisoformat(fm.get("guncelleme", ""))).days
-        if yas > 7:
+        if yas > ESIK["durum_bayat_gun"]:
             sorunlar.append(
-                f"[durum bayat] 01-Genel/durum.md {yas} gundur guncellenmedi — "
+                f"[durum bayat] {OZEL['durum']} {yas} gundur guncellenmedi — "
                 f"'nerede kaldik' cevabi burada yasiyor")
     except ValueError:
         pass
@@ -264,8 +281,8 @@ for alan, onek in ALAN_BOLME.items():
 # "X ucuz cunku Y var" bicimindeki karar, Y'ye link vermeli; Y de geri referans
 # tasimali. Kirilma Y tarafinda oldugu icin tek yon yetmez.
 # 2026-08-24: BRIN/bolumlendirme celiskisi bu denetim olmadigi icin kacti.
-DAYANAK = re.compile(r"\*\*Dayanak:\*\*(.+)")
-DAYANANLAR = re.compile(r"\*\*Buna dayananlar:\*\*(.+)")
+DAYANAK = re.compile(AYAR["isaretler"]["dayanak"])
+DAYANANLAR = re.compile(AYAR["isaretler"]["dayananlar"])
 LINKLER = re.compile(r"\[\[([^\]|]+)")
 
 geri_referans = {}   # hedef notun stem -> geri link verdigi notlarin stem kumesi
@@ -310,7 +327,7 @@ def _git(args):
     except Exception:
         return None
 
-KIMLIK = re.compile(r"\*\*([A-Z]-\d+)\*\*")
+KIMLIK = re.compile(PANO["kimlik_deseni"])
 
 if _git(["rev-parse", "--git-dir"]) is not None:
     for alan, onek in ALAN_BOLME.items():
@@ -320,7 +337,7 @@ if _git(["rev-parse", "--git-dir"]) is not None:
         rel = yol.relative_to(VAULT).as_posix()
         # HEAD degil TUM gecmis taranir: kayip bir kez commit'lenirse HEAD onu
         # normal sayar. 2026-08-24'te tam bu oldu — silinmis hali commit'lendi.
-        commitler = (_git(["log", "--format=%H", "-n", "50", "--", rel]) or "").split()
+        commitler = (_git(["log", "--format=%H", "-n", str(ESIK["gorev_gecmisi_commit"]), "--", rel]) or "").split()
         gorulmus = set()
         for c in commitler:
             icerik = _git(["show", f"{c}:{rel}"])
@@ -348,10 +365,8 @@ if _git(["rev-parse", "--git-dir"]) is not None:
 # kaynak dosya sayilir: yeni dosya = yapi degisti. Icerik degisikligi yapiyi
 # degistirmez, o yuzden --diff-filter=AD.
 MIMARI_REPO = {
-    "02-API": ("api-mimari.md", "DailyCruising.Back-End",
-               (".cs", ".csproj", ".slnx")),
-    "03-Web": ("web-mimari.md", "DailyCruising.Front-End",
-               (".ts", ".tsx", ".js", ".jsx", ".css")),
+    alan: (v["onek"] + OZEL["mimari_soneki"], v["kod_repo"], tuple(v["uzantilar"]))
+    for alan, v in AYAR["alanlar"].items() if v.get("kod_repo")
 }
 YAPISAL_ESIK = 10
 YOL_DISI = ("obj/", "bin/", "node_modules/", ".next/", "dist/", "Migrations/Designer")
@@ -369,7 +384,15 @@ def _git_repo(repo, args):
 for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
     yol = VAULT / alan / dosya
     repo = VAULT.parent / repo_adi
-    if not yol.exists() or not repo.exists():
+    # Sessiz atlama YASAK: yapilandirmada kod reposu yazan bir alan icin repo
+    # bulunamiyorsa bu bir olcum bosluğudur, "sorun yok" degildir. Baska bir
+    # projeye tasindiginda en olasi kusur tam da budur — yol yanlis yazilir ve
+    # denetim hicbir sey demeden korlesir.
+    if not yol.exists():
+        olcumler.append(f"kontrol 15 · {alan}/{dosya}: DOSYA YOK — OLCULEMEDI")
+        continue
+    if not repo.exists():
+        olcumler.append(f"kontrol 15 · {alan}: kod reposu yok ({repo}) — OLCULEMEDI")
         continue
     fm = frontmatter(yol.read_text(encoding="utf-8")) or {}
     tarih = fm.get("guncelleme")
@@ -443,11 +466,11 @@ for alan, (dosya, repo_adi, uzantilar) in MIMARI_REPO.items():
 # yaziliyordu, sessizce curudu. acilis.md **her oturumda okunuyor** ama hicbir
 # tetikleyici onu yazmiyordu — yani bayat bilgi her oturumun baglamina
 # enjekte ediliyordu. **Okunup yazilmayan dosya, hic okunmayandan kotudur.**
-ACILIS_ESIK = 3
+ACILIS_ESIK = ESIK["acilis_geride_commit"]
 if _git(["rev-parse", "--git-dir"]) is not None:
-    a_yol, d_yol = VAULT / "01-Genel/acilis.md", VAULT / "01-Genel/durum.md"
+    a_yol, d_yol = VAULT / OZEL["acilis"], VAULT / OZEL["durum"]
     if a_yol.exists() and d_yol.exists():
-        a_rel, d_rel = "01-Genel/acilis.md", "01-Genel/durum.md"
+        a_rel, d_rel = OZEL["acilis"], OZEL["durum"]
         kirli_a = (_git(["status", "--porcelain", "--", a_rel]) or "").strip()
         a_zaman = (_git(["log", "-1", "--format=%cI", "--", a_rel]) or "").strip()
         if not kirli_a and a_zaman:
@@ -455,8 +478,8 @@ if _git(["rev-parse", "--git-dir"]) is not None:
                            "--", d_rel]) or "").split())
             if n >= ACILIS_ESIK:
                 sorunlar.append(
-                    f"[acilis geride] 01-Genel/acilis.md son commit'inden "
-                    f"({a_zaman[:16]}) bu yana durum.md {n} kez degisti. "
+                    f"[acilis geride] {OZEL['acilis']} son commit'inden "
+                    f"({a_zaman[:16]}) bu yana {OZEL['durum']} {n} kez degisti. "
                     f"acilis her oturuma otomatik yuklenir — bayat kalirsa yanlis "
                     f"bilgi her oturumun baglamina girer")
 
@@ -471,11 +494,7 @@ if _git(["rev-parse", "--git-dir"]) is not None:
 # Bu bir disiplin hatasi degil — gorevi bitirirken kanit satirini yazmak akilda
 # kaliyor, bolumler arasi tasimak kalmiyor. Olculmedigi surece pano her gun biraz
 # daha yaniltir: "yapilacak" sayisi isin degil, tasinmamis satirin sayisidir.
-PANO_DOSYALARI = [
-    "01-Genel/genel-gorevler.md",
-    "02-API/api-gorevler.md",
-    "03-Web/web-gorevler.md",
-]
+PANO_DOSYALARI = [f"{a}/{v['onek']}-gorevler.md" for a, v in AYAR["alanlar"].items()]
 for rel in PANO_DOSYALARI:
     yol = VAULT / rel
     if not yol.exists():
@@ -486,7 +505,7 @@ for rel in PANO_DOSYALARI:
     # Yalniz "Yapilacak" bolumunun govdesi
     bloklar = re.split(r"^## ", metin, flags=re.M)
     for blok in bloklar:
-        if not blok.lstrip().startswith(("🔵", "Yapılacak")):
+        if not blok.lstrip().startswith((PANO["yapilacak_isareti"], PANO["yapilacak"])):
             continue
         for satir in blok.split("\n"):
             if not re.match(r"^- \[[ x~]\] \*\*", satir):
@@ -529,7 +548,7 @@ for rel in PANO_DOSYALARI:
 # yuzunden, kontrol 17 kapsam yuzunden, bu da liste yuzunden dar kaldi.
 # Cozum listeyi buyutmek DEGIL, listeyi kaldirmaktir: `guncelleme` beyan eden
 # HER dosya olculur. Beyanda bulunmak izlenmeyi kabul etmektir.
-BEYAN_TOLERANS = 7
+BEYAN_TOLERANS = ESIK["beyan_tolerans_gun"]
 _b19 = 0
 if _git(["rev-parse", "--git-dir"]) is not None:
     _beyanli = sorted(
@@ -590,9 +609,9 @@ if _git(["rev-parse", "--git-dir"]) is not None:
 # tetikleyici tablolarinda gecmiyor (joker `*-kararlar.md` bicimleri dahil).
 # Cok linklenmek "bu dosyaya guveniliyor" demektir; tetikleyicisi yoksa o guven
 # bakimsiz bir dosyaya yoneliyordur — en pahali bayatlik budur.
-LINK_ESIK = 10
+LINK_ESIK = ESIK["link_esigi"]
 _tetik_metin = ""
-for _t in ("CLAUDE.md", "01-Genel/acilis.md"):
+for _t in AYAR["tetikleyici_dosyalari"]:
     _ty = VAULT / _t
     if _ty.exists():
         _tetik_metin += _ty.read_text(encoding="utf-8")
@@ -600,7 +619,7 @@ if _tetik_metin:
     _joker = set(re.findall(r"\*-([a-z]+)\.md", _tetik_metin))
     _gelen = {}
     for _f in VAULT.rglob("*.md"):
-        if ".git" in _f.parts or _f.parts[0] == "04-Oturumlar":
+        if ".git" in _f.parts or _f.parts[0] == AYAR["arsiv_klasoru"]:
             continue
         for _m in re.findall(r"\[\[([^\]|#]+)", _f.read_text(encoding="utf-8")):
             _ad = _m.strip()
@@ -614,14 +633,14 @@ if _tetik_metin:
         # `notlar/` altindaki bir notun tetikleyicisi KENDI HUB'IDIR
         # (`*-notlar.md`, tabloda var). Ilk surum bunlari da bildirdi — olcut
         # gevsekti: dosyanin adina bakip yolunu gormemek.
-        if any(_p.parent.name == "notlar" for _p in VAULT.rglob(f"{_ad}.md")):
+        if any(_p.parent.name == NOTLAR_KLASORU for _p in VAULT.rglob(f"{_ad}.md")):
             continue
         if re.search(re.escape(_ad), _tetik_metin):
             continue
         _yetim.append((_ad, _n))
         sorunlar.append(
-            f"[tetikleyicisiz] {_ad}: {_n} yerden linkli ama CLAUDE.md/acilis.md "
-            f"tetikleyici tablolarinda yok. Cok linklenen dosyaya guvenilir; "
+            f"[tetikleyicisiz] {_ad}: {_n} yerden linkli ama "
+            f"{' / '.join(AYAR['tetikleyici_dosyalari'])} tetikleyici tablolarinda yok. Cok linklenen dosyaya guvenilir; "
             f"tetikleyicisi yoksa bakimsiz kalir ve guven bos yere yonelir")
     olcumler.append(
         f"kontrol 20 · {len(_gelen)} hedef, {LINK_ESIK}+ linkli olanlarda "
@@ -639,12 +658,14 @@ if _tetik_metin:
 # Bu kontrol atifin **dogrulugunu** olcemez — yalnizca hedefin VAR oldugunu.
 # Yetersiz oldugu bilinerek yaziliyor; alternatifi hicbir sey olculmemesiydi.
 # Olu atif (adi degismis veya silinmis dosya) sessizce yanlis yonlendirir.
-KOD_REPOLARI = ["DailyCruising.Back-End/src", "DailyCruising.Front-End/src"]
+KOD_REPOLARI = [f"{v['kod_repo']}/{v['kaynak']}" for v in AYAR["alanlar"].values()
+                if v.get("kod_repo")]
 _hedefler = {y.stem for y in VAULT.rglob("*.md")}
 _atif_toplam, _olu = 0, {}
 for _rel in KOD_REPOLARI:
     _kok = VAULT.parent / _rel
     if not _kok.exists():
+        olcumler.append(f"kontrol 21 · kod koku yok ({_kok}) — OLCULEMEDI")
         continue
     for _f in _kok.rglob("*"):
         if not _f.is_file() or _f.suffix not in (

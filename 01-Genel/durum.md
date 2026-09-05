@@ -463,4 +463,18 @@ işlevi şablonlaştırmaya (`G-15`) girdi vermek.
 mutlak yolları eliyordu; "4 oturum" derken bağımsız `grep -l` 73 dosya buldu).
 Bağımsız sayımla yakalandı → [[genel-desenler]] · `G-18`
 
+
+## 2026-09-05 — makine içerikten ayrıldı (`G-19`)
+
+Betiklerdeki 31 satır proje sabiti `_araclar/vault.json`'a çıkarıldı; üç betikte
+kalan proje sabiti **0**. `Belgeler`/`Urun` alanlı, `Todo`/`Doing`/`Done` panolu
+bambaşka bir vault kurulup aynı `dogrula.py` ile çalıştırıldı — çalıştı ve o
+vault'un gerçek bir kusurunu buldu.
+
+Ayrıca kontrol 15 ve 21 kod reposu bulunamayınca **sessizce atlıyordu**; artık
+`OLCULEMEDI` diyor. Yanlış repo yolu, başka bir projeye taşırken en olası
+hatadır ve sessiz kalırsa denetim var sanılır. → [[genel-desenler]]
+
+Bu, `G-15` (şablonlaştırma) için kalan tek engeli kaldırdı: makine artık taşınabilir.
+
 İlgili: [[proje]] · [[genel-kararlar]] · [[genel-gorevler]] · [[api-durum]] · [[web-durum]] · [[00-Index]]

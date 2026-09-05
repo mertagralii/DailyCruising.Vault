@@ -16,7 +16,7 @@ soyleyemiyoruz.
 
 Ne olculur
 ----------
-Kaynak: `~/.claude/projects/*DailyCruising*/*.jsonl` oturum kayitlari.
+Kaynak: `~/.claude/projects/<vault.json: oturum_kayit_deseni>/*.jsonl`.
   * OKUNDU   — Read araci, ya da okuma bicimli bir Bash komutu (cat/grep/sed)
   * YAZILDI  — Edit/Write araci, ya da yonlendirmeli Bash komutu (`> dosya`)
   * DISARIDAN-OKUMA — notu YAZAN oturumlarin disinda kac oturumda okundu.
@@ -41,9 +41,14 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+import json
+
 VAULT = Path(__file__).resolve().parent.parent
 KAYITLAR = Path.home() / ".claude" / "projects"
-OTOMATIK = {"acilis"}          # SessionStart hook'u yukluyor, secilerek acilmiyor
+AYAR = json.loads((Path(__file__).resolve().parent / "vault.json")
+                  .read_text(encoding="utf-8"))
+KAYIT_DESENI = AYAR["oturum_kayit_deseni"]
+OTOMATIK = set(AYAR["otomatik_yuklenen"])   # hook yukluyor, secilerek acilmiyor
 OKUMA_ARAC = {"Read", "NotebookRead"}
 YAZMA_ARAC = {"Edit", "Write", "NotebookEdit"}
 # Bash icin arac adi yetmez: `cat x.md` okur, `cat > x.md` yazar. Ilk surum
@@ -96,7 +101,7 @@ def main():
     cagri = defaultdict(int)     # ad -> toplam dokunma sayisi
     belirsiz = defaultdict(int)  # okuma mi yazma mi ayirt edilemeyen Bash dokunusu
     son = {}
-    dosyalar = sorted(KAYITLAR.glob("*DailyCruising*/*.jsonl"))
+    dosyalar = sorted(KAYITLAR.glob(f"{KAYIT_DESENI}/*.jsonl"))
     satir_sayisi = 0
 
     for f in dosyalar:

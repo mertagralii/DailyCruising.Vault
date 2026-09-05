@@ -780,4 +780,31 @@ karakterini yasaklıyor, böylece **tam da ölçmek istediği mutlak yolları
 eliyordu**; araç "4 oturum" derken bağımsız `grep -l` 73 dosya buldu. Aynı
 dersin üçüncü tekrarı — bkz. bu dosyadaki *"denetimin kendisi de denetlenir"*.
 
+## Makine taşınır, içerik taşınmaz
+
+Vault'un iki ayrı parçası var ve 2026-09-05'e kadar iç içe duruyorlardı:
+
+- **Makine** — `dogrula.py`, `kontrol-testi.py`, `okunma.py`; roller, tetikleyici
+  disiplini, yazma hakkı bölüşümü, pano biçimi. Bunlar DailyCruising'e ait değil.
+- **İçerik** — 83 not, kararlar, desenler, ölçülen sayılar. Bunlar bu projeye ait.
+
+Betiklerdeki 31 satır proje sabiti ikisini birbirine yapıştırıyordu.
+`_araclar/vault.json` çıkarıldı: alan adları, önekler, kod repoları, pano bölüm
+adları (`Yapılacak`/`Todo`), işaretler (`Kanıt:`/`Proof:`) ve dokuz eşik oraya
+taşındı. Üç betikte kalan proje sabiti sayısı: **0**.
+
+**Kanıt tahminle değil ölçümle:** `Belgeler`/`Urun` alanlı, `Todo`/`Doing`/`Done`
+panolu, `Proof:`/`**Why` işaretli bambaşka bir vault kuruldu ve aynı `dogrula.py`
+üzerinde çalıştı — hem de o vault'un gerçek bir kusurunu bularak.
+
+⚠️ **Şablona içerik konmaz.** Yeni bir projeye 83 not kopyalanırsa, o proje hiç
+sormadığı soruların cevaplarıyla başlar; bu boş vault'tan kötüdür, çünkü bayat
+cevap "vault'ta var" hissi verip aynı bilginin yeniden üretilmesini engeller.
+Taşınacak olan iskelet ve disiplindir, cevaplar değil.
+
+⚠️ **Taşıma sırasında en olası kusur sessiz atlamadır.** Yapılandırmada yazan bir
+kod reposu yolu yanlışsa kontrol 15 ve 21 eskiden hiçbir şey demeden körleşiyordu.
+Artık `OLCULEMEDI` diye konuşuyorlar — yanlış yol, yeni projede en kolay yapılan
+hatadır ve sessiz kalırsa denetim var sanılır.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

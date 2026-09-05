@@ -40,9 +40,39 @@ import subprocess
 import sys
 from pathlib import Path
 
+import json
+
 VAULT = Path(__file__).resolve().parent.parent
 KOPYA = VAULT.parent / ".vault-kontrol-testi"
-KOD_REPOLARI = ("DailyCruising.Back-End", "DailyCruising.Front-End")
+AYAR = json.loads((Path(__file__).resolve().parent / "vault.json")
+                  .read_text(encoding="utf-8"))
+KOD_REPOLARI = tuple(v["kod_repo"] for v in AYAR["alanlar"].values() if v.get("kod_repo"))
+
+_KT = AYAR["kontrol_testi"]
+_AL = AYAR["alanlar"]
+GENEL, KOD, IKINCI = _KT["genel_alan"], _KT["kod_alan"], _KT["ikinci_alan"]
+
+
+def _y(alan, bolme):
+    """Alan + bolme -> vault icindeki goreli yol (proje adi betikte gecmez)."""
+    return f"{alan}/{_AL[alan]['onek']}-{bolme}.md"
+
+
+D_DESENLER = _y(GENEL, "desenler")
+D_GOREVLER = _y(GENEL, "gorevler")
+D_ARACLAR = _y(GENEL, "araclar")
+D_NOTLAR = _y(GENEL, "notlar")
+D_KOD_MIMARI = f"{KOD}/{_AL[KOD]['onek']}{AYAR['ozel']['mimari_soneki']}"
+D_KOD_KARARLAR = _y(KOD, "kararlar")
+D_KOD_GOREVLER = _y(KOD, "gorevler")
+D_KOD_ARACLAR = _y(KOD, "araclar")
+D_IKINCI_GOREVLER = _y(IKINCI, "gorevler")
+D_ACILIS = AYAR["ozel"]["acilis"]
+D_DURUM = AYAR["ozel"]["durum"]
+D_NOT_KLASOR = f"{GENEL}/{AYAR['notlar_klasoru']}"
+P_YAPILACAK = f"## {AYAR['pano']['yapilacak_isareti']} {AYAR['pano']['yapilacak']}"
+P_TAMAMLANDI = AYAR["pano"]["tamamlandi_basligi"]
+P_YAPILIYOR = "## 🟡 " + AYAR["pano"]["yapiliyor"]
 
 
 # --- yardimcilar -----------------------------------------------------------
@@ -80,12 +110,12 @@ def git(k, *args, **kw):
 # Her biri GERCEK bir kusuru taklit eder; uydurma bir bicim hatasi degil.
 
 def m_frontmatter(k):
-    r = "01-Genel/genel-desenler.md"
+    r = D_DESENLER
     yaz(k, r, re.sub(r"^---\n.*?\n---\n", "", oku(k, r), flags=re.S))
 
 
 def m_dogrulanmali(k):
-    r = "02-API/api-mimari.md"
+    r = D_KOD_MIMARI
     yaz(k, r, oku(k, r).replace("durum: guncel", "durum: dogrulanmali", 1))
 
 
@@ -102,116 +132,116 @@ def m_bayat(k):
 
 
 def m_belirsiz_ad(k):
-    shutil.copy(k / "01-Genel/durum.md", k / "02-API/durum.md")
+    shutil.copy(k / D_DURUM, k / f"{KOD}/durum.md")
 
 
 def m_kirik_link(k):
-    ekle(k, "01-Genel/genel-notlar.md", "\n- [[olmayan-hedef-9999]]\n")
+    ekle(k, D_NOTLAR, "\n- [[olmayan-hedef-9999]]\n")
 
 
 def m_yetim(k):
-    not_yaz(k, "01-Genel/genel-deneme-yetim.md", "Kimse buna link vermiyor. [[durum]]")
+    not_yaz(k, f"{GENEL}/genel-deneme-yetim.md", "Kimse buna link vermiyor. [[durum]]")
 
 
 def m_gerekcesiz_karar(k):
-    ekle(k, "02-API/api-kararlar.md",
+    ekle(k, D_KOD_KARARLAR,
          "\n## 2099-01-01 — gerekcesiz deneme karari\n\nGerekce yazilmadi.\n")
 
 
 def m_not_adi(k):
-    not_yaz(k, "01-Genel/notlar/yanlis-onek-deneme.md", "[[durum]]")
-    ekle(k, "01-Genel/genel-notlar.md", "\n- [[yanlis-onek-deneme]]\n")
+    not_yaz(k, f"{D_NOT_KLASOR}/yanlis-onek-deneme.md", "[[durum]]")
+    ekle(k, D_NOTLAR, "\n- [[yanlis-onek-deneme]]\n")
 
 
 def m_baglanmamis_not(k):
-    not_yaz(k, "01-Genel/notlar/genel-deneme-hubsuz.md", "[[durum]]")
+    not_yaz(k, f"{D_NOT_KLASOR}/genel-deneme-hubsuz.md", "[[durum]]")
 
 
 def m_yalitilmis_not(k):
-    not_yaz(k, "01-Genel/notlar/genel-deneme-yalitilmis.md", "Hicbir yere link yok.")
-    ekle(k, "01-Genel/genel-notlar.md", "\n- [[genel-deneme-yalitilmis]]\n")
+    not_yaz(k, f"{D_NOT_KLASOR}/genel-deneme-yalitilmis.md", "Hicbir yere link yok.")
+    ekle(k, D_NOTLAR, "\n- [[genel-deneme-yalitilmis]]\n")
 
 
 def m_bolme_yok(k):
-    (k / "02-API/api-araclar.md").unlink()
+    (k / D_KOD_ARACLAR).unlink()
 
 
 def m_gorev_kimligi(k):
-    kimlik = re.search(r"\*\*(A-\d+)\*\*", oku(k, "02-API/api-gorevler.md")).group(1)
-    basliktan_sonra(k, "03-Web/web-gorevler.md", "## 🟢 Tamamlandı",
+    kimlik = re.search(r"\*\*([A-Z]-\d+)\*\*", oku(k, D_KOD_GOREVLER)).group(1)
+    basliktan_sonra(k, D_IKINCI_GOREVLER, P_TAMAMLANDI,
                     f"\n- [x] **{kimlik}** deneme cakismasi\n      Kanıt: deneme\n")
 
 
 def m_odak(k):
     satirlar = "".join(f"\n- [~] **Z-{i}** deneme · başlangıç: 2026-09-05\n"
                        for i in range(1, 5))
-    basliktan_sonra(k, "01-Genel/genel-gorevler.md", "## 🟡 Yapılıyor", satirlar)
+    basliktan_sonra(k, D_GOREVLER, P_YAPILIYOR, satirlar)
 
 
 def m_kanitsiz_gorev(k):
-    basliktan_sonra(k, "01-Genel/genel-gorevler.md", "## 🟢 Tamamlandı",
+    basliktan_sonra(k, D_GOREVLER, P_TAMAMLANDI,
                     "\n- [x] **Z-90** kanitsiz deneme · bitti: 2026-09-05\n")
 
 
 def m_acilis_sisti(k):
-    ekle(k, "01-Genel/acilis.md", "\n" + ("dolgu " * 700))
+    ekle(k, D_ACILIS, "\n" + ("dolgu " * 700))
 
 
 def m_durum_bayat(k):
-    r = "01-Genel/durum.md"
+    r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
                      oku(k, r), count=1, flags=re.M))
 
 
 def m_gerekcesiz_arac(k):
-    ekle(k, "01-Genel/genel-araclar.md", "\n| deneme tetikleyici | `deneme-arac` |  |\n")
+    ekle(k, D_ARACLAR, "\n| deneme tetikleyici | `deneme-arac` |  |\n")
 
 
 def m_dayanak_tek_yonlu(k):
-    ekle(k, "01-Genel/genel-desenler.md",
+    ekle(k, D_DESENLER,
          "\n**Dayanak:** [[durum]] icindeki blocker tablosu\n")
 
 
 def m_gorev_kimligi_kayboldu(k):
-    r = "02-API/api-gorevler.md"
+    r = D_KOD_GOREVLER
     metin = oku(k, r)
-    kimlik = re.search(r"\*\*(A-\d+)\*\*", metin).group(1)
+    kimlik = re.search(r"\*\*([A-Z]-\d+)\*\*", metin).group(1)
     yaz(k, r, "\n".join(s for s in metin.splitlines() if f"**{kimlik}**" not in s))
 
 
 def m_mimari_bayat(k):
-    r = "02-API/api-mimari.md"
+    r = D_KOD_MIMARI
     ekle(k, r, "\n<!-- deneme -->\n")          # kirli yap -> olcut mtime olur
     os.utime(k / r, (1751328000, 1751328000))  # 2025-07-01
 
 
 def m_acilis_geride(k):
     for i in range(3):
-        ekle(k, "01-Genel/durum.md", f"\n<!-- deneme {i} -->\n")
-        git(k, "add", "01-Genel/durum.md")
+        ekle(k, D_DURUM, f"\n<!-- deneme {i} -->\n")
+        git(k, "add", D_DURUM)
         git(k, "-c", "user.email=d@d", "-c", "user.name=d",
             "commit", "-q", "-m", f"deneme {i}")
 
 
 def m_pano_kaymasi(k):
-    basliktan_sonra(k, "01-Genel/genel-gorevler.md", "## 🔵 Yapılacak",
+    basliktan_sonra(k, D_GOREVLER, P_YAPILACAK,
                     "\n- [x] **Z-91** tasinmamis deneme · bitti: 2026-09-05\n")
 
 
 def m_yinelenen_baslik(k):
-    ekle(k, "01-Genel/genel-gorevler.md", "\n## 🔵 Yapılacak\n")
+    ekle(k, D_GOREVLER, "\n" + P_YAPILACAK + "\n")
 
 
 def m_beyan_geride(k):
-    r = "01-Genel/genel-desenler.md"
+    r = D_DESENLER
     metin = re.sub(r"^guncelleme: .*$", "guncelleme: 2026-08-01",
                    oku(k, r), count=1, flags=re.M)
     yaz(k, r, metin + "\n<!-- beyan guncellenmeden icerik degisti -->\n")
 
 
 def m_tetikleyicisiz(k):
-    not_yaz(k, "01-Genel/genel-deneme-cok-atifli.md", "[[durum]]")
-    ekle(k, "01-Genel/genel-notlar.md",
+    not_yaz(k, f"{GENEL}/genel-deneme-cok-atifli.md", "[[durum]]")
+    ekle(k, D_NOTLAR,
          "\n" + "- [[genel-deneme-cok-atifli]]\n" * 12)
 
 
@@ -219,7 +249,7 @@ def m_olu_atif(k):
     """Kodun atif verdigi bir vault dosyasinin adini degistir."""
     hedefler = {p.stem for p in k.rglob("*.md") if ".git" not in p.parts}
     for repo in KOD_REPOLARI:
-        kok = k.parent / repo / "src"
+        kok = k.parent / repo / _AL[next(a for a, v in _AL.items() if v.get("kod_repo") == repo)]["kaynak"]
         if not kok.exists():
             continue
         for f in kok.rglob("*"):
