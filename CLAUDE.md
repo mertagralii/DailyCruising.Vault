@@ -38,6 +38,7 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | **"Yayına çıkalım" / "hazır mı"** sorusu · deploy konuşulacak | `01-Genel/yayin-oncesi.md` — üretim koşullarının tek listesi |
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
 | **Yapıya dokunacağım** — yeni proje, katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — "ne var" sorusunun tek cevabı |
+| **Bir hata mesajı aldım** | Mesajın metnini `<alan>/notlar/` içinde **ara** — hatırlamaya güvenme. Notlar hata metnini birebir taşır, tetikleyici budur |
 | Domain / iş kuralı konuşulacak | `01-Genel/domain-gereksinimler.md` + `01-Genel/durum.md` |
 | **`dogrula.py` TEMİZ dedi ama bir kontrol hiç konuşmuyor** | `python3 _araclar/kontrol-testi.py` — hangi kontrolün gerçekten ölçtüğü yalnız orada görülür; sessizlik aklanma değildir |
 | **Vault budanacak · yeni bölme/klasör açılacak · şablonlaştırma konuşulacak** | `python3 _araclar/okunma.py` — hangi katmanın gerçekten okunduğu yalnız orada; tahminle budama, ölçerek buda |
@@ -85,6 +86,7 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | **Mert projeye özel OLMAYAN bir çalışma talimatı verdi** | `01-Genel/tercihler.md`. Projeye özel olan (port, repo, komut) `01-Genel/calisma-duzeni.md` |
 | **Migration uygulandı** | `DailyCruising.Back-End/araclar/sema-cikar.py` çalıştır → `02-API/api-sema-guncel.md` yeniden üretilir. **Elle yazma** |
 | **"Bu üretimde şu koşulla çalışır"** cümlesini kurduğum an | `01-Genel/yayin-oncesi.md` — sonraya bırakma, koşullar yan ürün olarak doğar |
+| **Bir hata aldım ve çözdüm** | Kod karşılığı **varsa** gerekçe o satırın yanına yazılır — vault'a değil. Kod karşılığı **yoksa** (ortam, araç, süreç, dış servis) `<alan>/notlar/` altına, **hata metni birebir** içinde geçecek şekilde |
 | **Kendi gözlemim** — tuzak, denenip olmayan, beklenmedik davranış | `<alan>/notlar/` altında yeni dosya + hub'ına link |
 | O günün çalışma kaydı (arşiv) | `04-Oturumlar/<YYYY-AA-GG>.md` |
 | Başka bir harness'a (Codex, Cursor) devir | `ecc memory handoff` → [[genel-kararlar]] |

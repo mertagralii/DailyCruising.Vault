@@ -24,6 +24,10 @@ Kaynak: `~/.claude/projects/<vault.json: oturum_kayit_deseni>/*.jsonl`.
                notun ise yaradigini gostermez.
   * ATIF     — asistan metninde `[[ad]]` gecti ama dosya ACILMADI
 
+⚠️ **Hangi dosya olculur:** yalniz OKUMA-degerli olanlar. `rol: history` ve arsiv
+dosyalari olcu disidir — onlar denetim izidir, degeri okunma sikliginda degil
+ihtiyac aninda var olmasindadir.
+
 ⚠️ **Ne olculmez — bilerek yaziliyor:**
   * Acilan dosyanin okunup ANLASILDIGI olculmez, yalnizca acildigi.
   * `acilis.md` her oturuma hook ile OTOMATIK yuklenir; secilerek acilmaz.
@@ -49,6 +53,17 @@ AYAR = json.loads((Path(__file__).resolve().parent / "vault.json")
                   .read_text(encoding="utf-8"))
 KAYIT_DESENI = AYAR["oturum_kayit_deseni"]
 OTOMATIK = set(AYAR["otomatik_yuklenen"])   # hook yukluyor, secilerek acilmiyor
+# 2026-09-05, backend'in itirazi — dogru cikti: iki ayri dosya turu ayni olcute
+# tabi tutulamaz.
+#   OKUMA-degerli (status, map, gorev, not, gate...): degeri okundugu an dogar.
+#     Okunmuyorsa gercekten yuktur.
+#   YAZMA-degerli (history = kararlar, arsiv): bir denetim izidir. "Neden boyle
+#     yapmisiz" ani yilda uc kez gelir ve o an paha bicilmezdir. Dusuk okunma
+#     orani bunun icin BASARISIZLIK DEGILDIR — bu dosyayi okunmuyor diye budarsan
+#     tek islevi olan ani kaybedersin.
+# Ilk surum ikisini karistiriyordu ve "ana bolmeler 13/28" sayisi bu yuzden
+# yaniltiyordu.
+YAZMA_DEGERLI_ROLLER = {"history", "arsiv", "oturum"}
 OKUMA_ARAC = {"Read", "NotebookRead"}
 YAZMA_ARAC = {"Edit", "Write", "NotebookEdit"}
 # Bash icin arac adi yetmez: `cat x.md` okur, `cat > x.md` yazar. Ilk surum
@@ -61,6 +76,17 @@ YAZMA_KOMUT = re.compile(r"(>>?\s*\S*%s|\btee\b|write_text|\bmv\b|\bcp\b)")
 def notlar():
     return {p.stem: p.relative_to(VAULT).as_posix()
             for p in VAULT.rglob("*.md") if ".git" not in p.parts}
+
+
+def rol(yol):
+    try:
+        m = re.match(r"^---\n(.*?)\n---\n", (VAULT / yol).read_text(encoding="utf-8"), re.S)
+    except Exception:
+        return "?"
+    if not m:
+        return "?"
+    r = re.search(r"^rol: *(\S+)", m.group(1), re.M)
+    return r.group(1) if r else "?"
 
 
 def dosya_adaylari(girdi, arac):
@@ -167,7 +193,9 @@ def main():
                          len(atif[ad]), son.get(ad, "-"), yol, ad))
     satirlar.sort()
 
-    hic = [s for s in satirlar if s[0] == 0]
+    okuma_degerli = [s for s in satirlar if rol(s[5]) not in YAZMA_DEGERLI_ROLLER]
+    yazma_degerli = [s for s in satirlar if rol(s[5]) in YAZMA_DEGERLI_ROLLER]
+    hic = [s for s in okuma_degerli if s[0] == 0]
     yalniz_atif = [s for s in hic if s[3] > 0]
 
     print(f"Vault : {VAULT}")
@@ -186,7 +214,7 @@ def main():
                   f"atif {at:>3} · son {s} · {yol}{im}")
         print()
 
-    yaz("YAZILDIGI OTURUM DISINDA HIC OKUNMAMIS", hic)
+    yaz("OKUMA-DEGERLI ama yazildigi oturum disinda HIC OKUNMAMIS", hic)
     if yalniz_atif:
         print("   ⚠️ Bunlarin " + str(len(yalniz_atif)) +
               " tanesine ATIF verilmis ama dosya hic acilmamis:")
@@ -200,9 +228,12 @@ def main():
     else:
         yaz("EN COK ACILAN 12", satirlar[-12:][::-1])
 
-    disaridan_okunan = sum(1 for s in satirlar if s[0] > 0)
-    print(f"OZET: {disaridan_okunan}/{len(satirlar)} not, yazildigi oturum "
-          f"DISINDA en az bir kez okundu · {len(hic)} not okunmadi")
+    _ok = sum(1 for s in okuma_degerli if s[0] > 0)
+    print(f"OZET (okuma-degerli): {_ok}/{len(okuma_degerli)} dosya yazildigi "
+          f"oturum DISINDA okundu · {len(hic)} okunmadi")
+    print(f"      yazma-degerli ({'/'.join(sorted(YAZMA_DEGERLI_ROLLER))}): "
+          f"{len(yazma_degerli)} dosya OLCU DISI — bunlar denetim izidir, "
+          f"dusuk okunma basarisizlik degildir")
     print(f"      siniflandirilamayan Bash dokunusu: {sum(belirsiz.values())} "
           f"({len([a for a in belirsiz if belirsiz[a]])} dosyada) — okuma da olabilir "
           f"yazma da; sayilar bu kadar belirsizlik payi tasir")

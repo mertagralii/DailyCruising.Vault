@@ -13,6 +13,75 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-05 — sözleşme onayında kaydedilen IP kullanıcının DEĞİL, vekilin.**
+Ölçüm, Mert'in kendi onayladığı gerçek satır:
+`ApprovedIp = ::1`, `ApprovedUserAgent = node`. `node` tek başına ele veriyor —
+kaydedilen tarayıcı Mert'in tarayıcısı değil, Next sunucusunun `fetch`'i.
+
+`X-Forwarded-For` **okunmuyor**: `Program.cs` `UseForwardedHeaders`'ı yalnız
+`ForwardedHeaders:KnownProxies` / `KnownNetworks` tanımlıysa devreye sokuyor ve
+üç kaynakta da yok (`appsettings.json`, `appsettings.Development.json`,
+user-secrets). Bu **kasıtlı**: yapılandırma yokken herhangi bir
+`X-Forwarded-For`'a güvenmek, isteyenin istediği IP'yi bildirmesi olurdu.
+Eksik olan koruma değil **yapılandırma** — yani `S-19`.
+
+Kaydedilen değer `S-19` notunu da doğruluyor: liste `127.0.0.1` ile sınırlı
+kalırsa yetmiyor, **`::1` de gerekiyor**; vekil IPv6 loopback üzerinden bağlanıyor.
+
+⚠️ **Bugünkü somut bedeli:** web, onay ekranına *"IP adresiniz kaydedilecektir"*
+bilgilendirmesini yazamıyor. Yazsaydı, hukuki değeri olması beklenen TEK
+ekranda yanlış beyan olurdu — ve uyuşmazlıkta kayıt `::1` diyeceği için delil
+değeri de yok. Web oturumu doğru kıyası kurdu: `/add-boat`'taki "%12 komisyon"
+vaadinin aynısı, ama daha ağır yerde. Cümle **yazılmadı**, karar Mert'te.
+
+Yapılandırma kendiliğinden eklenmedi: vekil listesi yanlış kurulursa hız sınırı
+atlatılabilir hâle gelir, yani bu bir güvenlik ayarı ve onay bekliyor.
+
+⚠️ **`api-sema-guncel.md` bayattı, benim atlamamdı.** Ret migration'ı
+uygulandıktan sonra `sema-cikar.py` koşulmamıştı; belgede
+`CK_Contracts_Status_Enum` hâlâ `Rejected`'sız görünüyordu. Web oturumu yakaladı.
+Betik koşuldu (84 tablo), `Rejected` ve `CK_Contracts_RejectedEvidence` artık
+belgede. Kuralı yazan bendim, uymayan da ben — **üretilen belgenin tetikleyicisi
+"hatırla" değil "betiği çalıştır"dır ve migration anında çalışmalıydı.**
+
+
+**2026-09-05 — platform sözleşme listesi ret gerekçesini döndürmüyordu
+(`d9992dd`).** Gerekçe işletme ucunda dönüyor, platform ucunda dönmüyordu;
+yani **zorunlu tutulan bir metin hiç kimseye gösterilmiyordu.** Pazarlık
+döngüsünün okuma yarısı çalışmıyordu — personel "reddedildi" rozetini
+görüyor, neyi düzelteceğini bilmiyordu. `ContractListItem`'a `RejectedAt` ve
+`RejectionReason` eklendi.
+
+⚠️ **Kusurun sınıfı, kusurun kendisinden önemli:** iki uç **ayrı izdüşüm**
+kullanıyor (`PartnerContractItem` ↔ `ContractListItem`). Birine alan eklemek
+diğerini etkilemiyor ve **tek uca bakan ölçüm eksiği göstermiyor.** Aynı
+sınıftan bir hatayı web oturumu da yapmıştı (sözleşme akışını yalnız işletme
+tarafından ölçmüştü). Kural: **iki tarafı olan bir akışta ölçüm iki taraftan
+da yapılır.**
+
+İki test yazıldı; ikincisi asıl değerli olan: reddedilmemiş sözleşmede
+alanların **boş kaldığı**. Onsuz, alanları sabit dolduran bir izdüşüm de
+ilkini geçerdi. Mutasyon doğrulandı — izdüşümden alanlar çıkarılınca kırmızı.
+
+`RejectedByUserId` **kasten eklenmedi**: kayıtta duruyor ama düzeltilmiş
+sözleşmeyi hazırlamaya katkı vermiyor.
+
+**Kanıt:** 611/611 yeşil · canlı `:5163` platform ucu
+`Rejected | 2026-09-05T02:13:21 | canım istedi kardeşş` döndü, yetkisiz aynı
+istek **401** · `openapi.json` yeniden üretildi (**119 uç**).
+
+⚠️ **Ölçüm hatası kaydı — kendi gürültümü kusur sanmak.** Tam küme ilk
+koşuda **1 kırmızı** verdi ve **1 saat** sürdü; ama o sırada ben aynı makinede
+`openapi.json`'ı yeniden üretiyor, `:5199`'da örnek açıp `:5163`'ü yeniden
+başlatıyordum. Temiz koşuda **611/611 yeşil, 31 saniye** — yani kırmızının
+sebebi büyük olasılıkla kendi eşzamanlı işimdi.
+
+**İki ders:** (1) çıktıyı `grep`'ten geçirdiğim için başarısız testin **adı
+kayboldu** ve bir saat yeniden koşmak gerekti — tam küme koşarken çıktı
+süzülmez, `trx` yazılır. (2) Tam küme koşarken aynı repoda dosya üretmek ve
+port açmak ölçümü kirletir; ikisi aynı anda yapılmaz.
+
+
 **2026-09-05 — `ozet.py` çalışan hesapları gizliyordu (69c868e).** Demo özet
 betiğinin hesap listesi *"en az bir `RefreshToken`'ı var mı"* ile süzülüyordu,
 yani gerçekte sorulan soru **"daha önce giriş yapmış mı"** idi. Jeton süresi

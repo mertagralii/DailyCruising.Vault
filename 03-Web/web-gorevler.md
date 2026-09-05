@@ -58,6 +58,26 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟢 Tamamlandı
 
+- [x] **W-88** Sözleşme onay ekranı iki sütuna alındı · 2026-09-05
+      🔴 **Mert testte gördü:** *"etrafta çok fazla boşluk var, burası
+      çok boş gözüküyor."* Ölçüm (1440px, `demo-gokova`): sayfa
+      **2114px**, metin kutusu **1038×420px** ve içinde **tek cümle**;
+      altında ~390px çukur. Dört kart alt alta yığılıydı ve ekranın
+      başlık şeridi hiç basılmıyordu.
+      Solda metin, sağda özet + onay + ret. İçerik alanı 1780px'ten
+      **970px**'e indi, başlık şeridi eklendi.
+      ⚠️ **Kutu küçültülmedi, esnetildi.** Çukurun sebebi kutunun büyük
+      olması değil, yüksekliğinin içeriğe bakmamasıydı; küçültmek demoyu
+      düzeltir **üretimi bozardı** — gerçek sözleşme uzun. Şimdi uzun
+      metin sayfayı uzatmak yerine kutunun içinde kayıyor.
+      🔴 **İlk denemede boşluğu taşıdım, kapatmadım:** iki sütuna
+      geçince sol kart sağdan kısa kaldı ve **altında 287px** yeni çukur
+      açıldı. Ölçüm yakaladı; satır esnetildi.
+      Kanıt: canlı, iki hesap — 1440 · 1280 · 390px'te yatay taşma **0**;
+      iki sütunun yükseklik farkı **üç durumda da 0** (ilk kez gören ·
+      reddetmiş, geçmiş + gerekçe basılı · ret formu açık). Mobilde tek
+      sütun, yapışkanlık kapalı. `build`, `lint`, `tsc` temiz. `22a749e`
+
 - [x] **W-86** Ret gerekçesi platform panelinde · 2026-09-05
       `W-87` reddi **görünür** yapmıştı, bu görev **okunur** yaptı.
       Backend `GET /api/platform/partners/{id}/contracts` yanıtına

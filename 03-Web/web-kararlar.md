@@ -1462,3 +1462,46 @@ gönder" düğmesi açık. 31 satırın rozet dağılımı: Aktif 19 · Sözleş
 Başvuru alındı 2 · Sözleşme reddedildi 1. `982ee73`
 
 İlgili: [[web-gorevler]] · [[web-durum]] · [[durum]]
+
+---
+
+## 2026-09-05 — Sözleşme onay ekranı iki sütuna alındı
+
+🔴 **Mert testte gördü:** *"etrafta çok fazla boşluk var, burası çok boş
+gözüküyor."* Ölçüm (1440px, `demo-gokova`): sayfa **2114px**, metin kutusu
+**1038×420px** ve içinde **tek cümle** — altında ~390px çukur.
+
+**Karar:** solda okunacak şey (metin), sağda imzalanacak şey (özet + onay +
+ret). Dört kart ikiye indi, içerik alanı 1780px'ten **970px**'e düştü.
+
+**Neden:** tek sütunda genişlik kullanılmıyordu ve sayfa uzuyordu; onay
+düğmesi metnin **altında** kaldığı için okuyan kişi imzalamak için geri
+kaydırmak zorundaydı. İki sütun her iki sorunu birden çözüyor — genişlik
+doluyor ve imza, okuma sırasında hep görünür kalıyor.
+
+⚠️ **Kutu küçültülmedi, esnetildi — ve bu ayrım kararın kendisi.** Çukurun
+sebebi kutunun büyük olması değil, **yüksekliğinin içeriğe bakmaması**ydı.
+Küçültmek demoyu düzeltir, **üretimi bozardı**: gerçek sözleşme uzun ve o
+kutu dolu olacak. Şimdi kutu satır yüksekliğini dolduruyor; uzun metin
+sayfayı uzatmak yerine kutunun içinde kayıyor ve onay düğmesi görünür
+kalıyor.
+
+**Genel kural:** *bir boşluğu düzeltmeden önce onu üreten veriyi sor.* Demo
+verisi en kısa hâlidir; ona göre sıkıştırılan yerleşim gerçek veride patlar.
+
+**İkinci karar — yapışkanlık iç sarmalayıcıda.** Dış sütun satırla birlikte
+uzuyor, `sticky` içteki kutuya veriliyor. Doğrudan uzayan öğeye verilseydi
+öğe satır kadar uzun olur ve **hiç yapışmazdı** — kaydırma alanından kısa
+olmak `sticky`'nin ön koşulu.
+
+**Üçüncü karar — başlık şeridi eklendi, `PanelShell` kullanılmadı.** Ekran
+panelin yerine geçiyor ve şeritsiz hâli boşlukta başlıyordu. Ama `PanelShell`
+yan menü getirir; sözleşmesi onaylanmamış işletmenin **gidebileceği bir modül
+yok**, yani menü hepsi kapalı bir liste olurdu.
+
+Ölçüm: 1440 · 1280 · 390px'te yatay taşma **0**; iki sütunun yükseklik farkı
+**üç durumda da 0** — ilk kez gören (`demo-gokova`), reddetmiş ve yeni sözleşme
+bekleyen (`demo-kekova`), ret formu açık. Mobilde tek sütuna düşüyor ve
+yapışkanlık kapanıyor. `22a749e`
+
+İlgili: [[web-desenler]] · [[web-durum]] · [[web-gorevler]]

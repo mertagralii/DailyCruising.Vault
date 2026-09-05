@@ -807,4 +807,60 @@ kod reposu yolu yanlışsa kontrol 15 ve 21 eskiden hiçbir şey demeden körle�
 Artık `OLCULEMEDI` diye konuşuyorlar — yanlış yol, yeni projede en kolay yapılan
 hatadır ve sessiz kalırsa denetim var sanılır.
 
+## Bir kod satırına bağlanabilen hatanın evi vault değil, o satırdır
+
+2026-09-05: backend, psql'in satır sonundaki boşluğu düşürmesi tuzağına
+**üçüncü kez** düştü. Tuzak **sekiz yerde yazılıydı** — dört vault dosyası
+(`api-kararlar`, `api-durum`, `genel-desenler`, `notlar/api-gerekce-arsivi-application`)
+ve dört kod dosyası. Sekiz yerde yazılı olmak yetmedi.
+
+Üçüncü seferde işe yarayan şey vault'a dokuzuncu bir not yazmak olmadı;
+gerekçeyi **kodun tam o satırına** koymak oldu. O sorguya dokunan kişi görmezden
+gelemiyor.
+
+**Kural:**
+- Kod karşılığı **olan** hata → gerekçe o satırın yanına yazılır. Vault'a not
+  açmak, en çok okunacak yerden en az okunacak yere taşımaktır.
+- Vault'a yalnız kod karşılığı **olmayan** hatalar girer: ortam, araç, süreç,
+  dış servis.
+
+**Vault'a girenin tek işe yarar tetikleyicisi:** not, **hata metnini birebir**
+taşımalı. O zaman tetikleyici *"hatırla"* değil, **"hata aldım → metnini vault'ta
+ara"** olur ve hatırlamaya bağlı kalmaz. Bugünkü notların çoğu hatayı *anlatıyor*
+ama metnini taşımıyor, dolayısıyla aranamıyor — `notlar/` için ölçülen **5/41**
+oranının sebebi dosyanın yeri değil, budur.
+
+## Kapısı olmayan adım atlanır — listeye yazmak kapı değildir
+
+Aynı gün, aynı oturum: backend test yazdı, canlı uç ölçtü, mutasyon denetledi,
+commit ve push attı, vault'a yazdı. **Refactor adımını hiç düşünmedi bile.**
+
+Fark disiplin değil: atlanmayan adımların hepsinin bir **başarısızlık sinyali**
+var — test kırmızı yanar, commit görünür bir bitiştir, `openapi.json` bayatlığını
+bir test korur. Sinyali olmayan tek adım refactor'dı; atlanan da o oldu.
+
+**Sonuç:** bir adım ya kapıya çevrilir ya da atlanacağı kabul edilir. Refactor
+otomatikleştirilemez; belgede dürüstçe *"bu adımın kapısı yok, bilinçli yapılır"*
+yazmalı. **Kapısı varmış gibi listelenirse, listedeki diğer adımların ağırlığını
+da götürür** — delinen kural yalnız kendini değil komşusunu da götürür.
+
+⚠️ **Sıra hatası:** refactor **testten sonra** gelir. "Yaz → sadeleştir → test et"
+sırası, ağ kurulmadan trapeze çıkmaktır; sadeleştirme testin koruyacağı şeyi
+kırarsa bunu testte değil müşteride görürsün. Doğrusu **test → refactor → test**.
+
+## İki ayrı dosya türü aynı ölçüte tabi tutulamaz
+
+`okunma.py` ilk sürümünde bütün notları tek ölçütle tartıyordu. Backend itiraz
+etti ve haklıydı:
+
+- **Okuma-değerli** (`status`, `map`, `gorev`, `not`, `gate`): değeri okunduğu an
+  doğar. Okunmuyorsa gerçekten yüktür.
+- **Yazma-değerli** (`history` = kararlar, arşiv): bir **denetim izidir**. "Neden
+  böyle yapmışız" anı yılda üç kez gelir ve o an paha biçilmezdir. Düşük okunma
+  oranı bunun için **başarısızlık değildir**; okunmuyor diye budanırsa tek işlevi
+  olan an kaybedilir.
+
+Araç düzeltildi: yazma-değerli dosyalar ölçü dışı, ve bu **rapora yazılıyor** —
+sessizce dışlanan şey, ölçülmediği fark edilmeyen şeydir.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

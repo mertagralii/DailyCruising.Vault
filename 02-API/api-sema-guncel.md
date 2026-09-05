@@ -434,13 +434,17 @@ Kısıtlar:
 | `ValidFrom` | timestamp with time zone | evet |  |
 | `ValidTo` | timestamp with time zone | evet |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
+| `RejectedAt` | timestamp with time zone | evet |  |
+| `RejectedByUserId` | uuid | evet |  |
+| `RejectionReason` | character varying | evet |  |
 
 Kısıtlar:
 
 - `CK_Contracts_ApprovedEvidence` — `CHECK (((("Status")::text <> 'Approved'::text) OR (("ApprovedAt" IS NOT NULL) AND ("ApprovedByUserId" IS NOT NULL))))`
 - `CK_Contracts_CommissionRate` — `CHECK ((("CommissionRate" >= (0)::numeric) AND ("CommissionRate" <= (100)::numeric)))`
 - `CK_Contracts_PayoutPeriodDays` — `CHECK (("PayoutPeriodDays" > 0))`
-- `CK_Contracts_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['Draft'::character varying, 'Sent'::character varying, 'Approved'::character varying, 'Cancelled'::character varying])::text[])))`
+- `CK_Contracts_RejectedEvidence` — `CHECK (((("Status")::text <> 'Rejected'::text) OR (("RejectedAt" IS NOT NULL) AND ("RejectedByUserId" IS NOT NULL) AND ("RejectionReason" IS NOT NULL))))`
+- `CK_Contracts_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['Draft'::character varying, 'Sent'::character varying, 'Approved'::character varying, 'Cancelled'::character varying, 'Rejected'::character varying])::text[])))`
 
 ## `ConversationReservations`
 

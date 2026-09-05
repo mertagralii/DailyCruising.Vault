@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: genel
-guncelleme: 2026-08-21
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -389,3 +389,27 @@ eksik ekran API'ye göre yeni yazılır.
 görev açılır; veri boşlukları `02-API/api-gorevler.md`'ye düşer.
 
 İlgili: [[web-kararlar]] · [[web-gorevler]] · [[api-gorevler]] · [[durum]]
+
+## 2026-09-05 — Vault şablonu proje bitimine ertelendi
+
+**Karar:** vault genel bir şablona **şimdi** çevrilmiyor. Şablon, proje
+bitiminde backend ve frontend oturumlarıyla konuşularak çıkarılacak. Bugünkü
+çalışma bu projede işe yarayacak şekilde uygulanır.
+
+**Neden:** Mert'in kendi cümlesi — *"Şuanlık bizim projemizde çalışacak şekilde
+yapalım en son projeyi bitirdiğimizde sen front-end ve back-end'le konuşursun.
+Ona göre bu Vaultumuzu en uygun şekilde ayarlarız."* Gerekçe teknik olarak da
+güçlü: backend'in tespitiyle, **gerekçesini yaşamadığın kural ilk yoğun günde
+delinen kuraldır.** Şablon bugün çıkarılsaydı, projenin son ayında öğrenilecek
+her şey dışarıda kalırdı.
+
+**Alternatifler:** (a) şablonu şimdi çıkarıp proje ilerledikçe güncellemek —
+elendi, çünkü şablon güncellenmeyen bir dosya olur ve iki yerde bakım gerektirir;
+(b) yalnız iskeleti şimdi dondurmak — elendi, iskeletin kendisi hâlâ değişiyor
+(bu hafta üç yeni araç ve iki yeni bölme eklendi).
+
+**Sonucu:** `G-15` açık kalır ve tetikleyicisi *"proje bitti"* olur. Bugünkü
+tasarım konuşmasından çıkan **bu projeye bugün uygulanabilir** üç bulgu
+uygulandı → [[genel-desenler]]. Şablona girmeyecekler listesi de kayıtlıdır:
+sayılar, domain, üç oturumlu yazma hakkı bölüşümü ve CLAUDE.md'deki yara izi
+anlatıları.

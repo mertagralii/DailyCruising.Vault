@@ -28,6 +28,15 @@ tamamlanamaz.**
       Öncelik: bu proje kanıtlanınca · Kabul: boş bir projede kurulup çalışması,
       DailyCruising'e özgü içerik ile genel iskeletin ayrılmış olması
       Bağımlı: bu projede sistemin işe yaradığının kanıtlanması
+      **2026-09-05 kararı (Mert): ertelendi.** *"Şuanlık bizim projemizde
+      çalışacak şekilde yapalım; en son projeyi bitirdiğimizde sen front-end ve
+      back-end'le konuşursun, ona göre vaultumuzu en uygun şekilde ayarlarız."*
+      Yani şablon **proje bitiminde**, iki alan oturumunun katkısıyla çıkarılacak.
+      Bugüne kadarki hazırlık duruyor: makine taşınabilir (`_araclar/vault.json`),
+      hangi katmanın okunduğu ölçüldü (`okunma.py`), kişisel katman ayrıldı
+      ([[tercihler]]).
+      Tasarım konuşmasının çıktıları → [[genel-desenler]] (hata notunun evi,
+      kapısı olmayan adım, iki dosya türü) ve [[genel-kararlar]] 2026-09-05.
 
       **Yakalanan hata defteri** — şablon ancak sistem gerçek hata yakaladıysa
       hak edilir. Yoksa şablon bir klasör düzenidir, sistem değil:
