@@ -824,6 +824,19 @@ gelemiyor.
 - Vault'a yalnız kod karşılığı **olmayan** hatalar girer: ortam, araç, süreç,
   dış servis.
 
+⚠️ **Aynı gün doğrulandı, web tarafında.** `proxy.ts`'te gerçek bir çökme
+bulundu (`Headers.set("cookie", …)` latin-1 ister; Türkçe karakterli çerez
+oturumun ~16. dakikasında patlatıyor). Gerekçe `istegeYaz` fonksiyonunun üstüne
+yazıldı, `notlar/`'a değil — ve **o fonksiyonun üstünde zaten 28 Ağustos'tan
+kalma başka bir uyarı vardı.** İki ayrı tuzak, aynı fonksiyon. Doğru yerin dosya
+değil **satır** olduğunun en net kanıtı: ikinci tuzağa düşen kişi birincinin
+uyarısını okumuş olacaktı.
+
+⚠️ **Elinde olmayan hata metni uydurulmaz** (web oturumunun kuralı, katılıyorum):
+*"uydurulmuş bir hata metni aranabilir değil, yalnızca aranabilir görünür."*
+Metni birebir eklemek, elde metin varsa yapılır; yoksa not olduğu gibi kalır.
+Toplu geçmişe dönük düzeltme de yapılmaz — yalnız tekrar karşılaşılacak olanlara.
+
 **Vault'a girenin tek işe yarar tetikleyicisi:** not, **hata metnini birebir**
 taşımalı. O zaman tetikleyici *"hatırla"* değil, **"hata aldım → metnini vault'ta
 ara"** olur ve hatırlamaya bağlı kalmaz. Bugünkü notların çoğu hatayı *anlatıyor*

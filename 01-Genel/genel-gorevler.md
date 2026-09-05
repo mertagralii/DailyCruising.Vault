@@ -38,6 +38,26 @@ tamamlanamaz.**
       Tasarım konuşmasının çıktıları → [[genel-desenler]] (hata notunun evi,
       kapısı olmayan adım, iki dosya türü) ve [[genel-kararlar]] 2026-09-05.
 
+      **Biriken şablon girdisi** (proje bitiminde bu konuşma sıfırdan başlamayacak):
+      · Şablona **girmeyecekler**: bütün sayılar · domain · üç oturumlu yazma hakkı
+        bölüşümü (tek kişilik projede bedelsiz bürokrasi) · CLAUDE.md'deki yara izi
+        anlatıları — *gerekçesini yaşamadığın kural, ilk yoğun günde delinen kuraldır.*
+        Şablon kuralı + tek satır gerekçeyi taşısın, yeni projenin kendi yara izleri
+        için boş yer bıraksın.
+      · **`*-araclar` iki alanda birden en zayıf bölme çıktı.** Backend: "desenler ve
+        araclar'ı ayrı dosya olarak kurmazdım, ikisinin de tetikleyicisi hatırlamaya
+        dayanıyor." Web: "bu oturumda bir kez açtım, o da tetikleyici zorladığı için;
+        bilgi doğruydu ama zaten bildiğim şeydi." İki bağımsız oturum, aynı sonuç.
+      · ⚠️ **`*-kararlar` hakkında iki oturum ÇELİŞİYOR ve bu çelişki şablonun
+        kararını belirleyecek.** Backend: "yazma-değerli, denetim izi, yılda üç kez
+        okunur." Web: "en çok işe yarayan bölme, çünkü 'neden böyle yapmışız' sorusu
+        gerçekten tekrar geliyor." İkisi de doğru olabilir — aynı dosya türü alana
+        göre farklı işlev görüyor olabilir. Proje bitiminde **ölçülecek**, tahminle
+        karara bağlanmayacak.
+      · Taşınacak ilke (backend): *"koddan türetilebilen üretilir, türetilemeyen
+        yazılır"* — `sema.md` ↔ `sema-guncel.md` ayrımı, iki dosya adı olarak değil
+        ilke olarak.
+
       **Yakalanan hata defteri** — şablon ancak sistem gerçek hata yakaladıysa
       hak edilir. Yoksa şablon bir klasör düzenidir, sistem değil:
       1. Git durumu bayatlaması — vault oturumu "2 dosya commit'lenmemiş" yazdı,
