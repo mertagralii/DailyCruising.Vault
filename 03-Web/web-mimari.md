@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-31
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -351,6 +351,55 @@ yılda olduğu için hata o kümede ifade edilemiyordu. Gerçek veride
 `2027-06-17` kalkış "17 Haz" görünüp geçmiş sanıldı → [[web-mock-hatayi-gizler]]
 
 Sonuç: **bir ekranı "mock'la çalışıyor" diye doğrulanmış sayma.**
+
+## 2026-09-05 — blog, favoriler, biniş karekodu ve iki yeni bağımlılık
+
+Ölçüm (beyan değil): **33 rota sayfası · 98 bileşen · 10 API istemcisi ·
+7 çalışma zamanı bağımlılığı.**
+
+### Yeni ekranlar
+
+| Ekran | Dosya | Uç |
+|---|---|---|
+| Blog listesi + detay | `app/blog/` | `GET /api/blog`, `/{slug}`, `/categories` |
+| İşletmenin blog yazıları | `components/panel/blog-editor.tsx` | `blog/posts` (5 işlem) |
+| Blog onayı | `components/panel/blog-moderation.tsx` | `blog/moderation` (4 işlem) |
+| Zengin metin editörü | `components/panel/rich-text.tsx` | — (CKEditor) |
+| Favoriler | `components/account/favorites.tsx` | `GET/DELETE /api/favorites` |
+| Favori düğmesi | `components/boats/favorite-button.tsx` | `PUT/DELETE /api/favorites/{id}` |
+| Bildirim tercihleri | `components/account/notification-prefs.tsx` | `account/notification-preferences` |
+| Biniş karekodu | `components/account/boarding-ticket.tsx` | `reservations/{code}/boarding-ticket` |
+
+### İki yeni bağımlılık, ikisi de gerekçeli
+
+- **`ckeditor5` + `@ckeditor/ckeditor5-react`** — blog gövdesi. Markdown
+  yerine seçildi çünkü yazarlar kaptan ve işletmeci; sözdizimi öğrenmek
+  gerçek bir engel. **Bedeli sunucuda ödendi**: HTML izin listesiyle
+  temizleniyor ve sıra tersine çevrilemezdi — önce temizleyici, sonra
+  editör → [[domain-gereksinimler]] 2026-09-04
+- **`qrcode`** — biniş karekodu. Uç görsel değil **metin** döndürüyor;
+  çizim istemcide ve **yalnız o ekranda** yükleniyor.
+
+### Silinenler
+
+`lib/data/blog.ts` (7 statik yazı — Mert kararı), `components/blog/post-faq.tsx`
+(uç yazı başına SSS döndürmüyor).
+
+### Vekil izin listesi artık bir tuzak noktası
+
+`app/api/dc/[...path]/route.ts` içindeki `IZINLI` listesine **yeni uç
+öneki eklenmezse çağrılar `404` döner.** Bu iki kez oldu (`blog`,
+`favorites`) ve ikisini de yalnız tarayıcı yakaladı: `tsc`, `eslint` ve
+`build` üçü de temiz geçti. Favori düğmesi belirsizlikte kendini
+gizlediği için özellik **sessizce ölmüştü** — doğru tasarım, kendi
+arızasını da gizliyor. **Yeni uç bağlarken ilk bakılacak yer burası.**
+
+### Yayında kapalı rotalar
+
+`/design-system` ve `/design-system/emails` üretimde `notFound()`.
+Ölçüldü: geliştirmede `200`, `next start` ile üretim derlemesinde `404`.
+⚠️ `/payment/mock` **açık kalmalı** — yerel ödeme akışı (`payments/start`)
+tam oraya yönlendiriyor; Paratika gerçek anahtarlarla bağlanınca kapanır.
 
 ## Bu dosya nasıl güncel kalır
 

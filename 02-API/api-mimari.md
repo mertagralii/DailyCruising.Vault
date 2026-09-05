@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-08-31
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -29,10 +29,10 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 
 | Proje | Bağımlılıkları | Durum |
 |---|---|---|
-| `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **79 entity** (DbSet sayısı) |
+| `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **84 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
-| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **42 migration**, **13 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp** |
-| `DailyCruising.Api` | Application + Infrastructure | **28 controller, 93 yol**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **53 migration**, **13 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp** |
+| `DailyCruising.Api` | Application + Infrastructure | **37 controller, 116 yol / 146 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 
@@ -47,7 +47,7 @@ Solution dosyası `DailyCruising.slnx` — .NET 10'un yeni XML formatı.
 
 Infrastructure paketleri: `Npgsql.EntityFrameworkCore.PostgreSQL` ·
 `Microsoft.Extensions.Identity.Core` · `System.IdentityModel.Tokens.Jwt` ·
-`Microsoft.Extensions.Hosting.Abstractions` · `MailKit`
+`Microsoft.Extensions.Hosting.Abstractions` · `MailKit` · `HtmlSanitizer`
 
 ## Uç noktalar
 
@@ -69,6 +69,7 @@ Infrastructure paketleri: `Npgsql.EntityFrameworkCore.PostgreSQL` ·
 | POST | `/api/pricing/quote` | Dönen tutar **bağlayıcı değil**; rezervasyonda yeniden hesaplanıyor |
 | POST | `/api/reservations` | Koltukları 15 dk tutuyor, onay e-postası + SMS gönderiyor |
 | POST | `/api/reservations/{code}/cancel` | Kod + e-posta/telefon eşleşmesi |
+| POST | `/api/reservations/{code}/boarding-ticket` | **kimliksiz**, kimlik teyidi sorgulamayla AYNI. Biniş belgesi için süreli bilet üretir; **yenisi eskisini iptal eder**. Karekod görseli değil taşıyacağı METİN döner. Ömür kalkıştan 12 saat sonrası → `A-84` |
 | POST | `/api/reservations/{code}/lookup` | **Misafirin TEK görüntüleme yolu.** Okuma ama gövdeli: kimlik sorgu dizesinde gitseydi erişim günlüklerine düz metin yazılırdı. Hız sınırı `rezervasyonSorgu` — koda göre, `iptal` kovasından AYRI (paylaşsalardı bakan müşteri iptal hakkını tüketirdi) |
 | GET | `/api/reservations` | `[Authorize]`, üyenin kendi listesi. Misafir kaydı burada **görünmez** — kullanıcı alanı boş |
 | GET | `/api/lookups` | Kimliksiz referans listeleri (bölge, tekne tipi, kiralama tipi, olanak, kural) + çeviri. Arayüz süzgeç menülerini bununla dolduruyor. `A63` ile tohumlandı 2026-08-28 |
@@ -109,10 +110,56 @@ Infrastructure paketleri: `Npgsql.EntityFrameworkCore.PostgreSQL` ·
 
 | Metot | Yol | Not |
 |---|---|---|
-| GET | `/api/partner/reservations` | `reservation.read`. İşletmenin KENDİ rezervasyonları; müşteri listesi `UserId`'ye bağlı olduğu için işletme oradan tek satır göremiyordu. **Müşteri iletişim bilgisi taşır**, yolcu kimliği taşımaz → `S-27`. `includeCancelled` ayrı alan, varsayılan `false` |
+| GET | `/api/partner/reservations` | `reservation.read`. İşletmenin KENDİ rezervasyonları; müşteri listesi `UserId`'ye bağlı olduğu için işletme oradan tek satır göremiyordu. **Müşteri iletişim bilgisi TAŞIMAZ** — `contactEmail` ve `contactPhone` 2026-09-04'te kaldırıldı (`S-27`, Mert): işletme müşteriye doğrudan ulaşabilirse ikinci turu platform dışında satar. Ad kalıyor. Yolcu kimliği de yok. `includeCancelled` ayrı alan, varsayılan `false` |
 | GET/PUT | `/api/partner/profile` | `partner.settings`. Yalnız beş alan yazılabilir: `displayName, email, phone, address, city`. Yasal kimlik, IBAN, durum, komisyon **istek tipinde bulunmuyor**, yani bağlanamıyor. Okuma yazmadan fazla alan döndürür (işletme vergi numarası hatasını görebilmeli); IBAN'ın son dört hanesi |
 | GET/POST/PUT/DELETE | `/api/partner/boats/{id}/media` · `/documents` · `/calendar` · `/rental-types` · `/prices` · `/extras` | Katalog, galeri, evrak ve takvim |
 | GET | `/api/partner/finance/summary` · `/entries` · `/payouts` | `payout.read` — `ledger.read` platforma kapalı olduğu için değiştirildi |
+
+**Bildirim tercihleri** (2026-09-04, `A-78`) — `NotificationPreferences` yeni
+
+| Metot | Yol | Not |
+|---|---|---|
+| GET/PUT | `/api/account/notification-preferences` | **oturum açık**. Üç alan: `emailEnabled`, `smsEnabled`, `reviewInvitationsEnabled`. Kayıt yoksa varsayılan döner, `404` değil |
+
+⚠️ **Rezervasyon onayı ve iptal bildirimi KAPATILAMAZ** — istek tipinde alanı
+yok. Biniş kodu ve iade tutarı o mesajlarda; kullanıcının denetimi yalnız
+kanal seçimi ve iki kanal birden kapatılamıyor
+(`CK_NotificationPreferences_AtLeastOneChannel`).
+
+**Tercihin uygulandığı üç yer:** `ReservationNotifier` (onay + iptal, kanal
+kapısı) · `SendReviewInvitationsJob` (davet + hatırlatma, vazgeçme kapısı) ·
+`AnonymizationRepository` (hesap kapatmada satır siliniyor). Listeye yeni bir
+tercih alanı eklenirse onu OKUYAN yer de yazılmalı — okunmayan alan, açılıp
+kapanan ama hiçbir şey yapmayan bir düğmedir → [[api-kararlar]] 2026-09-04 (8)
+
+**Favoriler** (2026-09-04, `A-77`) — `FavoriteBoats` tablosu yeni
+
+| Metot | Yol | Not |
+|---|---|---|
+| GET | `/api/favorites` | **oturum açık**, yetki yok. Kullanıcı kimliği parametre DEĞİL, jetondan. Yayından kalkmış tekne listeden çıkmıyor, `isAvailable: false` ile işaretleniyor |
+| PUT/DELETE | `/api/favorites/{boatId}` | İdempotent — ikinci istek de `204`. Ekleme yalnız `Published` tekneye; çıkarma yayın durumuna bakmıyor |
+
+⚠️ **Hesap kapatmada favoriler SİLİNİYOR** (`AnonymizationRepository`). Yabancı
+anahtar CASCADE bunu yapmıyor: anonimleştirme kullanıcı satırını silmiyor,
+üzerine yazıyor → [[api-kararlar]] 2026-09-04 (7)
+
+**Blog** (2026-09-04, `A-76`) — dört tablo şema kurulduğundan beri boştu
+
+| Metot | Yol | Yetki |
+|---|---|---|
+| GET | `/api/blog` · `/api/blog/{slug}` | **kimliksiz** — yalnız `Published`. Taslak ve onay bekleyen de `404`: "var ama yayında değil" denseydi kısa ad denenerek rakip yazıların varlığı öğrenilirdi |
+| GET | `/api/blog/categories` | **kimliksiz**. Yazı sayısı yalnız yayındakileri sayıyor |
+| GET/POST | `/api/blog/posts` | `blog.write`. Kapsam jetondan: işletmeli çağıran kendi yazılarını, platform personeli platformun yazılarını görür. **İşletme kimliği hiçbir uçta parametre değil** |
+| GET/PUT/DELETE | `/api/blog/posts/{id}` | `blog.write`. Yazma yanıtları çeviri sözlüğünü **TAM** döndürür — tek dile çözülmüş dönseydi panel gördüğünü geri gönderdiğinde diğer dili sessizce silerdi |
+| POST | `/api/blog/posts/{id}/submit` | `blog.write`. İşletme yazısı `UnderReview`, platform yazısı doğrudan `Published` |
+| POST | `/api/blog/posts/{id}/cover` | `blog.write`. WebP'ye yeniden kodlanıyor, `blog-media/` önekine yazılıyor → `S-24` |
+| GET | `/api/blog/moderation` · `/moderation/{id}` | `blog.approve` — **kapsamsız, kasıtlı**. En uzun bekleyen üstte |
+| POST | `/api/blog/moderation/{id}/publish` · `/reject` | `blog.approve`. Ret gerekçesi `BlogPosts.RejectionReason` kolonunda (`A-76` migration); reddetme YAYINDAKİ yazıda da çalışır — platform onayladığı bir metni geri çekebilmeli |
+| POST/PUT/DELETE | `/api/blog/categories` · `/categories/{id}` | `blog.approve` — kategori listesi ortak taksonomi, tek işletme genişletemez |
+
+⚠️ `posts`, `categories` ve `moderation` **kısa ad olarak yasak**: üçü de bu
+önek altında gerçek yol. `/api/blog/` altına yeni sabit yol eklenirse
+`BlogService.ReservedSlugs` da genişletilmeli → [[api-kararlar]] 2026-09-04 (5)
 
 **Sağlık**
 
@@ -129,15 +176,11 @@ dersinin ikinci örneği.
 
 | Eksik | Durum |
 |---|---|
-| Favoriler | uç yok, **tablo da yok** — Mert'ten evet/hayır bekliyor |
-| Bildirim tercihleri | uç yok, **tablo da yok**. Tablo generic kurulursa tür listesi şemayı belirlemez |
-| "Kuponlarım" | `Coupons` tablosu VAR ama **`UserId` kolonu YOK** — kupon kişiye ait değil, kapsamı işletme/tekne. Bu şemada ifade edilemiyor; ürün sorusu |
-| Blog | uç yok — statik mi API mi kararı Mert'te |
 | Yönetim panelinin 9 modülü | müşteriler, personel, kuponlar, bölgeler, reklam, e-posta, SMS, log, aktivite |
 | Yorum yanıtı düzenleme/silme | yalnız `POST .../reply` — tek atış |
 | IBAN değiştirme akışı | kasten yok; parola teyidi + bildirim isteyen ayrı akış olmalı |
 
-**106 tablo, 93 yol, 48 yetki.** → [[durum]]
+**108 tablo, 108 yol / 136 operasyon, 48 yetki.** → [[durum]]
 
 ## Zamanlanmış işler
 

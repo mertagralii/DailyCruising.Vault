@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: web
-guncelleme: 2026-08-31
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -41,44 +41,6 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 
 
-- [ ] **W-66** Biniş QR'ı hiçbir uçtan gelmiyor · 🔴 **para hareketi sonrası**
-      `qrImageUrl` **hiçbir yanıtta yok**; `QrCode` bileşeni yer tutucu
-      çiziyor. Yani ödeme yapan müşterinin elinde okutulacak bir QR **yok**,
-      yalnız kod var. Biniş ucu (`boarding/scan`) QR bekliyor
-      Bugün elle kod okutma (`boarding/manual`) çalışıyor, yani biniş
-      tamamen kilitli değil — ama tasarımın ve müşteriye verilen sözün
-      merkezinde QR var
-      Backend'e bildirilecek: rezervasyon yanıtına ya da ayrı bir uca
-      imzalı QR görseli
-
-
-
-- [ ] **W-38** Blog — **karar verildi (2026-09-04), uç bekleniyor**
-      ✅ `S-30` kapandı. Mert: *"bloglar bu arada uç yazılsın blog
-      yazılabilecek çünkü siteden"* — statik kalmıyor, yazı **siteden**
-      yazılacak. Gerekçe ve akış → [[domain-gereksinimler]] 2026-09-04
-      **Şema zaten tam**: `BlogPosts` (13 kolon), `BlogPostTranslations`,
-      `BlogCategories`, `BlogCategoryTranslations` — çeviri, kategori,
-      kapak, görüntülenme sayacı ve onay akışı dahil. Yetkiler katalogda:
-      `blog.write`, `blog.approve`. Eksik olan yalnız **uç**.
-      `Bağımlı:` backend ucu (`A-` numarası backend panosunda)
-      Web tarafında yazılacak üç parça:
-      · `/blog` ve `/blog/{slug}` gerçek uca bağlanır — bugün 7 statik
-        yazı basıyor, kaynağı `src/lib/data/`
-      · **Yazı yazma ekranı** — işletme panelinde `blog.write` yetkisiyle;
-        başlık, içerik, kategori, kapak görseli, çeviri
-      · **Onay ekranı** — yönetim panelinde `blog.approve` ile bekleyen
-        yazı yayınlanır/reddedilir (2026-08-24 kararı)
-      **Kabul ölçütü:** panelden yazılan bir yazı onaydan geçip `/blog`
-      listesinde canlı görünüyor; onaysız yazı listede **yok**; okuma
-      başarısızsa bölüm basılmıyor (boş liste "yazı yok" iddiasıdır)
-      ⚠️ Bugünkü 7 statik yazının veritabanına girip girmeyeceği
-      **kararlaşmadı** — soru 60, çıkarım yapılmadı. Uç gelene kadar
-      statik kalıyorlar
-- [ ] **W-39** Favoriler, kuponlarım, bildirim tercihleri — **uç yok**
-      Ekranlar uydurma veri basmıyor artık (`W-39a`); kalan iş uçlar
-      yazılınca. Favori ve bildirim tercihi için tablo da yok, kupon
-      tablosu var ama okuyan uç yok
 - [ ] **W-40** Yolcu listesi — **uyarı tamam**, veri toplama Mert'te
       Uyarı rezervasyon akışında, ödeme formundan önce; kaynağı **teklif**
       olduğu için hiçbir koşulda kaybolmuyor, süre ("kalkıştan en geç 24
@@ -95,6 +57,369 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 ## 🟡 Yapılıyor
 
 ## 🟢 Tamamlandı
+
+- [x] **W-83** Kullanıcı menüsü role göre süzülüyor · 2026-09-05
+      🔴 **Mert testte buldu:** müşteri hesabında (Ayşe) `Yönetim Paneli`,
+      `İşletme Panelim` ve `Destek Paneli` bağlantılarının **üçü birden**
+      görünüyordu. Menü listesi düz bir dizi olarak basılıyordu, rol
+      süzgeci hiç yoktu.
+      **Kapı doğru çalışıyordu** — tıklayan `403` alıyordu. Yani bu bir
+      yetki açığı değil, **yanlış vaat**: kullanıcıya giremeyeceği bir
+      yere bağlantı gösteriliyordu.
+      Süzgecin kaynağı `GUARDED` listesi; **ikinci bir rol tablosu
+      yazılmadı**. İki liste ayrı tutulsaydı biri değiştiğinde diğeri
+      sessizce ayrışır ve menü yine girilemeyen bir panele bağlantı
+      gösterirdi.
+      Kanıt: canlı, **üç rolde de** menü açılarak ölçüldü —
+      müşteri **hiçbiri**, işletme yalnız `/owner-panel`, platform
+      `/admin` + `/support-panel`. Olumlu dal ayrıca ölçüldü: yalnız
+      "müşteri görmüyor" ölçülseydi, **hepsini gizleyen** bozuk bir
+      süzgeç de geçerdi.
+      ⚠️ Ölçüm yolunda iki kez yanıldım: sunucu HTML'inde bağlantıları
+      aradım, oysa menü paneli **yalnız açılınca** basılıyor — üç rol de
+      "görmüyor" çıktı ve neredeyse "süzgeç çalışıyor" diyecektim.
+      `15883b6`
+
+- [x] **W-82** Elle yazılan yanıt tipleri şemaya karşı denetlendi · 2026-09-05
+      Backend `A-07` ile yanıt şemalarını yazdı: gövde şeması taşıyan
+      operasyon **0/146 → 145/146**, 181 bileşen şeması. Öncesinde her uç
+      şemasız bir `200` bildiriyordu — belge **dolu görünüp hiçbir şey
+      söylemiyordu**, elle yazılan tiplerin karşılaştırılacağı bir şey
+      yoktu.
+      **Sonuç: 15 tipin 15'i birebir eşleşti, uydurma alan 0.**
+      Denetlenenler: blog satırı ve tek kaydı, blog kategorisi,
+      moderasyon satırı, favori kartı, bildirim tercihi, kampanya,
+      kuponlarım, işletme kuponu, arama satırı, tekne detayı, işletme
+      rezervasyonu, işletme profili, biniş bileti.
+      **Bu oturumda üç tip yanlış çıkmıştı** — blog liste satırı
+      (`translations` yok, düz `title`), iade oranı (önizleme değil
+      kayıt), favori kartı (`isAvailable` atlanabilirdi — atlanmadı.)
+      Üçünü de **tarayıcı** yakaladı, `tsc` sustu; artık şema var.
+      ⚠️ Denetim betiğinin kendisi iki kez yanlış alarm verdi: sayfalama
+      zarfını satır sanıp `/api/blog` ve `/api/search` için "10 uydurma
+      alan" bildirdi. Zarfın içine inince ikisi de temiz çıktı —
+      **ölçüm aracının kendisi de ölçülmeli**.
+      Kanıt: `npm run tip-uret` → 116 yol · 146 işlem · yanıt şeması
+      145/146; karşılaştırma çıktısı `uydurma alan tasiyan tip: 0`.
+      `tsc` 0 hata, `eslint` temiz. `89041b1`
+
+- [x] **W-81** Donanım süzgeci ve tekne kuralları canlı · 2026-09-05
+      **Yeni kod yazılmadı** — ikisi de `W-53`/`W-54`'te yazılmıştı ve
+      panoda *"Tur özellikleri filtresi geri KONMADI"* diye açık uyarı
+      duruyordu. Eksik olan **veriydi**: katalogda 9 donanım / 3 kural
+      vardı ama yayındaki sekiz teknenin **hiçbirinde atama yoktu**.
+      Backend `S-23`'ü kapatırken bunu buldu (kendi notu da bayatmış:
+      "uç yok" diyordu, uç zaten vardı) ve demo verisine kalıcı atama
+      koydu.
+      Kanıt: canlı, **süzgeç gerçekten süzüyor** —
+      `/boats` süzgeçsiz **8 kart** → `klima` **6** → `klima+şnorkel`
+      **3**. Tekne detayında `Teknede neler var` ve `Kurallar` bölümleri
+      gerçek adlarla basılıyor (`Klima`, `Şnorkel takımı`,
+      `Evcil hayvan`, `Sigara`).
+      ⚠️ **Üçüncü kez `revalidate: 60` tuzağına yaklaşıldı ve üçüncü kez
+      tekrar ölçülerek geçildi.** İlk ölçümde iki bölüm de boştu; kod
+      doğruydu, sayfa 60 sn önbellekliydi. Hata ilan edilmedi, pencere
+      beklenip yeniden ölçüldü → [[web-olcum-yanlis-pozitifleri]]
+
+- [x] **W-80** İşletme paneli — kampanyalarım · 2026-09-05
+      Mert **(a)** dedi: işletme kendi kampanyasını kendisi açabilir.
+      Backend uçları yazdı (`A-89`), ekran bağlandı.
+      **Üç alan formda yok ve olmamalı**: `fundedBy`, `partnerId`,
+      `isPubliclyListed`. Üçü de sunucuda sabit; forma konsaydı işletme
+      kampanyasının bedelini **platforma yazabilir** ya da kuponunu
+      sitenin genel vitrinine sokabilirdi. Sınır sunucuda, ekran onu
+      tekrar hesaplamıyor — **anlatıyor**.
+      **Bedelin nereden çıktığı yazıyla duruyor:** *"Bu indirimin bedeli
+      senin hakedişinden düşülür."* Görmeden %30 kupon açan işletme
+      parayı sonradan öğrenirdi.
+      Kullanım sayısı **işletmeye** gösteriliyor, müşteriye
+      gösterilmiyor: kendi kampanyasının kaç kez kullanıldığını bilmeli,
+      ama müşteriye göstermek platformun iç sayacını dışarı vermek olurdu.
+      🔴 **İki tarih tuzağı, ikisi de ölçümle bulundu:**
+      · Uç **sadece-tarih** (`"2026-09-05"`) ve **UTC olmayan offset**
+        (`+03:00`) gövdelerini **`500`** ile reddediyor — `400` değil.
+        Yalnız `Z` kabul ediliyor. Gün sınırı bu yüzden Türkiye gününe
+        göre kurulup UTC'ye çevriliyor; doğrudan `T00:00:00Z`
+        gönderilseydi kampanya **başlangıç gününün ilk üç saatinde
+        çalışmazdı**
+      · Varsayılan tarih `toISOString().slice(0,10)` ile alınıyordu; o
+        **UTC gününü** verir ve Türkiye'de gece yarısı–03:00 arasında
+        "dün" yazardı. Yerel gün elle kuruluyor
+      Kanıt: canlı, panelde — menüden `Kampanyalarım`, mevcut kupon
+      `MAVI10 · Açık · %10 · 0 / 25 kullanım`; formdan `OLCUM40`
+      oluşturuldu ve **listede belirdi** (`%40 · tüm teknelerin`);
+      kod yazarken büyük harfe çevriliyor (`olcum40` → `OLCUM40`);
+      kapatma `204`. Ölçüm kuponları sonradan kapatıldı.
+      Taşma 0, `npm run build` temiz. `94633f5`
+
+- [x] **W-39** Kuponlar — üç tür bağlandı · 2026-09-05
+      Mert'in 2026-09-04 kararı: *"kullandığı kuponlar ve bana özel
+      kuponlar ve genel kuponlar olsun."* Backend üç türü ayrıştırdı,
+      ekran **ayrı bölümler** hâlinde basıyor.
+      **Neden tek liste değil:** tek listede toplansaydı müşteri kampanya
+      kuponunu "bana özel" sanıp paylaşmaktan çekinir, ya da tersine
+      kişisel kuponunu paylaşır ve arkadaşında çalışmayınca ikisi de
+      sebebini bilemezdi.
+      ⚠️ "Sana özel" rozeti yalnız `isAssignedToMe` doğru olanlarda —
+      liste iki kaynağı birleştiriyor ve geçmişte kullanılmış bir
+      **kampanya** kuponu da orada görünüyor.
+      🔴 **Sessiz bir kırılma önlendi:** fiyat sorgusu `dogrudan: true`
+      ile vekili atlıyordu, yani **jeton eklenmiyordu**. Uç kimliği
+      kullanmaya başladığı için giriş yapmış kullanıcının kendi kuponu
+      sessizce reddedilecekti — müşteri "kuponum çalışmıyor" der, hiçbir
+      hata görünmezdi.
+      `dogrudan`ın gerekçesi hız sınırıydı: vekilden geçen istekte backend
+      herkesi tek IP sayıyordu. **Vekil artık istemcinin gerçek IP'sini
+      iletiyor** (`X-Forwarded-For`), o gerekçe kalktı. Backend başlığa
+      yalnız `KnownProxies` listesindeki vekilden gelirse güveniyor;
+      liste boşken başlık yok sayılıyor, yani yanlış yapılandırmada
+      **açık üretmiyor**.
+      Kanıt: canlı, **iki dal da** ölçüldü —
+      · Ayşe hesabıyla `AYSEYE20` → `Tur ₺2.900 · İndirim −₺580 ·
+        Toplam ₺2.320`, *"Kupon uygulandı"*
+      · **Can hesabıyla aynı kupon** → indirim **yok**, toplam ₺2.900,
+        *"Bu kupon size tanımlı değil…"* — yalnız olumlu dal ölçülseydi,
+        her kuponu herkese uygulayan bozuk bir yol da geçerdi
+      · Hesap sayfasında üç bölüm: `AYSEYE20` (Sana özel rozetiyle),
+        "Henüz kupon kullanmadın", `YAZ2026` kampanyası
+      · Taşma 0, `npm run build` temiz
+      ⚠️ Vekil izin listesine `coupons` eklendi — **üçüncü kez** (`blog`,
+      `favorites`). Yeni uç bağlarken ilk bakılacak yer orası
+      → [[web-mimari]]
+      `2f709c2`
+
+- [x] **W-79** Blog kısa adı başlıktan üretiliyor · 2026-09-05
+      Backend tekne slug'ındaki Türkçe `İ` kusurunu düzeltirken sordu:
+      blog kısa adını sunucu mu çevirsin, reddetmeye devam mı etsin.
+      **Karar: sunucu reddetmeye devam etsin, çeviriyi istemci görünür
+      şekilde yapsın.** Sunucu sessizce değiştirseydi kaydedilen adres
+      kullanıcının yazdığından farklı olur ve bunu ancak yayınlandıktan
+      sonra fark ederdi.
+      ⚠️ `toLowerCase()` tek başına yetmiyor: noktalı `İ` (U+0130)
+      küçültmeden geçiyor ve `NFD` ayrıştırması onu **büyük `I`**'ya
+      çeviriyor — backend'de `akdeniz-Incisi` tam bu yüzden doğmuştu.
+      Türkçe harfler önce çevriliyor.
+      **Üretim yalnız yeni yazıda ve kullanıcı alana dokunmadıkça**
+      çalışıyor: kayıtlı bir yazının adresini başlık değişince
+      değiştirmek yıkıcı olurdu, paylaşılmış adres sessizce `404`'e
+      dönerdi.
+      Kanıt: canlı, panelde üç davranış —
+      · `"Gökova koylarında İZMİR çıkışlı üç gün"` →
+        `gokova-koylarinda-izmir-cikisli-uc-gun`, ipucu *"başlıktan
+        üretildi, değiştirebilirsin"*
+      · Elle `"Şile & Ağva"` yazıldı → `sile-agva` (elle giriş de
+        normalleştiriliyor, kullanıcı `400` görmüyor)
+      · Sonra başlık değiştirildi → kısa ad **değişmedi**
+      `80f2fa9`
+
+- [x] **W-66** Biniş karekodu · 2026-09-05
+      `S-25` cevaplandı — Mert **(b)** dedi: asıl jetona dokunulmuyor,
+      belge açıldığında **ayrı ve kısa ömürlü** bir bilet üretiliyor.
+      Backend ucu yazdı, ekran bağlandı.
+      **Uç görsel değil METİN döndürüyor** (`token`) ve bu doğru ayrım:
+      karekod okunamadığında (ıslak ekran, güneş, çizik baskı) kaptanın
+      elle girebileceği tek şey metnin kendisi. Görsel dönseydi o metin
+      kaybolurdu. Çizim istemcide (`qrcode`, yalnız bu ekranda yükleniyor).
+      ⚠️ **Yeni bilet öncekini iptal ediyor** ve bunu ekranda **yazıyla**
+      söylüyorum: *"Belgeyi en son açtığın cihazdaki karekod geçerlidir."*
+      Söylenmeseydi belgeyi iki cihazda açan müşterinin kodu **iskelede**
+      çalışmaz ve sebebi görünmezdi.
+      🔴 **Bunu ölçüm sırasında istemeden kendim yaşadım:** karekodu
+      karşılaştırmak için ikinci bir bilet istedim ve ekrandakini
+      geçersiz kıldım. Uyarı metni bu yüzden var.
+      Ömür kalkıştan **12 saat sonrası**, tur bitişi değil — bitişte ölen
+      bilet geç kalkan turda kaptanın elinde ölürdü.
+      Kanıt: canlı, uçtan uca —
+      · Tuval **176×176**, **14.025 koyu piksel** (ne boş ne dolu, gerçek
+        desen)
+      · Aynı bilet `boarding/scan`'de **`200`** → `S732EGRV`,
+        `Ayşe Yılmaz`, 2 yetişkin; **geçersiz jeton `400`**
+      · Ödenmemiş rezervasyonda uç `400`; ekran bileti **hiç istemiyor**,
+        *"ödeme tamamlandığında oluşur"* yazıyor
+      · Hata dalında karekod yerine rezervasyon kodu basılıyor — elle
+        okutma çalıştığı için müşteri belgesiz kalmıyor
+      · Taşma 0, `npm run build` temiz
+      ⚠️ **Kanıtlamadığım şey:** karekodun görüntüsünü çözüp içindeki
+      metni okumadım (çözücü kütüphane eklemek istemedim). Kanıtlanan,
+      biletin okutmada kabul edilmesi ve tuvalin gerçek desen taşıması.
+      `d26a19f`
+
+- [x] **W-78** İptal onayında iade tutarı, onaydan önce · 2026-09-05
+      Onay penceresi *"iptal onaylandığında tutar sana bildirilir"*
+      diyordu: müşteri **geri alınamaz** bir işlemi sonucunu görmeden
+      onaylıyordu. `S-12` politikasıyla bunun somut bedeli var — kalkışa
+      24 saatten az kala **iade sıfır**.
+      🔴 **Kendi varsayımım yanlış çıktı ve ölçerek buldum:**
+      `cancellationRefundRate` bir önizleme değil **kayıt**, yalnız iptal
+      edilmiş rezervasyonda dolu. Backend ayrı alan açtı
+      (`refundPreviewRate`/`refundPreviewTry`); aynı ada iki anlam
+      yüklenmedi.
+      Kanıt: canlı, iki dilim ekranda ölçüldü —
+      %50 → *"ödemenin %50 kadarı, yani ₺1.850 iade edilecek"*;
+      %0 → *"kalkışa kalan süre nedeniyle iade yapılmayacak"* (ayrı
+      cümle). %100 dilimi ölçülemedi: o rezervasyonu biniş sınamasında
+      kendim tükettim, backend'den düzeltmesi istendi.
+      Oran okunamazsa sayı **uydurulmuyor**, genel cümleye düşülüyor.
+      `dd3544e` · `d26a19f`
+
+- [x] **W-76** Blog gövdesinde zengin metin (CKEditor) · 2026-09-04
+      `S-31` cevaplandı; Mert *"b olabilir yada CKEditör de olabilir"*
+      dedi, seçim teknik tarafa kaldı. **CKEditor seçildi** — yazarlar
+      kaptan ve işletmeci, Markdown sözdizimi gerçek bir engel ve blogun
+      amacı yazmaya teşvik etmek → [[domain-gereksinimler]] 2026-09-04
+      🔒 **Sıra tersine çevrilemezdi ve çevrilmedi:** önce backend yazma
+      yolunda izin listeli temizleyiciyi kurdu, sonra editör açıldı.
+      Temizlemeyi **bağımsız ölçtüm**, raporu doğru kabul etmedim:
+      `<script>`, `onclick`, `javascript:` bağlantısı, `<iframe>`,
+      `<style>` ve `<h1>` **veritabanına yazılmadan** düşüyor; başlık ve
+      özet düz metne iniyor.
+      **Araç çubuğu sunucunun izin listesiyle birebir.** Sunucunun
+      düşürdüğü bir düğme editörde bulunsaydı yazar onu kullanır,
+      kaydeder ve biçimlendirmesinin **sessizce kaybolduğunu** görürdü.
+      `h1` yok (sayfa başlığı zaten `h1`), renk/hizalama/yazı tipi yok
+      (`style` ve `class` sunucuda düşüyor).
+      🔴 **Onuncu "build temiz ≠ görünüm doğru" örneği:**
+      `ckeditor5.css` import edilmeden editör **çalışıyor ama biçimsiz** —
+      araç çubuğu saydam, kenarlık yok. `tsc`, `eslint` ve `npm run build`
+      üçü de temiz geçti; yalnız tarayıcıda görüldü
+      → [[web-desenler]]
+      Kanıt: canlı, uçtan uca —
+      · XSS yükü gönderildi, **saklanan hâl** okundu: `<h2>` ve
+        `<strong>` kaldı, betik/olay/iframe/style düştü
+      · Yazı sayfasında ölçülen stil: `h2` 35px/700, `blockquote` 24px +
+        3px sol kenar, `ul` madde işaretli, bağlantı altı çizili,
+        `script` **0 adet**
+      · Panelde editör yüklendi, araç çubuğunda **12 düğme** ve hiçbiri
+        izin listesi dışında değil; zengin gövde **birebir** açıldı
+        (`h2`, `strong`, `li`, `blockquote`, `a`)
+      · Kaydetme editör yolundan da çalıştı: yazı `Published` →
+        `UnderReview`'a düştü ve **gövde birebir korundu** — editör hiçbir
+        etiketi düşürmedi
+      · Araç çubuğu arka planı `rgb(255,255,255)`, editör yüksekliği
+        320px, taşma **0**, `npm run build` temiz
+      ⚠️ `javascript:` bağlantısında sunucu `href`'i düşürüyor ama `<a>`
+      kalıyor; href'siz bağlantı **düz metin gibi** basılıyor, altı
+      çizili görünüp tıklanabilir sanılmasın diye. Ölçülmüş davranış.
+      ⚠️ Editör yüklenemezse alan `textarea`'ya düşüyor — boş kutu
+      bırakmak yazıyı kaydedilemez hâle getirirdi.
+      `60dd064`
+
+- [x] **W-77** `/design-system` rotaları yayında kapatıldı · 2026-09-04
+      Bileşen vitrini derlemede statik rota olarak üretiliyordu, yani
+      canlıda herkese açık olurdu; e-posta şablonları da orada.
+      **Silinmedi, kapatıldı**: geliştirmede hâlâ gerekiyor ve silinen bir
+      vitrin ilk gerekli olduğunda yeniden yazılırdı.
+      Kanıt: geliştirmede `200`; `next start` ile **üretim derlemesi
+      ayağa kaldırıldı** ve iki rota da **404** döndü, kontrol olarak
+      `/blog` `200`. `e794690`
+
+- [x] **W-75** Fiyat kutusunda KDV oranı · 2026-09-04
+      `S-20` ile oran rezervasyona donduruldu ve `pricing/quote` yanıtına
+      `vatRate` eklendi. Ekran oranı **uçtan** yazıyor, koda gömmüyor:
+      oran değiştiği gün ekran kendiliğinden doğru olsun.
+      ⚠️ **Vergi tutarı basılmıyor** — uç da bilerek döndürmüyor. Tutar
+      toplamdan türetilebiliyor; ikisini birden taşımak yuvarlamada
+      ayrışmaya açık kapı bırakır ve aynı ekranda birbirini tutmayan iki
+      sayı görünürdü.
+      Kanıt: canlı — `/booking` özetinde `Toplam ₺1.000` altında
+      **"Tüm fiyatlara %20 KDV dahildir."**; uç ölçümünde `vatRate: 20`.
+      Taşma 0, konsol temiz. `tsc` 0 hata, `eslint` temiz
+
+- [x] **W-39b** Favoriler ve bildirim tercihleri · 2026-09-04
+      Hesap sayfasının iki sekmesi "bağlı değil" yazıyordu; backend
+      uçları yazdı (`A-77`, `A-78`), ikisi de gerçek veriye bağlandı.
+      🔴 **Favori düğmesi hiçbir yerde yoktu** — ekran doldurulamıyordu,
+      yani uç gelse bile özellik ölü kalırdı. Tekne detayına eklendi.
+      ⚠️ **Vekilin izin listesinde `favorites` öneki yoktu** ve bunu
+      yalnız tarayıcı yakaladı: düğme belirsizlikte kendini gizlediği
+      için özellik **sessizce ölmüştü**, `tsc` ve `eslint` ikisi de temiz
+      geçiyordu. Aynı tuzak `blog` önekinde de vardı — vekil izin listesi
+      artık yeni uç bağlarken kontrol edilecek → [[web-desenler]]
+      **Bildirim tercihi eskiden paneldeki en sinsi mock'tu**: anahtarlar
+      açılıp kapanıyordu ama hiçbir yere kaydedilmiyordu, kapatılan
+      bildirim yine geliyordu.
+      Kanıt: canlı, müşteri hesabıyla —
+      · Tekne detayında düğme `☆ Favorilere ekle` → tıklandı →
+        `★ Favorilerimde`, `aria-pressed` `false`→`true`
+      · Hesap → Favoriler: **2 tekne**, gerçek adlar ve marina, tip
+        rozetleri gerçek (`GULET` / `A04-GULET`)
+      · Bildirimlerde SMS kapatıldı → e-posta anahtarı **kilitlendi** ve
+        sebebi yazdı: *"Bu son açık kanalın — kapatılamaz"*
+      · Kaydedildi → **uçtan okundu**: `emailEnabled true, smsEnabled
+        false, reviewInvitationsEnabled false`. Yani tercih yalnız
+        ekranda değil, gerçekten yazıldı — eski mock'un yapamadığı tam
+        olarak buydu
+      · 390px'te iki sekmede de taşma **0**, konsol temiz
+      Ölçüm sonrası tohum hesabı eski hâline döndürüldü (favoriler
+      silindi, tercihler açıldı).
+      ⚠️ Yayından kalkan tekne listeden **çıkarılmıyor**, işaretleniyor ve
+      bağlantısı kapanıyor: sessizce çıkarılsaydı müşterinin listesi
+      sebebi görünmeden kısalır ve o kendi sildiğini sanardı.
+      ⚠️ Favori kartında **fiyat yok** — fiyat tarihe, kişi sayısına ve
+      satış biçimine bağlı; favoride üçü de belli değil. Bağlayıcı
+      olmayan bir başlangıç fiyatı, tıklayan müşteriye ilk ekranda başka
+      bir tutar göstermek olurdu (backend'in kararı, katılıyorum).
+      `6306da3`
+
+- [x] **W-74** İşletme müşterinin iletişim bilgisini artık görmüyor · 2026-09-04
+      `S-27` cevaplandı ve gerekçe bizim düşündüğümüz değildi: mesele
+      KVKK değil **aracıdan kaçış** — işletme müşteriye doğrudan
+      ulaşabilirse ikinci turu platform dışında satar.
+      Backend `GET /api/partner/reservations` yanıtından `contactEmail`
+      ve `contactPhone` alanlarını çıkardı; panel de kaldırdı.
+      **Boş bırakılmadı, sebebi yazıldı**: alanlar kaybolsaydı işletmeci
+      telefonu arar, bulamaz ve "sistem eksik" diye okurdu. Liste altında
+      duruyor: gecikme ya da hava muhalefetinde **destek talebi aç,
+      platform müşteriye senin adına ulaşır**.
+      Kanıt: `contactEmail`/`contactPhone` tipten ve dönüşümden çıkarıldı,
+      panelde iletişim satırı yok; `tsc` 0 hata, `eslint` temiz. `6306da3`
+
+- [x] **W-38** Blog — üç ekran gerçek uca bağlandı · 2026-09-04
+      Mert karar verdi (*"bloglar uç yazılsın, blog yazılabilecek çünkü
+      siteden"*), backend uçları yazdı (`07730fb`), web üç parçayı kurdu:
+      herkese açık liste + detay, işletme panelinde yazma, yönetim
+      panelinde onay.
+      **Yolda üç sahte etkileşim bulundu ve kaldırıldı** — üçü de hiçbir
+      şeye bağlı değildi ve kullanıcı bunu öğrenemiyordu: bülten formu
+      e-postayı alıp hiçbir yere göndermiyordu, yorum formu *"yorumun 24
+      saat içinde yayınlanır"* diyordu, Paylaş/Kaydet düğme gibi görünen
+      `span`'lardı. Sayfalama da `[1,2,3]` diye sabitti ve tıklanınca
+      hiçbir şey olmuyordu. Detay sayfası **her slug için aynı yazıyı**
+      gösteriyordu; `/blog/olmayan-bir-sey` dolu bir makale açıyordu.
+      🔴 **Bir veri kaybı önlendi, tarayıcı yakaladı.** `GET /api/blog/posts`
+      liste satırı çözülmüş düz bir `title` döndürüyor ve `translations`
+      **taşımıyor**; tek kayıt uçları tam tersi. Satırı doğrudan forma
+      verseydim form **boş açılır**, kullanıcı kaydedince gövde
+      **silinir** ve uç `200` dönerdi. `tsc` sustu çünkü tipi ben yazdım
+      → [[web-elle-yazilan-tip-yalan-soyler]]
+      🔒 **Gövde düz metin basılıyor, `dangerouslySetInnerHTML` ile
+      değil.** Backend gövdeyi temizlemiyor (`BlogService.Clean()` yalnız
+      `Trim()`, kod tabanında sanitizer yok — arandı). HTML bassaydım
+      `blog.write` yetkisi olan bir işletme çalışanı herkese açık sayfaya
+      script gömerdi; yazıyı platform onaylıyor ama onaylayan kişi kaynak
+      koda bakmıyor, yani onay bunu **yakalamaz**.
+      Kanıt: (canlı, iki panelde, uçtan uca)
+      · `/blog` gerçek yazı + gerçek kategori (`Rotalar · 1`), `/blog`
+        detayı gerçek gövde ve MinIO'dan yüklenen kapak
+      · `/blog/olmayan-bir-yazi` → **404**
+      · Kategori süzgeci **iki dalda da** ölçüldü: gerçek kategoride yazı
+        görünüyor, olmayan kategoride "yazı yok" — her şeye boş dönen
+        bozuk bir süzgeç yalnız ikinciden geçerdi
+      · İşletme panelinde yazı açıldı → **TR ve EN alanları dolu geldi**;
+        Türkçe başlık değiştirilip kaydedildi → uçta `tr` güncellendi,
+        **`en` yerinde kaldı** (`W-55` yinelemesi önlendi)
+      · Yönetimde yazı okundu, dil seçici `tr`/`en` çalışıyor, **boş
+        gerekçede Reddet kapalı**; gerekçeyle reddedildi → kuyruk boşaldı
+        ve gerekçe **yazarın panelinde** göründü: *"Gövde çok kısa;
+        koyların adlarını..."*
+      · Yayına alınan yazı açıldığında uyarı **kaydetmeden önce**
+        görünüyor: *"Kaydettiğin anda yazı siteden kalkar"*; `Onaya
+        gönder` düğmesi yayındaki yazıda **yok**
+      · 390px'te taşma **0** (dosya kutusu 1px taşırıyordu, düzeltildi),
+        1280px'te 0, konsol temiz
+      ⚠️ Vekilin izin listesinde `blog` öneki **yoktu**; eklenmeseydi
+      panelin bütün çağrıları `404` dönerdi.
+      `ca13561` · `17a89b1` · `75295ec`
 
 - [x] **W-73** Kart rozetinde tekne tipinin adı · 2026-09-04
       Ana sayfadaki öne çıkan kartlar ve blog yazısının kenar sütunu tur

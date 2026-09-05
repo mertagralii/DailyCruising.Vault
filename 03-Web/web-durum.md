@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: web
-guncelleme: 2026-08-31
+guncelleme: 2026-09-05
 durum: guncel
 ---
 

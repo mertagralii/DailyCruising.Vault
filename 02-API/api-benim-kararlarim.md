@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: api
-guncelleme: 2026-08-26
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -1047,6 +1047,21 @@ kapanmaz.
 **Geri alma bedeli:** orta — iptal + iade akışı `A-27`'ye bağlanmalı.
 
 ## 2026-08-26 · İşletme reddetme ucu YOK `[tahmin]`
+
+> ⚠️ **BU NOT BAYAT — 2026-09-04'te ölçüldü, kod bunun tersini söylüyor.**
+> `POST /api/platform/partners/{id}/reject` VAR, gerekçe zorunlu, ve
+> `RejectionAndReapplicationTests` içinde **yedi test** var: reddedilen
+> işletme yeniden başvurabiliyor ve **aynı satır güncelleniyor** (`TaxNumber`
+> benzersiz olduğu için ikinci kayıt açılmıyor), başkasının e-postasıyla
+> yeniden başvuru reddediliyor, yanlış parola AYNI mesajla reddediliyor
+> (oracle yok).
+>
+> Yani Mert'in 2026-09-04 cevabı — *"(a) yeniden başvurabilir"* — mevcut
+> davranışı **onaylıyor**, yeni iş çıkarmıyor.
+>
+> Not silinmedi çünkü aşağıdaki soru gerçekten soruldu ve cevabı alındı; ama
+> "yazılmadı" hükmü artık yanlış. Ders: kendi notumun tarihine güvenmek yerine
+> koda bakmak — arada başka bir oturum yazmış olabiliyor.
 
 `PartnerStatus.Rejected` enum'da var ve `CK_Partners_RejectionReason` onu
 zorluyor, ama **reddetme ucu yazılmadı**. Platform bugün bir başvuruyu

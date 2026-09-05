@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: api
-guncelleme: 2026-08-31
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -3321,3 +3321,1170 @@ eksik olan yalnız yükün içeriğiydi. Veritabanı satırına bakınca görül
 **Kural:** olay günlüğüne yalnız SKALER değer gönderilir. Birden çok
 değer taşınacaksa birleştirilmiş metin kullanılır → [[api-desenler]] ·
 [[api-yazilmis-ama-uygulanmamis-kontrol]]
+
+## 2026-08-31 (3) — Yolcu listesi bayrağı yalnız teknenin anahtarından okunur
+
+Fiyat bağlamı bu bayrağı `DurationKind == MultiDay` ifadesinden
+hesaplıyordu; artık `Boat.RequiresPassengerList`'ten okuyor.
+
+**Neden:** kural 2026-08-22'de belgelenmişti — yolcu tablosu her
+rezervasyonda değil, **teknenin "yolcu listesi ister" anahtarı açıkken**
+dolar. KVKK gerekçesi de buna dayanıyor: kimlik verisi "lazım olur diye"
+değil, **tekne sahibinin beyan ettiği yasal yükümlülük** gerekçesiyle
+toplanıyor (KVKK m.4). Süreden türetmek, anahtarı kapalı bir teknenin
+müşterisinden **beyansız** kimlik verisi istemek olurdu — yani yalnız
+yanlış değil, gerekçeyi çürüten bir hata.
+
+**Zarar neden ekranla sınırlı değildi:** `ReservationFactory` bayrağı
+teklifin sonucundan kopyalayıp rezervasyona DONDURUYOR. Yanlış yazılan
+değer sonradan düzeltilemez; o rezervasyon ömrü boyunca "yolcu listesi
+istemiyor" der. Canlıda ölçüldü: tekne `t`, rezervasyon `f`.
+
+**Aynı işi yapan iki yol ayrışmıştı:** teklif akışı
+(`OfferRepository`) bayrağı zaten `brt.Boat.RequiresPassengerList`
+üzerinden okuyordu. Biri tekneye, diğeri süreye bakıyordu ve ikisi de
+rezervasyon üretiyordu.
+
+**Bir test kusuru iddia ediyordu.** `Overnight_rental_charges_one_extra_day`
+içinde `Assert.True(offer.RequiresPassengerList)` vardı ve düzeltme onu
+kırdı. Hangisinin doğru olduğuna vault'taki karara bakılarak karar
+verildi, teste bakılarak değil.
+
+**Ders:** kırılan bir test her zaman değişikliğin yanlış olduğu anlamına
+gelmez. Test de bir iddiadır ve iddianın kaynağı sorulmalı — bu testinki
+koddan okunmuş bir gözlemdi, karardan değil → [[api-desenler]] ·
+[[api-yazilmis-ama-uygulanmamis-kontrol]]
+
+---
+
+## 2026-09-04 — Blog: yayındaki işletme yazısı düzenlenirse onaya geri düşer
+
+**Karar:** `AuthorPartnerId` dolu bir yazı `Published` iken güncellenirse aşama
+`UnderReview`'a çekilir, `ApprovedByUserId` ve `ApprovedAt` temizlenir, yazı
+herkese açık sorgulardan çıkar. Platformun kendi yazısı (`AuthorPartnerId`
+boş) yayında kalır.
+
+**Neden:** Düşmeseydi onay tiyatro olurdu. İşletme sade bir yazı onaylatır,
+onaydan sonra gövdesini istediği gibi değiştirirdi ve platform bunu hiçbir
+yerde görmezdi — hata da çıkmazdı, çünkü kural yoksa ihlal de yok. Onayın tek
+somut anlamı bu kuralda.
+
+**Alternatifler:** (a) düzenleme yayını bozmasın — onayı anlamsız kılıyor,
+elendi. (b) düzenleme tamamen yasaklansın — yazım hatası düzeltilemez hale
+gelirdi, elendi.
+
+**Bedeli açık:** yazar bir virgül düzeltmek için de onay bekliyor. Kabul
+edildi; alternatifi denetlenmeyen içerik.
+
+**`PublishedAt` temizlenmiyor** — yazının İLK yayın tarihidir ve yeniden
+onaylanınca korunur. Veritabanı kısıtı yalnız aşama `Published` iken dolu
+olmasını istiyor, tersini yasaklamıyor.
+
+**Kanıt:** canlı ölçüldü — yayındaki yazı güncellendi, `status` `UnderReview`,
+`approvedAt` `null`, `publishedAt` korundu, herkese açık detay `404`. Platform
+yazısında aynı akış `Published` kaldı (test). Kural koddan çıkarıldığında
+`Yayindaki_isletme_yazisi_duzenlenince_onaya_geri_dusuyor` kırmızıya döndü.
+
+---
+
+## 2026-09-04 (2) — `BlogPosts`'a `RejectionReason` kolonu eklendi
+
+**Karar:** Nullable `character varying(500)`. Moderatörün ret gerekçesi bu
+kolonda yaşıyor ve yazara `GET /api/blog/posts/{id}` ile dönüyor.
+
+**Neden:** Gerekçenin gidebileceği başka yer YOK. `EventPayloadPolicy` serbest
+metni yasaklıyor (olay günlüğü temizlenemiyor), yani günlüğe yazılamaz.
+Kolonsuz bir ret, yazara "bir şey yanlış" demekten ibaret kalırdı ve aynı yazı
+aynı hatayla tekrar gönderilirdi — moderatör aynı işi iki kez yapar.
+
+**Alternatifler:** (a) gerekçe hiç saklanmasın — yukarıdaki döngü, elendi.
+(b) mesajlaşma üzerinden bildirilsin — konuşma kapsamı müşteri-işletme
+ekseninde, platform-yazar ekseni yok; yeni bir kavram açardı, elendi.
+
+**Şema çıkarımla kurulmaz kuralına göre:** bu bir çıkarım ve `[makul]` damgalı.
+Mert'e soruldu (2026-09-04 soru listesi). Geri alma bedeli düşük: nullable
+kolon düşürmek, veri kaybı yok.
+
+**Migration:** `20260904191507_A76_BlogRetGerekcesi` — nullable, varsayılansız,
+tablo yeniden yazılmıyor.
+
+---
+
+## 2026-09-04 (3) — Blog kategorisi yönetimi `blog.approve` yetkisinde
+
+**Karar:** `POST/PUT/DELETE /api/blog/categories` yalnız `blog.approve` ile.
+Okuma (`GET`) herkese açık.
+
+**Neden:** Kategori listesi bütün işletmelerin yazılarını gruplayan ORTAK bir
+taksonomi. Her işletme kendi kategorisini açabilseydi liste birkaç ayda
+birbirinin eşanlamlısı otuz satıra çıkar ve süzgeç işe yaramaz hale gelirdi.
+`blog.approve` katalogda `IsPartnerAssignable = false`, yani işletme sahibi bu
+yetkiyi çalışanına veremiyor — ayrım kendiliğinden korunuyor.
+
+**Neden hiç yazılmadan bırakılmadı:** `BlogCategories` tablosu şema
+kurulduğundan beri BOŞ ve kategori yaratacak hiçbir yol yoktu.
+`BlogPosts.BlogCategoryId` ölü bir kolondu.
+
+---
+
+## 2026-09-04 (4) — Yazının altında kişi adı değil işletmenin görünen adı durur
+
+**Karar:** Herkese açık blog yanıtları `authorPartnerName` taşıyor;
+`AuthorUserId`'nin arkasındaki kişinin adı soyadı HİÇBİR yanıtta yok.
+
+**Neden:** İşletmenin görünen adı zaten herkese açık bir ticari isim. Panelde
+yazan çalışanın adı soyadı değil — o kişi işten ayrıldığında bile yazının
+altında kalıcı olarak yayında dururdu ve silinmesini isteyeceği yer belli
+değil. Yazar kimliği `AuthorUserId` kolonunda duruyor, denetim için yeterli.
+
+**Kanıt:** `Herkese_acik_yanit_isletme_adini_tasiyor_kisi_adini_tasimiyor`.
+
+---
+
+## 2026-09-04 (5) — `posts`, `categories`, `moderation` kısa ad olarak yasak
+
+**Karar:** Bu üç değer `BlogService.ReservedSlugs` içinde ve yazma anında
+reddediliyor (`ReservedSlug`).
+
+**Neden:** Üçü de `/api/blog/` altında gerçek yol parçası. Bir yazı bunlardan
+birini kısa ad olarak alsaydı `GET /api/blog/{slug}` ona HİÇ ulaşamazdı:
+yönlendirme sabit yol parçasını değişkene tercih eder. Yazı kaydedilir,
+yayınlanır, listede görünür ve adresinden açılmaz — hiçbir yerde hata çıkmaz.
+
+**Alternatifler:** yazarlık uçlarını `/api/blog/` dışına taşımak — dört
+controller yerine üç ayrı önek doğururdu ve aynı kaynağın uçları dağılırdı,
+elendi.
+
+**Bakım kuralı:** `/api/blog/` altına yeni bir SABİT yol parçası eklenirse
+`ReservedSlugs` da genişletilmeli. Unutulursa o adı taşıyan mevcut yazı
+sessizce erişilemez olur.
+
+**Kanıt:** liste boşaltıldığında `Ayrilmis_kisa_ad_reddediliyor` üç dalında da
+kırmızıya döndü.
+
+---
+
+## 2026-09-04 (6) — Kapak görseli `blog-media/` önekine yazılıyor, kova politikası genişletildi
+
+**Karar:** Blog kapağı `blog-media/{postId}/...webp`. Geliştirme kovasının
+anonim okuma politikası `boat-media/*` yanına `blog-media/*` eklenerek
+genişletildi; `boat-documents/*` ve `partner-documents/*` kapalı kaldı.
+
+**Neden:** `S3FileStorage` `publiclyReadable` parametresini kullanmıyor —
+görünürlüğü YALNIZ kova politikası belirliyor (`S-24`). Politika
+genişletilmeseydi yazı yayında görünür, kapağı kırık çıkardı.
+
+⚠️ **`S-24` bu yüzden büyüdü:** üretim kovasında açık okuma artık İKİ öneke
+verilmeli. Tek önek yazılırsa blog kapakları üretimde sessizce kırılır —
+uygulama tarafında hiçbir hata olmaz, çünkü hata tarayıcıda ve nesne
+deposunda.
+
+**Kanıt:** politika öncesi kapak `403`, sonrası `200 image/webp`; aynı ölçümde
+`boat-documents/*` ve `partner-documents/*` `403` kaldı.
+
+---
+
+## 2026-09-04 (7) — Favoriler ayrı tabloda, hesap kapatmada SİLİNİYOR
+
+**Karar:** `FavoriteBoats` (`UserId`, `BoatId`, `CreatedAt`), `(UserId, BoatId)`
+benzersiz. Ekleme ve çıkarma idempotent. Hesap kapatılınca satırlar
+`AnonymizationRepository` içinde **siliniyor**.
+
+**Neden ayrı tablo:** "bu kullanıcı neleri beğendi" ve "bu tekneyi kaç kişi
+beğendi" iki ayrı soru; ikisi de indeksle cevaplanabilmeli. Kullanıcı satırına
+gömülü bir liste ikinciyi tüm tabloyu taramadan cevaplayamazdı.
+
+**Neden ÜZERİNE YAZILMIYOR, siliniyor:** rezervasyon ve mesajda satır duruyor,
+kişisel alanlar temizleniyor — çünkü kaydın kendisi ticari bir belge. Favori
+satırının kişisel veriden başka bir içeriği YOK: temizlenecek alanı yok, geriye
+anlamsız bir bağ kalırdı.
+
+⚠️ **Yabancı anahtar CASCADE bunu YAPMIYOR.** CASCADE yalnız kullanıcı SATIRI
+silinseydi çalışırdı; anonimleştirme satırı silmiyor, üzerine yazıyor. Silme
+satırı olmasaydı kapatılmış bir hesabın beğeni listesi veritabanında olduğu
+gibi kalır ve bunu hiçbir ekran göstermezdi.
+**Kanıt:** silme satırı koddan çıkarıldığında
+`Closing_the_account_deletes_favorite_boats` kırmızıya döndü.
+
+**Yayından kalkan tekne listeden ÇIKARILMIYOR, `isAvailable = false` ile
+işaretleniyor.** Sessizce çıkarılsaydı kullanıcının listesi sebebi görünmeden
+kısalır ve "ben bunu kaydetmiştim" sorusunun cevabı hiçbir yerde olmazdı.
+Eklemede ise yayın şartı VAR: müşteri o tekneyi zaten hiçbir ekranda göremiyor,
+eklenebilseydi kimlik denenerek yayınlanmamış teknelerin varlığı öğrenilirdi.
+
+**Favori hareketleri olay günlüğüne YAZILMIYOR** — "izi başka tabloda kalmayan
+istek günlüğe yazılır" kuralına bilerek açılan istisna. Beğeni listesi kişisel
+veri, olay günlüğü temizlenemez; favoriyi ÇIKARMAK o veriyi silme hakkını
+kullanmaktır ve çıkarmayı kalıcı bir tabloya yazmak tam olarak o hakkı
+geçersiz kılardı.
+
+**`PUT` seçildi, `POST` değil:** işlem idempotent, aynı adrese ikinci istek
+aynı durumu bırakıyor. Kalp simgesine iki kez dokunan kullanıcı hata görmemeli.
+
+**Fiyat kartta YOK:** fiyat tarihe, kişi sayısına ve satış biçimine göre
+değişiyor, favoride üçü de belli değil. Bağlayıcı olmayan bir "başlangıç
+fiyatı", favoriden tıklayan müşteriye ilk ekranda farklı bir tutar göstermek
+olurdu.
+
+---
+
+## 2026-09-04 (8) — Bildirim tercihi: bildirim değil KANAL kapatılır
+
+**Karar:** `NotificationPreferences` tablosu üç alan taşıyor —
+`EmailEnabled`, `SmsEnabled`, `ReviewInvitationsEnabled`. Rezervasyon onayı ve
+iptal bildirimi için **alan yok ve olmayacak**.
+
+**Neden:** Biniş kodu onay mesajında, iade tutarı iptal mesajında. Bunlar
+kapatılabilir bildirim değil. Kullanıcının onlar üzerindeki tek denetimi hangi
+KANALDAN alacağı.
+
+**Alan hiç var olmazsa kapatılacak bir şey de olmaz** — "istemciden tutar
+alınmaz" kuralıyla aynı akıl: bir denetim eklemektense, denetlenecek durumu
+imkânsız kılmak.
+
+**En az bir kanal açık kalmak zorunda ve kural VERİTABANINDA**
+(`CK_NotificationPreferences_AtLeastOneChannel`). Yalnız uygulama kodunda
+olsaydı, denetimi atlayan yeni bir yazma yolu müşteriyi rezervasyon kodunu hiç
+alamayacak hâle getirirdi — ve bu iskeleye varana kadar hiçbir yerde
+görünmezdi.
+**Kanıt:** canlıda `psql` ile doğrudan `UPDATE` denendi, veritabanı reddetti.
+
+**Bugün TAMAMEN kapatılabilen tek bildirim yorum daveti.** Liste bilerek kısa:
+her satırın karşılığında onu GÖNDEREN yerde bir denetim var. Denetimi olmayan
+bir satır, açılıp kapanan ama hiçbir şey yapmayan bir düğme olurdu — bu
+projede beş kez tekrarlanan hata sınıfı.
+
+**Tercih ALICI adresine göre okunuyor, isteği yapana göre değil.** Üye biri
+arkadaşı adına rezervasyon yaptığında bildirim arkadaşına gidiyor;
+rezervasyonu yapanın "bana SMS gelmesin" tercihine bakmak arkadaşının biniş
+kodunu susturmak olurdu.
+Telefonla arama YAPILMIYOR: `Users.Phone` benzersiz değil, aynı numarayı
+taşıyan iki hesapta hangisinin tercihi geçerli olurdu belirsiz kalırdı.
+Rezervasyon bildiriminde e-posta ve telefon aynı iletişim satırından geldiği
+için e-postadan bulunan tercih ikisini de yönetiyor.
+
+**Satır yalnız kullanıcı bir şey DEĞİŞTİRDİĞİNDE yazılıyor**; olmayan satır
+"hepsi açık" demek. Kayıt anında herkese satır açılsaydı tablo kullanıcı
+sayısı kadar büyür ve satırların ezici çoğunluğu varsayılanı tekrar ederdi.
+
+**Yorum daveti işinde: e-posta gitmese bile davet satırı YAZILIYOR.** İki
+sebep, ikisi de sessiz:
+1. Yazılmasaydı aday her koşuda yeniden seçilir, iş sonsuza kadar aynı
+   rezervasyonları tarardı.
+2. Kullanıcı tercihini sonradan açtığında aylar öncesinin turları için toplu
+   davet giderdi.
+
+**Kanıt:** iki mutasyon, ikisi de yakalandı — kanal kapısı etkisiz hâle
+getirildi (2 kırmızı), yorum daveti vazgeçme kapısı kaldırıldı (1 kırmızı).
+
+---
+
+## 2026-09-04 (9) — `S-27`: işletme müşterinin e-postasını ve telefonunu GÖRMEZ
+
+**Karar (Mert):** `GET /api/partner/reservations` yanıtından `contactEmail` ve
+`contactPhone` **kaldırıldı**. `contactFullName` kalıyor.
+
+**Neden — ve gerekçe bizim düşündüğümüz değil.** Ben soruyu KVKK sorusu olarak
+sormuştum ve karşı gerekçem "hava muhalefetinde işletme müşteriye ulaşamazsa
+onu iskelede bekletir" idi. Mert'in sebebi başka:
+
+> *"işletme müşterinin e-posta ve telefonunu görüp kendisi başka yerden
+> rezervasyon yaptırabilir"*
+
+Yani mesele gizlilik değil **aracıdan kaçış**. İşletme müşteriye doğrudan
+ulaşabilirse ikinci turu platform dışında satar ve komisyonun tamamı kaybolur.
+Bu, ürünün gelir modelinin merkezinde duran bir risk ve teknik bir soru olarak
+sorulduğunda görünmüyordu.
+
+**Yerine konan akış:** işletme destek talebi açar, durumu anlatır, müşteriye
+platform haber verir. Yani ihtiyaç inkâr edilmiyor, ARACIYA bağlanıyor.
+
+**`2026-08-30` kararını iptal eder** — o gün uç bu alanlarla yazılmıştı.
+
+**Testi alan üzerinden değil SERİLEŞTİRİLMİŞ GÖVDE üzerinden yazıldı.**
+Kaldırılmış bir özelliğe başvuran test derlenmez, yani yasağı koruyan hiçbir
+şey kalmazdı. Gövdeyi okuyan test alanlar geri eklendiğinde kırmızıya dönüyor
+ve kurulumda değerler GERÇEKTEN var — kurulum boş bıraksaydı test, alanlar geri
+eklense bile yeşil kalırdı.
+
+**Kanıt:** alanlar geri eklenerek mutasyon denendi, test kırmızıya döndü.
+Canlı yanıtta 16 alan var, `contactEmail` ve `contactPhone` yok, gövdenin
+tamamında tek bir `@` işareti bile geçmiyor.
+
+---
+
+## 2026-09-04 (10) — Mert'in 29 cevabı: API tarafını bağlayanlar
+
+Cevaplar `migrate-design-to-frontend` oturumu üzerinden toplu olarak geldi.
+Buraya yalnız **API'yi bağlayanlar** ve **gerekçesi bizim varsaydığımızdan
+farklı olanlar** yazılıyor; tam liste [[domain-gereksinimler]] 2026-09-04.
+
+### Para ve vergi
+
+**`S-21` — komisyon matrahı DEĞİŞMİYOR ama çerçeve yanlıştı.**
+Ben soruyu *"platform, işletmenin devlete borçlu olduğu vergiden de komisyon
+alıyor, kasıtlı mı?"* diye sormuştum. Mert:
+
+> *"İşletmeler teknelerinin fiyatlarını kendileri belirler (KDV dahil ederek
+> fiyatlarını koyarlar), biz sadece aracı olduğumuz için ücreti alacağız"*
+
+**Neden çerçevem yanlıştı:** liste fiyatı platformun hesapladığı bir tutar
+değil, **işletmenin koyduğu KDV dahil fiyat**. Platform o fiyatın yüzdesini
+alıyor. Yani "verginin üzerinden komisyon" diye bir şey yok; komisyon
+işletmenin kendi belirlediği rakamın yüzdesi. Bugünkü `grandTotal` üzerinden
+hesap **doğru**, kod değişmiyor.
+
+**`S-20` + `57` — KDV oranı rezervasyona DONDURULACAK.**
+**Neden:** diğer beş para alanı (birim fiyat, komisyon oranı, kur, kupon payı,
+kupon finansörü) zaten donduruluyor. Oran sonradan eklenirse geçmiş satırların
+o günkü oranı **geriye dönük üretilemez** — vergi oranı devlet kararıyla
+değişen bir sayı ve değiştiği gün eski satırlar sessizce yanlış okunur.
+
+**`59` — TEK ORAN, kalem başına ayrı oran YOK.**
+> *"günün sonunda ne kadar ücret çıkarsa ona göre bir KDV oranı, her birisi
+> için ayrı ayrı KDV oranları olmayacak"*
+
+**Neden önemli:** ek hizmet/menü satırına ayrı oran kolonu AÇILMAYACAK. Şema
+kalem bazlı oranı ifade edebilir hâle getirilirse, kimse istemediği hâlde
+ileride iki farklı hesabın yan yana yaşadığı bir tablo doğar.
+
+**`S-12` açık ucu — kademeli iadede komisyon TAM alınır.**
+**Neden:** iptal maliyeti işletmede kalıyor; platform aracılık hizmetini
+vermiş oluyor. `A-27` artık tahmin etmeden yazılabilir.
+
+### Altyapı
+
+**`S-19` — `KnownProxies` = `127.0.0.1`.** API ve Next **aynı makinede**
+koşacak. **Neden yayın engelleyiciydi:** liste boşken uygulama Production'da
+hiç açılmıyor; guard gevşetilseydi daha kötü olurdu — hız sınırı bütün
+trafiği tek istemci sayardı.
+
+**E-posta ve SMS — Postmark + Netgsm.** İkisi de açılış guard'ının beklediği
+değerler; yapılandırma işi, kod değişmiyor.
+
+**`S-24` — S3 ya da DigitalOcean Spaces, başlangıçta ücretsiz katman.**
+Açık okuma **iki öneke**: `boat-media/*` ve `blog-media/*`.
+⚠️ Tek önek yazılırsa blog kapakları üretimde **sessizce** kırılır — uygulama
+tarafında hiçbir hata olmaz → 2026-09-04 (6).
+
+**`A-41` — İYZİCO DEĞİL, PARATİKA.**
+> *"Paratikaya geçelim onda pazar yeri özelliği vardı."*
+
+**Neden:** İyzico hesabında pazaryeri özelliği açılamadı ve ölçüldü
+(`POST /onboarding/submerchant` → `2000`). Paratika'yı eski sistem zaten
+kullanıyordu, alt üye iş yeri desteği var.
+**Bedeli:** `IyzicoPaymentProvider` çöpe gitmiyor ama **kullanılmayacak**;
+`IPaymentProvider` arayüzü sağlayıcının yapılandırmadan seçilmesini zaten
+sağlıyor, yani değişen tek şey yeni bir uygulama sınıfı → 2026-08-25 kararı
+burada işe yarıyor.
+⚠️ Sandbox'ta uçtan uca doğrulanan İyzico akışı artık **kanıt değil**;
+Paratika için baştan ölçülmeli.
+
+**`A-42` — belgeler BAŞVURUDA toplanacak ve IBAN ZORUNLU.**
+**Neden:** alıcı kaydı açılamayan işletmelerin birikmesi, satışa açılamayan
+işletme demek. Sürtünme artıyor, kabul edildi.
+
+### Ürün
+
+**`13` — front-end'deki 7 statik blog yazısı veritabanına GİRMEYECEK.**
+Blog gerçek yazılarla sıfırdan dolacak. **Neden API'yi ilgilendiriyor:**
+kategori adları o yazılardan türetilmeyecek; göç işi yok.
+
+**`14` — reddedilen işletme başvurusu yeniden başvurabilir.**
+**Neden not düşülüyor:** `TaxNumber` benzersiz, yani "yeniden başvuru" mevcut
+kaydın yeniden açılması demek, ikinci satır değil. Ret ucu bunu bilerek
+yazılmalı.
+
+**`15` — yorum daveti tur BİTER BİTMEZ, hatırlatma AÇIK.**
+Bugünkü 3 saatlik gecikme benim tahminimdi, kalkıyor.
+
+**`S-28` — 10 kayıt DÜZELTİLSİN.** Yolcu listesi bayrağı teknenin bugünkü
+anahtarına göre geriye dönük düzeltilecek.
+**Neden ilkeye aykırı görünmesine rağmen:** "rezervasyon satın alma anının
+fotoğrafıdır" kuralı, o fotoğrafın DOĞRU çekildiği varsayımına dayanıyor.
+Burada fotoğraf hatalıydı (`A-74`); düzeltmek fotoğrafı değiştirmek değil,
+hiç çekilmemiş olanı çekmek.
+
+**`S-22` — `a04-*` tohum satırları SİLİNSİN**, bağlı test teknesi başka tipe
+taşınsın.
+
+**`A-07` — yanıt şeması HEPSİNE yazılacak.** 114 uç, mekanik iş.
+
+**`S-18` — 10 mavi tur bölgesi ONAYLANDI.**
+
+**`28` — 26 Ağustos'ta aldığım geçici kararların tamamı TOPLU ONAYLANDI**
+→ [[api-benim-kararlarim]].
+
+**`24` — testlerdeki iki ad değişikliği KALSIN**, demo aşaması.
+
+**Veri göçü ERTELENDİ** — önce site ayağa kalkacak.
+
+### Hâlâ cevapsız
+
+**`S-25`** (biniş jetonu geri üretilebilir olsun mu) — Mert *"anlamadım"*
+dedi, soru ürün diliyle yeniden soruluyor. `W-66` QR işi buna bağlı.
+**`S-31`** (blog gövdesi düz metin mi zengin metin mi) — bugün açıldı.
+**`G-13`** mali müşavir teyidi — henüz sorulmadı.
+
+---
+
+## 2026-09-04 (11) — `S-20`: KDV ORANI rezervasyona donduruluyor, tutar değil
+
+**Karar:** `Reservations.VatRate numeric(5,2) NOT NULL`, kısıt `0..100`.
+Değer `Quote` üzerinden akıyor — yani rezervasyona donan diğer beş para
+alanıyla aynı yoldan. Vergi TUTARI saklanmıyor.
+
+**Neden tutar değil oran:** tutar toplamdan türetilebiliyor
+(`GrandTotalTry × VatRate / (100 + VatRate)` — fiyat KDV DAHİL, çünkü işletme
+kendi fiyatını vergiyi içine katarak koyuyor → 2026-09-04 (10) `S-21`).
+İkisini birden saklamak, yuvarlamada birinin diğerinden kaymasına açık kapı
+bırakırdı ve o an hangisinin doğru olduğu belirsiz kalırdı.
+
+**Neden dondurulması geri alınamaz bir iş:** oran devlet kararıyla değişiyor.
+Kolon sonradan eklenseydi, eklendiği andan ÖNCEKİ her rezervasyonun o günkü
+oranı **geriye dönük üretilemezdi** — tahmin edilerek okunurdu ve tahmin
+hiçbir yerde görünmezdi.
+
+**Oranın KAYNAĞI bugün yapılandırma** (`Billing:VatRate`), `TaxOptions` düz
+sınıfı üzerinden. `Application` katmanının NuGet bağımsızlığı korunuyor —
+`AppUrlOptions` ile aynı desen.
+⚠️ **Kaynak sorusu AÇIK** → `S-32`: oran tarihli bir tabloya taşınmalı mı?
+Taşınırsa değişen tek şey bu değerin nereden okunduğu; rezervasyondaki kolon
+aynı kalıyor. Yani pahalı olan iş bugün yapıldı, ucuz olan ertelendi.
+
+**Üretimde oran AÇIKÇA verilmek zorunda** (15. açılış kapısı). Geliştirmede
+%20'ye düşüyor; üretimde de düşseydi, oranın değiştiği gün yapılandırmayı
+güncellemeyi unutan bir dağıtım **kesilen her faturayı** yanlış oranla
+üretirdi ve hiçbir hata çıkmazdı. Belirti aylar sonra mali müşavirden gelirdi
+— ve oran rezervasyona dondurulduğu için yanlış satırlar kalıcı olurdu.
+Kapı bildirim kapısından ÖNCE duruyor.
+
+**`vatRate` müşteriye AÇIK dönüyor**, komisyon oranı gibi gizlenmiyor.
+Ayrım: komisyon platform ile işletme arasındaki ticari şart, KDV devletin
+ilan ettiği bir sayı ve fiyat KDV dahil ilan ediliyor — müşteri ödediğinin ne
+kadarının vergi olduğunu görebilmeli.
+`A_new_field_cannot_silently_widen_the_response` testi tam da amacına uygun
+davranıp durdurdu ve soruyu sordurdu; cevap yazılıp listeye eklendi.
+
+**Migration ELLE düzeltildi, üretilen hâliyle bırakılmadı:**
+1. Varsayılan `0` yerine `20` — EF'in ürettiği sıfır mevcut her rezervasyonu
+   "KDV'siz" damgalardı ve o satırlar kalıcı.
+2. Varsayılan aynı işlemde `DROP DEFAULT` — kalıcı bir `DEFAULT` model ile
+   veritabanını sessizce ayrıştırır → [[api-desenler]]
+3. Kısıt `NOT VALID` + `VALIDATE` — EF'in düz `ADD CONSTRAINT`'i tüm satırları
+   tararken ACCESS EXCLUSIVE tutuyor ve `Reservations` bu şemanın en sıcak
+   tablosu.
+
+**Kanıt:** dondurma satırı kaldırılarak mutasyon denendi, iki test kırmızıya
+döndü. Canlı: fiyat sorgusunda `vatRate: 20`, komisyon sızmıyor, türetilen
+vergi `1000 × 20/120 = 166.67`. Canlı rezervasyon `AZ6QSV9B` satırında
+`VatRate = 20.00` dondu. Veritabanında `column_default` boş, kısıt
+`convalidated = t`, 80 eski satır 20 ile dolduruldu.
+
+---
+
+## 2026-09-04 (12) — `S-28` ve `S-22`: iki veri düzeltmesi, ikisi de migration
+
+**Karar:** İkisi de elle SQL değil **migration** olarak yazıldı.
+**Neden:** elle çalıştırılan bir düzeltme hiçbir yerde kayıtlı olmaz; hangi
+veritabanına uygulandığı, ne zaman ve neyi değiştirdiği yalnız o an bilinir.
+Migration sürümlü, tekrarlanabilir ve gerekçesi kodun içinde.
+
+### `S-28` — yolcu listesi bayrağı (`A-81`)
+
+**Kapsam TARİHLE sınırlı**, koşulsuz değil. Düzeltmeden (`c33feed`,
+2026-08-31 02:07:33 UTC) SONRA yazılan satırlar doğru ve bir teknenin bayrağı
+meşru olarak değişmiş olabilir; tarihsiz bir güncelleme o meşru farkları da
+sessizce ezerdi.
+**Ölçüldü:** o andan sonra yazılmış ayrışık satır **sıfır** — yani `A-74`
+gerçekten çalışıyor ve migration yalnız geçmişe dokunuyor.
+
+⚠️ **Mert'e sorulan sayı 10'du, gerçek sayı 15.** Ters yönde 5 satır daha
+vardı (rezervasyon `true`, tekne `false`): eski kural çok günlü turları
+yanlışlıkla işaretliyordu. Soruyu ben tek yönü ölçerek yazmıştım. Kural
+"teknenin bugünkü anahtarına göre düzelt" olduğu için ikisi de kapsamda;
+tek yön düzeltilseydi ayrışıklık yerinde kalırdı.
+
+### `S-22` — `a04-` tohum satırları (`A-82`)
+
+⚠️ **"Temizlik" kelimesi işin küçüklüğünü ima ediyordu, ölçüm öyle olmadığını
+gösterdi: bu satırlara 38 REZERVASYON bağlıydı.** Doğrudan silme yabancı
+anahtara takılır ya da daha kötüsü, farklı bir sırayla veri götürürdü.
+
+Sıra: önce TAŞI, sonra sil. Rezervasyonlar `RentalTypes`'a değil
+`BoatRentalTypes`'a bağlı olduğu için satış biçiminin işaret ettiği kiralama
+tipini değiştirmek rezervasyonlara dokunmuyor.
+
+Hedefler **anlam olarak birebir eş** seçildi, benzer değil:
+
+| Kaynak | Hedef | Neden bu |
+|---|---|---|
+| `a04-gulet` | `gulet` | aynı tip, çevirisi var |
+| `a04-bodrum` | `bodrum` | aynı bölge |
+| `a04-gunluk-tekne` | `gunluk-tekne` | `WithinDay` / `PerPerson` — birebir |
+| `a04-konaklamali` | `konaklamali` | `MultiDay` / `PerBoat` — birebir |
+
+Son ikisi kritik: `DurationKind` ve `PricingStrategy` fiyatın hangi alanlara
+yazıldığını belirliyor. Farklı süre biçimindeki bir tipe taşımak, mevcut 38
+rezervasyonun anlamını **sessizce** değiştirirdi.
+
+`IX_BoatRentalTypes_BoatRental` benzersiz; taşınan teknenin hedef tiplere
+sahip OLMADIĞI önceden ölçüldü. Olsaydı migration benzersizlik hatasıyla
+düşerdi — sessiz bozulma değil.
+
+**Kanıt:** uygulama öncesi 15 ayrışık rezervasyon / 4 `a04-` satırı / teknenin
+38 rezervasyonu; sonrası **0 / 0 / 38**. Yani düzeltmeler yapıldı ve hiçbir
+rezervasyon kaybolmadı. Canlı: arama sonucundaki tip adları yalnız `Gulet`,
+`lookups` gövdesinde `a04-` geçmiyor.
+
+**İkisinin de `Down()`'ı bilerek BOŞ.** Eski hatalı değerler hiçbir yerde
+saklanmıyor; "önceki hâle dön" diye bir hâl yok. Yanlış bir düzeltme yapılırsa
+çözüm geri almak değil, YENİ bir düzeltme migration'ı yazmaktır.
+
+---
+
+## 2026-09-04 (13) — `S-31`: blog gövdesi zengin metin, temizleme YAZMA yolunda
+
+**Karar (Mert):** *"b olabilir ya da CKEditör de olabilir"* — seçim teknik
+tarafa bırakıldı, web oturumu **CKEditor** seçti. Gerekçesi benim Markdown
+önerimi çürüttü ve haklıydı: yazarlar tekne işletmecisi ve kaptan;
+`**kalın**` yazmayı öğrenmek gerçek bir engel ve blogun amacı işletmeyi
+yazmaya TEŞVİK etmek. Benim "temizleme yüzeyi en dar olan" gerekçem
+geliştiriciyi koruyordu, kullanıcıyı değil.
+
+**Uygulama:** `HtmlSanitizer` (paket `HtmlSanitizer` 9.2.1039, ad alanı
+`Ganss.Xss`) `Infrastructure`'a eklendi. Arayüz `IHtmlContentSanitizer`
+`Application`'da — o katman hiçbir NuGet paketine bağlı değil, `IImageProcessor`
+ile aynı ayrım.
+
+**Temizleme YAZMA yolunda, okuma yolunda DEĞİL.** Okumada temizlenseydi
+veritabanında kirli metin durur ve yarın başka bir istemci (mobil, e-posta
+özeti, dışa aktarma) onu ham basardı. Kirli veriyi hiç saklamamak, her
+okuyucunun temizlemeyi hatırlamasını ummaktan güvenli.
+**Kanıt:** canlıda gönderilen betik veritabanı satırında da yok.
+
+**Politika izin listesi, yasak listesi DEĞİL.** Yasak listesi "aklıma gelen
+tehlikeli şeyler" demektir ve aklına gelmeyen her şey geçer. Kütüphanenin
+varsayılan listeleri önce BOŞALTILIYOR — boşaltılmasaydı bizim listemiz
+varsayılana EKLENİR ve "yalnız şunlar" niyeti sessizce "şunlar da" olurdu.
+**Kanıt:** boşaltma satırı kaldırılınca üç test kırmızıya döndü.
+
+**Neden burası tek savunma hattı:** yazıyı platform onaylıyor ama onaylayan
+kişi METNE bakıyor, kaynak koda değil. Onay bir `script` etiketini yakalamaz.
+
+### Ölçerek öğrenilen iki şey — ikisi de kütüphane varsayımıydı
+
+**1. Boş izin listesi metni de siliyor.** Başlık ve özetten etiketleri düşürmek
+için boş listeli ikinci bir temizleyici kuruldu; `<h1>Gökova</h1>` tamamen
+kayboldu. Yani "etiketi düşür" niyeti "yazıyı da sil" olarak çalışıyordu.
+Çözüm `KeepChildNodes = true`.
+Test yazılmasaydı bütün başlıklar sessizce boşalır ve doğrulama "başlık boş
+olamaz" derdi — belirti, yazarın hiçbir başlığı kaydedememesi olurdu.
+
+**2. Betik gövdesi başlıkta düz metne dönüyor.** `<script>alert(1)</script>`
+bir başlıkta `alert(1)` olarak kalıyor. Bunu engellemek için başlığı önce
+zengin temizleyiciden geçirmek denendi ve o yol `<h1>` içindeki gerçek
+başlığı da siliyordu — düzeltme, çözdüğünden büyüğünü bozuyordu.
+**Kalan durum kabul edildi ve TESTE YAZILDI:** başlık düz metin olarak
+saklanıp kaçışlanarak gösteriliyor, hiçbir yerde HTML basılmıyor. Saçma bir
+başlık, kaybolan bir başlıktan iyidir. Test bu gerçeği yazıyor çünkü
+yazılmazsa bir sonraki okuyan kişi bunu hata sanıp "düzeltir" ve başlıkları
+yeniden kaybeder.
+
+**Kanıt (canlı, uçtan uca):** gönderilen gövde
+`<h2>` + `<strong>` + `<script>` + `onclick` + `javascript:` bağlantı +
+`<iframe>` + `<style>` içeriyordu. Saklanan hâli:
+`<h2>Koylar</h2><p><strong>Kalın</strong> metin</p><p>tıkla</p><a>kötü</a><a href="https://ornek.test">iyi</a>`
+— tehlikeli olanların hepsi düştü, biçimlendirme ve geçerli bağlantı kaldı.
+Başlık `<h1>Gökova</h1> rehberi` → `Gökova rehberi`.
+
+---
+
+## 2026-09-04 (14) — `S-25`: ayrı biniş bileti, asıl jetona dokunulmuyor
+
+**Karar (Mert):** (b) — biniş belgesi açıldığında **ayrı, süreli bir bilet**
+üretilir. Rezervasyonun asıl biniş jetonu olduğu gibi kalır.
+
+**Neden (a) elendi:** jetonun düz metnini saklamak belgeyi her zaman yeniden
+bastırırdı ama veritabanını gören herkes başkasının biniş anahtarını okurdu.
+
+**Ne yapıldı:** `BoardingTickets` tablosu — `ReservationId`, `TokenSha256`,
+`IssuedAt`, `ExpiresAt`, `RevokedAt`. Uç:
+`POST /api/reservations/{code}/boarding-ticket`, gövdesi ve kimlik teyidi
+sorgulama ucuyla **aynı**. İkinci bir kimlik yolu yazılmadı — yazılsaydı
+birinin sıkılaştırılması diğerini açık bırakırdı.
+
+**Karekod GÖRSELİ değil taşıyacağı METİN dönüyor.** Görsel üretmek sunucuya
+çizim kütüphanesi ve depolama sorusu getirirdi; arayüz karekodu zaten çiziyor.
+Ayrıca metin, karekod okunamadığında elle girilebilecek tek şey.
+
+**Yeni bilet eskisini İPTAL EDER** ve kural veritabanında: `RevokedAt IS NULL`
+koşullu benzersiz indeks, rezervasyon başına tek geçerli bilet bırakıyor.
+Uygulama kodunda kalsaydı iptali unutan bir yazma yolu iki geçerli bilet
+bırakırdı ve bu hiçbir yerde hata üretmezdi. "Telefonumu kaybettim" isteğinin
+asıl karşılığı bu.
+
+**Ömür kalkıştan 12 saat sonrası**, tur bitişi DEĞİL — Mert'e ilettiğim uyarı
+karara girdi. Bitişte ölen bilet, geç kalkan ya da uzayan turda kaptanın
+elinde ölür ve o an kimse destek hattı arayacak durumda olmaz. Sayı ölçülmüş
+değil seçilmiş; tek sabit, değiştirmesi ucuz.
+
+**Okutma İKİ jetonu da tanıyor:** asıl jeton ve geçerli bilet. Bilet asıl
+jetonun yerine geçmiyor, yanına ekleniyor — yoksa bilet basılmamış eski
+rezervasyonların hepsi sessizce okutulamaz hâle gelirdi.
+
+**Ödenmemiş rezervasyona bilet verilmiyor:** koltuklar tutmada ve süre dolunca
+serbest bırakılıyor; verilseydi müşteri birazdan kaybolacak bir rezervasyonun
+belgesini eline alırdı.
+
+### ⚠️ Testlerimden biri doğru sonucu YANLIŞ SEBEPTEN veriyordu
+
+Süre testini önce "biletin bitişinden sonra okut" diye kurmuştum. O anda tur
+da bitmiş oluyor, yani okutma zaten başka bir sebeple reddediliyordu — süre
+şartı koddan tamamen çıkarıldığında **test yeşil kalıyordu.**
+
+Mutasyon bunu yakaladı. Kurulum tersine çevrildi: biletin bitişi geçmişe
+çekiliyor ve okutma her şeyin geçerli olduğu normal anda deneniyor, yani tek
+değişken biletin süresi. Yanına olumlu ikizi de yazıldı.
+
+**Kanıt:** iki mutasyon, ikisi de yakalandı — iptal satırı kaldırıldı (2
+kırmızı), süre şartı kaldırıldı (1 kırmızı, düzeltilmiş testle).
+**Kanıt (canlı):** yanlış e-posta `400 "Rezervasyon bulunamadı."`; doğru
+e-posta jeton + `expiresAt` döndürdü; ikinci bilet basıldığında veritabanında
+**2 bilet, 1 geçerli**.
+
+---
+
+## 2026-09-05 — İade önizlemesi: yeni alan, ve hesap TEK yerde
+
+**Karar:** Sorgulama ve liste yanıtlarına `refundPreviewRate` /
+`refundPreviewTry` eklendi — yalnız **iptal edilebilir** rezervasyonda dolu.
+
+**Neden mevcut alanlar doldurulmadı:** `cancellationRefundRate` ve
+`refundDueTry` bir KAYIT — *"iptal edilirken şu oran uygulandı"* — ve yalnız
+iptal edilmiş satırda dolu. Önizleme bir TAHMİN. Aynı ada iki anlam yüklemek,
+okuyanın hangisini gördüğünü satırdan satıra değiştirirdi.
+
+**Bulguyu web oturumu getirdi ve kendi varsayımını düzelterek getirdi:** o iki
+alanı önizleme sanıp ekrana bağlamaya başlamış, ölçünce kayıt olduklarını
+görmüş. Bugün müşteri, geri alınamaz bir işlemi sonucunu görmeden onaylıyordu
+ve `S-12` ile birlikte bunun somut bedeli var: kalkışa 24 saatten az kala
+**iade sıfır**.
+
+**Hesap `RefundPolicy` içine ÇIKARILDI ve iptal ucu da oradan çağırıyor.**
+Kritik olan kuralın kendisi değil tekliği: iki kopya olsaydı biri ekranda
+gösterilir diğeri iptalde uygulanırdı ve ayrıştıklarında **ikisi de kendi
+kodunda doğru** görünürdü. Müşteri ekranda %50 görüp hesabına %0 geçtiğinde
+bunu kimse hata olarak göremezdi.
+
+**Önizleme SQL'de değil bellekte hesaplanıyor:** SQL'e taşınsaydı kademe
+eşikleri ikinci bir yerde daha yazılır ve politika değiştiğinde biri sessizce
+eskide kalırdı.
+
+**Yalnız `CanCancel` doğruyken dolduruluyor.** Her satırda doldurulsaydı,
+iptal edilemeyen bir rezervasyonda "iade edilecek tutar" gibi okunan bir sayı
+dururdu ve müşteri onu bir vaat sanardı.
+
+**Kanıt:** mutasyon — önizleme yanıta bağlanmayınca test kırmızıya döndü.
+Sınır anları ayrı ayrı ölçüldü (72/48/47.99/24/23.99/0/−1 saat); tam 48:00 ve
+tam 24:00 müşteri lehine üst kademede.
+**Kanıt (canlı):** `canCancel: true`, `refundPreviewRate: 100`,
+`refundPreviewTry: 1500.0`, `cancellationRefundRate: null` — tahmin dolu,
+kayıt boş.
+
+---
+
+## 2026-09-05 (2) — `S-32`: KDV oranı tarihli tabloya taşındı
+
+**Karar (Mert):** oranın kaynağı yapılandırma değil **tarihli tablo** olsun.
+
+**Neden:** yapılandırmadaki tek bir sayı, oranın NE ZAMAN değiştiğini ifade
+edemiyor. Devlet oranı bir tarihten geçerli olmak üzere değiştiriyor; tek
+alanlı bir kaynakta yeni oranı ancak o gün, elle ve dağıtımla yazmak mümkün
+ve yazmayı unutan bir sabah bütün faturalar eski oranla kesiliyor. Tarihli
+tabloda değişiklik önceden girilebiliyor ve kimsenin o sabah bir şey
+yapmasına gerek kalmıyor.
+
+**Ne yapıldı:** `TaxRates` (`Rate`, `EffectiveFrom`, `Note`, `CreatedAt`).
+Yürürlükteki oran, `EffectiveFrom` şu andan küçük ya da eşit satırların **en
+yenisi**. `TaxOptions` düz sınıfı, DI kaydı, `Billing:VatRate` yapılandırması
+ve 15. açılış kapısı **kaldırıldı** — hepsi tek bir tabloyla değişti.
+
+**Kazanç, "yapılandırma yerine tablo"dan büyük:** ileri tarihli bir satır
+bugünden girilebiliyor ve tarihi gelene kadar hiçbir etkisi olmuyor. Oranın
+1 Ocak'ta değişeceğini bilmek artık işe yarıyor; önceki hâlde yeni oranı
+ancak o gün, elle, dağıtımla yazmak mümkündü ve yazmayı unutan bir sabah
+bütün faturaları eski oranla keserdi.
+
+**Oran `PricingContext` üzerinden taşınıyor**, komisyon oranıyla aynı
+sorgudan. Ayrı bir yoldan gelseydi bir gün biri güncellenip diğeri
+unutulurdu. `PricingService` artık vergi için hiçbir bağımlılık almıyor.
+
+**Tohum satırı migration'ın PARÇASI.** Yürürlükteki oran bulunamazsa hesap
+sıfır oran taşır; boş bir tablo bütün satışı sessizce vergisiz yapardı.
+Satır `2000-01-01`'den geçerli, yani mevcut rezervasyonların kesildiği dönemi
+de kapsıyor. Değer %20 — kaldırılan yapılandırmanın taşıdığı değerin aynısı,
+yani bu migration onu **devralıyor**.
+
+**`EffectiveFrom` benzersiz.** Aynı ana iki oran yazılabilseydi "o an hangi
+oran yürürlükteydi" sorusunun cevabı sorgunun sıralamasına kalırdı ve iki
+farklı kod yolu iki farklı cevap verebilirdi.
+
+**Kaldırılan açılış kapısı yerine ne kondu:** hiçbir şey — ve bu bilinçli.
+Kapının işi "oran yapılandırmada tanımsız kalmasın"dı; artık oran
+yapılandırmada değil ve tablo migration'la doluyor. Kapı korunsaydı, olmayan
+bir ayarın varlığını kontrol ediyor olurdu.
+⚠️ İkisinin de yakalamadığı şey aynı: **YANLIŞ** bir oran. Onu ne kapı ne
+tablo görür; gören tek şey mali müşavir teyididir (`G-13`).
+
+**Kanıt:** mutasyon — yürürlük tarihi şartı kaldırılınca
+`Ileri_tarihli_oran_tarihi_gelene_kadar_etkisiz` kırmızıya döndü.
+**Kanıt (canlı):** fiyat sorgusu `vatRate: 20.0`, tabloda tek satır
+(`2000-01-01`, devralınan not). **573 test yeşil.**
+
+### ⚠️ Testim paylaşılan veritabanında başka testin satırını taşıdı
+
+İleri tarihli oranı geçmişe çekerken `Where(t => t.Rate == 21m)` yazmıştım.
+Testler aynı veritabanını paylaşıyor ve başka bir test de %21 yazıyordu; sorgu
+onun satırını da taşıdı ve benzersizlik kısıtı patladı.
+
+Ders `A-78`'deki ile aynı ailede: **paylaşılan veritabanında bir satırı
+ÖZELLİĞİNE göre bulmak, başkasının satırını bulmaktır.** Kimlikle bulunmalı.
+Bu hafta iki kez oldu — ilkinde sabit e-posta, ikincisinde oran.
+
+---
+
+## 2026-09-05 (3) — Slug üretiminde noktalı `İ` kusuru
+
+**Karar:** `Slugify` iki katmanlı düzeltildi ve mevcut bozuk adres
+yönlendirmeyle korunarak küçültüldü (`A-87`).
+
+**Neden — kusur sessizdi.** `ToLowerInvariant()` noktalı büyük `İ`'yi
+(U+0130) **küçültmüyor**, değişmeden bırakıyor. Ardından gelen `FormD`
+ayrıştırması onu `I` + birleşen noktaya bölüyor, nokta atılıyor ve geriye
+**BÜYÜK `I`** kalıyor. "Akdeniz İncisi" teknesi `akdeniz-Incisi` adresini
+almıştı:
+
+    /api/boats/akdeniz-Incisi  -> 200
+    /api/boats/akdeniz-incisi  -> 404   <- insanın yazacağı hâl
+
+Hiçbir yerde hata yok; yalnız paylaşılan bağlantı ölü. Bulguyu web oturumu
+getirdi.
+
+**İki katman, ve ikincisi asıl olan:**
+1. Büyük Türkçe harfler küçültmeden ÖNCE açık listeye eklendi.
+2. ASCII harf eklenirken **her zaman küçültülüyor**.
+
+Birincisi yalnız bilinen harfleri kapatır. İkincisi, ayrıştırmadan büyük
+ASCII harf çıkaran **bütün** durumları kapatır — hangileri olduğunu
+bilmesek de. Tek bir harfi düzeltmek, sınıfı açık bırakmak olurdu.
+
+**Test de KURALI tutuyor, harfi değil:** `A_generated_slug_never_contains_an_uppercase_letter`
+üretilen adresin tamamen küçük harf olduğunu doğruluyor.
+
+### ⚠️ Mutasyon ölçümünde kendi hatam
+
+İki katmanı **ayrı ayrı** kaldırdım ve ikisinde de test yeşil kaldı; "testim
+yolu geçmiyor" diye düşündüm. Gerçek sebep başkaydı: her katman diğerini
+örtüyordu. Kusuru üretmek için **ikisini birlikte** kaldırmak gerekiyordu ve
+öyle yapınca iki test de kırmızıya döndü.
+
+Ders: **savunması katmanlı bir kodda mutasyon tek katmanı kaldırarak
+ölçülemez.** Tek katman kaldırıldığında yeşil kalan test, "test boş" demek
+değil; "diğer katman çalışıyor" demek olabilir. Ayrımı yapmanın tek yolu
+kusuru gerçekten üretmek.
+
+### ⚠️ Yönlendirme ilk yazımda SESSİZCE yazılmadı
+
+Migration'ı `BoatSlugs` üzerinden yazmıştım — o tablo yalnız tekne YENİDEN
+ADLANDIRILDIĞINDA doluyor, kuruluşta değil. Kaynak yanlış olduğu için hiçbir
+satır bulunmadı ve yönlendirme **sessizce** yazılmadı; migration başarıyla
+tamamlandı. Ölçtüğümde `BoatSlugs` boştu.
+
+Düzeltildi: kaynak `Boats` oldu. Ders yine aynı — **varsayımı ölçmeden
+yazmak.** Bu kez varsayım "her teknenin bir slug geçmişi vardır" idi.
+
+**Kanıt (canlı):** `akdeniz-incisi` → `200`; `akdeniz-Incisi` → **`301`**,
+`Location: /api/boats/akdeniz-incisi`, izlenince `200`. Yeni tekne
+"İZMİR Ünlü Çağrı Deneme" → `izmir-unlu-cagri-deneme`.
+**575 test yeşil.**
+
+**Blog etkilenmiyor:** blog kısa adı kullanıcıdan geliyor ve doğrulama
+büyük harfi **reddediyor** (`400 InvalidSlug`), sessizce bozmuyor. Canlı
+ölçüldü: `İzmir-rehberi` → *"Kısa ad yalnız küçük harf, rakam ve tire
+içerebilir."*
+
+---
+
+## 2026-09-05 (4) — Kuponlar: üç tür, üç ayrı mekanizma
+
+**Karar (Mert, soru 61):** üç kupon türü olacak — kullandığım kuponlar, bana
+özel kuponlar, sitede listelenen genel kampanyalar.
+
+**Neden `Coupons.UserId` EKLENMEDİ:** kolon konsaydı aynı tablo iki anlam
+taşırdı — boş kolon "herkese açık kampanya", dolu kolon "kişiye özel". Kupon
+denetimi yazan her yeni kod yolu bu ayrımı hatırlamak zorunda kalır ve unutan
+biri kişisel kuponu herkese açar; hata sessizdir, kimse şikâyet etmez.
+Ayrı tablonun ikinci kazancı: bir kupon **birden çok** kişiye tanımlanabiliyor.
+Kolonla "on kişiye özel kampanya" için on ayrı kupon üretmek gerekirdi.
+
+| Tür | Mekanizma | Uç |
+|---|---|---|
+| Kullandıklarım | `CouponRedemptions` → rezervasyon → kullanıcı | `GET /api/coupons/mine` |
+| Bana özel | `CouponAssignments` (yeni tablo) | `GET /api/coupons/mine` |
+| Genel kampanya | `Coupons.IsPubliclyListed` (yeni kolon) | `GET /api/coupons` |
+
+**"Kodu bilene açık" dördüncü bir tür zaten vardı** ve dokunulmadı: ne
+listelenen ne tanımlı olan kupon. Amacı görünmemek.
+
+### Tanım FİYAT HESABINDA uygulanıyor
+
+Yeni red sebebi `CouponRejection.NotYours`. Tanımı olan kuponu yalnız tanımlı
+kullanıcılar kullanabiliyor; **giriş yapmamış çağıran da reddediliyor** —
+kimin olduğu bilinmeden "senin" denemez.
+
+Ayrı bir "önce giriş yap" sebebi AÇILMADI: açılsaydı, bir kodun kişiye özel
+olduğu bilgisi kimliksiz istekle öğrenilebilirdi.
+
+⚠️ Bu, `QuoteAsync`'e **çağıranın kimliğini** eklemeyi gerektirdi
+(`QuoteAsync(request, userId, ct)`, 36 çağrı yeri). İsteğe koymak mümkün
+değildi: istemciden gelen kimlik kimlik değildir.
+
+**Doğrulama hesap anında, yalnız rezervasyonda değil.** Yalnız rezervasyonda
+denetlenseydi müşteri fiyat ekranında indirimi görür, ödeme adımında
+reddedilirdi — "huninin sonunda düşen müşteri" → [[api-desenler]]
+
+### Son tanım kaldırılınca kupon PASİFE alınıyor
+
+Tanımı olmayan kupon kısıtsızdır. Bu kural olmasaydı kişiye özel bir kupon,
+tanımları silinince **sessizce** herkesin kullanabileceği bir kupona
+dönüşürdü.
+
+### Listelenen kupona kişi tanımlanamıyor
+
+İkisi bir arada olsaydı kupon hem sitede herkese görünür hem yalnız tanımlı
+kişiler kullanabilir olurdu: müşteri kodu ekranda görüp reddedilirdi ve sebebi
+hiçbir yerde yazmazdı. Aynı sebeple tanımlı kuponlar herkese açık listeden de
+**çıkarılıyor** — "listelensin" işareti taşısalar bile.
+
+### Yönetim yanıtı ayrı tip
+
+`Coupon` varlığı döndürülmedi: tanımların arkasındaki kullanıcı nesneleri,
+oluşturanın kimliği ve ileride eklenecek her alan kendiliğinden dışarı
+çıkardı → [[api-desenler]] "İç hesap nesnesi HTTP yanıtı değildir".
+Kullanım hakkı sayısı herkese açık listede YOK: "son 3 hak kaldı" platformun
+iç sayacını dışarı verirdi.
+
+**`coupon.read` / `coupon.write` katalogda 2026-08-24'ten beri duruyordu ve
+hiçbir uç kullanmıyordu** — verilebilen ama hiçbir şey açmayan iki yetki daha.
+İkisi de `IsPartnerAssignable = false`, yani duvar katalogda.
+
+**Kanıt:** iki mutasyon, ikisi de yakalandı — tanım denetimi kaldırıldı
+(1 kırmızı), son tanımda pasife alma kaldırıldı (1 kırmızı).
+**Kanıt (canlı):** `AYSEYE20` kuponu → Ayşe `indirim 580`, Can
+`0 + "size tanımlı değil"`, kimliksiz `0 + aynı mesaj`. Herkese açık listede
+yalnız `YAZ2026` görünüyor, `AYSEYE20` yok. **581 test yeşil.**
+
+⚠️ **Açık kalan:** `Coupon.PartnerId` ve `FundedBy = Partner` var, yani
+işletmenin karşıladığı kupon şemada ifade edilebiliyor — ama `coupon.write`
+işletmeye verilemiyor, yani işletme kendi kuponunu **yönetemiyor**. Bugün
+kuponu platform açıyor. Tutarsızlık gerçek; Mert'e sorulacak.
+
+## 2026-09-05 (5) — İşletme kendi kuponunu kendisi açar; `FundedBy` isteğe ASLA girmez
+
+`A-89`. Mert **(a)** dedi: *"işletme kendi kampanyasını kendisi açabilecek."*
+`coupon.read` / `coupon.write` artık `IsPartnerAssignable = true`; migration
+yetkileri **mevcut sahip rollerine geri doldurdu** (20 rol), çünkü sahip rolü
+verilebilir yetkileri yalnız **rol oluşturma anında** alıyor — yeni yetki eski
+rollere kendiliğinden inmiyor → [[api-desenler]].
+
+Uçlar `api/partner/coupons` altında ayrı bir controller'da; platform ucu
+(`api/admin/coupons`) olduğu gibi kaldı. **İki ucun sözleşmesi kasıtlı olarak
+farklı:** `SavePartnerCouponRequest` üç alanı **taşımıyor** — `FundedBy`,
+`PartnerId`, `IsPubliclyListed`.
+
+**Neden:** bir yetkiyi açmak, o yetkinin kapsamını da açmak demek değildir.
+İşletme isteğinde `FundedBy` seçilebilseydi işletme kendi kuponunun bedelini
+`Platform` yazabilirdi — ve bu **sessiz** bir zarar: kupon çalışır, indirim
+uygulanır, hata dönmez, fark yalnız ay sonu hakedişinde ortaya çıkar. Aynı
+biçimde `PartnerId` istekten gelseydi işletme **başkasının teknesine** kupon
+açabilirdi. Üçü de sunucuda sabitlendi: `FundedBy = Partner`, `PartnerId =`
+jetondaki işletme, `IsPubliclyListed = false`. Tekne verilirse teknenin o
+işletmeye ait olduğu ayrıca doğrulanıyor.
+
+`IsPubliclyListed = false` sabiti bir **kısıt değil, varsayılan** — herkese açık
+kampanya vitrini bugün platformun editoryal alanı. İşletme oraya kendi kuponunu
+koyabilmeli mi, ayrı bir karar → `S-33`.
+
+**Kanıt (mutasyon):** üçü de yakalandı — `FundedBy` → `Platform` (2 kırmızı),
+tekne sahipliği denetimi kaldırıldı (1 kırmızı), pasife almadan işletme kapsamı
+kaldırıldı (1 kırmızı).
+**Kanıt (canlı):** Mavi Yolculuk kendi jetonuyla `MAVI10` açtı → `201`, kendi
+listesinde `bedel=Partner listelenen=False kullanim=0`; herkese açık
+`/api/coupons` listesinde yalnız `YAZ2026` var, `MAVI10` sızmıyor.
+**Kanıt (migration):** `coupon.read`/`coupon.write` → `IsPartnerAssignable = t`;
+`coupon.write` tutan rol sayısı **20**. **586 test yeşil.**
+
+## 2026-09-05 (6) — `KnownProxies` dolu olması doğru olduğu anlamına gelmiyor: IPv6 loopback tuzağı
+
+Üretim kapısı `ForwardedHeaders:KnownProxies` **boş mu** diye bakıyor. Boş
+değilse geçiyor. Ama vekil aynı makinedeyse bağlantı çoğu kurulumda `::1`
+üzerinden geliyor ve listede yalnız `127.0.0.1` yazıyorsa ASP.NET Core başlığı
+**sessizce yok sayıyor** — hata yok, günlük yok, sadece bütün istekler tek IP'ye
+düşüyor.
+
+**Neden önemli:** hız sınırı ve `EventLogs.IpHash` istemciyi IP'den ayırıyor.
+Bütün trafik tek IP görünürse `hesap` kovası (15 dakikada 10) **tüm kullanıcılar
+için ortak** olur; bir kişinin başarısız denemeleri herkesi kilitler. Kapı bunu
+yakalamaz çünkü liste dolu.
+
+**Kanıt (ölçüm, 2026-09-05):** aynı API'ye iki farklı `X-Forwarded-For`
+(`198.51.100.1`, `198.51.100.2`) ile başarısız giriş atıldı.
+`KnownProxies = 127.0.0.1` iken `EventLogs` iki satıra **aynı** `IpHash`
+(`45f986b7ce1e`) yazdı. Listeye `::1` eklenince aynı deneme **iki farklı** özet
+verdi (`61a9986e0195`, `bba4a18638c0`). Kapının hata metni bu ölçümle genişletildi.
+
+Yani `S-19`'un cevabı (*"vekil aynı makinede, 127.0.0.1"*) **eksik**: üretimde
+`KnownProxies` **hem `127.0.0.1` hem `::1`** içermeli. Aynı tuzak SMTP
+sunucusunda da yaşanmıştı → [[api-notlar]].
+
+## 2026-09-05 (7) — Gövdedeki tarih UTC'ye ÇEVRİLİR, saat dilimsiz tarih REDDEDİLİR
+
+`A-90`. Web oturumu ölçtü: `POST /api/partner/coupons` `"2026-09-05"` ve
+`"2026-09-05T00:00:00+03:00"` gövdelerinde **`500`** dönüyordu, yalnız
+`"...Z"` `201` veriyordu. Kök neden Npgsql:
+
+> `Cannot write DateTimeOffset with Offset=03:00:00 to PostgreSQL type
+> 'timestamp with time zone', only offset 0 (UTC) is supported.`
+
+Yani sözleşmeye uyan bir istek model bağlamayı geçiyor, doğrulamayı geçiyor
+ve **veritabanına yazarken** patlıyordu. `500` "sunucuda beklenmeyen bir şey
+oldu" demek; oysa olan şey beklenmedik değildi.
+
+Çözüm tek noktada: `UtcDateTimeOffsetConverter` bütün controller'lara
+kayıtlı. İki davranışı var ve ikisi ayrı kararlar:
+
+1. **Ofsetli değer kabul edilir, UTC'ye çevrilir.** `00:00+03:00` →
+   `21:00Z` (önceki gün). Bilgi kaybı yok: kolon zaten yalnız ANI saklıyor.
+   İstemcinin saat dilimi bilmesi gerekmiyor.
+2. **Saat dilimi taşımayan değer `400` ile reddedilir.** `"2026-09-07"` ya da
+   `"2026-09-07T00:00:00"` kabul EDİLMİYOR.
+
+**Neden ikincisi — tahmin etmek reddetmekten pahalı:** .NET saat dilimsiz
+değeri SUNUCUNUN yerel saatiyle yorumluyor. Aynı istek, sunucu UTC'deyken
+7 Eylül'ü, Türkiye saatindeyken 6 Eylül'ü kaydeder. Hata yok, günlük yok,
+yalnız yanlış gün. Kabul etmek `500`'ü `200`'e çevirirdi ama kusuru
+görünmezden gelinene dönüştürürdü. Mesaj da düzeltmeyi söylüyor:
+*"sonuna 'Z' ya da '+03:00' ekleyin"* ve `$.validFrom` alanına bağlanıyor.
+
+Ayrım ham METİNDEN yapılıyor, ayrıştırılmış değerden değil: .NET saat
+dilimsiz değere sunucunun ofsetini koyduğu için ayrıştırılmış değer her
+zaman bir ofset taşır. `-` araması `T` ayıracından sonra yapılıyor, tarih
+kısmındaki tirelerle karışmasın diye.
+
+**Etki alanı ölçüldü:** gövdesinde `DateTimeOffset` taşıyan **yalnız iki**
+istek tipi var (`SaveCouponRequest`, `SavePartnerCouponRequest`). Rezervasyon
+`DateOnly` alıyor, müsaitlik sorgu dizesinden `DateOnly` alıyor — ikisi de bu
+yoldan geçmiyor.
+
+**Kanıt (canlı):** `+03:00` → `201` ve veritabanında `2026-09-06 21:00 UTC`;
+`Z` → `201`; `"2026-09-07"` → `400` + mesaj; `"2026-09-07T00:00:00"` → `400`.
+`/api/search`, `/api/lookups`, `/api/coupons`, `{slug}/availability` `200`.
+**Kanıt (mutasyon):** üçü de yakalandı — `ToUniversalTime()` kaldırıldı
+(1 kırmızı), saat dilimi şartı kaldırıldı (1 kırmızı), dönüştürücü
+`Program.cs`'ten çıkarıldı (2 kırmızı). **589 test yeşil.**
+
+## 2026-09-05 (8) — `S-23` bayattı: uçlar vardı, ATAMA yoktu
+
+Not *"tekne detayında donanım/kural ataması yok, aramada `AmenityIds`
+süzgeci yok"* diyordu. Ölçüm ikisini de yalanladı: kayıt gövdesi
+`amenityIds` ve `rules` alıyor, depo yazıyor, müşteriye açık detay çeviriyle
+birlikte döndürüyor, `SearchRepository` **VE** anlamlı süzgeç uyguluyor.
+
+Eksik olan **veriydi**: katalogda 9 donanım, 3 kural vardı ve **yayındaki
+sekiz teknenin hiçbirinde tek atama yoktu.** Sonuç kullanıcıya kusur olarak
+görünürdü — donanım bölümü boş, "klimalı tekneler" süzgeci her seçimde sıfır
+sonuç. Hata yok, boş sonuç var.
+
+**Neden buraya yazılıyor:** bu, bu projede tekrarlayan sınıfın veri
+tarafındaki hâli — *yazılmış ama hiç uygulanmamış kontrol*'ün ikizi:
+**yazılmış ama hiç beslenmemiş yol.** Kod incelemesi bunu bulamaz; yalnız
+ürünü çalıştırmak bulur.
+
+Ayrıca **ilk ölçümüm yanlıştı**: donanımı olan tekneyi seçip detayında
+`amenities` alanını göremeyince "uç döndürmüyor" sandım. Gerçekte o tekne
+YAYINDA DEĞİLDİ ve dönen gövde `{"error": ...}` idi — yani doğru cevabı
+yanlış sebeple okudum. Ölçümün kendisi de kontrol edilmek zorunda
+→ [[api-desenler]] "Yorumun iddiası da ölçülmek zorunda".
+
+**Kanıt (canlı):** sekiz tekneye ayrışan donanım atandı; arama süzgeci
+8 → klima 6 → şnorkel 4 → mikrofon 1, `klima+şnorkel` 3, `klima+mikrofon+wifi`
+1 döndü. Akdeniz İncisi detayında 7 donanım, 3 kural (`Evcil hayvan` yasak,
+`Sigara` serbest) çeviriyle geldi.
+**Kanıt (mutasyon):** detay projeksiyonunda donanım listesi boşaltıldı
+(1 kırmızı), kural `IsAllowed` sabitlendi (1 kırmızı).
+
+## 2026-09-05 (9) — Yanıt şemaları: iddia eden değil, DERLENEN sözleşme
+
+`A-07`. Başlangıç durumu ölçüldü: **146 operasyonun 146'sı** belgede yalnız
+**şemasız bir `200`** bildiriyordu. Belge dolu görünüyordu ama hiçbir şey
+söylemiyordu — ne gerçek durum kodunu (`201`, `204`, `404` hiç yoktu) ne de
+gövde tipini. Web oturumu bu yüzden yanıt tiplerini elle yazıyordu ve bir
+oturumda **üçü gerçekten yanlış çıktı** (blog liste satırı, iade oranı,
+favori kartı); üçünü de tarayıcı yakaladı, derleyici değil.
+
+Üç ayrı iş yapıldı ve sıraları önemliydi:
+
+**1. Anonim gövdeler isimlendirildi.** 24 uç `Ok(new { ... })` döndürüyordu.
+İsimsiz nesnenin OpenAPI'de adı olmaz. `ApiError`, `IdResponse`,
+`IdsResponse`, `HealthResponse`, `JobHealthResponse`, `JobRunSummary`,
+`AccountDeletionResponse`, `OfferAcceptedResponse`, `PaymentStartResponse`,
+`PaymentCallbackResponse`, `RefundResponse`, `PayeeRegistrationResponse`,
+`ReviewPageResponse`, `TicketCreatedResponse` yazıldı ve uçlar **bu tipleri
+döndürecek şekilde değiştirildi**.
+
+**Neden yalnız işaretlemek yetmedi:** `ProducesResponseType` bir İDDİADIR.
+Kod isimsiz nesne döndürmeye devam etseydi belge bir şekli anlatır, uç başka
+bir şey döndürürdü ve ikisi ayrıştığında hiçbir şey kırılmazdı. Tip
+döndürülünce **derleyici** sözleşmeyi tutuyor. Alan adları birebir korundu,
+JSON değişmedi (canlı doğrulandı).
+
+**2. İşaretler eklendi** — 146 eylemin tamamına, gerçek kodlarıyla.
+
+**3. Ölçüm iki kusur buldu ve ikisi de "eksik iddia"ydı.**
+`POST /api/partner/coupons` yalnız `201` bildiriyordu ama canlıda `400`
+dönüyordu: 14 controller hataları ortak bir `ExecuteAsync` yardımcısında
+yakalıyor ve kodu üreten satır eylemin gövdesinde GÖRÜNMÜYOR. Yardımcının
+ürettiği kodlar 66 eyleme eklendi. Aynı biçimde `[Authorize]` /
+`[HasPermission]` taşıyan 113 eyleme `401` / `403` eklendi — kimliksiz istek
+canlıda `401` dönüyor, belge bunu hiç söylemiyordu.
+
+**Aşırı iddia da denetlendi:** kimliksiz uçlarda (`/api/search`,
+`/api/lookups`, `/api/boats/{slug}`, `/api/coupons`, `/api/blog`,
+`/api/health`, `/api/pricing/quote`) `401` iddiası OLMADIĞI ayrıca ölçüldü.
+Yanlış yönde bir şema, eksik şemadan daha zararlı olurdu.
+
+**Kural denetleniyor, yazılı kalmıyor:** `OpenApiDocumentTests`'e iki test
+eklendi — her eylem bir yanıt tipi bildiriyor mu, her başarı yanıtı ya şema
+taşıyor ya gövdesiz mi. İkincisi yazıldığı anda **beş gerçek boşluk** buldu:
+dört belge indirme ucu (`File(...)` — `application/octet-stream` olarak
+bildirildi) ve `POST /api/reservations` (`CreateReservationResult`).
+
+`HealthController` rotası `api/[controller]` idi ve belgede `/api/Health`
+diye çıkıyordu; `api/health` olarak sabitlendi — yönlendirme büyük/küçük
+harfe duyarsız olduğu için çalışıyordu ama belge tek başına okunduğunda
+tutarsızdı.
+
+**Kanıt (öncesi/sonrası):** şema taşıyan operasyon **0 → 145/146**; bileşen
+şeması **0 → 181**; bildirilen kodlar `{200:146}` → `{200:88, 201:16,
+204:42, 301:1, 400:120, 401:120, 403:91, 404:85, 409:3}`.
+**Kanıt (canlı):** yedi uçta şema alanları gövdeyle **birebir** eşleşti
+(`health`, `lookups`, `coupons`, `search`, `blog`, `partner/coupons`,
+`boats/{slug}`). `404` → `{error}`, `400` → `{error, code}`, `201` → `{id}`
+— üçü de `ApiError`/`IdResponse` şemasıyla aynı. **591 test yeşil.**
+
+## 2026-09-05 (10) — Bütün tablolar dolduruldu; doldurma iki gerçek kusur buldu
+
+Mert: *"Bizim bütün veritabanı tablolarımızı uygun bir şekilde doldurmanı
+istiyorum. Sen doldurduktan sonra front-end'i birde öyle test edeceğim."*
+
+Başlangıç ölçümü: 82 tablodan **16'sı tamamen boş**. `pg_stat_user_tables`
+ile bakmakla başlamıştım ve o **yalan söyledi** — `Amenities` için 0 dedi,
+gerçekte 9 vardı. `n_live_tup` bir tahmindir; `count(*)` ile sayıldı.
+
+**Neden:** demoyu elle SQL'le doldurmak daha hızlı olurdu ama yalnız
+tabloları doldururdu — akışları değil. Uçtan geçen veri, veriyi üreten
+yolun çalıştığını da kanıtlıyor; kısıtlar, doğrulamalar ve yetki kapıları
+aynı anda sınanıyor. Ayrıca elle yazılan satır, uygulamanın asla
+üretmeyeceği bir birleşim olabilir ve arayüz onu gerçek sanır.
+
+**Yöntem: uç varsa uçtan.** Doldurma aynı zamanda uçları sınadığı için
+**iki gerçek kusur** ortaya çıktı ve ikisi de yalnız veri yazarken görüldü:
+ekstralı teklif kabulü `500` dönüyordu, konuşma–rezervasyon bağını hiçbir
+kod yazmıyordu → 2026-09-05 (11) ve (12).
+
+**Bulgu 1 — sekiz tabloyu uygulama kodu HİÇ kullanmıyor.** Ne okuyan ne
+yazan bir satır var; yalnız migration ve `DbSet` içinde duruyorlar:
+`Invoices`, `InvoiceCounters`, `NotificationTemplates`,
+`NotificationDeliveries`, `WeatherCancellations`, `CalendarModeRules`,
+`BoatCrewLanguages`, `OfferItems`(*).
+
+Bunlar boş tablo değil, **yazılmamış özellik**: faturalama yok, hava
+muhalefeti iptali yok, sezona göre takvim modu yok, bildirim şablonları
+koda gömülü. Şemanın vaat ettiği ile kodun yaptığı ayrışmış.
+
+(*) `OfferItems`'ın yazanı vardı ama hiç çalışmamıştı — ekstralı teklif
+kabul edilemediği için. Kusur düzeltilince kendiliğinden doldu.
+
+**Bulgu 2 — `Passengers` okunuyor, yazan uç yok.** Biniş ekranı yolcu
+adlarını buradan alıyor, teknede `RequiresPassengerList` işareti var,
+hatırlatma işi çalışıyor — ama listeyi doldurabilecek hiçbir uç yok. Yani
+işaret açık bir teknede sistem sürekli olmayan bir listeyi bekliyor.
+Mert'e sorulacak → `S-34`.
+
+**Bulgu 3 — defter kendini savundu.** Geçmiş kurarken `LedgerEntries`
+tarihlerini geriye almayı denedim; veritabanı reddetti:
+*"LedgerEntries degismezdir; yalnizca PayoutId bir kez damgalanabilir."*
+İşlem tamamen geri alındı. Koruma tam olması gerektiği gibi çalıştı ve
+**gevşetilmedi**; hakediş dönemi bunun yerine sözleşmeden ayarlandı
+(`PayoutPeriodDays`, kısıt: `> 0`).
+
+**Kanıt (sonuç):** 82 tablonun 81'i dolu. Tek boş kalan
+`NotificationOutbox` ve o bir **kuyruk** — gönderim işi boşalttığı için
+boş; dolu olması gönderimin bozuk olduğu anlamına gelirdi.
+**Kanıt (canlı):** dört rolde uç taraması — kimliksiz müşteri (arama 8,
+kampanya 5, blog 8), girişli müşteri (rezervasyon 8, favori 3, konuşma 6,
+destek 3), iki işletme (tekne 4+4, rezervasyon 20+20, yorum 12+6, belge
+3+3, hakediş 2+2), platform (işletme 20, yorum 37, destek 10, kupon 13,
+blog moderasyon kuyruğu 1). Sekiz teknenin sekizinde de puan var
+(2,00–4,67 arası, tetikleyiciden hesaplanmış).
+
+Betikler `araclar/demo-doldur/` altında, sıralı ve gerekçeli.
+
+## 2026-09-05 (11) — Ekstralı teklif kabul EDİLEMİYORDU; tutar iki kez sayılıyordu
+
+Belirti `500`. Kök neden Npgsql değil anlam çakışmasıydı:
+`Offer.TotalAmount` = `BaseAmount + ekstralar` yani ekstrayı **içeriyor**;
+rezervasyondaki `TotalTry` ise **ekstrasız** tur bedeli ve
+`CK_Reservations_GrandTotal` şunu şart koşuyor:
+`GrandTotal = Total + Extras - Discount`.
+
+`OfferReservationFactory` teklif tutarını olduğu gibi `TotalTry`'a yazıyor,
+ayrıca `ExtrasTotalTry`'ı da dolduruyordu → ekstra iki kez sayılıyor, kısıt
+satırı reddediyordu. Ekstrasız teklifte `ExtrasTotalTry = 0` olduğu için
+kısıt hiç zorlanmıyor ve kusur görünmüyordu.
+
+**Neden bugüne kadar yaşadı:** kabul yolunu sınayan tek test ekstrasız bir
+teklif kuruyordu. Kusur kodda değil **test kümesindeydi** — sınanmayan dal
+kusuru saklıyordu.
+
+Düzeltme: taban tutar geri çıkarılıyor, `TotalTry` ekstrasız yazılıyor,
+`GrandTotalTry = TotalTry + ExtrasTotalTry`.
+
+**Kanıt (test):** `An_offer_with_extras_can_be_accepted` üç alanı ayrı ayrı
+ölçüyor — ekstra sessizce atılsaydı kabul yine başarılı olur, müşteri
+ödemediği hizmeti alırdı. **Kanıt (mutasyon):** eski hesaba dönüldü, test
+kırmızı. **Kanıt (canlı):** 4 ekstralı teklif kabul edildi, `OfferItems`
+0 → 16.
+
+## 2026-09-05 (12) — `CloseConversationsJob` hiçbir zaman iş yapamıyordu
+
+`ConversationReservations` tablosunu **hiçbir kod yazmıyordu**, oysa
+`CloseConversationsJob` kapatılacak konuşmayı YALNIZ oradan buluyor. Yani
+iş her turda sıfır satır işliyordu: hata yok, günlük yok, uyarı yok —
+tarihi geçmiş konuşmalar sonsuza kadar açık kalıyordu.
+
+Bağ artık teklif kabulünde kuruluyor. Bağ ilk kaydetmeden SONRA ekleniyor
+(rezervasyon kimliği ancak orada doğuyor) ve **ayrı bir kaydetme** gerekiyor:
+sonraki iki adım doğrudan SQL yazıyor ve değişiklik izleyicisini boşaltmıyor.
+İlk denemede bu unutuldu, satır yazılmadı, test yakaladı.
+
+**Neden bu ailenin bir üyesi:** bu, projede tekrarlayan *"yazılmış ama hiç
+uygulanmamış kontrol"* deseninin veri tarafındaki hâli — **okuyanı olan ama
+yazanı olmayan tablo.** Kod incelemesi bulamaz; yalnız veriyi doldurmaya
+çalışmak bulur.
+
+**Kanıt:** test bağın varlığını değil, işin konuşmayı **kapatabilmesini**
+ölçüyor (`RunAsync` çağrılıyor, `Status = Closed` doğrulanıyor) — yorumun
+iddiası testten fazlasını söylemesin diye. Mutasyon: çağrı kaldırıldı,
+kırmızı. Canlı: `ConversationReservations` 0 → 4.

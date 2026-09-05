@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-08-24
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -94,6 +94,36 @@ Migration'ın diğerlerinden farkı: **geri alması pahalıdır**, bazen imkâns
 | 5 | `dotnet ef database update` | — |
 | 6 | **Geri alma yolunu dene** | `dotnet ef migrations remove` veya bir önceki migration'a dönüş çalışıyor mu |
 
+⚠️ **Migration UYGULAMA rolüyle değil, `dailycruising` rolüyle çalıştırılır.**
+
+`A-10` uygulama rolünü en az ayrıcalıklı yaptı: `dailycruising_app` DDL
+çalıştıramıyor, `dotnet ef database update` `42501 permission denied for
+schema public` ile düşüyor. Süper kullanıcıya geçmek de YETMİYOR — ve tehlikeli
+olan tam bu:
+
+`ALTER DEFAULT PRIVILEGES` **`dailycruising` rolüne bağlı**. Migration başka
+bir rol adına koşarsa yeni tablo O rolün malı olur, varsayılan ayrıcalıklar
+devreye girmez ve uygulama rolü tabloya erişemez. Sonuç `A-10`'un kendi
+uyarısıdır: *"uygulama açılışta değil İLK KULLANIMDA patlar, üstelik yalnız o
+özellikte."* Migration sorunsuz görünür, testler geçer, hata canlıda çıkar.
+
+Yerelde çalışan komut:
+
+    ConnectionStrings__Default="Host=/tmp;Port=5432;Database=dailycruising_dev;Username=mertagrali;Options=-c role=dailycruising" \
+      dotnet ef database update --project DailyCruising.Infrastructure --startup-project DailyCruising.Api
+
+`Options=-c role=...` Npgsql'in oturuma `SET ROLE` yaptırma yolu; süper
+kullanıcı parola sormadan role geçebiliyor.
+
+**Kontrol yolu — tablo yaratan her migration'dan sonra:**
+
+    SELECT tableowner FROM pg_tables WHERE tablename='YeniTablo';
+    SELECT has_table_privilege('dailycruising_app','"YeniTablo"','SELECT');
+
+Sahibi `dailycruising` değilse ayrıcalıklar da yoktur. `A-77`'de ölçüldü:
+sahip `dailycruising`, `SELECT/INSERT/DELETE` var, **`TRUNCATE` yok**
+(2026-09-04).
+
 ⚠️ **Veri kaybettiren migration sessizce geçer.** Kolon silme, tip daraltma ve
 `NOT NULL` ekleme üçü de derlenir, uygulanır ve veriyi götürür. 4. adım bu yüzden var.
 
@@ -162,3 +192,44 @@ sayısını azaltır.
 sırasıyla ve durma koşuluyla eşler. `/ecc:ecc-guide` ise ECC'de ne olduğunu listeler.
 
 İlgili: [[api-notlar]] · [[api-desenler]] · [[api-mimari]] · [[api-gorevler]] · [[genel-araclar]]
+
+## Tohum mu demo mu — ikisi ayrı iş
+
+| Betik | Ne için | İçerik |
+|---|---|---|
+| `araclar/tohum-veri.sh` | **Akış çalışıyor mu** | Asgari fikstür: iki tekne, üç rezervasyon, bir konuşma, bir yorum |
+| `araclar/demo-veri.sh` | **Ürün nasıl görünüyor** | Sekiz tekne, beş tip, sekiz bölge, fiyat + fotoğraf, iki işletme, blog, üç iade dilimi |
+
+**Neden ikisi ayrı:** tohum hızlı ve dar; demo yavaş ve geniş. Tek betikte
+birleştirilseydi, akış testi için her seferinde sekiz tekne ve altı görsel
+üretilirdi.
+
+### Demo betiğinde ölçerek öğrenilenler
+
+**Fiyatlama biçimi TABLODAN yazılmaz, referans listesinden okunur.**
+`lookups` her kiralama tipiyle birlikte `pricingStrategy` ve `durationKind`
+döndürüyor. İlk yazımda tabloya elle yazılmıştı ve tekne bazlı fiyatlanan bir
+tipe kişi başı fiyat gönderen tek satır demoyu durdurdu.
+
+**İade dilimi betiğin çalışma SAATİNE bırakılamaz.** Kalkış tarihi gün
+hassasiyetinde, saat kiralama tipinden geliyor; aynı tarih sabah çalıştırılınca
+%50, akşam çalıştırılınca %0 dilimine düşüyor. Sefer anı yerleştirilmezse demo
+"üç dilim de görünsün" sözünü tutamıyor.
+
+**Üç dilim üç AYRI teknede kurulmak zorunda:** `EX_Voyages_NoOverlapPerBoat`
+aynı tekneye üst üste sefer yazdırmıyor.
+
+**Kategori anahtarı damgasız olmalı.** Damgalıyken ikinci koşu aynı adı
+taşıyan ikinci bir kategori açıyordu; iki "Rotalar" süzgeci demoda hatadan
+ayırt edilemez.
+
+**Hız sınırı demoyu durduruyor.** Hesap uçları adres başına 15 dakikada 10
+istek; betik birkaç kayıt ve giriş yapıyor ve başarısız bir koşudan sonra
+tekrar denemek kovayı tüketiyor. Betik `429`'da ne yapılacağını yazıyor:
+
+    RateLimiting__Enabled=false ASPNETCORE_ENVIRONMENT=Development \
+      dotnet run --project src/DailyCruising.Api --no-launch-profile
+
+**Tekne fotoğrafı UYDURULMAZ.** Her tekneye ayırt edilebilir, üstünde DEMO
+yazan bir yer tutucu üretiliyor; gerçek fotoğrafları işletmeler yükleyecek
+(Mert, soru 27).

@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: api
-guncelleme: 2026-08-31
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -73,11 +73,12 @@ Biçim ve gerekçe -> [[genel-desenler]]
       Kabul: sandbox'ta gerçek bir alıcı kaydı açılıyor, ödeme ona bölünüyor
 
 - [ ] **A-07** OpenAPI'den frontend tip üretimi · **kapsam daraldı**
-      API yarısı bitti (`A-07a`): `openapi.json` repoda, bayatlaması test edilir.
+      API yarısı BİTTİ. `A-07a`: `openapi.json` repoda, bayatlaması test edilir.
+      `A-07b` (2026-09-05): 146 operasyonun 145'i artık gövde şeması taşıyor,
+      durum kodları gerçeği söylüyor, 181 bileşen şeması üretiliyor.
       **KALAN, ve bu oturumun işi DEĞİL:** web tarafında `openapi-typescript`
       ile tip üretimi + `npm` betiği. `03-Web/` başka bir oturumun yazma
-      alanında (`migrate-design-to-frontend` açıktı, 2026-08-26) — backend
-      oturumu oraya yazmıyor
+      alanında — backend oturumu oraya yazmıyor
       Kabul: web tarafı elle tip yazmaz
 
 ## 🟡 Yapılıyor
@@ -86,30 +87,369 @@ _(boş)_
 
 ## 🟢 Tamamlandı
 
-- [x] **A-63** API arayüzü — Scalar · bitti: 2026-08-27
-      Mert (2026-08-27): *"Swagger gibi kullanabileceğimiz ne var"* → Scalar
-      `Scalar.AspNetCore` 2.17.1 · **MIT** (paketin `nuspec`'inden
-      doğrulandı, tahmin edilmedi — ImageSharp'ta bu adım atlansaydı
-      ücretli bir lisansa bağlanacaktık)
-      Adres: `/scalar/v1` — yalnız Development
-      Kanıt: **tarayıcıda uçtan uca** — jeton yapıştırıldı,
-      `GET /api/platform/partners` **200 OK, 53 ms**, gerçek veri döndü
-      Kanıt: üretim kapısı ateşliyor — `ApiReference:Enabled=true` ile
-      uygulama AÇILMIYOR; kapalıyken açılıyor (ölçüldü,
-      `--no-launch-profile` ile)
-      Kanıt: 441 test geçiyor
-      ⚠️ **Swagger/Swashbuckle KULLANILMADI.** .NET 10'un yerleşik
-      `Microsoft.AspNetCore.OpenApi`'si zaten belgeyi üretiyordu; Scalar
-      yalnız görüntüleyici. Swashbuckle ailesinden paket geri gelmedi
-      ⚠️ **JWT şeması için `BearerSecurityTransformer` yazmak ZORUNLU oldu.**
-      .NET'in yerleşik `AddOpenApi()`'si güvenlik şemasını kendiliğinden
-      EKLEMİYOR; onsuz Scalar'ın jeton alanı hiç çıkmaz, her istek 401 döner
-      ve arayüz sessizce işe yaramaz olurdu
-      ⚠️ Şema belgeye ekleniyor ama uçlara ZORUNLU işaretlenmiyor: kimliksiz
-      uçlar gerçekten kimliksiz, hepsine "jeton gerekli" damgası vurmak
-      belgeyi yalancı yapardı
-      ⚠️ `Microsoft.OpenApi` v2.7.5'te tipler **kök ad alanına taşındı**
-      (`Microsoft.OpenApi.Models` DEĞİL) — assembly'den doğrulandı
+- [x] **A-88** Kuponlar — üç tür · bitti: 2026-09-05
+  Kanıt: `AYSEYE20` canlı → Ayşe `indirim 580`, Can `0 + "size tanımlı değil"`,
+  kimliksiz `0 + aynı mesaj`. Herkese açık `/api/coupons` listesinde yalnız
+  `YAZ2026`, `AYSEYE20` yok. İki mutasyon kırmızı verdi (tanım denetimi 1,
+  son tanımda pasife alma 1). 581 test yeşil. → [[api-kararlar]] 2026-09-05 (4)
+- [x] **A-89** İşletme kendi kuponunu açabiliyor · bitti: 2026-09-05
+  Kanıt: `coupon.read`/`coupon.write` → `IsPartnerAssignable = t`, `coupon.write`
+  tutan rol sayısı 20 (migration `A89_IsletmeKuponYetkisi`). `api/partner/coupons`
+  canlı: `POST` → `201`, kendi listesinde `bedel=Partner listelenen=False`;
+  `/api/coupons` herkese açık listesinde `MAVI10` yok. Üç mutasyon da kırmızı
+  verdi (`FundedBy`→`Platform` 2, tekne sahipliği 1, pasife alma kapsamı 1).
+  586 test yeşil. → [[api-kararlar]] 2026-09-05 (5)
+- [x] **A-90** Gövdedeki tarihler UTC'ye çevriliyor, saat dilimsiz reddediliyor · bitti: 2026-09-05
+  Kanıt: `+03:00` → `201` + DB'de `2026-09-06 21:00 UTC`; `"2026-09-07"` → `400`
+  (eskiden `500`) + `$.validFrom` mesajı. Üç mutasyon da kırmızı verdi
+  (`ToUniversalTime()` 1, saat dilimi şartı 1, kayıt kaldırma 2). 589 test yeşil.
+  → [[api-kararlar]] 2026-09-05 (7)
+- [x] **A-91** Tekne donanım/kural verisi ve müşteriye açık detay testi · bitti: 2026-09-05
+  Kanıt: sekiz demo teknesine ayrışan donanım atandı; arama 8 → klima 6 →
+  şnorkel 4 → mikrofon 1, `klima+şnorkel` 3. Detay 7 donanım + 3 kuralı
+  çeviriyle döndürdü. İki mutasyon kırmızı (donanım listesi boşaltıldı,
+  `IsAllowed` sabitlendi). `demo-veri.sh` artık atamayı da kuruyor.
+  → [[api-kararlar]] 2026-09-05 (8)
+- [x] **A-07b** Yanıt şemaları — 146 eylemin tamamı işaretlendi · bitti: 2026-09-05
+  Kanıt: şema taşıyan operasyon 0 → 145/146, bileşen şeması 0 → 181, bildirilen
+  kodlar `{200:146}` → `{200:88, 201:16, 204:42, 301:1, 400:120, 401:120,
+  403:91, 404:85, 409:3}`. Yedi uçta şema alanları canlı gövdeyle birebir;
+  kimliksiz yedi uçta yanlış `401` iddiası olmadığı ayrıca ölçüldü. Denetim
+  testi yazıldığı anda beş gerçek boşluk buldu (dört ikili indirme + rezervasyon
+  `201`). 591 test yeşil. → [[api-kararlar]] 2026-09-05 (9)
+- [x] **A-92** Bütün tablolar gösterilebilir veriyle dolduruldu · bitti: 2026-09-05
+  Kanıt: 82 tablonun 81'i dolu; tek boş kalan `NotificationOutbox` ve o bir
+  kuyruk (gönderim işi boşaltıyor). Dört rolde canlı uç taraması yapıldı;
+  sekiz teknenin sekizinde de puan var. Betikler `araclar/demo-doldur/`.
+  → [[api-kararlar]] 2026-09-05 (10)
+- [x] **A-93** Ekstralı teklif kabulü düzeltildi · bitti: 2026-09-05
+  Kanıt: `An_offer_with_extras_can_be_accepted` üç tutarı ayrı ölçüyor;
+  eski hesaba mutasyon kırmızı verdi. Canlı: 4 kabul, `OfferItems` 0 → 16.
+  → [[api-kararlar]] 2026-09-05 (11)
+- [x] **A-94** Konuşma rezervasyona bağlanıyor, kapatma işi çalışır oldu · bitti: 2026-09-05
+  Kanıt: test bağın varlığını değil işin konuşmayı kapatmasını ölçüyor;
+  çağrı kaldırılınca kırmızı. Canlı: `ConversationReservations` 0 → 4.
+  593 test yeşil. → [[api-kararlar]] 2026-09-05 (12)
+
+      `CouponAssignments` tablosu + `Coupons.IsPubliclyListed` / `Title`.
+      Uçlar: `GET /api/coupons` (kimliksiz kampanyalar) ·
+      `GET /api/coupons/mine` (tanımlı + kullanılan) ·
+      `GET/POST /api/platform/coupons` · `POST/DELETE .../assignments`.
+      Gerekçeler → [[api-kararlar]] 2026-09-05 (4)
+
+      **Tanım fiyat hesabında UYGULANIYOR** — `CouponRejection.NotYours`.
+      `QuoteAsync` artık çağıranın kimliğini alıyor (36 çağrı yeri).
+
+      Kanıt: **581 test yeşil** (6'sı yeni). İki mutasyon, ikisi de yakalandı.
+      Kanıt: canlı — `AYSEYE20` Ayşe'de `indirim 580`, Can'da `0 + "size
+      tanımlı değil"`, kimliksizde aynı ret. Herkese açık listede yalnız
+      `YAZ2026`.
+      Kanıt: `coupon.read`/`coupon.write` ilk kez bir uç tarafından
+      kullanılıyor — 12 gündür tanımlı ve boştular.
+
+      ⚠️ **Açık:** işletme kendi kuponunu yönetemiyor (`coupon.write`
+      işletmeye verilemiyor) ama `FundedBy = Partner` şemada var.
+
+- [x] **A-87** Slug üretiminde noktalı `İ` kusuru · bitti: 2026-09-05
+
+      `ToLowerInvariant()` `İ`'yi küçültmüyor; ayrıştırma onu BÜYÜK `I`'ye
+      çeviriyordu. `akdeniz-incisi` **404**, `akdeniz-Incisi` 200 dönüyordu.
+      Bulguyu web oturumu getirdi. Gerekçeler → [[api-kararlar]] 2026-09-05 (3)
+
+      Kanıt: **575 test yeşil** (2'si yeni). Mutasyon **iki katman birlikte**
+      kaldırılınca iki test de kırmızı — tek katman kaldırıldığında yeşil
+      kalıyordu, çünkü diğer katman örtüyordu.
+      Kanıt: canlı `akdeniz-incisi` `200`; eski adres `akdeniz-Incisi`
+      **`301`** ile yenisine yönlendiriyor, izlenince `200` — paylaşılmış
+      bağlantı kırılmadı.
+      Kanıt: yeni tekne "İZMİR Ünlü Çağrı Deneme" → `izmir-unlu-cagri-deneme`.
+      Kanıt: blog etkilenmiyor — kullanıcı kısa adı büyük harf içeriyorsa
+      `400 InvalidSlug`, sessiz bozma yok.
+
+      ⚠️ Yönlendirme migration'ı ilk yazımda **sessizce hiçbir şey yazmadı**:
+      kaynak olarak `BoatSlugs` alınmıştı ve o tablo yalnız yeniden
+      adlandırmada doluyor. Kaynak `Boats` yapıldı.
+
+- [x] **A-86** `S-32` — KDV oranı tarihli tabloya taşındı · bitti: 2026-09-05
+
+      `TaxRates` (`Rate`, `EffectiveFrom`, `Note`). Yürürlükteki oran
+      `EffectiveFrom <= now` satırların en yenisi; `PricingContext` üzerinden
+      komisyon oranıyla aynı sorgudan taşınıyor.
+      `TaxOptions`, DI kaydı, `Billing:VatRate` ve 15. açılış kapısı
+      **kaldırıldı**. Gerekçeler → [[api-kararlar]] 2026-09-05 (2)
+
+      Kanıt: **573 test yeşil** (7'si KDV). Mutasyon: yürürlük tarihi şartı
+      kaldırılınca kırmızı.
+      Kanıt: canlı fiyat sorgusu `vatRate: 20.0`; tabloda tek satır,
+      `2000-01-01`'den geçerli, notu "devralınan oran".
+      Kanıt: tablo sahibi `dailycruising`, `EffectiveFrom` benzersiz.
+
+      ⚠️ Testim paylaşılan veritabanında **başka testin satırını taşıdı**
+      (`Where(Rate == 21)`). Kimliğe çevrildi. Bu hafta ikinci kez: aynı
+      hatanın ilki `A-78`'de sabit e-postaydı.
+
+- [x] **A-85** İade önizlemesi · bitti: 2026-09-05
+
+      `refundPreviewRate` / `refundPreviewTry` sorgulama ve liste yanıtlarına
+      eklendi; hesap `RefundPolicy` içine çıkarıldı ve iptal ucu da oradan
+      çağırıyor. Gerekçeler → [[api-kararlar]] 2026-09-05
+
+      Kanıt: **571 test yeşil** (9'u yeni). Mutasyon: önizleme yanıta
+      bağlanmayınca kırmızı.
+      Kanıt: sınır anları ayrı ölçüldü — tam 48:00 ve tam 24:00 müşteri
+      lehine üst kademede.
+      Kanıt: canlı — `refundPreviewRate: 100`, `refundPreviewTry: 1500.0`,
+      `cancellationRefundRate: null`. Tahmin dolu, kayıt boş.
+
+- [x] **A-84** `S-25` — biniş bileti ucu · bitti: 2026-09-04
+
+      `BoardingTickets` tablosu + `POST /api/reservations/{code}/boarding-ticket`.
+      Asıl biniş jetonuna dokunulmuyor; okutma iki jetonu da tanıyor.
+      Gerekçeler → [[api-kararlar]] 2026-09-04 (14)
+
+      Kanıt: **561 test yeşil** (9'u yeni). İki mutasyon, ikisi de yakalandı.
+      Kanıt: canlı — yanlış e-posta `400`, doğru e-posta jeton + `expiresAt`,
+      ikinci bilet sonrası veritabanında **2 bilet / 1 geçerli**.
+      Kanıt: tablo sahibi `dailycruising`, uygulama rolü yetkili, kısmi
+      benzersiz indeks `WHERE "RevokedAt" IS NULL` olarak kuruldu.
+
+      ⚠️ **Süre testim önce doğru sonucu YANLIŞ SEBEPTEN veriyordu** —
+      okutma anı biletin bitişinden sonraydı, o anda tur da bitmişti ve
+      şart koddan çıkarılınca test yeşil kalıyordu. Mutasyon yakaladı,
+      kurulum tersine çevrildi ve olumlu ikizi eklendi.
+
+- [x] **A-83** `S-31` — blog gövdesi için sunucu tarafı HTML temizleyici
+      · bitti: 2026-09-04
+
+      `IHtmlContentSanitizer` (Application) + `BlogHtmlSanitizer`
+      (Infrastructure, `HtmlSanitizer` 9.2.1039). Temizleme **yazma** yolunda;
+      izin listesi, yasak listesi değil.
+      Gerekçeler → [[api-kararlar]] 2026-09-04 (13)
+
+      Kanıt: **552 test yeşil** (13'ü yeni). İki mutasyon, ikisi de yakalandı:
+      servis temizleyiciyi atlayınca → 1 kırmızı; kütüphanenin varsayılan izin
+      listesi boşaltılmayınca → 3 kırmızı.
+      Kanıt: canlı uçtan uca — gönderilen gövdedeki `script`, `onclick`,
+      `javascript:` bağlantısı, `iframe` ve `style` **veritabanı satırında da
+      yok**; `<h2>`, `<strong>` ve geçerli `https` bağlantısı korundu.
+      Başlık `<h1>Gökova</h1> rehberi` → `Gökova rehberi`.
+      Kanıt: temizlemenin YAZMA yolunda olduğu, uç yanıtından değil
+      **saklanan satırdan** doğrulandı.
+
+      ⚠️ Kütüphane hakkında iki varsayımım ölçümle çürüdü: boş izin listesi
+      metni de siliyor (`KeepChildNodes` gerekti) ve başlıktaki betik gövdesi
+      düz metne dönüyor. İkincisi kabul edildi ve **teste yazıldı** — yazılmasa
+      bir sonraki okuyan onu hata sanıp "düzeltir" ve başlıkları kaybeder.
+
+- [x] **A-81 + A-82** `S-28` ve `S-22` veri düzeltmeleri · bitti: 2026-09-04
+
+      İkisi de migration olarak yazıldı — elle SQL hiçbir yerde kayıtlı olmaz.
+      Gerekçeler → [[api-kararlar]] 2026-09-04 (12)
+
+      Kanıt: uygulama **öncesi** 15 ayrışık rezervasyon · 4 `a04-` referans
+      satırı · a04 teknesinin 38 rezervasyonu.
+      Kanıt: uygulama **sonrası** 0 · 0 · **38** — düzeltmeler yapıldı ve
+      hiçbir rezervasyon kaybolmadı.
+      Kanıt: canlı aramada tip adları yalnız `Gulet`; `lookups` gövdesinde
+      `a04-` geçmiyor. Ana sayfa kart rozetinde ham anahtar kalmadı.
+      Kanıt: 539 test yeşil.
+
+      ⚠️ **Mert'e sorduğum sayı 10'du, gerçek 15.** Ters yönde 5 satır daha
+      vardı; soruyu tek yönü ölçerek yazmıştım.
+      ⚠️ **"Temizlik" küçük bir iş değildi:** `a04-` satırlarına 38
+      rezervasyon bağlıydı, önce taşındılar.
+
+- [x] **A-80** `S-20` — KDV oranı rezervasyona donduruldu · bitti: 2026-09-04
+
+      `Reservations.VatRate` (`numeric(5,2)`, kısıt `0..100`), `Quote`
+      üzerinden akıyor, `TaxOptions` yapılandırmadan geliyor.
+      Vergi TUTARI saklanmıyor — toplamdan türetiliyor (fiyat KDV dahil).
+      Gerekçeler → [[api-kararlar]] 2026-09-04 (11)
+
+      **15. açılış kapısı eklendi:** `Billing:VatRate` üretimde tanımsızsa
+      uygulama açılmıyor. Kapı bildirim kapısından ÖNCE.
+
+      Kanıt: **539 test yeşil** (5'i yeni). Dondurma satırı kaldırılarak
+      mutasyon denendi → 2 kırmızı.
+      Kanıt: canlı fiyat sorgusunda `vatRate: 20`, komisyon oranı sızmıyor,
+      türetilen vergi `1000 × 20/120 = 166.67`.
+      Kanıt: canlı rezervasyon `AZ6QSV9B` satırında `VatRate = 20.00` dondu.
+      Kanıt: veritabanında `column_default` **boş** (varsayılan aynı
+      migration'da düşürüldü), kısıt `convalidated = t` (`NOT VALID` +
+      `VALIDATE`), 80 eski satır `20` ile dolduruldu.
+      Kanıt: `A_new_field_cannot_silently_widen_the_response` testi alanı
+      eklerken DURDURDU; "müşteriye gitmeli mi" sorusu cevaplanıp listeye
+      yazıldı — test amacına uygun çalıştı.
+      Kanıt: `openapi.json` yeniden üretildi.
+
+      ⚠️ Oranın KAYNAĞI hâlâ yapılandırma → `S-32` açıldı. Geçiş ucuz;
+      rezervasyondaki kolon her iki hâlde de aynı.
+
+- [x] **A-79** `S-27` uygulandı — müşteri iletişim bilgisi işletmeye kapatıldı
+      · bitti: 2026-09-04
+
+      `GET /api/partner/reservations` yanıtından `contactEmail` ve
+      `contactPhone` kaldırıldı; `contactFullName` kaldı.
+      Gerekçe → [[api-kararlar]] 2026-09-04 (9) — sebep KVKK değil **aracıdan
+      kaçış**, ve bunu Mert söyledi, biz sormamıştık.
+
+      Kanıt: **534 test yeşil.** Alanlar geri eklenerek mutasyon denendi,
+      `A_row_does_not_carry_the_customer_email_or_phone` kırmızıya döndü.
+      Kanıt: test alan üzerinden DEĞİL serileştirilmiş gövde üzerinden yazıldı
+      — kaldırılmış bir özelliğe başvuran test derlenmez, yani yasağı koruyan
+      hiçbir şey kalmazdı.
+      Kanıt: canlı yanıtta 16 alan; `contactEmail` ve `contactPhone` yok,
+      gövdenin tamamında tek `@` işareti bile geçmiyor, `contactFullName` var.
+      Kanıt: `openapi.json` yeniden üretildi.
+
+- [x] **A-78** Bildirim tercihleri · bitti: 2026-09-04
+
+      `NotificationPreferences` tablosu ve iki uç:
+      `GET/PUT /api/account/notification-preferences`. Üç alan:
+      `emailEnabled`, `smsEnabled`, `reviewInvitationsEnabled`.
+      Gerekçeler → [[api-kararlar]] 2026-09-04 (8)
+
+      **Tercih SADECE kaydedilmiyor, UYGULANIYOR:** `ReservationNotifier`
+      onay ve iptal bildirimlerinde kanal kapısı, `SendReviewInvitationsJob`
+      davet ve hatırlatmada vazgeçme kapısı. Anonimleştirme tercih satırını
+      siliyor.
+
+      Kanıt: **533 test yeşil** (11'i yeni). İki mutasyon, ikisi de yakalandı:
+      kanal kapısı etkisizleştirildi → 2 kırmızı; yorum daveti kapısı
+      kaldırıldı → 1 kırmızı.
+      Kanıt: canlı — jetonsuz `401` · kayıt yokken varsayılan `hepsi açık` ·
+      SMS+davet kapatma `200` · **iki kanalı birden kapatma `400
+      NoChannelLeft`** · tekrar okuyunca kalıcı · veritabanında tek satır.
+      Kanıt: **kısıt uygulamadan bağımsız ölçüldü** — `psql` ile doğrudan
+      `UPDATE "NotificationPreferences" SET "EmailEnabled"=false,
+      "SmsEnabled"=false` denendi, veritabanı
+      `CK_NotificationPreferences_AtLeastOneChannel` ile reddetti.
+      Kanıt: `openapi.json` yeniden üretildi — 108 yol, 136 operasyon.
+
+      ⚠️ **Kendi testim diğer testleri kırdı ve bunu yazıyorum:**
+      `ReservationAsync` her test rezervasyonuna AYNI sabit e-postayı
+      yazıyor. Vazgeçmiş bir kullanıcıyı o adrese bağlayınca aynı
+      veritabanını paylaşan `The_reminder_is_sent_once_after_seven_days`
+      kırmızıya döndü — sebebi kendi kodunda değil, benim testimin yan
+      etkisiydi. Test kendi adresini kullanacak şekilde düzeltildi.
+
+- [x] **A-77** Favori tekneler · bitti: 2026-09-04
+
+      `FavoriteBoats` tablosu ve üç uç: `GET /api/favorites` ·
+      `PUT /api/favorites/{boatId}` · `DELETE /api/favorites/{boatId}`.
+      Ekleme ve çıkarma idempotent, kapsam jetondan.
+      Gerekçeler → [[api-kararlar]] 2026-09-04 (7)
+
+      **Anonimleştirme genişletildi:** favoriler hesap kapatmada siliniyor ve
+      sayısı olay yüküne yazılıyor (`AnonymizationCounts.Favorites`,
+      `EventPayloadPolicy` → `favorites`). Yabancı anahtar CASCADE bunu
+      yapmıyor — anonimleştirme kullanıcı satırını silmiyor, üzerine yazıyor.
+
+      Kanıt: **522 test yeşil** (11'i yeni). Üç mutasyon, üçü de yakalandı:
+      anonimleştirmeden silme satırı çıkarıldı → 1 kırmızı; `isAvailable`
+      daima `true` yapıldı → 1 kırmızı; liste sorgusundan kullanıcı kapsamı
+      çıkarıldı → 4 kırmızı.
+      Kanıt: canlı — jetonsuz `GET` ve `PUT` `401` · boş liste `[]` · ilk
+      `PUT` `204`, ikinci `PUT` `204` ve tek satır · liste iki kart döndü ve
+      `boatTypeName` iki dalı da gösterdi (`Gulet` çevirili, `a04-gulet` ham
+      anahtar) · yayında olmayan tekne `404 BoatNotFound` · **pasifleşen tekne
+      listede KALDI ve `isAvailable: false` döndü** · pasif tekne
+      çıkarılabildi `204`.
+      Kanıt: **kapsam canlı ölçüldü** — ikinci müşterinin listesi `[]`,
+      birincinin favorisini silme denemesi `204` (idempotent) ama birincinin
+      listesi **hâlâ 2 kayıt**. Yalnız status koduna bakan bir ölçüm burada
+      yanılırdı.
+      Kanıt: migration `dailycruising` rolü adına uygulandı; tablo sahibi
+      `dailycruising`, uygulama rolünde `SELECT/INSERT/DELETE` var,
+      **`TRUNCATE` yok** — `A-10`'un istediği hâl.
+      Kanıt: `openapi.json` yeniden üretildi — 107 yol.
+
+- [x] **A-76** Blog uçları — herkese açık okuma, yazarlık, moderasyon, kategori
+      · bitti: 2026-09-04
+
+      Dört tablo (`BlogPosts`, `BlogPostTranslations`, `BlogCategories`,
+      `BlogCategoryTranslations`) şema kurulduğundan beri BOŞTU; `blog.write` ve
+      `blog.approve` yetkileri kataloğa yazılmıştı ve **hiçbir uç onları
+      kullanmıyordu** — verilebilen ama hiçbir şey açmayan iki yetki daha.
+      Mert `S-30`'u cevapladı: *"bloglar bu arada uç yazılsın blog yazılabilecek
+      çünkü siteden"*. Yani statik kalmıyor; 22 ve 24 Ağustos kararlarını
+      (platform ve işletme yazabilir, işletme yazısı onaydan geçer) iptal etmiyor,
+      **uyguluyor**.
+
+      **17 operasyon, 12 yol, 4 controller:**
+      herkese açık `GET /api/blog` · `GET /api/blog/{slug}` ·
+      `GET /api/blog/categories` — yazarlık (`blog.write`)
+      `GET/POST /api/blog/posts` · `GET/PUT/DELETE /api/blog/posts/{id}` ·
+      `POST .../submit` · `POST .../cover` — moderasyon (`blog.approve`)
+      `GET /api/blog/moderation` · `GET /api/blog/moderation/{id}` ·
+      `POST .../publish` · `POST .../reject` — kategori (`blog.approve`)
+      `POST /api/blog/categories` · `PUT/DELETE /api/blog/categories/{id}`
+
+      Kararlar ve gerekçeleri → [[api-kararlar]] 2026-09-04 (altı giriş)
+
+      Kanıt: **511 test yeşil** (23'ü yeni). Dört mutasyon denendi, üçü
+      yakalandı: onaya geri düşme kuralı kaldırıldı → 1 kırmızı; `ReservedSlugs`
+      boşaltıldı → 3 kırmızı; `Status == Published` süzgeci gevşetildi → 2
+      kırmızı.
+      Kanıt: **dördüncü mutasyon YAKALANMADI ve iddia benimdi.** Kapsam
+      süzgecini "iki dal olmalı, yoksa `= NULL`'a çevrilir" diye yazmıştım;
+      tek dala indirdim, 23 test yeşil kaldı. EF Core boş parametreyi
+      `IS NULL`'a çeviriyor. Kod tek dala indirildi, yorum ölçümle değiştirildi.
+      Kanıt: canlı uçtan uca — kategori `201`, işletme kategori denemesi `403`,
+      taslak `201` (çeviri sözlüğü TAM döndü, tr+en), `posts` kısa adı `400
+      ReservedSlug`, gönderim `UnderReview`, herkese açık detay `404`,
+      moderasyon kuyruğunda göründü, işletmenin moderasyon denemesi `403`,
+      yayın `200` (`approvedAt` + `publishedAt` doldu), anonim liste `total 1`,
+      `?language=en` başlık/özet/kategori adı üçü birden İngilizce,
+      görüntülenme sayacı `0 → 1`.
+      Kanıt: yayındaki yazı güncellendi → `UnderReview`, `approvedAt` `null`,
+      `publishedAt` korundu, herkese açık detay `404`. Reddedilen yazı doğrudan
+      yayınlanamadı (`400 NotUnderReview`); yazar tekrar gönderdi → gerekçe
+      temizlendi → yayınlandı.
+      Kanıt: **kapsam canlı ölçüldü** — başka işletmenin jetonuyla `GET`, `PUT`
+      ve `DELETE` üçü de `404`; aynı jetonla kendi listesi `200 []` (olumlu dal,
+      "her şeye 404 diyen" bozuk bir yol elenmiş oldu); sahibi `200`.
+      Kanıt: kapak yüklendi `200`, WebP'ye yeniden kodlandı; içeriği türüyle
+      uyuşmayan dosya `400 ContentTypeMismatch`. Kova politikası genişletilmeden
+      kapak adresi `403`tü, genişletildikten sonra `200 image/webp`, aynı
+      ölçümde `boat-documents/*` ve `partner-documents/*` `403` kaldı → `S-24`.
+      Kanıt: 13 olay günlüğü satırı yazıldı, yükleri dolu — ret GEREKÇESİ ve
+      yazı BAŞLIĞI hiçbirinde yok (ikisi de serbest metin).
+      Kanıt: `openapi.json` yeniden üretildi — 105 yol, 131 operasyon.
+
+- [x] **A-75** Arama sonucuna tekne tipi adı eklendi · bitti: 2026-08-31
+      Sonuçta `boatTypeId` vardı, adı yoktu; arayüz kart rozetinde tur
+      tipini yazamıyordu. `lookups` ile istemci tarafı eşleme REDDEDİLDİ —
+      çeviri mantığı iki yere bölünürse aramayla süzgeç menüsü sessizce
+      ayrışır (aynı gerekçe kiralama tipi adında zaten yazılı).
+      Kanıt: canlı — çevirisi olan tip `"Gulet"`, **çevirisi olmayan tip
+      `"a04-gulet"`** (ham anahtara düşüyor, boş değil)
+      Kanıt: test iki durumu birlikte ölçüyor — yalnız çevirili durum
+      ölçülseydi geri düşüşü hiç çalışmayan kod da geçerdi ve çevirisiz tip
+      kartta BOŞ görünürdü
+      Kanıt: 488 test geçiyor
+      Maliyet: sayfadaki FARKLI tip sayısı kadar satır okuyan tek ek sorgu
+      (kart başına değil); kapak görselindeki desenin aynısı
+
+- [x] **A-74** 🔴 Yolcu listesi bayrağı süreden türetiliyordu · bitti: 2026-08-31
+      Fiyat bağlamı `RequiresPassengerList`'i `DurationKind == MultiDay`
+      ifadesinden hesaplıyordu. `ReservationFactory` bayrağı TEKLİFTEN
+      kopyalayıp rezervasyona **donduruyor** — yolcu listesi isteyen
+      teknenin her rezervasyonu kalıcı `false` damgalanıyordu.
+      Belgelenmiş kurala aykırı (2026-08-22): bayrak teknenin anahtarı ve
+      KVKK gerekçesi tam olarak buna dayanıyor.
+      Kanıt: canlı — tekne detayı `true`, quote `false`, **aynı tekne aynı an**
+      Kanıt: canlı — rezervasyon açıldı, veritabanında tekne `t` iken
+      rezervasyon `f` damgalanmıştı
+      Kanıt: yeni testler eski kodla **BAŞARISIZ (2/3)**, düzeltmeyle geçiyor
+      Kanıt: bayrak iki değeriyle sınanıyor — yalnız `true` ölçülseydi her
+      zaman `true` dönen bir hata da geçerdi
+      Kanıt: 487 test geçiyor
+      ⚠️ Mevcut bir test **kusuru iddia ediyordu**
+      (`Assert.True(offer.RequiresPassengerList)`); vault'taki karara
+      bakılarak kaldırıldı
+      ⚠️ `passengerListReminderHours` müşteri tekne detayına eklendi —
+      işletme paneli alıyordu, müşteri hiç görmüyordu
 
 - [x] **A-73** İşletme ayarları — yalnız değiştirilebilir alanlar · bitti: 2026-08-31
       `GET`/`PUT /api/partner/profile`. Mert: *"ayarlar ucunu da yaz, sadece
@@ -1622,3 +1962,28 @@ _(boş)_
       Kanıt: `dotnet build` 0 uyarı 0 hata · `GET /api/health` -> `{"status":"healthy"}`
 
 İlgili: [[api-desenler]] · [[api-kararlar]] · [[api-mimari]] · [[durum]] · [[api-notlar]]
+
+- [x] **A-63** API arayüzü — Scalar · bitti: 2026-08-27
+      Mert (2026-08-27): *"Swagger gibi kullanabileceğimiz ne var"* → Scalar
+      `Scalar.AspNetCore` 2.17.1 · **MIT** (paketin `nuspec`'inden
+      doğrulandı, tahmin edilmedi — ImageSharp'ta bu adım atlansaydı
+      ücretli bir lisansa bağlanacaktık)
+      Adres: `/scalar/v1` — yalnız Development
+      Kanıt: **tarayıcıda uçtan uca** — jeton yapıştırıldı,
+      `GET /api/platform/partners` **200 OK, 53 ms**, gerçek veri döndü
+      Kanıt: üretim kapısı ateşliyor — `ApiReference:Enabled=true` ile
+      uygulama AÇILMIYOR; kapalıyken açılıyor (ölçüldü,
+      `--no-launch-profile` ile)
+      Kanıt: 441 test geçiyor
+      ⚠️ **Swagger/Swashbuckle KULLANILMADI.** .NET 10'un yerleşik
+      `Microsoft.AspNetCore.OpenApi`'si zaten belgeyi üretiyordu; Scalar
+      yalnız görüntüleyici. Swashbuckle ailesinden paket geri gelmedi
+      ⚠️ **JWT şeması için `BearerSecurityTransformer` yazmak ZORUNLU oldu.**
+      .NET'in yerleşik `AddOpenApi()`'si güvenlik şemasını kendiliğinden
+      EKLEMİYOR; onsuz Scalar'ın jeton alanı hiç çıkmaz, her istek 401 döner
+      ve arayüz sessizce işe yaramaz olurdu
+      ⚠️ Şema belgeye ekleniyor ama uçlara ZORUNLU işaretlenmiyor: kimliksiz
+      uçlar gerçekten kimliksiz, hepsine "jeton gerekli" damgası vurmak
+      belgeyi yalancı yapardı
+      ⚠️ `Microsoft.OpenApi` v2.7.5'te tipler **kök ad alanına taşındı**
+      (`Microsoft.OpenApi.Models` DEĞİL) — assembly'den doğrulandı

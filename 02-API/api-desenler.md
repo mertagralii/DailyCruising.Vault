@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-08-25
+guncelleme: 2026-09-04
 durum: guncel
 ---
 
@@ -557,5 +557,40 @@ hataları yalnız çalışma anında görünür (2026-08-26).
 Panoda `Kanıt:` satırı bu çıktıyı içerir; "derlendi" tek başına kanıt değildir.
 Araç zinciri → [[api-araclar]]
 
+
+## Yorumun iddiası da ölçülmek zorunda
+
+Kapsam süzgecini iki dala böldüm ve yanına şunu yazdım: *"tek bir
+`x == param` yazılsaydı, parametre boşken SQL'de `= NULL`'a çevrilir ve hiçbir
+satır dönmezdi."* İddia inandırıcıydı, bilinen bir EF tuzağının adıydı ve
+**yanlıştı**: EF Core boş parametreyi `IS NULL`'a çeviriyor.
+
+Nasıl anlaşıldı: mutasyon. Kodu tek dala indirdim, testin kırmızıya dönmesini
+bekledim, **yeşil kaldı**. Yani iki dal bir koruma değil fazladan koddu ve
+yorum, olmayan bir tehlikeyi anlatıyordu.
+
+⚠️ **Yanlış yorumun bedeli yanlış koddan farklı ama küçük değil:** koda
+dokunacak bir sonraki kişi o iddiayı ölçmez, doğru kabul eder ve aynı deseni
+gerekmediği yerlere taşır. Yorum "neden" anlatıyorsa, o "neden" bir ÖLÇÜM
+olmak zorunda — hatırlanan bir kural değil.
+
+Kural: **bir yorum bir tehlikeyi adlandırıyorsa, o tehlikenin gerçekten var
+olduğunu gösteren mutasyon yapılmış olmalı.** Yapılmadıysa yorum "şunu
+düşünüyorum" diye yazılır, "şu olur" diye değil (2026-09-04, `A-76`).
+
+## Sıralı kimlik kısaltılırsa çakışır
+
+`Guid.CreateVersion7()` zaman sıralı: ilk **on iki altılık hanesi milisaniye
+damgasıdır**. Test verisinde `$"kategori-{Guid.CreateVersion7():N}"[..20]`
+yazılmıştı — önek 9 hane yiyor, geriye kimliğin yalnız 11 hanesi kalıyor ve o
+11 hanenin tamamı damga. Aynı milisaniyede kurulan iki kategori **aynı
+anahtarı** aldı.
+
+Belirtisi kötü: test bir koşuda kırmızı, aynı kodla bir sonraki koşuda yeşil.
+Rastgele kırılan bir test, olmayan bir testten kötüdür — insan onu "yine
+takıldı" diye geçmeyi öğrenir ve gerçek bir kırılma da aynı yerden geçer.
+
+Kural: **kısaltılacak kimlik rastgele üretilir** (`Guid.NewGuid()`), sıralı
+değil. Sıralı kimlik kısaltılmadan kullanılır (2026-09-04).
 
 İlgili: [[api-notlar]] · [[api-mimari]] · [[api-kararlar]] · [[api-gorevler]] · [[api-araclar]]

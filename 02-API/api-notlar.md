@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-08-21
+guncelleme: 2026-09-05
 durum: guncel
 ---
 

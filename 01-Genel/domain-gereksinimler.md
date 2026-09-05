@@ -1793,3 +1793,27 @@ etiketi taşır; `W-40` ve `A-81` **park ediliyor**, tahmin edilmiyor.
 
 ⚠️ Saklama süresi de aynı pakette ve **silen bir iş** gerektiriyor: süre
 yazılıp silme yazılmazsa yazılı bir vaat olur, uygulaması olmaz.
+
+### 2026-09-05 — İşletme kendi kampanyasını KENDİSİ açabilir
+
+Karar (Mert): **a**. İşletme kendi kuponunu/kampanyasını panelinden
+oluşturabilecek.
+
+**Neden bu bir soruydu:** şema bunu zaten ifade edebiliyordu
+(`Coupon.PartnerId`, `FundedBy = Partner`) ama yetki katalogunda
+`coupon.write` **işletmeye verilemiyordu** (`IsPartnerAssignable = false`).
+Yani "bedelini işletmenin karşıladığı kupon" kavramı vardı, o kuponu
+işletmenin **açması** yoktu. Backend tutarsızlığı bulup sordu.
+
+**Bu karar 2026-08-24 ilkesiyle çelişmiyor.** O ilke *"kararı platform
+değil tekne sahibi verir; ayarlanabilir olan işletme tarzıdır — komisyon,
+iptal politikası ve kupon platformda kalır"* diyordu. Buradaki kupon
+**platformun kupon politikası değil**, işletmenin kendi bütçesinden
+verdiği indirim: `FundedBy = Partner` olduğu için bedeli hakedişinden
+düşüyor, platformun payına dokunmuyor. Yani platformun elindeki kaldıraç
+(komisyon, iptal, platform kuponu) yerinde duruyor.
+
+⚠️ Açık kalan sınır: işletme **kendi teknesi dışında** geçerli kupon
+açamamalı ve **platform kuponu** üretememeli. Kapsam ve finansman
+alanlarının işletme isteğinde zorlanması gerekiyor — yetkiyi açmak tek
+başına yetmez.
