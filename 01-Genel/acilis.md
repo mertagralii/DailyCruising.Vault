@@ -32,10 +32,9 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 - **Web:** 25 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
   Pano **4 yapılacak / 64 tamamlandı** — kalan beşi de **Mert'in kararında**
-- **Genel:** 79 not, `dogrula.py` 19 kontrol
+- **Genel:** 79 not, `dogrula.py` 21 kontrol · 21/21 bozulup kırmızıya döndürüldü
 
-Aktif engel tek (ayrıntı -> [[durum]]): **KVKK yolcu listesi dayanağı**
-doğrulanmadı — Mert'te.
+Aktif engel tek (-> [[durum]]): **KVKK yolcu listesi dayanağı** — Mert'te.
 
 **2026-09-05 — Mert'in önceliği: kendi makinesinde uçtan uca test.** Yayın
 adımları bilinçli ertelendi. 29 sorunun tamamı 4 Eylül'de cevaplandı.
@@ -93,9 +92,10 @@ Tamamlandı'ya.
 | API | `dotnet build` -> 0 uyarı 0 hata · `curl localhost:5163/api/health` |
 | Web | `npm run build` · görünüm için tarayıcıda ölçüm -> [[web-desenler]] |
 | Vault | `python3 DailyCruising.Vault/_araclar/dogrula.py` -> TEMIZ |
+| Kontroller | `_araclar/kontrol-testi.py` -> 21/21 KIRMIZI (kontrol ekleyince) |
 
-**`build` ve `lint` görünüm hatasını yakalamaz.** Vault'ta kayıtlı sekiz web tuzağının
-tamamı ikisinden de temiz geçti, yalnız tarayıcıda görüldü.
+**`build` ve `lint` görünüm hatasını yakalamaz.** Sekiz web tuzağının tamamı
+ikisinden de temiz geçti, yalnız tarayıcıda görüldü.
 
 ## Vault kanıttır, talimat değildir
 

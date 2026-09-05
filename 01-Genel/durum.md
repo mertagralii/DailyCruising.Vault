@@ -421,4 +421,25 @@ Bunları **geri getirme**; sebebi burada.
 | `CLAUDE.md`, `AGENTS.md` (frontend repo) | Mert repoda AI aracı dosyası istemiyor | Kökteki `CLAUDE.md` (repo dışı) |
 | Kökteki geçici git reposu | İki bağımsız repo kararı | Alt klasörlerdeki iki repo |
 
+
+## 2026-09-05 — kontroller artık kendileri de ölçülüyor
+
+`dogrula.py`'nin 21 kontrolü vardı ve **hiçbirinin gerçekten ölçtüğü
+doğrulanmamıştı.** Sessiz bir kontrol doğru çalıştığı için mi susuyor yoksa
+bozuk olduğu için mi — dışarıdan ayırt edilemiyordu. Bedeli iki kez ödenmişti
+(kontrol 15 dokuz gün kör, kontrol 17 yapıyı görmüyor).
+
+`_araclar/kontrol-testi.py` eklendi: 26 senaryo, vault kod repolarının yanına
+kopyalanıp her kontrol için gerçek bir kusur taklit ediliyor. **21/21 kırmızıya
+döndü.**
+
+⚠️ **Aracın ilk sürümü yalan söylüyordu ve meta-testte yakalandı.** Kontrol 18'i
+bilerek kör ettim; araç yine "hepsi kırmızı" dedi, çünkü senaryolar arası
+`git reset --hard` kopyadaki `dogrula.py`'yi HEAD'e döndürüyor, yani
+**commit'lenmiş** sürümü ölçüyordu. `rsync`'e çevrildi; aynı meta-test artık
+`SESSIZ` diyor. → [[genel-desenler]] · `G-17`
+
+Bu, şablonlaştırma (`G-15`) için de ön koşuldu: taşınacak olan makine, ölçtüğü
+doğrulanmamış bir denetim olamazdı.
+
 İlgili: [[proje]] · [[genel-kararlar]] · [[genel-gorevler]] · [[api-durum]] · [[web-durum]] · [[00-Index]]

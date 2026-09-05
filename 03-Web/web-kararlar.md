@@ -1379,3 +1379,86 @@ farkında olmadan değiştirmiş olurdu.
 
 ⚠️ Boş bırakılan ilçe **`null` gidiyor, `""` değil**: boş dize "ilçesi yok"
 ile "yazmadı" arasındaki farkı kaybettirirdi.
+
+---
+
+## 2026-09-05 — Tablo sütunları oransal, yönetim paneli 1440px
+
+Yönetim panelindeki yat işletmeleri tablosu kabından **510px taşıyordu**.
+Yedi sütun sabit piksel genişlikteydi (240+220+80+110+130+150+230 = 1160,
+aralarla 1256), kap ise 746px veriyordu: 1140px'lik panel kabından yan menü
+(248) ve kart dolgusu (60) düşünce kalan buydu.
+
+Taşmanın kendisinden **daha kötü olan yeriydi**: `overflow-x-auto` kaydırma
+çubuğunu tablonun **altına** koyuyor. 31 satırlık listede yana kaydırmak için
+sayfanın en dibine inmek gerekiyordu — yani sütunu görmek isteyen kişi önce
+tabloyu terk etmek zorundaydı. Mert testte bunu bildirdi.
+
+**Karar:** `AdminColumn.w` artık **sabit genişlik değil pay**; `min` ile birlikte
+`minmax(min, w fr)` üretiyor. Tablo kaba sığacak şekilde dağıtılıyor, sığmadığında
+kaydırıyor. Uzun metin `truncate` + `title` ile kırpılıyor.
+
+**Neden oransal, neden "sütunları daralt" değil:** sabit piksel her yeni sütunda
+aynı hatayı üretir ve hata **ancak birinin ekranında** görünür. Oransal dağıtım
+kabın genişliğini ölçüt yapar, tasarımcının varsaydığı ekranı değil.
+
+**İkinci karar — yönetim paneli 1440px kaba alındı.** Tasarımın ölçüsü 1140px ve
+misafir sayfalarında öyle kalıyor. Sapma `PanelShell`'e `genis` bayrağıyla verildi;
+işletme ve destek panelleri değişmedi.
+
+**Neden bayrak, neden hepsini genişletmedim:** tasarımdan sapma yasağı duruyor ve
+sapmanın **gerekçesi sütun sayısı**. Yedi sütunlu tablo yalnız yönetim panelinde
+var; diğer iki paneli de genişletmek gerekçesiz sapma olurdu.
+
+Ölçüm (Playwright, gerçek veri, 31 satır): 1440'ta ve 1280'de yatay taşma **0**;
+1180'de tablo kendi içinde 77px kaydırıyor ve **sayfa taşmıyor**; 390'da sayfa
+taşması 0. Destek ve yorum tabloları da 0 taşmaya düştü.
+
+**Üçüncü karar — işlem düğmeleri iki sütunlu ızgarada.** `flex-wrap`'te düğme
+genişliği etiket uzunluğuna bağlıydı; "Belgeler" ile "Sözleşme gönder" yan yana
+gelince satır sağdan tırtıklı bitiyor, sonraki satır başka yerde kırılıyordu.
+Beş düğmeye çıkan hücrede sonuç dağınıktı. Izgarada hepsi 99px, aynı satırdakiler
+eşit yükseklikte. Sabit yükseklik **verilmedi**: dar sütunda uzun etiket iki satıra
+sarıyor ve sabit yükseklik metni kırpardı — hizayı yükseklik değil ızgara sağlıyor.
+
+İlgili: [[web-desenler]] · [[web-gorevler]] · [[web-durum]]
+
+---
+
+## 2026-09-05 — Başvuru durumu tek başına yalan söylüyordu
+
+🔴 **Mert testte buldu:** başvuru yaptı, platform hesabından sözleşme gönderdi,
+işletme hesabından reddetti, platforma döndü — **reddin hiçbir izi yoktu**, tablo
+"Sözleşme gönderildi" diyordu.
+
+Sebep bir uç eksiği değildi. İşletme sözleşmeyi reddettiğinde başvuru
+`ContractSent` **kalıyor** ve bu kasıtlı: platform düzeltilmiş bir sözleşme
+gönderebilsin diye. Uç `contractStatus` alanını **zaten döndürüyordu**; tip
+tanımında da vardı (`PlatformPartner.contractStatus`). Ekran onu hiç okumuyordu.
+
+**Karar:** rozet iki alanı birleştiriyor — `contractStatus === "Rejected"` ve
+başvuru kapanmamışsa "Sözleşme reddedildi" basılıyor, aksi halde başvuru durumu.
+
+**Neden en son sözleşmenin durumu doğru ölçüt:** `contractStatus` en son
+sözleşmeyi gösteriyor, dolayısıyla platform yeni sözleşme gönderince alan `Sent`'e
+dönüyor ve uyarı **kendiliğinden kalkıyor**. Yani rozet "geçmişte bir ret oldu"
+değil **"cevaplanmamış bir ret var"** anlamına geliyor — pazarlık döngüsünde
+platformun görmesi gereken tam olarak bu.
+
+**Ders:** `W-85`'te sözleşme akışının iki ucunu da yazdım ve **işletme tarafını
+ölçtüm**. Platform tarafının aynı olayı nasıl gördüğünü ölçmedim; akış tek yönlü
+test edilince eksik yarısı sessiz kaldı. Karşılıklı bir akışta **her iki tarafın
+ekranı ayrı ayrı ölçülür** — biri doğruyken diğeri yalan söyleyebiliyor.
+
+⚠️ **Ret gerekçesi hâlâ görünmüyor.** `rejectionReason` ve `rejectedAt` yalnız
+işletme yanıtında (`GET /api/partner/contracts`) dönüyor; platform yanıtında
+(`GET /api/platform/partners/{id}/contracts`) yok. Yani platform reddi görüyor ama
+**sebebini okuyamıyor**, dolayısıyla yeni sözleşmede neyi değiştireceğini bilmiyor.
+Backend'e bildirildi → `W-86`
+
+Kanıt: canlı, gerçek veri — Mert'in kendi başvurusu (`my_mert07@hotmail.com`,
+`01a06f26-…`) tabloda **"Sözleşme reddedildi"** basıyor ve satırda "Sözleşme
+gönder" düğmesi açık. 31 satırın rozet dağılımı: Aktif 19 · Sözleşme gönderildi 9 ·
+Başvuru alındı 2 · Sözleşme reddedildi 1. `982ee73`
+
+İlgili: [[web-gorevler]] · [[web-durum]] · [[durum]]

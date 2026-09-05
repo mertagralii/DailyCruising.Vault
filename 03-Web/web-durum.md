@@ -251,3 +251,26 @@ sorgulamaya, üyede rezervasyon detayına gidiyor.
 görünür" yazıyordu — rezervasyon **zaten onaylı**, müşteriye beklemesi
 gereken bir şey olduğunu söylüyordu. Artık "QR henüz hazır değil — kaptana
 aşağıdaki kodu söyle".
+
+## 🔴 2026-09-05 — sözleşme akışı tek yönlü test edilmişti
+
+`W-85`'te sözleşme gönderme, okuma, onaylama ve reddetme yazıldı ve **işletme
+tarafı** uçtan uca ölçüldü. Platform tarafının aynı olayı nasıl gördüğü
+ölçülmedi. Mert testte buldu: reddettikten sonra platform panelinde reddin
+**hiçbir izi yoktu**, tablo "Sözleşme gönderildi" diyordu.
+
+Uç suçsuzdu — `contractStatus` alanını zaten döndürüyordu ve elle yazılan tipte
+de duruyordu (`PlatformPartner.contractStatus`). **Ekran onu hiç okumamıştı.**
+
+Ders: karşılıklı bir akışta her iki tarafın ekranı **ayrı ayrı** ölçülür. Bir
+taraf doğruyken diğeri yalan söyleyebiliyor ve tek yönlü test bunu görmüyor.
+→ [[web-kararlar]] 2026-09-05
+
+✅ **Yarısı aynı gün kapandı:** backend platform yanıtına `rejectedAt` ve
+`rejectionReason` ekledi, sözleşme listesi ikisini de basıyor. Pazarlık döngüsü
+uçtan uca çalışıyor: işletme reddediyor, platform gerekçeyi okuyor, düzeltilmiş
+sözleşme gönderiyor ve rozet kendiliğinden kalkıyor → `W-86`
+
+Aynı gün yerleşim de düzeltildi: yat işletmeleri tablosu kabından 510px
+taşıyordu, sütunlar oransal yapıldı ve yönetim paneli 1440px kaba alındı.
+1440 ve 1280'de yatay taşma 0. `982ee73`

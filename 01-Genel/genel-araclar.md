@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-08-24
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -149,5 +149,13 @@ olanlar var.
 ## Kullanılmayacaklar
 
 - (bu alanda şu an yok)
+
+
+## Vault'un kendi denetimi
+
+| Tetikleyici | Araç | Neden |
+|---|---|---|
+| `dogrula.py`'ye kontrol eklendi/değiştirildi | `_araclar/kontrol-testi.py` | Kontrolü bilerek bozup kırmızıya döndüğünü görür; susan kontrol doğru mu bozuk mu ayırt edilemez |
+| Bir kontrol aylardır hiç konuşmuyor | `_araclar/kontrol-testi.py` | Sessizlik iki şeyin işareti olabilir ve ikisi dışarıdan aynı görünür |
 
 İlgili: [[genel-notlar]] · [[genel-desenler]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[api-araclar]] · [[web-araclar]]

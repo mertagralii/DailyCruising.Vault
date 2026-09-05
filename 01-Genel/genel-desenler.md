@@ -719,4 +719,32 @@ başkasının notuna güvenip yanıldı, `Y-14`'te kendi raporuna güvenseydi ya
 İkincisini yakalayan şey nota bakmak değil, **iddiayı ölçmek** oldu
 → [[yayin-oncesi]]
 
+
+## Denetimin kendisi de denetlenir — susan kontrol ölçülmeden aklanmaz
+
+`dogrula.py` 21 kontrol taşıyor ve çoğu aylardır hiç konuşmadı. Sessizlik iki
+şeyin işareti olabilir: kontrol doğru çalışıyor ve ortada sorun yok, **ya da**
+kontrol bozuk ve hiçbir şey görmüyor. Dışarıdan ikisi aynı görünür.
+
+Bunun bedeli iki kez ödendi: **kontrol 15** `if kirli: continue` muafiyeti
+yüzünden dokuz gün boyunca tam da izlediği dosyalarda kör kaldı; **kontrol 17**
+yalnız maddelere bakıp bölüm yapısına bakmadığı için boş yinelenen başlığı
+görmedi. İkisi de "TEMİZ" yazarken kördü.
+
+`_araclar/kontrol-testi.py` bunu ölçüyor: her kontrol için gerçek bir kusuru
+taklit eden bir bozma senaryosu var; vault kopyalanıp bozuluyor ve o kontrolün
+**kırmızıya döndüğü** görülüyor. Dönmüyorsa kontrol yazılıdır ama ölçmüyordur.
+
+⚠️ **Aracın kendisi de yalan söyleyebilir — ve ilk sürümde söyledi.** Kopyayı
+senaryolar arasında `git reset --hard` ile sıfırlıyordum; bu, kopyadaki
+`dogrula.py`'yi de HEAD'e döndürüyordu. Yani araç **commit'lenmiş** sürümü
+ölçüyor, çalışma ağacındakini hiç çalıştırmıyordu. Meta-testte yakalandı:
+kontrol 18 bilerek kör edildi, araç yine "hepsi kırmızıya döndü" dedi.
+Sıfırlama `rsync`'e çevrildi; aynı meta-test artık `SESSIZ` diyor.
+
+**Ders:** bir ölçüm aracının yeşil vermesi, ölçtüğünün kanıtı değildir; kendisi
+de bozulup kırmızıya döndürülmelidir. Bu, aşağıdaki *"testler yeşil demeden önce
+değiştirdiğin satırın koştuğunu ölç"* kuralının denetim katmanına uygulanmış
+hâli — oradaki kural koda bakıyor, buradaki kurala bakana bakıyor.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

@@ -39,6 +39,7 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
 | **Yapıya dokunacağım** — yeni proje, katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — "ne var" sorusunun tek cevabı |
 | Domain / iş kuralı konuşulacak | `01-Genel/domain-gereksinimler.md` + `01-Genel/durum.md` |
+| **`dogrula.py` TEMİZ dedi ama bir kontrol hiç konuşmuyor** | `python3 _araclar/kontrol-testi.py` — hangi kontrolün gerçekten ölçtüğü yalnız orada görülür; sessizlik aklanma değildir |
 | Vault'ta ne var, tam liste | `00-Index.md` |
 
 **`04-Oturumlar/` arşivdir, otorite değil.** O günün çalışma kaydını taşır; "nerede
@@ -77,6 +78,7 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | **Genel durum, "nerede kaldık"** | `01-Genel/durum.md` — **tek otorite**, yalnız vault oturumu yazar |
 | Cevapsız soru / blocker / çelişki / silinen şey | `01-Genel/durum.md` |
 | **`durum.md`'de blocker açıldı/kapandı veya kritik yol değişti** | aynı oturumda `01-Genel/acilis.md` — her oturuma yüklenen özet odur |
+| **`dogrula.py`'ye kontrol ekledim veya değiştirdim** | `_araclar/kontrol-testi.py`'ye o kontrol için bozma senaryosu yaz ve çalıştır. **Senaryosu olmayan kontrol ölçülmüyor sayılır** — yazılı olması çalıştığının kanıtı değil |
 | **Migration uygulandı** | `DailyCruising.Back-End/araclar/sema-cikar.py` çalıştır → `02-API/api-sema-guncel.md` yeniden üretilir. **Elle yazma** |
 | **"Bu üretimde şu koşulla çalışır"** cümlesini kurduğum an | `01-Genel/yayin-oncesi.md` — sonraya bırakma, koşullar yan ürün olarak doğar |
 | **Kendi gözlemim** — tuzak, denenip olmayan, beklenmedik davranış | `<alan>/notlar/` altında yeni dosya + hub'ına link |

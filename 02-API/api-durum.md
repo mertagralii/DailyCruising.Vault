@@ -13,6 +13,32 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-05 — `ozet.py` çalışan hesapları gizliyordu (69c868e).** Demo özet
+betiğinin hesap listesi *"en az bir `RefreshToken`'ı var mı"* ile süzülüyordu,
+yani gerçekte sorulan soru **"daha önce giriş yapmış mı"** idi. Jeton süresi
+dolup temizlendiğinde **çalışan** bir hesap listeden sessizce düşüyor; iki
+işletme hesabı (`Active`, parolalı, girilebilir) görünmüyordu ve listeyi okuyan
+"böyle bir hesap yok" sonucuna varacaktı.
+
+**Neden önemli:** betiğin varlık sebebi kılavuzun bayatlamaması. Süzgecin
+kendisi bayatlatıyordu — üretilen belge, üretim ölçütü çürüyorsa elle yazılan
+belgeden daha güvenilir değildir. Ölçüt **girilebilirliğe** çevrildi
+(`Status = 'Active'` ve `PasswordHash` dolu); 17 hesabın tamamı listeleniyor.
+
+⚠️ **Ders, tek betikten büyük:** "şu olay gerçekleşmiş mi" biçimindeki bir
+süzgeç, olayın izi silinebiliyorsa **varlık ölçütü olarak kullanılamaz**. Aynı
+tuzak `LastLoginAt`, `EventLog` ve giden kutusu kayıtları için de geçerli —
+üçü de temizleniyor.
+
+Ayrıca `psql`'in satır sonundaki **boş alanı düşürmesi** aynı klasörde
+**üçüncü kez** hata verdi; bu sefer `'-'` yer tutucu gerekçesiyle koda yazıldı.
+
+⚠️ **Yanlış alarm vermekten dönüldü:** `UserRoles` sayımında "İşletme Sahibi
+rolünde 0 kullanıcı" görülüp bozukluk sanıldı; ölçünce roller **işletme başına**
+tanımlıymış (`Roles.PartnerId` dolu, 35 satır), sahiplik `PartnerMembers`
+üzerinden kuruluyor. Sayı doğruydu, yorumu yanlıştı.
+
+
 **2026-08-28 — `A-67`: ödeme geri çağrısı artık rezervasyon özeti taşıyor.**
 Frontend'in `/booking/success` sayfası uçtan yalnız `succeeded` aldığı için
 gösterecek gerçek veri bulamamış ve **aylarca sabit veriden okumuş** — ödeme

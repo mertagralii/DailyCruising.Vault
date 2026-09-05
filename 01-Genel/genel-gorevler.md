@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: genel
-guncelleme: 2026-08-31
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -74,6 +74,15 @@ tamamlanamaz.**
 _(boş)_
 
 ## 🟢 Tamamlandı
+
+- [x] **G-17** Kontrollerin kendisi ölçülür hâle getirildi · bitti: 2026-09-05
+      `_araclar/kontrol-testi.py`: 26 senaryo, 21 kontrolün tamamı bilerek
+      bozulup kırmızıya döndüğü görülüyor.
+      Kanıt: 21/21 kontrol KIRMIZI (49 sn). **Meta-test de yapıldı:** kontrol 18
+      bilerek kör edildi → araç `SESSIZ` dedi. İlk sürüm bunu YAKALAYAMIYORDU
+      (`git reset --hard` commit'lenmiş `dogrula.py`'yi ölçüyordu); kusur
+      meta-testle bulundu, sıfırlama `rsync`'e çevrildi. → [[genel-desenler]]
+
 
 - [x] **G-03** Ödeme sağlayıcı kararı · **CEVAPLANDI** 2026-08-25
       Mert: **İyzico** — *"ama sonrasında bunu değiştirebilirim, ona göre bir yapı

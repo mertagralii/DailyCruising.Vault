@@ -58,6 +58,55 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟢 Tamamlandı
 
+- [x] **W-86** Ret gerekçesi platform panelinde · 2026-09-05
+      `W-87` reddi **görünür** yapmıştı, bu görev **okunur** yaptı.
+      Backend `GET /api/platform/partners/{id}/contracts` yanıtına
+      `rejectedAt` ve `rejectionReason` ekledi (alanlar veritabanında
+      duruyordu, platform izdüşümü seçmiyordu). Sözleşme listesi ikisini
+      de basıyor: ret tarihi satır başlığında, gerekçe altında ayrı kutuda.
+      Ret rozeti **griden çıkarıldı** — "süresi doldu" ve "yenisiyle
+      değişti" kendiliğinden olan şeyler, ret ise işletmenin cevabı ve
+      platformdan eylem bekliyor. Rozetin rengi burada durum değil,
+      **sıradaki iş**.
+      ⚠️ Sebep tekrar edecek cinsten: iki uç **ayrı izdüşüm** kullanıyor
+      (`PartnerContractItem` ↔ `ContractListItem`). Bir uca alan eklemek
+      diğerini etkilemiyor ve **tek uca bakan ölçüm eksiği göstermiyor.**
+      Üretilen tipler tazelendi: 119 yol · 149 işlem. Belge artık 148
+      işlemde **yanıt şeması** taşıyor — daha önce hiçbirinde yoktu, yani
+      elle yazılan yanıt tipleri sessizce yalan söyleyebiliyordu.
+      Kanıt: canlı, gerçek veri, iki yönlü. **Olumlu** — Mert'in başvurusu
+      (`my_mert07@hotmail.com`) satırda "Sözleşme reddedildi", modalda
+      `Ret: 5 Eyl 05:13` ve gerekçe kutusu. **Olumsuz** — Kekova Mavi Tur'da
+      iki sözleşme var (%15 gönderildi, %25 reddedildi) ve gerekçe kutusu
+      **yalnız 1 kez** basılıyor; satır durumu "Sözleşme gönderildi",
+      çünkü ret **cevaplanmış**. Sayfa taşması 0; `tsc`, `lint`, `build`
+      temiz. `5189ce6`
+
+- [x] **W-87** Yönetim tablosu sığdırıldı, sözleşme reddi görünür oldu · 2026-09-05
+      🔴 **Mert testte iki şey birden buldu.** Birincisi yerleşim: yat
+      işletmeleri tablosu kabından **510px taşıyordu** ve kaydırma çubuğu
+      tablonun altında olduğu için 31 satırlık listede yana kaydırmak
+      ancak sayfanın en dibine inerek mümkündü. *"Tam sığmıyor ekrana,
+      kaydırmak için taa en aşağıya inip kaydırmam gerekiyor."*
+      İkincisi daha ağır: başvuru yaptı, sözleşme gönderdi, işletme
+      hesabından reddetti, platforma döndü — **reddin hiçbir izi yoktu**.
+      Sütunlar oransal yapıldı (`w` pay, `min` taban) ve yönetim paneli
+      1440px kaba alındı; sapma yalnız bu panelde, misafir sayfaları
+      1140px kaldı. İşlem düğmeleri iki sütunlu ızgaraya alındı.
+      Durum rozeti artık `contractStatus`'ü de okuyor — uç bu alanı
+      **zaten döndürüyordu**, ekran hiç okumamıştı.
+      ⚠️ Ret **gerekçesi** hâlâ görünmüyor, platform ucu döndürmüyor →
+      `W-86`. Yani bu görev reddi *görünür* yaptı, *okunur* yapmadı.
+      Kanıt: canlı, gerçek veri, Playwright ölçümü — 1440'ta ve 1280'de
+      yatay taşma **0**, 1180'de tablo kendi içinde 77px kaydırıyor ve
+      sayfa taşmıyor, 390'da sayfa taşması 0; destek ve yorum tabloları
+      da 0'a düştü. Beş düğmenin hepsi **99px**, iki hizalı sütun, aynı
+      satırdakiler eşit yükseklikte. Mert'in başvurusu
+      (`my_mert07@hotmail.com`) **"Sözleşme reddedildi"** basıyor ve
+      "Sözleşme gönder" düğmesi açık; 31 satırın dağılımı Aktif 19 ·
+      Sözleşme gönderildi 9 · Başvuru alındı 2 · Sözleşme reddedildi 1.
+      `npm run build`, `lint` ve `tsc` temiz. `982ee73`
+
 - [x] **W-85** Sözleşme okuma ve onay · 2026-09-05
       🔴 **Mert testte buldu ve katılım akışının kopuk halkasıydı:**
       *"ben sözleşmeyi gönderdim de gönderdiğim kişi nasıl okuyup
