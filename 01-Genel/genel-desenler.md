@@ -857,6 +857,27 @@ otomatikleştirilemez; belgede dürüstçe *"bu adımın kapısı yok, bilinçli
 yazmalı. **Kapısı varmış gibi listelenirse, listedeki diğer adımların ağırlığını
 da götürür** — delinen kural yalnız kendini değil komşusunu da götürür.
 
+⚠️ **Bu kural bir gün sonra kendi kanıtını üretti.** Backend zincire sadeleştirme
+adımını yerleştirirken **`dotnet test` adımının zincirde hiç olmadığını** buldu:
+9. adım "gerçekten çalıştır", 10. adım "kayıt"tı, arada test yoktu. Zincir
+haftalardır yazılıydı ve okunuyordu.
+
+**Yokluk okunmaz, yerleştirilirken görülür.** Bir listeyi okumak neyin eksik
+olduğunu göstermez — gözün yazılana takılır. Eksik olan, listeye bir şey
+*koymaya* çalışınca ortaya çıkar: "bu nerenin arasına girer?" sorusu, arada bir
+şey olmadığını gösterir. Denetim listeleri bu yüzden okunarak değil,
+**kullanılarak** doğrulanır.
+
+Buradan zincirin tamamı için bir kural çıktı (backend'in formülasyonu):
+
+> **Yeni bir adım eklenirken sorulacak soru "listeye nereye girsin" değil,
+> "atlandığında ne kırmızı yanacak"dır.** Cevabı yoksa adım "kapısı yok"
+> damgasıyla girer.
+
+Ayrıca "gerçekten çalıştır" ile "test" **ayrı** adım olarak duruyor ve bu ayrımın
+bedeli aynı gün ödendi: platform sözleşme ucu canlıda **200 dönüyordu** ve alan
+eksikti. **Uç noktaya istek yazdığın yolu ölçer, test yazmadığın yolları.**
+
 ⚠️ **Sıra hatası:** refactor **testten sonra** gelir. "Yaz → sadeleştir → test et"
 sırası, ağ kurulmadan trapeze çıkmaktır; sadeleştirme testin koruyacağı şeyi
 kırarsa bunu testte değil müşteride görürsün. Doğrusu **test → refactor → test**.

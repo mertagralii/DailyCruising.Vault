@@ -62,7 +62,27 @@ Web tarafındaki zincirin API karşılığı. **Sıra rastgele değil**: her ad�
 | 7 | Veri katmanı incelemesi | `ecc:database-reviewer` ajanı | Şema, migration veya SQL değiştiyse. Postgres uzmanı: indeks, kısıt, sorgu planı |
 | 8 | Güvenlik | `ecc:security-reviewer` ajanı | Kullanıcı girdisi, kimlik doğrulama, ödeme veya fiyat kodu varsa **atlanamaz** |
 | 9 | **Gerçekten çalıştır** | `dotnet run` + uç noktaya istek | ⛔ **Bu adım atlanamaz** |
-| 10 | Kayıt | `api-durum.md` + panoda `Kanıt:` | Kanıt satırı 5, 6 ve 9'un çıktısını içerir |
+| 10 | Test | `dotnet test` | 9. adım YAZDIĞIN yolu ölçer, bu adım **yazmadığın** yolları. İkisi farklı: bugün platform sözleşme ucu canlıda 200 dönüyordu ve alan eksikti |
+| 11 | **Sadeleştirme** | — ⚠️ **KAPISI YOK** | ⚠️ Bu adımın otomatik bir başarısızlık sinyali **yoktur**, bu yüzden atlanmaya en açık adım budur. Bilinçli yapılır ya da hiç yapılmaz — listede olması yaptırmıyor |
+| 12 | Test (yeniden) | `dotnet test` | 11'in kırdığını **yalnız bu** yakalar. Sadeleştirme testten ÖNCE yapılırsa ağ kurulmadan trapez olur |
+| 13 | Commit + push | `git commit` + `git push` | Geri alınabilirlik burada doğar. Mesaj **neyi** değil **neden**i taşır; kanıt satırı mesajın içindedir |
+| 14 | Kayıt | `api-durum.md` + panoda `Kanıt:` | Kanıt satırı 5, 9, 10 ve 12'nin çıktısını içerir |
+
+### ⚠️ 11. adımın kapısı yok — ve bu bilinçli yazıldı
+
+Zincirdeki her adım atlandığında bir yerde **kırmızı yanıyor**: derleme
+başarısız olur, test kırmızı döner, `openapi.json` bayatlarsa onu koruyan test
+patlar, commit'siz iş `git status`'ta durur.
+
+**Sadeleştirmenin böyle bir sinyali yok.** Ölçüldü (2026-09-05): o oturumda
+test, canlı ölçüm, mutasyon kontrolü, commit, push ve vault yazımı eksiksiz
+yapıldı; atlanan tek adım sadeleştirme oldu ve atlandığı **fark bile edilmedi**.
+
+Buradan çıkan kural zincirin tamamı için geçerli: **bir adımı listeye yazmak
+onu yaptırmaz, kapısı yaptırır.** Yeni bir adım eklenirken sorulacak soru
+"listeye nereye girsin" değil, **"atlandığında ne kırmızı yanacak"**dır.
+Cevabı yoksa adım listeye "kapısı yok" damgasıyla girer — varmış gibi
+listelenirse yanındaki adımların ağırlığını da götürür.
 
 ### ⛔ 9. adım neden atlanamaz
 

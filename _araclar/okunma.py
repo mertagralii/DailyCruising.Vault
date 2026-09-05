@@ -25,8 +25,9 @@ Kaynak: `~/.claude/projects/<vault.json: oturum_kayit_deseni>/*.jsonl`.
   * ATIF     — asistan metninde `[[ad]]` gecti ama dosya ACILMADI
 
 ⚠️ **Hangi dosya olculur:** yalniz OKUMA-degerli olanlar. `rol: history` ve arsiv
-dosyalari olcu disidir — onlar denetim izidir, degeri okunma sikliginda degil
-ihtiyac aninda var olmasindadir.
+dosyalari okunma ORANIYLA degerlendirilemez — onlar denetim izidir, degeri
+okunma sikliginda degil ihtiyac aninda var olmasindadir. Bu "onemsiz" demek
+DEGILDIR: o an geldiginde okunmazsa kayip gercektir.
 
 ⚠️ **Ne olculmez — bilerek yaziliyor:**
   * Acilan dosyanin okunup ANLASILDIGI olculmez, yalnizca acildigi.
@@ -231,9 +232,13 @@ def main():
     _ok = sum(1 for s in okuma_degerli if s[0] > 0)
     print(f"OZET (okuma-degerli): {_ok}/{len(okuma_degerli)} dosya yazildigi "
           f"oturum DISINDA okundu · {len(hic)} okunmadi")
+    # "Olcu disi" demiyoruz: backend'in uyarisi — o ifade zamanla "onemsiz"e
+    # kayar. Kararlar dosyasinin degeri yilda uc kez gelen bir anda; o an
+    # geldiginde okunmazsa kayip GERCEKTIR, yalnizca ORAN olarak olculemez.
     print(f"      yazma-degerli ({'/'.join(sorted(YAZMA_DEGERLI_ROLLER))}): "
-          f"{len(yazma_degerli)} dosya OLCU DISI — bunlar denetim izidir, "
-          f"dusuk okunma basarisizlik degildir")
+          f"{len(yazma_degerli)} dosya — okunma ORANIYLA degerlendirilemez. "
+          f"Onemsiz demek DEGIL: degeri yilda birkac kez gelen bir anda ve o an "
+          f"okunmazsa kayip gercektir")
     print(f"      siniflandirilamayan Bash dokunusu: {sum(belirsiz.values())} "
           f"({len([a for a in belirsiz if belirsiz[a]])} dosyada) — okuma da olabilir "
           f"yazma da; sayilar bu kadar belirsizlik payi tasir")
