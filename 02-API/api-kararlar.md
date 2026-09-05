@@ -4488,3 +4488,96 @@ yazanı olmayan tablo.** Kod incelemesi bulamaz; yalnız veriyi doldurmaya
 ölçüyor (`RunAsync` çağrılıyor, `Status = Closed` doğrulanıyor) — yorumun
 iddiası testten fazlasını söylemesin diye. Mutasyon: çağrı kaldırıldı,
 kırmızı. Canlı: `ConversationReservations` 0 → 4.
+
+## 2026-09-05 (13) — Ödeme sağlayıcısı Paratika; İyzico kaldırılmadı
+
+Mert: *"Ödeme sistemi iyzico değil paratika olucak."*
+
+`ParatikaPaymentProvider` yazıldı, `Payments:Provider` varsayılanı `paratika`
+oldu. **İyzico sınıfı ve ayarları SİLİNMEDİ.**
+
+**Neden silinmedi:** `PaymentProviderResolver` iadeyi ödemenin KENDİ
+sağlayıcısından geçiriyor. İyzico kaydı kaldırılsaydı o sağlayıcıdan geçmiş
+eski bir rezervasyonun iadesi çalışma anında "sağlayıcı bulunamadı" hatasına
+düşerdi — ve bu ancak aylar sonra, ilk eski iade denendiğinde görülürdü.
+Sağlayıcı seçimi ayarla yapılıyor, sınıfın varlığıyla değil.
+
+### Paratika'nın İyzico'dan iki yapısal farkı
+
+**1. İstek biçimi.** JSON değil `application/x-www-form-urlencoded`; tek uç
+adresi var ve işlemi `ACTION` alanı belirliyor. Kimlik her istekte gövdede
+(`MERCHANT`, `MERCHANTUSER`, `MERCHANTPASSWORD`), ayrı imza başlığı yok.
+
+**2. İşlemin kalıcı anahtarı bizim ürettiğimiz `MERCHANTPAYMENTID`.**
+Sorgulama (`QUERYTRANSACTION`) ve iade (`REFUND`) bu alandan gidiyor, oturum
+jetonundan değil. Bu yüzden `ProviderTransactionId` olarak **oturum jetonu
+değil sipariş anahtarı** saklanıyor. Jeton saklansaydı ödeme çalışır, ay
+sonra yapılacak iade elde tutulan anahtarla çalışmazdı.
+
+Anahtar rezervasyon kodu + rezervasyon kimliğinden kuruluyor ve 32 karakterde
+kesiliyor; kod baştan yer aldığı için bir destek kaydında hangi rezervasyona
+ait olduğu okunabiliyor. Rastgele değil: aynı rezervasyon için her zaman aynı
+anahtar üretiliyor.
+
+### Pazaryeri modeli — `A-41`'in şekli değişti
+
+Paratika'nın pazaryeri modeli belgeli ve satıcı kaydı bir API aksiyonu:
+`SELLERADD` (ayrıca `SELLEREDIT`, `QUERYSELLER`). Yani İyzico'daki
+*"bu servis yalnız pazaryeri müşterilerine açık"* duvarının Paratika
+karşılığı **kod tarafında yok** — `RegisterPayeeAsync` gerçekten yazıldı.
+
+Bölüştürme sepet kalemine yazılıyor (`sellerId`, `sellerCommissionAmount`),
+isteğin köküne toplamı (`TOTALSELLERCOMMISSIONAMOUNT`). Üçü birlikte gitmek
+zorunda.
+
+Satıcı anahtarını **sağlayıcı üretmiyor, biz veriyoruz**: `SELLERID` isteğin
+zorunlu alanı ve işletmenin kendi kimliği yazılıyor. Böylece iki tarafta iki
+ayrı numara taşımak gerekmiyor.
+
+Vergi kimliği işletme türüne göre AYRI alana gidiyor: vergi mükellefi olmayan
+şahıs `TCKN`, şirketler `VKN`. Hesap sahibi adı yalnız arkasında gerçek kişi
+olan türlerde gönderiliyor — limited/anonimde hesap tüzel kişiye ait ve oraya
+kişi adı yazmak IBAN sahibiyle uyuşmazlık üretirdi.
+
+### Doğrulanamayan cevap ÖDENDİ sayılmıyor
+
+`QUERYTRANSACTION` cevabında işlem kaydının hangi düzeyde durduğu (kökte mi,
+listede mi) **gerçek hesap olmadan doğrulanamadı**. Kod bu belirsizliği
+"muhtemelen ödendi" diye çözmüyor: tutarı okuyamazsa ödemeyi BAŞARISIZ
+sayıyor.
+
+**Neden bu yön:** yanlış tarafa düşen bir teyit ödenmemiş rezervasyonu
+ödenmiş gösterir, koltuk tutulur ve tekne boş kalkar — bu **görülmez**. Bu
+yönde düşen bir teyit ise ödemiş müşteriyi bekletir ve destek talebi açtırır
+— bu **görülür**. Belirsizlik görünür tarafa yıkıldı.
+
+**Kanıt (test):** 7 test, ağa çıkmadan sahte taşıyıcıyla. **Beş mutasyon da
+yakalandı** — bölüştürme alanları kaldırıldı (1 kırmızı), doğrulanamayan
+cevap "ödendi" yapıldı (1), tutar doğrulaması kaldırıldı (1), vergi kimliği
+hep `VKN`'ye yazıldı (1), tutar biçimi kültüre bırakıldı (3).
+**Kanıt (açılış kapısı, canlı):** üretim ortamında dört durum ölçüldü —
+kimlik bilgisi yok → reddetti; API adresi deneme → reddetti; API üretim ama
+ödeme sayfası deneme → **ayrıca** reddetti; hepsi üretim → açıldı.
+İki adres ayrı denetleniyor: yalnız biri üretime alınırsa müşteri deneme
+sayfasında kart girer ve para yine tahsil edilmez. **600 test yeşil.**
+
+## 2026-09-05 (14) — Depolama Amazon S3; yol-tarzı adresleme yalnız AWS DIŞINDA
+
+Mert: *"S3 olarak da Amazon S3 bucket'i kullanacağız."*
+
+Ölçüm: kod **zaten** gerçek AWS'ye bakıyordu — `AWSSDK.S3`, `IAmazonS3`,
+bölge `eu-central-1`, `ServiceUrl` boş. Kararın gerektirdiği bir kod
+değişikliği yoktu. `S-24`'teki *"S3 / DO Spaces"* belirsizliği kapandı.
+
+Tek düzeltme `ForcePathStyle`: koşulsuz `true` idi ve yorumu *"gerçek AWS
+ikisini de kabul ediyor"* diyordu. Bu bugün doğru ama AWS yol-tarzı
+adreslemeyi kullanımdan kaldırma yolunda ve yeni bölge/özelliklerin bir kısmı
+yalnız alt alan adı biçiminde çalışıyor.
+
+**Neden:** "bugün çalışıyor" ile "doğru" aynı şey değil. Sağlayıcı artık
+kesinleştiğine göre varsayılan da kesinleşmeli; koşulsuz bırakmak sessizce
+eskiyen bir seçim olurdu. Ayrım `ServiceUrl` ile yapılıyor — dolu olması
+zaten "AWS değil" demek, geliştirme ve testler MinIO'ya karşı koşuyor.
+
+**Kanıt:** 600 test yeşil; MinIO'ya karşı koşan depolama testleri etkilenmedi
+(`ServiceUrl` dolu olduğu için onlarda yol-tarzı hâlâ açık).

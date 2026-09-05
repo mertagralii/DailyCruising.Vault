@@ -43,6 +43,13 @@ Biçim ve gerekçe -> [[genel-desenler]]
       onboard edildikten SONRA
 
 - [ ] **A-41** Alt üye iş yeri ve hakediş transferi · 🔴 **MERT'TE** ·
+      ⚠️ **2026-09-05: SAĞLAYICI DEĞİŞTİ — Mert "ödeme sistemi paratika olacak"
+      dedi.** Aşağıdaki İyzico ölçümü artık geçmiş kaydıdır. Paratika'nın
+      pazaryeri modeli belgeli ve satıcı kaydı bir API aksiyonu (`SELLERADD`);
+      `RegisterPayeeAsync` gerçekten yazıldı. Kalan iş kod değil **hesap**:
+      Paratika üye işyeri açılması, pazaryeri modelinin etkinleştirilmesi ve
+      `Merchant` / `MerchantUser` / `MerchantPassword` bilgilerinin verilmesi.
+      → [[api-kararlar]] 2026-09-05 (13)
       öncelik: **yüksek**
 
       🔔 **MERT'E HATIRLATILACAK — İYZİCO GÖRÜŞMESİ**
@@ -117,6 +124,16 @@ _(boş)_
   kimliksiz yedi uçta yanlış `401` iddiası olmadığı ayrıca ölçüldü. Denetim
   testi yazıldığı anda beş gerçek boşluk buldu (dört ikili indirme + rezervasyon
   `201`). 591 test yeşil. → [[api-kararlar]] 2026-09-05 (9)
+- [x] **A-95** Paratika ödeme sağlayıcısı yazıldı · bitti: 2026-09-05
+  Kanıt: 7 test, beş mutasyon da kırmızı verdi (bölüştürme, doğrulanamayan
+  cevap, tutar denetimi, vergi kimliği alanı, kültür). Açılış kapısı üretimde
+  dört durumda ölçüldü: kimlik yok / API adresi deneme / ödeme sayfası deneme
+  → üçü de reddetti, hepsi üretim → açıldı. 600 test yeşil.
+  → [[api-kararlar]] 2026-09-05 (13)
+- [x] **A-96** Depolama Amazon S3'e sabitlendi · bitti: 2026-09-05
+  Kanıt: kod zaten gerçek AWS'ye bakıyordu; tek düzeltme `ForcePathStyle`
+  yalnız `ServiceUrl` doluyken (AWS dışı) açık. 600 test yeşil, MinIO'ya
+  koşan depolama testleri etkilenmedi. → [[api-kararlar]] 2026-09-05 (14)
 - [x] **A-92** Bütün tablolar gösterilebilir veriyle dolduruldu · bitti: 2026-09-05
   Kanıt: 82 tablonun 81'i dolu; tek boş kalan `NotificationOutbox` ve o bir
   kuyruk (gönderim işi boşaltıyor). Dört rolde canlı uç taraması yapıldı;

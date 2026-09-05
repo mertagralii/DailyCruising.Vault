@@ -1,7 +1,7 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-08-26
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -29,8 +29,11 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | Oturumun ilk iş talebi | `01-Genel/acilis.md` — `SessionStart` hook'u otomatik yükler |
 | **"Nerede kaldık"** sorusu | `01-Genel/durum.md` — **tek otorite** |
 | `/compact` sonrası ilk iş | `01-Genel/acilis.md` + `01-Genel/durum.md` |
-| `DailyCruising.Back-End/` altında dosya değiştirmeden ÖNCE | `02-API/api-desenler.md` + `02-API/api-araclar.md` + `02-API/api-gorevler.md` |
-| `DailyCruising.Front-End/` altında dosya değiştirmeden ÖNCE | `03-Web/web-desenler.md` + `03-Web/web-araclar.md` + `03-Web/web-gorevler.md` |
+| Bir alanda **işe başlarken** | o alanın `*-gorevler.md`'si — görevi Yapılıyor'a taşımak için |
+| O alana **bu oturumda ilk kez** dokunuyorum | `*-desenler.md` + `*-araclar.md` — oturumda bir kez, her dosyada değil |
+| **Bir deseni çiğnemek üzereyim** — mock veri basacağım, boş tablo göstereceğim, `dangerouslySetInnerHTML` yazacağım, elle tip yazacağım | ilgili `*-desenler.md` — **kapı burada**, gerekçesi orada yazıyor |
+| **Şema / tablo / kolon konuşulacak veya değişecek** | `02-API/api-sema.md` — tabloların kanonik listesi |
+| **"Yayına çıkalım" / "hazır mı"** sorusu · deploy konuşulacak | `01-Genel/yayin-oncesi.md` — üretim koşullarının tek listesi |
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
 | **Yapıya dokunacağım** — yeni proje, katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — "ne var" sorusunun tek cevabı |
 | Domain / iş kuralı konuşulacak | `01-Genel/domain-gereksinimler.md` + `01-Genel/durum.md` |
@@ -72,6 +75,8 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | **Genel durum, "nerede kaldık"** | `01-Genel/durum.md` — **tek otorite**, yalnız vault oturumu yazar |
 | Cevapsız soru / blocker / çelişki / silinen şey | `01-Genel/durum.md` |
 | **`durum.md`'de blocker açıldı/kapandı veya kritik yol değişti** | aynı oturumda `01-Genel/acilis.md` — her oturuma yüklenen özet odur |
+| **Şema değişti** — tablo, kolon, kısıt, tetikleyici eklendi/kaldırıldı | `02-API/api-sema.md` |
+| **"Bu üretimde şu koşulla çalışır"** cümlesini kurduğum an | `01-Genel/yayin-oncesi.md` — sonraya bırakma, koşullar yan ürün olarak doğar |
 | **Kendi gözlemim** — tuzak, denenip olmayan, beklenmedik davranış | `<alan>/notlar/` altında yeni dosya + hub'ına link |
 | O günün çalışma kaydı (arşiv) | `04-Oturumlar/<YYYY-AA-GG>.md` |
 | Başka bir harness'a (Codex, Cursor) devir | `ecc memory handoff` → [[genel-kararlar]] |
@@ -90,6 +95,27 @@ zaman yazılır?* İkisinin de cevabı yoksa bölme açılmaz.
 `_araclar/dogrula.py` (kontrol 15) bunu artık ölçüyor: mimari dosyasının
 `guncelleme` tarihinden bu yana kod reposunda eklenen/silinen kaynak dosyaları
 sayar. Kural yazılı olmakla kalmaz, denetlenir.
+
+### Okuma kuralı neden daraltıldı — kapı, başlangıç okuması değil
+
+2026-09-05'e kadar kural şuydu: *"bir alanda dosya değiştirmeden önce desenler +
+araçlar + görevler oku."* Web oturumu ölçtü ve söyledi: **o oturumda `gorevler`
+dışında ikisini de açmadı ve bunun hiçbir bedeli olmadı.** Bir kez itiraf edip
+sessizce devam etti — kuralın en kötü hâli, çünkü delinen kural yalnızca kendini
+değil, yanındaki kuralların ağırlığını da götürür.
+
+Sebep şuydu: **o oturumdaki her gerçek kusuru ölçüm yakaladı, hiçbirini okuma
+yakalamadı.** Desen belgesi bir *kapı* olarak işe yarıyor, bir *başlangıç okuması*
+olarak yaramıyor — çünkü her dosya değişikliğinde okunması istenen bir belge,
+üçüncü dosyada okunmamaya başlar.
+
+Kural bu yüzden **her değişiklikten** → **iki ana** daraltıldı: alana ilk
+dokunuş, ve bir deseni çiğnemek üzereyken. İkincisi asıl değerli olan.
+
+⚠️ **Daraltmanın bedeli var ve bilinerek kabul edildi:** web aynı vekil izin
+listesi tuzağına **üç kez** düştü; ikisinden sonra `web-mimari`'ye yazmıştı ama
+okuma tetikleyicisi olmadığı için üçüncüsünde yine düştü. **Yazmak yetmiyor.**
+Yani dar kural, tetikleyicinin doğru yere konmasını daha da kritik yapar.
 
 ### Oturumu bitirmeden
 

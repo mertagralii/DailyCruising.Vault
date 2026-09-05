@@ -58,6 +58,33 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟢 Tamamlandı
 
+- [x] **W-84** Şehir alanı il listesine çevrildi · 2026-09-05
+      Mert testte istedi: *"`/add-boat` kısmında şehir yerine il ilçe
+      olmalı."* İlçe **isteğe bağlı** olacak (Mert, 2026-09-05).
+      **İl açılır liste oldu** (81 il, plaka sırasında). Serbest metinde
+      aynı il için `Muğla`, `MUĞLA`, `Mugla`, `muğla` birikiyor ve şehre
+      göre süzme hiç çalışmıyor.
+      🔴 **Sessiz bir veri kaybı önlendi.** Ayarlar ekranında kayıtlı
+      değer listede yoksa **listeye eklenip seçili kalıyor**. Demo
+      işletmesinin şehri `Bodrum` yazıyor — o bir **ilçe**, il değil.
+      Yedek olmasaydı açılır liste hiçbirini seçili gösteremez,
+      kullanıcı başka bir alanı düzeltip kaydettiğinde şehrini farkında
+      olmadan değiştirmiş olurdu.
+      ⚠️ **İLÇE KUTUSU BİLEREK KONMADI.** Uçta `district` alanı yok:
+      ölçtüm, gövdeye eklenince uç **`201` dönüyor ve değeri sessizce
+      yutuyor**. Kutuyu koymak kullanıcıdan bilgi alıp çöpe atmak
+      olurdu. Backend'den alan istendi; gelince bağlanacak.
+      ⚠️ **İlçe listesi de gömülmedi.** ~970 ilçelik doğrulanmamış bir
+      liste serbest metinden **daha kötü** olur: kullanıcı kendi
+      ilçesini bulamayınca yakın olanı seçer ve yanlış veri "seçilmiş"
+      göründüğü için kimse şüphelenmez.
+      Kanıt: canlı — `/add-boat`'ta alan `İl`, **82 seçenek**
+      (`Seçiniz` + 81), varsayılan boş, `district` kutusu **yok**;
+      ayarlar ekranında kayıtlı `Mugla` **83. seçenek olarak eklenip
+      seçili** kaldı. Liste sayıldı: 81 il, tekrar 0, plaka sırası doğru
+      (34 İstanbul · 48 Muğla · 81 Düzce). Taşma 0, derleme temiz.
+      `ff70bb0`
+
 - [x] **W-83** Kullanıcı menüsü role göre süzülüyor · 2026-09-05
       🔴 **Mert testte buldu:** müşteri hesabında (Ayşe) `Yönetim Paneli`,
       `İşletme Panelim` ve `Destek Paneli` bağlantılarının **üçü birden**

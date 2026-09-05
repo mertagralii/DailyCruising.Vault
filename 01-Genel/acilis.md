@@ -64,10 +64,13 @@ testlerdeki iki ad değişikliği · [[api-benim-kararlarim]] toplu onayı
 | Tetikleyici | Oku |
 |---|---|
 | "Nerede kaldık" sorusu | [[durum]] — tek otorite |
-| `Back-End/` altında dosya değiştirmeden ÖNCE | [[api-desenler]] + [[api-araclar]] + [[api-gorevler]] |
-| `Front-End/` altında dosya değiştirmeden ÖNCE | [[web-desenler]] + [[web-araclar]] + [[web-gorevler]] |
+| Bir alanda **işe başlarken** | o alanın `*-gorevler.md`'si |
+| Alana **bu oturumda ilk kez** dokunuyorum | `*-desenler` + `*-araclar` — oturumda **bir kez**, her dosyada değil |
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
 | **Yapıya dokunacağım** — yeni katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — dokunmadan önce oku, dokunduktan sonra yaz |
+| **Şema / tablo / kolon** konuşulacak veya değişecek | [[api-sema]] |
+| **"Yayına çıkalım" / "hazır mı"** · deploy konuşulacak | [[yayin-oncesi]] — üretim koşulları |
+| **Bir deseni çiğnemek üzereyim** — mock veri, boş tablo, `dangerouslySetInnerHTML`, elle tip | ilgili `*-desenler.md` — **kapı burada** |
 | Tekrar eden bir soruna takıldım | ilgili `*-notlar.md` hub'ı |
 | Domain / iş kuralı konuşulacak | [[domain-gereksinimler]] — kanonik kaynak |
 | Yeni bir özellik veya sistem tasarlanacak | [[genel-araclar]] |

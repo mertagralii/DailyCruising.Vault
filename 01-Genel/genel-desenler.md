@@ -560,4 +560,66 @@ commit geçtir**. 55 uyarı veren denetim okunmaz, kapatılır.
 55 → 5, ve beşi de gerçek çıktı. **Bir denetimin doğru eşiği, ürettiği uyarıların
 okunup okunmadığıyla ölçülür** → "Denetim, öğrettiği davranışı cezalandırmamalı"
 
+## Okunmadan verilen atıf, belgesiz koddan kötüdür
+
+2026-09-05'te web oturumu kendi kodunu ölçtü: içinde **onlarca** `→ [[web-desenler]]`,
+`→ [[web-kararlar]]` atıfı vardı ve o oturumda **hiçbiri açılmamıştı**. Atıflar
+oturum başında yüklenen özetten ve hafızadan yazılmıştı.
+
+Bu, kaynak göstermenin en kötü biçimi. Belgesiz kod okuyana *"dayanağı yok"* der
+ve okuyan kendi doğrular. Okunmadan verilen atıf ise *"dayanağı var"* der ve
+**doğrulamayı durdurur**. Belgedeki kural değişmiş olsa koddaki atıf yine oraya
+işaret eder ve kimse fark etmez.
+
+**Kural:** bir `[[dosya]]` atıfı yazmak, o dosyayı **bu oturumda açmış olmayı**
+gerektirir. Açmadıysan atıf yazma — ya aç, ya *"hatırladığım kadarıyla"* diye yaz.
+
+`dogrula.py` **kontrol 21** bunun ölçülebilen yarısını ölçüyor: koddaki atıf
+vault'ta **var olan** bir dosyayı gösteriyor mu (bugün: 77 atıf, 0 ölü hedef).
+İçeriğin doğruluğunu ölçemez ve bu **bilinerek** kabul edildi — alternatifi hiçbir
+şeyin ölçülmemesiydi. Ölü atıf, adı değişmiş bir dosyaya sessizce işaret eder.
+
+## Kural bir kapıdır, başlangıç okuması değil
+
+*"Bir alanda dosya değiştirmeden önce desenler + araçlar + görevler oku"* kuralı
+2026-09-05'te ölçüldü: web oturumu `gorevler` dışında ikisini de açmadı ve
+**bunun hiçbir bedeli olmadı**. Bir kez itiraf edip sessizce devam etti.
+
+Bu, kuralın en tehlikeli hâli: **delinen kural yalnız kendini götürmez, yanındaki
+kuralların ağırlığını da götürür.** Uyulmadığı fark edilen ama sonucu olmayan bir
+kural, diğerlerinin de isteğe bağlı olduğunu öğretir.
+
+Sebep şuydu: o oturumdaki her gerçek kusuru **ölçüm** yakaladı, hiçbirini **okuma**
+yakalamadı. Her dosya değişikliğinde okunması istenen bir belge, üçüncü dosyada
+okunmamaya başlar.
+
+**Kural:** bir belge, ne zaman *okunacağıyla* değil, **hangi anda karar
+değiştireceğiyle** bağlanır. Desen belgesinin doğru anı işin başı değil, **deseni
+çiğnemek üzere olduğun an**dır — mock veri basmadan, boş tablo göstermeden, elle
+tip yazmadan hemen önce. Orada belge bir kapıdır ve kapı atlanmaz.
+
+⚠️ **Bunun bedeli var:** web aynı vekil izin listesi tuzağına **üç kez** düştü;
+ikisinden sonra `web-mimari`'ye yazmıştı ama **okuma tetikleyicisi olmadığı için**
+üçüncüsünde yine düştü. **Yazmak yetmiyor** — dar kural, tetikleyicinin doğru yere
+konmasını daha da kritik yapar.
+
+## Gidecek yeri olmayan bilgi sohbette kalır
+
+Web oturumu tek bir oturumda **yedi** *"yayına çıkmadan önce mutlaka"* maddesi
+üretti ve **hiçbiri vault'a girmedi**. Disiplin sorunu değildi: bu maddeler görev
+değil (yapılacak iş yok), blocker değil (bugün kimseyi durdurmuyor), karar değil
+(tartışılmadı). **Gidecek yerleri yoktu.**
+
+Vault'un bölmeleri bir bilgi türünü değil, bir **hayat döngüsünü** temsil eder.
+Döngüsü olmayan bilgi — doğduğu an geçerli, bir tarihte kritik, arada uykuda —
+hiçbir bölmeye uymaz ve sohbette kalır.
+
+**Kural:** *"bu bilgi nereye yazılır?"* sorusunun cevabı yoksa, cevap "hiçbir yere"
+değil **"yeni bir bölme"**dir — yeter ki iki tetikleyicisi olsun. `yayin-oncesi.md`
+böyle doğdu → [[yayin-oncesi]]
+
+İkinci ders, bu maddelerin **yan ürün** olmasından geliyor: hepsi başka bir işi
+yaparken doğdu. Sonradan hatırlanarak toplanamazlar — bu yüzden yazma tetikleyicisi
+"iş bitince" değil, **"cümleyi kurduğun an"**dır.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

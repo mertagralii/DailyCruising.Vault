@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-08-21
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -19,6 +19,7 @@ Bu vault, ECC `living-docs-governance` skill'inin dört rolüne göre düzenlenm
 | Constitution | Uyulması zorunlu kurallar | [[CLAUDE]], [[calisma-duzeni]] |
 | Map | Ne var, nerede | bu dosya, [[proje]], [[api-mimari|API mimari]], [[web-mimari|Web mimari]] |
 | Status | Şu anki durum, blocker, açık uç | [[durum]] (genel) · [[api-durum]] · [[web-durum]] |
+| Gate | Yayın günü sağlanması gereken koşullar | [[yayin-oncesi]] |
 | History | Kalıcı kararlar ve gerekçeleri | [[genel-kararlar]] (genel / API / Web) |
 | Notlar | Claude'un serbest gözlemleri | [[genel-notlar]] · [[api-notlar]] · [[web-notlar]] |
 
@@ -32,6 +33,8 @@ Bu vault, ECC `living-docs-governance` skill'inin dört rolüne göre düzenlenm
 | Bir tuzağa/tekrar eden soruna takıldım | ilgili `*-notlar.md` hub'ı | notu oku, yoksa yaz |
 | "Neden böyle yapmıştık" | ilgili `*-kararlar.md` | — gerekçe **yalnızca** burada, git log'da yok |
 | Nerede kalmıştık | `01-Genel/durum.md` — **tek otorite**. Alan ayrıntısı: [[api-durum]] · [[web-durum]] | — |
+| Şema / tablo / kolon konuş | `02-API/api-sema.md` — tabloların kanonik listesi | `dotnet ef migrations list` |
+| "Yayına çıkalım / hazır mı" | `01-Genel/yayin-oncesi.md` | — |
 
 ## Dosya listesi
 
@@ -39,6 +42,7 @@ Bu vault, ECC `living-docs-governance` skill'inin dört rolüne göre düzenlenm
 - [[domain-gereksinimler]] — **iş kurallarının kanonik kaynağı**, Mert'le görüşmeden
 - [[proje]] — DailyCruising ne yapar, kim kullanır ⚠️ davranış atıfları doğrulanmamış
 - [[durum]] — açık uçlar, blocker'lar, delete-zone
+- [[yayin-oncesi]] — üretimde sağlanmazsa çalışmayan koşullar; **sessiz/gürültülü** ayrımıyla
 - [[genel-kararlar]] — iki repoyu birden ilgilendiren kararlar
 - [[calisma-duzeni]] — commit, dal, test, iletişim kuralları
 - [[acilis]] — **oturum açılışında otomatik yüklenen çekirdek** (tavan 6.000 karakter)

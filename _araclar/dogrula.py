@@ -578,6 +578,101 @@ if _git(["rev-parse", "--git-dir"]) is not None:
                     f"(kirli: tolerans yok · temiz: {BEYAN_TOLERANS} gun)")
 
 
+# ---------------------------------------------------------------------------
+# 20: cok linklenen ama tetikleyicisi olmayan dosya
+#
+# "Tetikleyicisi olmayan dosya curur" kurali 2026-08-26'da yazildi ve o gun
+# api-mimari.md icin elle bulundu. 2026-09-05'te AYNI SEY api-sema.md'de cikti:
+# 40 gelen link, `durum: guncel`, son yazim 24 Agustos — arada 54 migration ve
+# 66 entity dosyasi degismis. Yani kural yaziliydi ve ihlali gorunmuyordu.
+#
+# Olcut: gelen wikilink sayisi >= esik VE dosya adi CLAUDE.md / acilis.md
+# tetikleyici tablolarinda gecmiyor (joker `*-kararlar.md` bicimleri dahil).
+# Cok linklenmek "bu dosyaya guveniliyor" demektir; tetikleyicisi yoksa o guven
+# bakimsiz bir dosyaya yoneliyordur — en pahali bayatlik budur.
+LINK_ESIK = 10
+_tetik_metin = ""
+for _t in ("CLAUDE.md", "01-Genel/acilis.md"):
+    _ty = VAULT / _t
+    if _ty.exists():
+        _tetik_metin += _ty.read_text(encoding="utf-8")
+if _tetik_metin:
+    _joker = set(re.findall(r"\*-([a-z]+)\.md", _tetik_metin))
+    _gelen = {}
+    for _f in VAULT.rglob("*.md"):
+        if ".git" in _f.parts or _f.parts[0] == "04-Oturumlar":
+            continue
+        for _m in re.findall(r"\[\[([^\]|#]+)", _f.read_text(encoding="utf-8")):
+            _ad = _m.strip()
+            _gelen[_ad] = _gelen.get(_ad, 0) + 1
+    _yetim = []
+    for _ad, _n in sorted(_gelen.items(), key=lambda x: -x[1]):
+        if _n < LINK_ESIK:
+            continue
+        if _ad.split("-")[-1] in _joker:
+            continue          # `*-kararlar.md` gibi joker tetikleyici kapsiyor
+        # `notlar/` altindaki bir notun tetikleyicisi KENDI HUB'IDIR
+        # (`*-notlar.md`, tabloda var). Ilk surum bunlari da bildirdi — olcut
+        # gevsekti: dosyanin adina bakip yolunu gormemek.
+        if any(_p.parent.name == "notlar" for _p in VAULT.rglob(f"{_ad}.md")):
+            continue
+        if re.search(re.escape(_ad), _tetik_metin):
+            continue
+        _yetim.append((_ad, _n))
+        sorunlar.append(
+            f"[tetikleyicisiz] {_ad}: {_n} yerden linkli ama CLAUDE.md/acilis.md "
+            f"tetikleyici tablolarinda yok. Cok linklenen dosyaya guvenilir; "
+            f"tetikleyicisi yoksa bakimsiz kalir ve guven bos yere yonelir")
+    olcumler.append(
+        f"kontrol 20 · {len(_gelen)} hedef, {LINK_ESIK}+ linkli olanlarda "
+        f"{len(_yetim)} tetikleyicisiz")
+
+
+# ---------------------------------------------------------------------------
+# 21: koddaki `[[...]]` atiflari vault'ta var olan bir dosyayi gosteriyor mu
+#
+# 2026-09-05, web oturumunun kendi itirafi: kodda onlarca `→ [[web-desenler]]`
+# atifi var ve o dosya o oturumda **hic acilmadi**. Atiflar oturum basi ozetten
+# ve hafizadan yazilmis. Bu, kaynak gostermenin en kotu bicimi: okuyan kisi
+# satirin belgeye dayandigini sanir, oysa dayanagi yazarin hatirladigi halidir.
+#
+# Bu kontrol atifin **dogrulugunu** olcemez — yalnizca hedefin VAR oldugunu.
+# Yetersiz oldugu bilinerek yaziliyor; alternatifi hicbir sey olculmemesiydi.
+# Olu atif (adi degismis veya silinmis dosya) sessizce yanlis yonlendirir.
+KOD_REPOLARI = ["DailyCruising.Back-End/src", "DailyCruising.Front-End/src"]
+_hedefler = {y.stem for y in VAULT.rglob("*.md")}
+_atif_toplam, _olu = 0, {}
+for _rel in KOD_REPOLARI:
+    _kok = VAULT.parent / _rel
+    if not _kok.exists():
+        continue
+    for _f in _kok.rglob("*"):
+        if not _f.is_file() or _f.suffix not in (
+                ".cs", ".ts", ".tsx", ".js", ".jsx", ".css", ".md"):
+            continue
+        if any(h in _f.parts for h in ("obj", "bin", "node_modules", ".next")):
+            continue
+        try:
+            _ic = _f.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            continue
+        for _m in re.findall(r"\[\[([^\]|#\n]{2,60})\]\]", _ic):
+            _ad = _m.strip()
+            _atif_toplam += 1
+            if _ad not in _hedefler:
+                _olu.setdefault(_ad, []).append(
+                    _f.relative_to(VAULT.parent).as_posix())
+for _ad, _yerler in sorted(_olu.items()):
+    sorunlar.append(
+        f"[olu atif] kodda [[{_ad}]] geciyor ama vault'ta boyle bir dosya yok "
+        f"({len(_yerler)} yerde, orn. {_yerler[0]}) — atif sessizce yanlis "
+        f"yonlendiriyor")
+if _atif_toplam:
+    olcumler.append(
+        f"kontrol 21 · kodda {_atif_toplam} vault atifi, {len(_olu)} olu hedef "
+        f"(NOT: yalniz hedefin varligi olculur, iceriginin dogrulugu DEGIL)")
+
+
 
 print(f"Vault: {VAULT}")
 print(f"Not sayisi: {len(notlar)}")
