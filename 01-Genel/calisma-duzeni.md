@@ -1,13 +1,17 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-08-21
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
 # Çalışma Düzeni
 
 Kuralların özeti [[CLAUDE]]'de; buradakiler detay.
+
+⚠️ **Bu dosya PROJEYE özeldir** — portlar, repolar, doğrulama komutları.
+Projeden bağımsız çalışma tercihleri (dil, cevap uzunluğu, commit kuralları,
+tasarım sadakati) [[tercihler]] içine taşındı; başka bir projeye taşınacak olan odur.
 
 ## Git
 
@@ -20,16 +24,11 @@ cd DailyCruising.Front-End && git ...   # → DailyCruising.Web
 
 - Varsayılan dal: `main`
 - Commit mesajı: İngilizce, imperative ("add", "fix"), gövdede **neden** anlatılır
-- AI atfı yasak → [[genel-kararlar]]
-- Commit ve push **yalnızca Mert isteyince**
+- AI atfı yasağı, yazar kuralı, "yalnız istenince commit" → [[tercihler]]
 
 ## Dil
 
-| Nerede | Dil |
-|---|---|
-| Konuşma, vault notları | Türkçe |
-| Kod, dosya/sınıf/endpoint adları | İngilizce |
-| Commit mesajları | İngilizce |
+Dil kuralı [[tercihler]] içinde — projeden bağımsızdır.
 
 ## Doğrulama
 
@@ -39,7 +38,11 @@ cd DailyCruising.Front-End && git ...   # → DailyCruising.Web
 | API | `curl localhost:5163/api/health` | `{"status":"healthy"}` |
 | Web | `npm run build` | başarılı |
 
-Test altyapısı **henüz yok** → [[durum]]. Test yazılacaksa önce çerçeve kararı gerekir.
+| API | `dotnet test` | 609 test yeşil (2026-09-05 backend ölçümü) |
+
+⚠️ **Düzeltme 2026-09-05:** bu satırda 21 Ağustos'tan beri *"test altyapısı henüz
+yok"* yazıyordu. Yanlıştı ve `rol: constitution` taşıyan bir dosyada durduğu için
+okuyan kişiyi yanlış yönlendirirdi → [[durum]]
 
 ## Portlar
 
@@ -114,7 +117,10 @@ karardır (`*-kararlar.md`); **bir daha aynı tuzağa düşmemek için** yazıla
 
 `04-Oturumlar/` sınırsız büyür. Kural:
 
-- **Son dosya kutsaldır** — her oturumun ilk okuduğu şey odur, asla silinmez
+- ⚠️ **Düzeltme 2026-09-05:** burada *"son dosya kutsaldır, her oturumun ilk
+  okuduğu şey odur"* yazıyordu. Bu hüküm **2026-08-24'te iptal edildi**: her
+  oturumun ilk okuduğu şey [[acilis]], "nerede kaldık"ın tek otoritesi [[durum]].
+  `04-Oturumlar/` arşivdir, otorite değil → [[CLAUDE]]
 - Bir oturum notundaki **kalıcı** bilgi ilgili `*-kararlar.md` veya [[durum]] içine
   taşınmalıdır; oturum notu geçicidir
 - 30 günden eski oturum notları, kalıcı içeriği taşınmışsa silinebilir
@@ -126,11 +132,10 @@ karardır (`*-kararlar.md`); **bir daha aynı tuzağa düşmemek için** yazıla
 python3 DailyCruising.Vault/_araclar/dogrula.py
 ```
 
-Kırık wikilink, aynı adlı not, eksik frontmatter ve bayat `guncelleme` tarihlerini
-tarar. Vault'a not eklendikten sonra çalıştırılmalı.
+21 kontrol çalıştırır. Kontrollerin kendisi `_araclar/kontrol-testi.py` ile
+ölçülür, notların okunma oranı `_araclar/okunma.py` ile; projeye bağlı sabitler
+`_araclar/vault.json` içindedir → [[genel-desenler]]
 
 ## Cevap uzunluğu
 
-Kısa yaz. Varsayılan ~10 satır; uzun analiz gerekiyorsa önce tek paragraflık özet
-ver, detayı ayrıca iste. Mert uzun yanıtları okumuyor — okunmayan yanıt verilmemiş
-sayılır.
+→ [[tercihler]] (projeden bağımsız).

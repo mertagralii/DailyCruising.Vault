@@ -75,6 +75,16 @@ _(boş)_
 
 ## 🟢 Tamamlandı
 
+- [x] **G-20** Kişisel katman ayrıldı — `01-Genel/tercihler.md` · bitti: 2026-09-05
+      Projeden bağımsız tercihler (dil, cevap uzunluğu, commit/AI atfı, tasarım
+      sadakati, ölçüm, otonomluk) tek dosyada; `calisma-duzeni.md` projeye özel
+      kaldı.
+      Kanıt: `calisma-duzeni.md`'de iki yanlış hüküm bulundu ve düzeltildi
+      ("son dosya kutsaldır" — 24 Ağustos'ta iptal edilmişti; "test altyapısı yok"
+      — 609 test var). Okuma/yazma tetikleyicileri CLAUDE.md'ye eklendi.
+      → [[tercihler]] · [[genel-desenler]]
+
+
 - [x] **G-19** Makine içerikten ayrıldı — `_araclar/vault.json` · bitti: 2026-09-05
       Alan adları, önekler, kod repoları, pano bölüm adları, işaretler ve dokuz
       eşik yapılandırmaya taşındı.

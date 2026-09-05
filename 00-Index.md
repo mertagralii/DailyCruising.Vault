@@ -92,3 +92,5 @@ geçti, yalnızca tarayıcıda görüldü** — bu yüzden görsel doğrulama zo
 Bilerek yok — içeriksiz dosya boşuna okutur:
 - `02-API/veri-modeli.md` — API tasarımına başlanınca
 - `03-Web/tasarim-dili.md` — token'lar ve bileşenler zaten `web-mimari.md`'de
+- [[tercihler]] — projeden bağımsız çalışma tercihleri (kişisel katman)
+

@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-08-21
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -34,3 +34,6 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[genel-esszamanli-oturumlar]] — üç oturum aynı anda açıkken hook, `pwd` ve git durumu nasıl yanıltıyor
 - [[genel-ecc-hook-profilleri]] — 33 ECC hook'u, işi durduranlar ve kapatma anahtarları
 - [[genel-tasiyici-gerekce-taramasi]] — 10 bulgu: bir karar neye dayanıyor, o dayanak gerçekten var mı
+
+- [[tercihler]] — kişisel katman, projeden bağımsız
+

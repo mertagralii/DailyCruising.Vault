@@ -477,4 +477,30 @@ hatadır ve sessiz kalırsa denetim var sanılır. → [[genel-desenler]]
 
 Bu, `G-15` (şablonlaştırma) için kalan tek engeli kaldırdı: makine artık taşınabilir.
 
+
+## 2026-09-05 — kişisel katman ayrıldı, iki bayat hüküm düzeltildi (`G-20`)
+
+`01-Genel/tercihler.md` açıldı: dil, cevap uzunluğu, commit ve AI atfı kuralları,
+tasarım sadakati, ölçüm ve otonom çalışma. **Projeden bağımsız** — başka bir
+projeye olduğu gibi taşınır. Projeye özel olan ([[calisma-duzeni]]: portlar,
+repolar, komutlar) ayrıldı.
+
+⚠️ **`calisma-duzeni.md` `rol: constitution` taşıyordu ve 21 Ağustos'tan beri
+dokunulmamıştı. İki hükmü yanlıştı:**
+
+| Yazan | Gerçek |
+|---|---|
+| *"Son oturum dosyası kutsaldır, her oturumun ilk okuduğu şey odur"* | 2026-08-24'te iptal edildi: ilk okunan [[acilis]], otorite [[durum]] |
+| *"Test altyapısı henüz yok"* | 609 test yeşil |
+
+Kökü tanıdık: dosyanın **okuma tetikleyicisi vardı ama yazma tetikleyicisi
+yoktu.** Ölçüm de bunu gösteriyordu — `okunma.py`'de dışarıdan-okuma 0, son
+dokunuş 22 Ağustos. Anayasa niteliğindeki bir dosyanın bayatlaması, sıradan bir
+notunkinden pahalıdır: kural sanılır. → [[genel-desenler]]
+
+⚠️ **Ölçüm denendi ve zayıf çıktı, bu da kayda geçiyor.** 404 kullanıcı mesajı
+tarandı; sayılar yanıltıcıydı çünkü Stop hook geri bildirimleri aynı talimatı
+altı kez tekrarlıyor ve anahtar kelime eşleşmelerinin bir kısmı yanlış pozitifti.
+Dosya bu yüzden sayımla değil **alıntılanabilir kaynaklarla** kuruldu.
+
 İlgili: [[proje]] · [[genel-kararlar]] · [[genel-gorevler]] · [[api-durum]] · [[web-durum]] · [[00-Index]]

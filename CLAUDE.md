@@ -41,6 +41,7 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | Domain / iş kuralı konuşulacak | `01-Genel/domain-gereksinimler.md` + `01-Genel/durum.md` |
 | **`dogrula.py` TEMİZ dedi ama bir kontrol hiç konuşmuyor** | `python3 _araclar/kontrol-testi.py` — hangi kontrolün gerçekten ölçtüğü yalnız orada görülür; sessizlik aklanma değildir |
 | **Vault budanacak · yeni bölme/klasör açılacak · şablonlaştırma konuşulacak** | `python3 _araclar/okunma.py` — hangi katmanın gerçekten okunduğu yalnız orada; tahminle budama, ölçerek buda |
+| **Commit atacağım** · **başka projede vault kurulacak** | `01-Genel/tercihler.md` — AI atfı yasağı, yazar kuralı, dil ve cevap uzunluğu; **projeden bağımsız**, taşınacak olan odur |
 | Vault'ta ne var, tam liste | `00-Index.md` |
 
 **`04-Oturumlar/` arşivdir, otorite değil.** O günün çalışma kaydını taşır; "nerede
@@ -81,6 +82,7 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | **`durum.md`'de blocker açıldı/kapandı veya kritik yol değişti** | aynı oturumda `01-Genel/acilis.md` — her oturuma yüklenen özet odur |
 | **`dogrula.py`'ye kontrol ekledim veya değiştirdim** | `_araclar/kontrol-testi.py`'ye o kontrol için bozma senaryosu yaz ve çalıştır. **Senaryosu olmayan kontrol ölçülmüyor sayılır** — yazılı olması çalıştığının kanıtı değil |
 | **Vault'a alan/bölme eklendi · klasör adı değişti · bir eşik değiştirildi** | `_araclar/vault.json` — betiklere elle sabit yazma. Makine projeden bağımsızdır, projeye bağlı tek dosya odur |
+| **Mert projeye özel OLMAYAN bir çalışma talimatı verdi** | `01-Genel/tercihler.md`. Projeye özel olan (port, repo, komut) `01-Genel/calisma-duzeni.md` |
 | **Migration uygulandı** | `DailyCruising.Back-End/araclar/sema-cikar.py` çalıştır → `02-API/api-sema-guncel.md` yeniden üretilir. **Elle yazma** |
 | **"Bu üretimde şu koşulla çalışır"** cümlesini kurduğum an | `01-Genel/yayin-oncesi.md` — sonraya bırakma, koşullar yan ürün olarak doğar |
 | **Kendi gözlemim** — tuzak, denenip olmayan, beklenmedik davranış | `<alan>/notlar/` altında yeni dosya + hub'ına link |

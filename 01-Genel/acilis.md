@@ -32,7 +32,8 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 - **Web:** 25 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
   Pano **4 yapılacak / 64 tamamlandı** — kalan beşi de **Mert'in kararında**
-- **Genel:** 79 not, `dogrula.py` 21 kontrol · 21/21 bozulup kırmızıya döndürüldü
+- **Genel:** 84 not · `dogrula.py` 21 kontrol, 21/21 bozulup kırmızıya döndürüldü ·
+  makine `_araclar/vault.json` ile taşınabilir
 
 Aktif engel tek (-> [[durum]]): **KVKK yolcu listesi dayanağı** — Mert'te.
 
@@ -74,6 +75,7 @@ testlerdeki iki ad değişikliği
 | Tekrar eden bir soruna takıldım | ilgili `*-notlar.md` hub'ı |
 | Domain / iş kuralı konuşulacak | [[domain-gereksinimler]] — kanonik kaynak |
 | Yeni bir özellik veya sistem tasarlanacak | [[genel-araclar]] |
+| Commit atacağım · başka projede vault kurulacak | [[tercihler]] — AI atfı, dil, kısalık |
 | Vault'ta ne var, tam liste | [[00-Index]] |
 
 ## Yazma kuralı
