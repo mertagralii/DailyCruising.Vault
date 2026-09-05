@@ -32,7 +32,9 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | Bir alanda **işe başlarken** | o alanın `*-gorevler.md`'si — görevi Yapılıyor'a taşımak için |
 | O alana **bu oturumda ilk kez** dokunuyorum | `*-desenler.md` + `*-araclar.md` — oturumda bir kez, her dosyada değil |
 | **Bir deseni çiğnemek üzereyim** — mock veri basacağım, boş tablo göstereceğim, `dangerouslySetInnerHTML` yazacağım, elle tip yazacağım | ilgili `*-desenler.md` — **kapı burada**, gerekçesi orada yazıyor |
-| **Şema / tablo / kolon konuşulacak veya değişecek** | `02-API/api-sema.md` — tabloların kanonik listesi |
+| **Hangi tablo/kolon/kısıt var** sorusu | `02-API/api-sema-guncel.md` — **üretilen** envanter, 84 tablonun tamamı |
+| **Şema neden böyle tasarlandı** sorusu | `02-API/api-sema.md` — `rol: tasarim-kaydi`, 24 Ağustos onayı ve gerekçesi. **Envanter değildir** |
+| **26 Ağu – 4 Eyl arasında Claude'un kendi yetkisiyle aldığı bir karar** soruluyor | `02-API/api-benim-kararlarim.md` — **arşiv**; işlevi 4 Eylül'de bitti (29 soru cevaplandı), yeni giriş eklenmez |
 | **"Yayına çıkalım" / "hazır mı"** sorusu · deploy konuşulacak | `01-Genel/yayin-oncesi.md` — üretim koşullarının tek listesi |
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
 | **Yapıya dokunacağım** — yeni proje, katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — "ne var" sorusunun tek cevabı |
@@ -75,7 +77,7 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | **Genel durum, "nerede kaldık"** | `01-Genel/durum.md` — **tek otorite**, yalnız vault oturumu yazar |
 | Cevapsız soru / blocker / çelişki / silinen şey | `01-Genel/durum.md` |
 | **`durum.md`'de blocker açıldı/kapandı veya kritik yol değişti** | aynı oturumda `01-Genel/acilis.md` — her oturuma yüklenen özet odur |
-| **Şema değişti** — tablo, kolon, kısıt, tetikleyici eklendi/kaldırıldı | `02-API/api-sema.md` |
+| **Migration uygulandı** | `DailyCruising.Back-End/araclar/sema-cikar.py` çalıştır → `02-API/api-sema-guncel.md` yeniden üretilir. **Elle yazma** |
 | **"Bu üretimde şu koşulla çalışır"** cümlesini kurduğum an | `01-Genel/yayin-oncesi.md` — sonraya bırakma, koşullar yan ürün olarak doğar |
 | **Kendi gözlemim** — tuzak, denenip olmayan, beklenmedik davranış | `<alan>/notlar/` altında yeni dosya + hub'ına link |
 | O günün çalışma kaydı (arşiv) | `04-Oturumlar/<YYYY-AA-GG>.md` |
@@ -95,6 +97,26 @@ zaman yazılır?* İkisinin de cevabı yoksa bölme açılmaz.
 `_araclar/dogrula.py` (kontrol 15) bunu artık ölçüyor: mimari dosyasının
 `guncelleme` tarihinden bu yana kod reposunda eklenen/silinen kaynak dosyaları
 sayar. Kural yazılı olmakla kalmaz, denetlenir.
+
+### Envanter üretilir, gerekçe yazılır
+
+`api-sema.md` 994 satırdı ve **iki farklı türde bilgi** taşıyordu: hangi tabloların
+var olduğu (envanter) ve neden öyle tasarlandığı (gerekçe). 2026-09-05'te ölçüldü:
+84 tablonun **16'sı** belgede hiç geçmiyordu.
+
+Sebep, elle güncelleme kararının kendisiydi. **Her migration'da elle dokunulacak
+bir belge, ilk yoğun günde atlanır** — ve atlandığı fark edilmez, çünkü belge
+hâlâ doğru görünür.
+
+Dosya ikiye ayrıldı: envanter **üretiliyor** (`api-sema-guncel.md`,
+`araclar/sema-cikar.py`), gerekçe **yazılıyor** (`api-sema.md`, `rol: tasarim-kaydi`).
+
+**Kural:** koddan türetilebilen hiçbir şey elle yazılmaz. Elle yazılan tek şey
+**türetilemeyendir** — gerekçe, alternatif, elenme sebebi. İkisi aynı dosyada
+tutulursa, üretilebilir olanın bayatlığı üretilemeyeni de çürütür.
+
+Bunun tetikleyici karşılığı da farklıdır: üretilen belgenin yazma tetikleyicisi
+*"hatırla ve güncelle"* değil, **"betiği çalıştır"**dır.
 
 ### Okuma kuralı neden daraltıldı — kapı, başlangıç okuması değil
 

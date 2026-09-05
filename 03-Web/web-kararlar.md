@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: web
-guncelleme: 2026-08-28
+guncelleme: 2026-09-05
 durum: guncel
 ---
 
@@ -1346,3 +1346,36 @@ panel açıldı:
 karartmıyor. Kova 60 saniyede açıldı, sayfa yenilendi ve **gerçek tekneler
 döndü** — olumlu hâl de ölçüldü, yoksa "her zaman hata gösteren" bir ekran
 da bu sınamadan geçerdi.
+
+## 2026-09-05 — İl açılır liste, ilçe serbest metin
+
+**Karar:** başvuru ve işletme ayarlarında **il** 81 ilin sabit listesinden
+seçiliyor; **ilçe** serbest metin ve **isteğe bağlı** (Mert, 2026-09-05).
+
+**Neden il liste:** serbest metinde aynı il için `Muğla`, `MUĞLA`, `Mugla`,
+`muğla` birikiyor; şehre göre süzme hiç çalışmıyor ve listeye bakan bunları
+ayrı iller sanıyor.
+
+**Neden ilçe liste DEĞİL:** ~970 ilçelik doğrulanmamış bir liste serbest
+metinden **daha kötü** olur — kullanıcı kendi ilçesini bulamayınca yakın
+olanı seçer ve yanlış veri "seçilmiş" göründüğü için kimse şüphelenmez.
+Yanlış bir liste, olmayan listeden zararlıdır.
+
+**Neden `city`'ye birleştirilmedi:** en kolay yol `"Muğla / Bodrum"` diye tek
+dizede birleştirmekti ve hiç backend işi gerektirmezdi. **Ayrıştırma bir daha
+yapılamaz:** birleştirilen veri yarın "Muğla'daki bütün işletmeler"
+sorgusunda ayrılmak zorunda kalır ve o ayırma kullanıcının nasıl yazdığına
+bağlı bir tahmine döner. Aynı gerekçe backend'in `Coupons.UserId`
+itirazıyla birebir: iki anlamı tek alana koymak.
+
+**Alternatif elendi — il listesini `lookups`'a koymak:** 81 il değişmiyor;
+bir uç çağrısı daha eklemek bu alan için orantısız.
+
+⚠️ **Kayıtlı değer listede yoksa listeye ekleniyor ve seçili kalıyor**
+(`illerVe()`). Bu olmadan sessiz bir veri kaybı olurdu: demo işletmesinin
+şehri `Bodrum` yazıyor — o bir **ilçe**. Açılır liste onu seçili
+gösteremeseydi, kullanıcı başka bir alanı düzeltip kaydettiğinde şehrini
+farkında olmadan değiştirmiş olurdu.
+
+⚠️ Boş bırakılan ilçe **`null` gidiyor, `""` değil**: boş dize "ilçesi yok"
+ile "yazmadı" arasındaki farkı kaybettirirdi.

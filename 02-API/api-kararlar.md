@@ -4581,3 +4581,72 @@ zaten "AWS değil" demek, geliştirme ve testler MinIO'ya karşı koşuyor.
 
 **Kanıt:** 600 test yeşil; MinIO'ya karşı koşan depolama testleri etkilenmedi
 (`ServiceUrl` dolu olduğu için onlarda yol-tarzı hâlâ açık).
+
+## 2026-09-05 (15) — İşletmenin ilçesi ayrı alan; şehirle birleştirilmedi
+
+Web oturumu: `/add-boat` başvuru formunda Mert "Şehir" yerine **"İl" ve
+"İlçe"** istiyor. Şemada yalnız `city` vardı.
+
+`Partner.District` eklendi (boş bırakılabilir, 120 karakter). İki uçta
+görünüyor: `POST /api/partners/apply` gövdesinde ve
+`GET/PUT /api/partner/profile` yazılabilir alanları arasında.
+
+**Neden `"Muğla / Bodrum"` diye tek alana yazılmadı** — en kolay yol buydu ve
+hiç backend işi gerektirmezdi: **ayrıştırma bir daha yapılamaz.** Bugün
+birleştirilen veri, yarın "Muğla'daki bütün işletmeler" sorgusunda ayrılmak
+zorunda kalır ve o ayırma kullanıcının nasıl yazdığına bağlı bir TAHMİNE
+döner. Bu, `Coupons.UserId` itirazının aynısı: iki anlamı tek alana koymak.
+Alanı bugün açmak ucuz, veri girildikten sonra bölmek pahalı.
+
+**Neden zorunlu değil:** mevcut kayıtlarda ilçe yok ve zorunlu yapmak onları
+geçersiz kılardı; ayrıca merkez ilçedeki bir işletme yazmak istemeyebilir.
+`city` zorunluluğu değişmedi.
+
+İl listesi `lookups`'a KONMADI. 81 il değişmiyor ve bir uç çağrısı daha
+eklemek bu alan için orantısız; liste ekranda sabit duruyor. İlçe serbest
+metin: ~970 ilçelik doğrulanmamış bir liste, serbest metinden **daha kötü**
+olurdu — kullanıcı kendi ilçesini bulamayınca yanlışını seçer.
+
+**Kanıt (migration):** `A97_IsletmeIlcesi` — boş bırakılabilir kolon, tablo
+yeniden yazılmıyor, `Down` çalışıyor. `dailycruising` rolüyle uygulandı;
+`Partners` sahibi `dailycruising`, uygulama rolünün yeni kolonda `SELECT` ve
+`UPDATE` yetkisi **kolon bazında** doğrulandı.
+**Kanıt (canlı):** başvuru `city=Muğla, district=Bodrum` yazdı; profil ucu
+alanı döndürdü ve `PUT` ile `Yalıkavak` olarak değiştirildi, tekrar okundu.
+Olay yükü izin listesine `district` eklendi — eklenmeseydi alan olay
+günlüğüne sessizce düşerdi. **600 test yeşil.**
+
+## 2026-09-05 (16) — En çok linklenen dosya en bayat dosyaydı; üretilebilen kısım artık üretiliyor
+
+Vault oturumu ölçtü: `api-sema.md` **40 yerden linkli**, `durum: guncel`
+diyor, **24 Ağustos'tan beri yazılmamış**. Ben de ölçtüm: veritabanındaki
+**84 tablonun 16'sı o belgede hiç geçmiyor** — `BoardingTickets`,
+`FavoriteBoats`, `NotificationPreferences`, `CouponAssignments`, `TaxRates`,
+`PartnerPayeeAccounts` ve on tane daha.
+
+**Neden bu şaşırtıcı değil:** çok linklenmek bir dosyayı güncel TUTMAZ,
+yalnız güncel SANILMASINI sağlar. Güven arttıkça doğrulama azalıyor. Bu
+`api-mimari` olayının aynısı ve aynı dersin ikinci kanıtı: bir dosyayı
+canlı tutan şey linki değil tetikleyicisidir.
+
+**Çözüm elle güncellemek DEĞİL.** Elle güncellemek aynı çürümeyi geri
+getirirdi — belge 994 satır ve her migration'da elle dokunulması gereken bir
+şey, ilk yoğun günde atlanır. Bunun yerine dosya İKİYE ayrıldı:
+
+| Dosya | Ne taşır | Nasıl güncellenir |
+|---|---|---|
+| `api-sema.md` | 24 Ağustos'ta onaylanan tasarım ve **gerekçesi** | elle; zaten değişmiyor, arşiv |
+| `api-sema-guncel.md` | bugün veritabanında ne var | `araclar/sema-cikar.py` **üretir** |
+
+`api-sema.md` artık `durum: tasarim-kaydi` ve başında ne OLMADIĞI yazıyor.
+
+**Neden ayrım burada:** envanter üretilebilir, gerekçe üretilemez. "Neden bu
+kısıt var" sorusunun cevabı hiçbir sorguda yok ve elle yazılmaya devam
+etmeli. Karışık tutmak, üretilemeyeni de çürütüyordu.
+
+Bu, aynı gün `demo-doldur/ozet.py` ile verilen kararın ikizi: **bayatlayan
+belge yazmak yerine belgeyi üretmek.** İkisinde de tetikleyici "hatırla"
+değil "betiği çalıştır" oldu.
+
+**Kanıt:** üretilen belgede 84 tablonun 84'ünün başlığı var (0 eksik),
+`Partners.District` kolonu ve `CK_Reservations_GrandTotal` kısıtı dahil.

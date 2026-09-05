@@ -43,6 +43,10 @@ Bir koşulun **sağlanmadığında nasıl belli olduğu**, ne olduğundan daha �
 - **Sessiz koşul** — uygulama açılır ve **sessizce yanlış çalışır**. Hata
   tarayıcıda, günlükte ya da dış serviste kalır. **Asıl tehlike bunlardır** ve
   aşağıda ⚠️ ile işaretlidir.
+- **🔬 Doğrulanmamış** — kod yazıldı, testleri var, ama **gerçek hesap olmadan
+  doğrulanamadı**. Bu ne "bitti" ne "yapılmadı"; üçüncü bir hâl. Görev panosunda
+  "tamamlandı" görünür ve bu **yanıltıcıdır** — panoya güvenen biri doğrulanmış
+  sanır.
 
 ## Koşullar
 
@@ -66,6 +70,22 @@ Bir koşulun **sağlanmadığında nasıl belli olduğu**, ne olduğundan daha �
 | Y-09 | E-posta şablonları **gerçek istemcide** denenmeli | Web | HTML e-posta istemcileri farklı işler; build ve test bunu yakalamaz |
 | Y-10 | `W-40` aydınlatma metni + saklama süresi | Mert | *"onu ben yazıcam en son"* — KVKK, blocker 7 |
 | Y-11 | Veri göçü | ertelendi | önce site ayağa kalksın |
+
+### 🔬 Doğrulanmamış — yazıldı, gerçek hesap olmadan sınanamadı
+
+Bu bölümün okuma tetikleyicisi ayrıdır: **hesap veya kimlik bilgisi geldiği anda
+ilk iş bu listeyi açmaktır.** Yazma tetikleyicisi: bir kod için *"gerçek hesap
+olmadan doğrulayamadım"* dediğin an.
+
+| # | Ne | Doğrulanamayan kısım |
+|---|---|---|
+| Y-12 | **Paratika sağlayıcısı** — dört yöntem, yedi test, beş mutasyon yakalanıyor | `QUERYTRANSACTION` cevabının **tam biçimi**. Sözleşme belgesine göre yazıldı; gerçek yanıtla karşılaştırılmadı |
+| Y-13 | **Postmark e-posta şablonları** | HTML e-posta istemcilerinde görünüm (`Y-09` ile aynı kök) |
+
+⚠️ **Bu bölüm neden var:** 2026-09-05'te backend Paratika'yı yazdı ve pano
+"tamamlandı" gösterdi. Testler geçiyordu, mutasyon testi de geçiyordu — ama
+**hiçbiri gerçek sağlayıcıyla konuşmamıştı.** "Testi var" ile "doğrulandı" arasında
+bu vault'ta artık bir fark var ve o fark burada duruyor.
 
 ### ✅ Kapanmış koşullar
 

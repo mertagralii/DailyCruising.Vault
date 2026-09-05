@@ -134,6 +134,11 @@ _(boş)_
   Kanıt: kod zaten gerçek AWS'ye bakıyordu; tek düzeltme `ForcePathStyle`
   yalnız `ServiceUrl` doluyken (AWS dışı) açık. 600 test yeşil, MinIO'ya
   koşan depolama testleri etkilenmedi. → [[api-kararlar]] 2026-09-05 (14)
+- [x] **A-97** İşletmenin ilçesi ayrı alan · bitti: 2026-09-05
+  Kanıt: migration `dailycruising` rolüyle uygulandı, uygulama rolünün yeni
+  kolonda SELECT/UPDATE yetkisi kolon bazında doğrulandı. Canlı: başvuru
+  `Muğla/Bodrum` yazdı, profil ucu döndürdü ve `PUT` ile değiştirildi.
+  600 test yeşil. → [[api-kararlar]] 2026-09-05 (15)
 - [x] **A-92** Bütün tablolar gösterilebilir veriyle dolduruldu · bitti: 2026-09-05
   Kanıt: 82 tablonun 81'i dolu; tek boş kalan `NotificationOutbox` ve o bir
   kuyruk (gönderim işi boşaltıyor). Dört rolde canlı uç taraması yapıldı;

@@ -55,7 +55,7 @@ içindir, *olmayan* ekranı engellemez.
 
 Mert'te bekleyenler: `A-41` (alt üye iş yeri — para bugün işletmeye gitmiyor) ·
 `S-18` (kupon kırpma çelişkisi) · `S-12` (iade oranı, iptal e-postasını kilitliyor) ·
-testlerdeki iki ad değişikliği · [[api-benim-kararlarim]] toplu onayı
+testlerdeki iki ad değişikliği
 
 ## Okuma tetikleyicileri — koşulsuz
 
@@ -68,7 +68,8 @@ testlerdeki iki ad değişikliği · [[api-benim-kararlarim]] toplu onayı
 | Alana **bu oturumda ilk kez** dokunuyorum | `*-desenler` + `*-araclar` — oturumda **bir kez**, her dosyada değil |
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
 | **Yapıya dokunacağım** — yeni katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — dokunmadan önce oku, dokunduktan sonra yaz |
-| **Şema / tablo / kolon** konuşulacak veya değişecek | [[api-sema]] |
+| **Hangi tablo/kolon/kısıt var** | [[api-sema-guncel]] — üretilen envanter · migration sonrası `sema-cikar.py` |
+| **Şema neden böyle** | [[api-sema]] — tasarım kaydı, envanter **değil** |
 | **"Yayına çıkalım" / "hazır mı"** · deploy konuşulacak | [[yayin-oncesi]] — üretim koşulları |
 | **Bir deseni çiğnemek üzereyim** — mock veri, boş tablo, `dangerouslySetInnerHTML`, elle tip | ilgili `*-desenler.md` — **kapı burada** |
 | Tekrar eden bir soruna takıldım | ilgili `*-notlar.md` hub'ı |

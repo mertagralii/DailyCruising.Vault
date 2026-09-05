@@ -244,6 +244,38 @@ kararlar güven damgasıyla `02-API/api-benim-kararlarim.md` içinde toplanıyor
 
 ## ⚠️ Vault ↔ kod çelişkileri
 
+**2026-09-05 — vault'un kendi denetimi: bir kazanç, bir kayıp.** Mert "vault
+gerçekten işe yarıyor mu" diye sordu; iki alan oturumu da kendi kullanımlarını
+ölçtü. Dürüst bilanço:
+
+- **Kazanç:** `api-araclar`'daki rol notu, `A-97` migration'ında yanlış rolle
+  koşmayı önledi — hata *"açılışta değil ilk kullanımda"* çıkacaktı.
+- **Kayıp:** `api-durum`'daki `S-23` satırı *"donanım ataması ve arama süzgeci
+  yok"* diyordu; **ikisi de vardı**. Nota güvenilip iş planlandı. Web aynı gün
+  aynı şeyi yaşadı.
+
+Fark disiplin değil **bilgi türü**: araç bilgisi eskimiyor, **yokluk iddiası**
+eskiyor. Kural olarak yazıldı — durum taşıyan cümle **ölçüm tarihiyle** yazılır
+→ [[genel-desenler]]
+
+**2026-09-05 — `api-sema.md` 84 tablonun 16'sını hiç saymıyormuş.** 40 yerden
+linkli, `durum: guncel` diyordu, 24 Ağustos'tan beri yazılmamıştı. Backend elle
+güncellemedi, **dosyayı ikiye ayırdı**: envanter artık `api-sema-guncel.md`'de ve
+`araclar/sema-cikar.py` **üretiyor** (84/84, 0 eksik); `api-sema.md` ise
+`rol: tasarim-kaydi` oldu — 24 Ağustos onayının gerekçesi. İlke `CLAUDE.md`'ye
+girdi: **envanter üretilir, gerekçe yazılır.**
+
+**2026-09-05 — "testi var" ile "doğrulandı" ayrıldı.** Paratika sağlayıcısı yedi
+test ve beş mutasyonla yazıldı, pano "tamamlandı" gösterdi — ama hiçbiri gerçek
+sağlayıcıyla konuşmadı. [[yayin-oncesi]]'ne **🔬 doğrulanmamış** kategorisi
+eklendi; okuma tetikleyicisi *hesap geldiği an*.
+
+**2026-09-05 — `api-benim-kararlarim.md` işlevini bitirdi.** 4 Eylül'de 29 soru
+cevaplanınca toplu onay beklentisi kalmadı. Silinmedi (34 yerden linkli), **arşive
+alındı**: yeni giriş eklenmez, okuma tetikleyicisi "o dönemin bir kararı
+soruluyor" ile sınırlandı.
+
+
 **2026-09-05 — para kuralı tek dilim üzerinden sorulunca sınırda bozuluyordu.**
 `S-12`'ye *"komisyon tam alınsın"* cevabı geldi; backend sayıyla baktığında **%100
 iade diliminde işletmeyi komisyon kadar eksiye** düşürdüğü ve `CK_Payouts_Amount >= 0`

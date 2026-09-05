@@ -83,7 +83,16 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
       ayarlar ekranında kayıtlı `Mugla` **83. seçenek olarak eklenip
       seçili** kaldı. Liste sayıldı: 81 il, tekrar 0, plaka sırası doğru
       (34 İstanbul · 48 Muğla · 81 Düzce). Taşma 0, derleme temiz.
-      `ff70bb0`
+      **2026-09-05 devamı — ilçe eklendi.** Backend `district` alanını
+      yazdı (isteğe bağlı, 120 karakter); başvuru formunda ve işletme
+      ayarlarında serbest metin olarak duruyor.
+      ⚠️ Boş bırakılan isteğe bağlı alan **`null` gidiyor, `""` değil**:
+      boş dize "ilçesi yok" ile "yazmadı" arasındaki farkı kaybettirirdi
+      ve veritabanında boş dize ile `NULL` ayrı şeyler.
+      Kanıt: `/add-boat`'ta `İlçe` alanı `required=false`, ipucu "İsteğe
+      bağlı"; ayarlarda `Yalıkavak` yazılıp kaydedildi ve **uçtan geri
+      okundu**; ilçesiz başvuru uçta `200`. Ölçüm sonrası demo verisi
+      eski hâline döndürüldü. `ff70bb0` · `5680ab0`
 
 - [x] **W-83** Kullanıcı menüsü role göre süzülüyor · 2026-09-05
       🔴 **Mert testte buldu:** müşteri hesabında (Ayşe) `Yönetim Paneli`,

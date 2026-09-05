@@ -622,4 +622,71 @@ böyle doğdu → [[yayin-oncesi]]
 yaparken doğdu. Sonradan hatırlanarak toplanamazlar — bu yüzden yazma tetikleyicisi
 "iş bitince" değil, **"cümleyi kurduğun an"**dır.
 
+## Araç bilgisi eskimez, durum bilgisi eskir
+
+2026-09-05'te backend vault'un o günkü **net bilançosunu** çıkardı ve iki uç
+gerçek olaydı:
+
+**Kazanç.** `A-97` migration'ı `permission denied to set role "dailycruising"`
+verdi. `api-araclar`'da tam komut duruyordu — ve yalnız komut değil **gerekçesi**:
+`ALTER DEFAULT PRIVILEGES` o role bağlı, başka rolle koşarsan tablo o rolün malı
+olur ve *"uygulama açılışta değil İLK KULLANIMDA patlar."* O not okunmasaydı süper
+kullanıcıyla koşulup geçildi sanılacaktı.
+
+**Kayıp.** `api-durum`'daki `S-23` notu *"tekne detayında donanım ataması yok,
+aramada süzgeç yok"* diyordu. **İkisi de yanlıştı**, uçlar aylardır vardı. Nota
+güvenilip iş planlandı, sonra ölçülüp notun bayat olduğu bulundu. Web aynı gün
+aynı şeyi yaşadı (*"süzgeç konamaz, parametre yok"* — parametre vardı).
+
+İkisinin farkı yazarın disiplini değil, **bilginin türü**: bir aracın nasıl
+çalıştığı eskimez, bir şeyin var olup olmadığı eskir.
+
+**Kural:** vault'a **durum taşıyan** bir cümle yazarken — "X yok", "Y henüz
+yapılmadı", "Z eksik" — cümle **ölçüm tarihiyle** yazılır. Tarihsiz bir yokluk
+iddiası, yazıldığı gün doğru olsa bile ertesi gün yalana dönüşebilir ve **hiçbir
+uyarı vermez**. Yokluk iddiası en hızlı bayatlayan bilgi türüdür, çünkü onu
+geçersiz kılmak için birinin sadece o şeyi yazması yeterlidir.
+
+Bunun pratik sonucu: *"X yok"* değil, *"5 Eylül'de ölçüldü, X yoktu"* yaz. İkincisi
+yanlış olduğunda bile **kendini ele verir**.
+
+## Kural okunmaz, hikâye akılda kalır
+
+Backend'in kendi ölçümü: on beş dosya değiştirdi, `api-desenler`'i **bir kez bile**
+baştan açmadı. Web'inki: aynı. İkisinde de kural delindi ve **bedeli olmadı**.
+
+Ama bir karşı örnek var ve öğretici: `api-desenler`'e yazılan *"yorumun iddiası da
+ölçülmek zorunda"* dersi backend'i **aynı gün yakaladı** — bir testin yorumunda
+*"işin konuşmayı kapatabilmesini ölçüyor"* yazıyordu, oysa test yalnız satırın
+varlığına bakıyordu. Yorumu düzeltmek yerine **testi iddiaya eşitledi**.
+
+Fark şu: o dersi okuduğu için değil, **bir kez yazdığı için** davranışı değişti.
+Ödenen bedel hatırlanıyor; okunan kural hatırlanmıyor.
+
+**Kural:** `*-desenler.md` bir *kural listesi* değil, **bir kez ödenmiş bedellerin
+kaydı** olarak yazılır. Her madde bir olaya bağlanır: ne oldu, ne kaybettik, ne
+öğrendik. Kural gibi değil hikâye gibi dursun — çünkü belge bir **refleks kaynağı**
+olarak işe yarıyor, bir *başvuru listesi* olarak yaramıyor.
+
+Bu, "kural bir kapıdır" desenini tamamlıyor: kapı **ne zaman** okunacağını söyler,
+bu da **nasıl yazılacağını**.
+
+## "Testi var" ile "doğrulandı" aynı şey değil
+
+2026-09-05'te backend Paratika sağlayıcısını yazdı: dört yöntem, yedi test, beş
+mutasyon yakalanıyor. Pano **"tamamlandı"** gösterdi. Ama testlerin **hiçbiri
+gerçek sağlayıcıyla konuşmamıştı** — `QUERYTRANSACTION` cevabının tam biçimi
+sözleşme belgesinden yazılmıştı, gerçek yanıtla karşılaştırılmamıştı.
+
+Bu ne "bitti" ne "yapılmadı"; **üçüncü bir hâl**. Ve panoda görünmediği için
+tehlikeli: panoya bakan biri doğrulanmış sanır.
+
+**Kural:** dış bir servise, hesaba veya kimlik bilgisine bağlı kod
+**🔬 doğrulanmamış** olarak işaretlenir ve [[yayin-oncesi]]'ne girer. Okuma
+tetikleyicisi nettir: **hesap geldiği an ilk iş o listeyi açmaktır.**
+
+Bu, [[genel-desenler]]'deki "başarılı yanıt doğru yazdığının kanıtı değil"
+desenin bir üst katmanı: orada yanıtın kendisi yalan söyleyebiliyordu, burada
+**yanıtı hiç görmedik** ve testler onun yerine bizim varsayımımızı ölçüyor.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

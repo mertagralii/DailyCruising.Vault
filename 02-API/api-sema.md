@@ -1,11 +1,33 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-08-24
-durum: guncel
+guncelleme: 2026-09-05
+durum: tasarim-kaydi
 ---
 
-# Veritabanı Şeması
+# Veritabanı Şeması — ONAYLANAN TASARIM (24 Ağustos 2026)
+
+⚠️ **BU DOSYA CANLI HARİTA DEĞİL.** 24 Ağustos'ta Mert'in onayladığı tasarımı
+ve GEREKÇESİNİ taşıyor; o işlevi iyi görüyor ve arşiv değeri yüksek.
+
+**Bugün veritabanında ne var** sorusunun cevabı [[api-sema-guncel]] —
+`araclar/sema-cikar.py` üretiyor, elle yazılmıyor.
+
+Ayrım 2026-09-05'te kondu ve sebebi ölçüldü: dosya `durum: guncel` etiketiyle
+40 yerden linkliydi, 24 Ağustos'tan beri yazılmamıştı ve o tarihten sonra
+eklenen **84 tablodan 16'sı burada hiç geçmiyordu** — `BoardingTickets`,
+`FavoriteBoats`, `NotificationPreferences`, `CouponAssignments`, `TaxRates`,
+`PartnerPayeeAccounts`, `BoatSlugs`, `ConsentDocuments`, `InvoiceCounters`,
+`NotificationOutbox`, `JobRuns`, `EventLogs`, `RentalTypeTranslations`,
+`BlogCategoryTranslations`, `ReservationStatusHistories`,
+`VoyageStatusHistories`.
+
+En çok güvenilen dosyanın en bayat dosya olması tesadüf değil: çok linklenmek
+onu güncel TUTMUYOR, yalnız güncel SANILMASINI sağlıyor. `api-mimari`
+olayının aynısı → [[api-kararlar]] 2026-09-05 (16).
+
+Elle güncellemek çürümeyi geri getirirdi. Üretilebilen kısım artık
+üretiliyor; burada kalan, üretilemeyen kısım: **neden.**
 
 `A-01` çıktısı. Sekiz bölüm; her bölüm Mert'in onayından geçer, **onaysız kod
 yazılmaz**. İş kuralının kaynağı [[domain-gereksinimler]]; burada yalnız o
