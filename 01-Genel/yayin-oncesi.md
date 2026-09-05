@@ -63,7 +63,7 @@ Bir koşulun **sağlanmadığında nasıl belli olduğu**, ne olduğundan daha �
 
 | # | Koşul | Kimde | Sağlanmazsa ne olur |
 |---|---|---|---|
-| Y-05 | **S3 / DO Spaces kovasına açık okuma iki öneke** (`boat-media/*` **ve** `blog-media/*`) — `S-24` | Mert | blog kapakları **sessizce kırılır**; uygulama hiçbir hata üretmez, hata yalnız tarayıcıda ve nesne deposunda görünür |
+| Y-05 | **Amazon S3 kovasına açık okuma iki öneke** (`boat-media/*` **ve** `blog-media/*`) — `S-24` | Mert | blog kapakları **sessizce kırılır**; uygulama hiçbir hata üretmez, hata yalnız tarayıcıda ve nesne deposunda görünür · **2026-09-05: sağlayıcı Amazon S3 olarak kesinleşti** (Mert), belirsizlik kalktı |
 | Y-06 | `/payment/mock` rotası Paratika bağlanınca **kapatılmalı** | Web | açık kalırsa üretimde sahte ödeme yolu açık kalır |
 | Y-07 | Gerçek tekne fotoğrafları | Mert | yer tutucu görseller yayında müşteriye gider |
 | Y-08 | `brand.ts` kurumsal verisi: telefon, adres, TÜRSAB no (`W-06`/`G-10`) | Mert | **her sayfanın üst şeridinde** yanlış bilgi durur → `S-29` |
@@ -81,6 +81,7 @@ olmadan doğrulayamadım"* dediğin an.
 |---|---|---|
 | Y-12 | **Paratika sağlayıcısı** — dört yöntem, yedi test, beş mutasyon yakalanıyor | `QUERYTRANSACTION` cevabının **tam biçimi**. Sözleşme belgesine göre yazıldı; gerçek yanıtla karşılaştırılmadı |
 | Y-13 | **Postmark e-posta şablonları** | HTML e-posta istemcilerinde görünüm (`Y-09` ile aynı kök) |
+| Y-14 | **Gerçek AWS'ye S3 bağlantısı** — `ForcePathStyle` 2026-09-05'te yalnız AWS DIŞI sağlayıcılarda açık kalacak biçimde değiştirildi | **Değiştirilen dal hiç çalışmadı.** Testler MinIO'ya koşuyor (`ServiceUrl` dolu → yol-tarzı hâlâ açık) ve üstelik `Program.cs`'i hiç kullanmıyor, kendi `AmazonS3Config`'ini kuruyor. Yani gerçek AWS yolu ne testte ne geliştirmede çalıştı. İlk gerçek kova bağlandığında **ilk yükleme denemesi** bu maddeyi kapatır |
 
 ⚠️ **Bu bölüm neden var:** 2026-09-05'te backend Paratika'yı yazdı ve pano
 "tamamlandı" gösterdi. Testler geçiyordu, mutasyon testi de geçiyordu — ama

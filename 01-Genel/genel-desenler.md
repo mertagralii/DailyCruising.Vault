@@ -685,8 +685,38 @@ tehlikeli: panoya bakan biri doğrulanmış sanır.
 **🔬 doğrulanmamış** olarak işaretlenir ve [[yayin-oncesi]]'ne girer. Okuma
 tetikleyicisi nettir: **hesap geldiği an ilk iş o listeyi açmaktır.**
 
-Bu, [[genel-desenler]]'deki "başarılı yanıt doğru yazdığının kanıtı değil"
-desenin bir üst katmanı: orada yanıtın kendisi yalan söyleyebiliyordu, burada
-**yanıtı hiç görmedik** ve testler onun yerine bizim varsayımımızı ölçüyor.
+Bu, "başarılı yanıt doğru yazdığının kanıtı değil" deseninin bir üst katmanı:
+orada yanıtın kendisi yalan söyleyebiliyordu, burada **yanıtı hiç görmedik** ve
+testler onun yerine bizim varsayımımızı ölçüyor.
+
+## "Testler yeşil" demeden önce değiştirdiğin satırın koştuğunu ölç
+
+Yukarıdakinin bir adım kötüsü: yanıtı görmemek değil, **kodun hiç çalışmamış
+olması.**
+
+2026-09-05'te backend `ForcePathStyle`'ı yalnız AWS **dışı** sağlayıcılarda açık
+kalacak biçimde değiştirdi ve *"600 test yeşil"* diye raporladı. Doğruydu ve
+**yanıltıcıydı**. Ölçtüğünde:
+
+- Testler MinIO'ya koşuyordu → `ServiceUrl` dolu → yol-tarzı **hâlâ açık**; yani
+  değiştirilen dal testlerde hiç girilmiyordu.
+- Üstelik testler `Program.cs`'i **hiç kullanmıyordu**: iki test sınıfı kendi
+  `AmazonS3Config`'ini kuruyor ve içinde `ForcePathStyle = true` **elle yazılı**.
+
+Değiştirilen satır ne testte ne geliştirmede, **hiçbir yerde çalışmadı** — ve pano
+"tamamlandı", testler yeşil gösteriyordu.
+
+**Kural:** *"testler yeşil"* cümlesini kurmadan önce, **değiştirdiğin satırın o
+testlerde gerçekten çalıştığını** ölç. Yeşil bir paket, değişikliğinin doğru
+olduğunu değil, yalnızca **var olanın bozulmadığını** kanıtlar. En hızlı ölçüm:
+satırı bilerek boz, testin kırmızıya döndüğünü gör — dönmüyorsa o satır ölçülmüyor
+demektir.
+
+⚠️ **En tehlikeli hâli kendi raporun hakkında olanıdır.** Bayat bir *başkasının*
+notuna güvenmek yakalanabilir; kendi az önce yazdığın rapora güvenmek yakalanmaz,
+çünkü onu doğrulamak aklına gelmez. Backend aynı gün ikisini de yaşadı: `S-23`'te
+başkasının notuna güvenip yanıldı, `Y-14`'te kendi raporuna güvenseydi yanılacaktı.
+İkincisini yakalayan şey nota bakmak değil, **iddiayı ölçmek** oldu
+→ [[yayin-oncesi]]
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
