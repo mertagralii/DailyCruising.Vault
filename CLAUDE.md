@@ -40,6 +40,7 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | **Yapıya dokunacağım** — yeni proje, katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — "ne var" sorusunun tek cevabı |
 | Domain / iş kuralı konuşulacak | `01-Genel/domain-gereksinimler.md` + `01-Genel/durum.md` |
 | **`dogrula.py` TEMİZ dedi ama bir kontrol hiç konuşmuyor** | `python3 _araclar/kontrol-testi.py` — hangi kontrolün gerçekten ölçtüğü yalnız orada görülür; sessizlik aklanma değildir |
+| **Vault budanacak · yeni bölme/klasör açılacak · şablonlaştırma konuşulacak** | `python3 _araclar/okunma.py` — hangi katmanın gerçekten okunduğu yalnız orada; tahminle budama, ölçerek buda |
 | Vault'ta ne var, tam liste | `00-Index.md` |
 
 **`04-Oturumlar/` arşivdir, otorite değil.** O günün çalışma kaydını taşır; "nerede

@@ -747,4 +747,37 @@ de bozulup kırmızıya döndürülmelidir. Bu, aşağıdaki *"testler yeşil de
 değiştirdiğin satırın koştuğunu ölç"* kuralının denetim katmanına uygulanmış
 hâli — oradaki kural koda bakıyor, buradaki kurala bakana bakıyor.
 
+## Yazılan not okunuyor sayılmaz — hangisinin karşılığını ödediği ölçülür
+
+2026-09-05'e kadar vault'ta 83 notun **yazıldığını** biliyorduk (git söylüyor),
+**okunduğunu** hiç bilmiyorduk. `_araclar/okunma.py` 108 oturum kaydını taradı.
+Ölçüt kasten dar: *notu yazan oturumların dışında kaç oturumda açıldı?* Kendi
+yazıldığı oturumda görünmek, bir notun işe yaradığını göstermez.
+
+| Bölüm | Dışarıdan okunan |
+|---|---|
+| `notlar/` — gözlem notları | **5 / 41** |
+| Ana bölmeler (mimari · kararlar · desenler · görevler · araçlar · durum) | **13 / 28** |
+| `04-Oturumlar/` arşivi | 3 / 11 |
+
+**Ana bölmeler karşılığını ödüyor, `notlar/` katmanı ödemiyor.** Sebep disiplin
+değil yine tetikleyici: ana bölmelerin tetikleyicisi bir *olaydır* ("yapıya
+dokunacağım", "işe başlıyorum"), `notlar/` katmanınınki ise bir *duygudur*
+("tekrar eden bir soruna takıldım"). Olay ölçülebilir biçimde olur; takılmak
+fark edilmeden geçer.
+
+⚠️ **Bu, notları silmek için gerekçe değildir.** Bir tuzak notu yılda bir kez
+okunur ama okunduğunda saatler kazandırır — düşük okunma, düşük değer demek
+değil. Ölçümün söylediği tek şey şu: **hangi katmanın kendini taşıdığını
+tahminle değil sayıyla biliyoruz artık**, ve şablona ne gireceğine bu karar
+verecek (`G-15`).
+
+⚠️ **Ölçümün kendi sınırları — susmasın diye yazılıyor:** açılma ölçülür,
+okunup anlaşılma değil. Yalnız diskte duran oturum kayıtları taranır, yani
+sayılar bir **alt sınırdır**. Sınıflandırılamayan Bash dokunuşları ayrıca
+raporlanır. Ve ilk sürüm yanlış ölçüyordu: yol ayıklayan düzenli ifade `/`
+karakterini yasaklıyor, böylece **tam da ölçmek istediği mutlak yolları
+eliyordu**; araç "4 oturum" derken bağımsız `grep -l` 73 dosya buldu. Aynı
+dersin üçüncü tekrarı — bkz. bu dosyadaki *"denetimin kendisi de denetlenir"*.
+
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

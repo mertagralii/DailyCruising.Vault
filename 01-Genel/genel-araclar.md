@@ -157,5 +157,6 @@ olanlar var.
 |---|---|---|
 | `dogrula.py`'ye kontrol eklendi/değiştirildi | `_araclar/kontrol-testi.py` | Kontrolü bilerek bozup kırmızıya döndüğünü görür; susan kontrol doğru mu bozuk mu ayırt edilemez |
 | Bir kontrol aylardır hiç konuşmuyor | `_araclar/kontrol-testi.py` | Sessizlik iki şeyin işareti olabilir ve ikisi dışarıdan aynı görünür |
+| Vault budanacak, yeni bölme açılacak, şablona ne gireceği sorulacak | `_araclar/okunma.py` | Yazılan notun okunduğunu git söylemez; ölçüt "yazan oturumun dışında açıldı mı" |
 
 İlgili: [[genel-notlar]] · [[genel-desenler]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[api-araclar]] · [[web-araclar]]

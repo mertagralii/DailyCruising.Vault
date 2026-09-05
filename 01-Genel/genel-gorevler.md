@@ -75,6 +75,15 @@ _(boş)_
 
 ## 🟢 Tamamlandı
 
+- [x] **G-18** Notların okunma oranı ölçülür hâle geldi · bitti: 2026-09-05
+      `_araclar/okunma.py`: 108 oturum kaydı, ölçüt "yazan oturumun dışında
+      açıldı mı".
+      Kanıt: `notlar/` 5/41 · ana bölmeler 13/28 · arşiv 3/11. İlk sürüm yanlış
+      ölçüyordu (regex mutlak yolları eliyordu); bağımsız `grep -l` ile
+      yakalandı, düzeltildi. Sınıflandırılamayan dokunuşlar da raporlanıyor.
+      → [[genel-desenler]]
+
+
 - [x] **G-17** Kontrollerin kendisi ölçülür hâle getirildi · bitti: 2026-09-05
       `_araclar/kontrol-testi.py`: 26 senaryo, 21 kontrolün tamamı bilerek
       bozulup kırmızıya döndüğü görülüyor.

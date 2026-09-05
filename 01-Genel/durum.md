@@ -442,4 +442,25 @@ bilerek kör ettim; araç yine "hepsi kırmızı" dedi, çünkü senaryolar aras
 Bu, şablonlaştırma (`G-15`) için de ön koşuldu: taşınacak olan makine, ölçtüğü
 doğrulanmamış bir denetim olamazdı.
 
+
+## 2026-09-05 — hangi katmanın okunduğu ilk kez ölçüldü
+
+`_araclar/okunma.py` eklendi; 108 oturum kaydı tarandı. Ölçüt: **notu yazan
+oturumların dışında** kaç oturumda açıldı.
+
+| Bölüm | Dışarıdan okunan |
+|---|---|
+| `notlar/` — gözlem notları | **5 / 41** |
+| Ana bölmeler | **13 / 28** |
+| `04-Oturumlar/` arşivi | 3 / 11 |
+
+Ana bölmeler kendini taşıyor, `notlar/` katmanı bugünkü tetikleyicisiyle
+taşımıyor. **Silme kararı verilmedi** — düşük okunma düşük değer demek değil;
+bir tuzak notu yılda bir okunur ama okunduğunda saatler kazandırır. Ölçümün
+işlevi şablonlaştırmaya (`G-15`) girdi vermek.
+
+⚠️ Aracın ilk sürümü yanlış ölçüyordu (yol ayıklayan ifade `/` yasaklayıp
+mutlak yolları eliyordu; "4 oturum" derken bağımsız `grep -l` 73 dosya buldu).
+Bağımsız sayımla yakalandı → [[genel-desenler]] · `G-18`
+
 İlgili: [[proje]] · [[genel-kararlar]] · [[genel-gorevler]] · [[api-durum]] · [[web-durum]] · [[00-Index]]
