@@ -1002,14 +1002,33 @@ for _k in _D24:
             _icerik24 = _f24.read_text(encoding="utf-8", errors="ignore")
         except Exception:
             continue
+        # Yorum satiri ihlal DEGILDIR. 2026-09-09'da backend olctu: 13 sayilan
+        # `DateTime`in biri, "burada DateTime.UtcNow cagirma" diye YAZILMIS
+        # UYARIYDI. Bir ihlali duzeltip yerine gerekcesini yazan kisi cirnikta
+        # geri gitmis gorunuyordu — tesvik edilmek istenen davranis
+        # cezalandiriliyordu. Ucunde de sayim sisikti: 13->12, 91->87, 5->1.
+        #
+        # ⚠️ Ilk surum satir basina bakiyordu ve `*` ile baslayan her satiri
+        # yorum sayiyordu. Backend kor noktayi bildirdi: C#'ta bir satir carpma
+        # isleminin devami olarak da `*` ile baslayabilir (`* oran`), yani
+        # GERCEK bir ihlal sessizce dusebilirdi — yanlis alarmi kapatirken
+        # yanlis sessizlik acmak. Bugun oyle bir satir yok (0 olculdu) ama bu
+        # olcumdur, garanti degil; biçim degisirse kimse haber vermezdi.
+        # Cozum tahmin degil DURUM: blok yorumun icinde miyiz, izleniyor.
+        _blok24 = False
         for _no24, _satir24 in enumerate(_icerik24.split("\n"), 1):
-            # Yorum satiri ihlal DEGILDIR. 2026-09-09'da backend olctu:
-            # 13 sayilan `DateTime`in biri, "burada DateTime.UtcNow cagirma"
-            # diye YAZILMIS UYARIYDI. Yani bir ihlali duzeltip yerine
-            # gerekcesini yazan kisi cirnikta hic ilerlememis gorunuyordu —
-            # tam da tesvik edilmek istenen davranis cezalandiriliyordu.
-            _sade24 = _satir24.lstrip()
-            if _sade24.startswith(("//", "/*", "*", "#", "<!--")):
+            _sade24 = _satir24.strip()
+            _yorum24 = _blok24
+            if _blok24:
+                if "*/" in _sade24:
+                    _blok24 = False
+                    _yorum24 = _sade24.split("*/", 1)[1].strip().startswith("//")
+            elif _sade24.startswith(("//", "#", "<!--")):
+                _yorum24 = True
+            elif _sade24.startswith("/*"):
+                _yorum24 = True
+                _blok24 = "*/" not in _sade24
+            if _yorum24:
                 continue
             if _desen24.search(_satir24):
                 _sayi24 += 1
