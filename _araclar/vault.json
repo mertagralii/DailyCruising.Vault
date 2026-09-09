@@ -55,6 +55,23 @@
     "gorev_gecmisi_commit": 50,
     "mimari_yapisal_ornek": 10
   },
+  "acilis_sayilari": {
+    "_aciklama": [
+      "acilis.md her oturuma otomatik yuklenir; icindeki sayi bir OZETTIR,",
+      "kaynagi baska dosyadadir. Burasi hangi sayinin nerede dogrulanacagini",
+      "soyler. pano_deseni: acilis'te pano sayimi nasil yaziliyor.",
+      "birimler: '<sayi> <birim>' bicimindeki iddia, o alanin dosyalarinda",
+      "ayni sayiyla geciyor mu."
+    ],
+    "pano_desenleri": [
+      "pano\\s+\\*{0,2}(\\d+)\\s*/\\s*(\\d+)",
+      "\\*\\*(\\d+)\\s+Yapılacak\\s*/\\s*(\\d+)\\s+Tamamlandı\\*\\*"
+    ],
+    "birimler": [
+      { "desen": "(\\d+)\\s*test", "kelime": "test", "kaynaklar": ["02-API/api-durum.md", "02-API/api-mimari.md"] },
+      { "desen": "(\\d+)\\s*rota", "kelime": "rota", "kaynaklar": ["03-Web/web-durum.md", "03-Web/web-mimari.md"] }
+    ]
+  },
   "oturum_kayit_deseni": "*DailyCruising*",
   "otomatik_yuklenen": ["acilis"],
   "kontrol_testi": {

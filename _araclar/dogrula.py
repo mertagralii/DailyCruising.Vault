@@ -19,6 +19,12 @@ Tarar:
  14. Gorev kimligi kaybi (tum git gecmisine karsi)
  15. Mimari bayatligi (kod reposundaki yapisal degisime karsi)
  16. acilis.md durum.md'nin gerisinde mi
+ 17. Yapilacak bolumunde bitmis gorev
+ 18. Yinelenen bolum basligi
+ 19. Beyan (guncelleme) icerikten geride mi
+ 20. Cok linkli dosyanin tetikleyicisi var mi
+ 21. Kodun verdigi vault atiflari olu mu
+ 22. acilis.md'deki sayilar kaynagiyla celisiyor mu
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -694,6 +700,138 @@ if _atif_toplam:
         f"(NOT: yalniz hedefin varligi olculur, iceriginin dogrulugu DEGIL)")
 
 
+# ---------------------------------------------------------------------------
+# 22: acilis.md'deki sayilar kaynagiyla celisiyor mu
+#
+# 2026-09-09'da elle olculdu: acilis.md "pano 3/93", "571 test", "25 rota"
+# diyordu. Gercek: 6/152, 706 test, 41 rota. DORT sayinin dordu de yanlisti ve
+# bu dosya HER OTURUMUN baglamina otomatik yukleniyor — yani yanlis sayi her
+# oturumda yeniden dagitiliyordu.
+#
+# Kontrol 16 bunu neden yakalamadi: o, acilis'in durum.md'nin kac COMMIT
+# gerisinde kaldigini olcer. acilis o gun commit'lenmisti, yani TAZE gorunuyordu.
+# **Tazelik dogruluk degildir.** Bir dosyaya dokunmak icindeki sayiyi
+# duzeltmez; olculecek sey dosyanin yasi degil, iddiasinin kaynagiyla uyumudur.
+#
+# Olcut: acilis bir OZETTIR, kaynagi baska dosyadir. Iki sinif iddia denetlenir:
+#   (a) pano sayimi  -> panolarin gercek sayimiyla birebir eslesmeli
+#   (b) "<sayi> <birim>" -> o birimin kaynak dosyalarinda ayni sayi gecmeli
+# Hangi birimin nerede dogrulanacagi vault.json'da; betikte proje sabiti yok.
+_A22 = AYAR.get("acilis_sayilari")
+_acilis_yol = VAULT / OZEL["acilis"]
+if _A22 and _acilis_yol.exists():
+    _a_metin = kodu_ayikla(_acilis_yol.read_text(encoding="utf-8"))
+    _rel_a = OZEL["acilis"]
+    _bakilan22 = 0
+
+    # (a) panolarin gercek sayimi: (acik, bitmis)
+    _gercek_panolar = {}
+    for _alan, _v in AYAR["alanlar"].items():
+        _pano = VAULT / _alan / f"{_v['onek']}-gorevler.md"
+        if not _pano.exists():
+            continue
+        _acik = _bitmis = 0
+        for _blok in re.split(r"^## ", _pano.read_text(encoding="utf-8"), flags=re.M):
+            _bas = _blok.lstrip()
+            _satirlar = [x for x in _blok.split("\n")
+                         if re.match(r"^- \[[ x~]\] \*\*", x)]
+            if _bas.startswith((PANO["yapilacak_isareti"], PANO["yapilacak"])):
+                _acik = len(_satirlar)
+            elif PANO["tamamlandi"] in _bas.split("\n")[0]:
+                _bitmis = len(_satirlar)
+        _gercek_panolar[_alan] = (_acik, _bitmis)
+
+    for _desen in _A22.get("pano_desenleri", []):
+        for _m in re.finditer(_desen, _a_metin, re.I):
+            _bakilan22 += 1
+            _cift = (int(_m.group(1)), int(_m.group(2)))
+            if _cift not in _gercek_panolar.values():
+                _dogrusu = " · ".join(f"{a}: {v[0]}/{v[1]}"
+                                      for a, v in sorted(_gercek_panolar.items()))
+                sorunlar.append(
+                    f"[acilis sayisi] {_rel_a}: '{_m.group(0).strip()}' hicbir "
+                    f"panonun gercek sayimiyla eslesmiyor. Panolar -> {_dogrusu}. "
+                    f"Bu dosya her oturuma otomatik yuklenir; yanlis sayi her "
+                    f"oturumda yeniden dagitilir")
+
+    # (b) birim iddialari kaynak dosyalarinda geciyor mu
+    for _b in _A22.get("birimler", []):
+        _kaynak_metin = ""
+        _eksik_kaynak = []
+        for _k in _b.get("kaynaklar", []):
+            _ky = VAULT / _k
+            if _ky.exists():
+                _kaynak_metin += _ky.read_text(encoding="utf-8")
+            else:
+                _eksik_kaynak.append(_k)
+        if _eksik_kaynak and not _kaynak_metin:
+            olcumler.append(
+                f"kontrol 22 · birim '{_b['desen']}': kaynak dosya yok "
+                f"({', '.join(_eksik_kaynak)}) — OLCULEMEDI")
+            continue
+        # Kaynakta ayni birimin GUNCEL beyanlari.
+        #
+        # Iki olcut de kor testte elendi:
+        #   "sayi dosyada bir yerde geciyor mu" -> "25 rota" aylar once yazilmis
+        #     bir satir yuzunden aklandi. Bu dosyalar append-only tarihce;
+        #     gecmisteki her sayi hala icinde duruyor.
+        #   "dosyanin ilk veya son gecisi" -> api-durum'un DOGRU 706 degeri
+        #     kirmizi yandi (yanlis pozitif). Yanlis alarm veren denetim,
+        #     susan denetimden kotudur: birkac kez bagirinca kimse bakmaz.
+        #
+        # Gecerli olan: kaynagin GUNCEL bolgesi. Iki bicim de destekleniyor
+        # cunku iki dosya ters sirada yaziyor — api-durum en yeniyi dosyanin
+        # basina, web-mimari en yeni TARIHLI bolume koyuyor:
+        #   (1) ilk tarihli basliktan onceki bolge (acilis/ozet bolumu)
+        #   (2) en yeni tarihli basligin bolumu
+        _gecerli = set()
+        for _k in _b.get("kaynaklar", []):
+            _ky = VAULT / _k
+            if not _ky.exists():
+                continue
+            _t = _ky.read_text(encoding="utf-8")
+            _tarihli = list(re.finditer(r"^## .*?(\d{4}-\d{2}-\d{2})", _t, re.M))
+            _bolgeler = [_t[:_tarihli[0].start()] if _tarihli else _t]
+            if _tarihli:
+                # AYNI gunde birden fazla bolum olabilir; hepsi guncel sayilir.
+                # Ilk surum yalniz ilk maksimumu aliyordu ve web-mimari'de aynı
+                # tarihli iki bolumden yanlisini secip DOGRU olan "41 rota"yi
+                # kirmizi yakti. Yanlis alarm, susmaktan daha hizli guven yakar.
+                _en_yeni_tarih = max(m.group(1) for m in _tarihli)
+                for _m2 in _tarihli:
+                    if _m2.group(1) != _en_yeni_tarih:
+                        continue
+                    _son = _t.find("\n## ", _m2.end())
+                    _bolgeler.append(_t[_m2.start():_son if _son > 0 else len(_t)])
+                # Kaynak taraf, acilis'le AYNI kalibi kullanamaz. acilis
+                # "725 test yesil" yaziyor; api-durum ayni seyi
+                # "`dotnet test` 706/706" diye yaziyor — sayi kelimeden ONCE
+                # degil SONRA. Ilk surum bu yuzden hicbir eslesme bulamadi ve
+                # sessizce OLCULEMEDI dedi: yazili, calisiyor gorunen, hicbir
+                # sey olcmeyen bir kontrol. Kor test yakaladi.
+                # Olcut bu yuzden kalip degil YAKINLIK: birim kelimesinin
+                # gectigi satirdaki her sayi gecerli beyan sayilir.
+                _kelime = _b.get("kelime")
+                for _bolge in _bolgeler:
+                    for _satir in _bolge.split("\n"):
+                        if _kelime and _kelime.lower() in _satir.lower():
+                            _gecerli.update(re.findall(r"\d+", _satir))
+        for _m in re.finditer(_b["desen"], _a_metin):
+            _bakilan22 += 1
+            if not _gecerli:
+                olcumler.append(
+                    f"kontrol 22 · '{_m.group(0).strip()}': kaynakta bu birimden "
+                    f"hic beyan yok — OLCULEMEDI")
+            elif _m.group(1) not in _gecerli:
+                sorunlar.append(
+                    f"[acilis sayisi] {_rel_a}: '{_m.group(0).strip()}' kaynagin "
+                    f"guncel beyani degil ({', '.join(_b['kaynaklar'])} guncel "
+                    f"bolgesinde {sorted(_gecerli)} geciyor) — ozet, ozetledigi "
+                    f"dosyadan kopmus")
+    olcumler.append(
+        f"kontrol 22 · {_rel_a}: {_bakilan22} sayi iddiasi kaynagiyla karsilastirildi")
+elif not _A22:
+    olcumler.append("kontrol 22 · vault.json'da acilis_sayilari yok — OLCULEMEDI")
 
 print(f"Vault: {VAULT}")
 print(f"Not sayisi: {len(notlar)}")

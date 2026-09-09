@@ -187,6 +187,35 @@ def m_acilis_sisti(k):
     ekle(k, D_ACILIS, "\n" + ("dolgu " * 700))
 
 
+def m_acilis_pano_sayisi(k):
+    # acilis'teki pano sayimini panonun gercek sayimindan kopar. Gercek kusur:
+    # 2026-09-09'da acilis "pano 3/93" diyordu, pano 6/153'tu.
+    metin = oku(k, D_ACILIS)
+    yeni = re.sub(r"(pano\s+\*{0,2})(\d+)(\s*/\s*)(\d+)",
+                  lambda m: f"{m.group(1)}{int(m.group(2)) + 7}{m.group(3)}"
+                            f"{int(m.group(4)) + 41}", metin, count=1, flags=re.I)
+    if yeni == metin:      # bicim degistiyse senaryo olcemez, sessiz kalmasin
+        yeni = metin + "\n\npano 999/999\n"
+    yaz(k, D_ACILIS, yeni)
+
+
+def m_acilis_birim_sayisi(k):
+    # acilis'te birim iddiasini (ornegin test sayisi) eskisiyle degistir —
+    # kaynagin GECMISINDE gecen ama guncel olmayan bir deger. Gercek kusur:
+    # acilis 571 test diyordu, kaynak 706 diyordu; sayi dosyada geciyordu,
+    # o yuzden gevsek olcut bunu aklamisti.
+    birimler = AYAR.get("acilis_sayilari", {}).get("birimler", [])
+    metin = oku(k, D_ACILIS)
+    for b in birimler:
+        m = re.search(b["desen"], metin)
+        if m:
+            eski_tam = m.group(0)
+            yeni_tam = eski_tam.replace(m.group(1), str(int(m.group(1)) + 137), 1)
+            yaz(k, D_ACILIS, metin.replace(eski_tam, yeni_tam, 1))
+            return
+    yaz(k, D_ACILIS, metin + "\n\n999999 test\n")
+
+
 def m_durum_bayat(k):
     r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
@@ -294,6 +323,8 @@ SENARYOLAR = [
     (19, "icerik degisti beyan degismedi",   "beyan geride",            m_beyan_geride),
     (20, "cok linkli dosyanin tetikleyicisi yok", "tetikleyicisiz",     m_tetikleyicisiz),
     (21, "kodun atif verdigi dosya adi degisti", "olu atif",            m_olu_atif),
+    (22, "acilis pano sayisi panodan kopuk",   "acilis sayisi",       m_acilis_pano_sayisi),
+    (22, "acilis birim sayisi kaynaktan kopuk", "acilis sayisi",      m_acilis_birim_sayisi),
 ]
 
 

@@ -28,11 +28,11 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 
 ## Şu an ne oluyor
 
-- **API:** pano 3/93 · **571 test yeşil**, `openapi.json` güncel (5 Eylül, backend ölçümü). Ödeme uçtan uca
+- **API:** pano 6/153 · **706 test yeşil** (9 Eylül, backend ölçümü). Ödeme uçtan uca
   çalışıyor (gerçek İyzico sandbox). Panoda **Mert'e bağlı olmayan iş kalmadı**
-- **Web:** 25 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
+- **Web:** 41 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
-  Pano **4 yapılacak / 64 tamamlandı** — kalan beşi de **Mert'in kararında**
+  Pano **3 yapılacak / 78 tamamlandı** — kalanlar **Mert'in kararında**
 - **Mobil:** iskelet + private repo var, **ekran yok** · kapsam (`M-02`) **API ve
   web bitene kadar ertelendi** — o zamana kadar mobil kod yazılmaz
 - **Genel:** 97 not · `dogrula.py` 21 kontrol, 21/21 bozulup kırmızıya döndürüldü ·

@@ -40,7 +40,7 @@ Dil kuralı [[tercihler]] içinde — projeden bağımsızdır.
 | Web | `npm run build` | başarılı |
 | Mobil | `npx tsc --noEmit` · `npx expo-doctor` | 0 hata · **görünüm kanıtı değildir** → [[mobil-desenler]] |
 
-| API | `dotnet test` | 609 test yeşil (2026-09-05 backend ölçümü) |
+| API | `dotnet test` | 706 test yeşil (2026-09-09 backend ölçümü → [[api-durum]]) |
 
 ⚠️ **Düzeltme 2026-09-05:** bu satırda 21 Ağustos'tan beri *"test altyapısı henüz
 yok"* yazıyordu. Yanlıştı ve `rol: constitution` taşıyan bir dosyada durduğu için

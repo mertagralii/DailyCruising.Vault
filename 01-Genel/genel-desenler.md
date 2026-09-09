@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -195,7 +195,6 @@ frontmatter'daki `guncelleme` ile kod reposundaki yapısal değişimi karşıla�
 kodun gerçeği karşılaştırılır. Aynı sebeple yalnız **eklenen/silinen** dosyalar sayılır:
 içerik değişikliği yapıyı değiştirmez.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ### Koşullu geçici şeyin koşulu panoya yazılır
 
@@ -898,3 +897,25 @@ Araç düzeltildi: yazma-değerli dosyalar ölçü dışı, ve bu **rapora yazı
 sessizce dışlanan şey, ölçülmediği fark edilmeyen şeydir.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Tazelik doğruluk değildir
+
+`acilis.md` her oturuma otomatik yükleniyor. 2026-09-09'da elle ölçüldü: içindeki
+**dört sayının dördü de yanlıştı** — pano 3/93 (gerçek 6/153), 571 test (706),
+25 rota (41). Dosya o gün commit'lenmişti, yani **taze** görünüyordu.
+
+Kontrol 16 sessizdi ve haklıydı: o, `acilis`'in `durum.md`'nin kaç **commit**
+gerisinde kaldığını ölçer. Bir dosyaya dokunmak içindeki sayıyı düzeltmez.
+
+**Ders:** bir özet dosyası için ölçülecek şey yaşı değil, **iddiasının kaynağıyla
+uyumudur.** Kontrol 22 bunu ölçüyor: pano sayımları panonun kendi sayımıyla,
+birim iddiaları (test, rota) kaynak dosyanın güncel bölgesindeki beyanla
+karşılaştırılıyor.
+
+⚠️ Kontrol 22'nin kendisi **iki kez yanlış yazıldı ve ikisini de kör test
+yakaladı**: ilk sürüm "sayı kaynakta bir yerde geçiyor mu" diye baktı — geçmişte
+kalmış bir satır yüzünden yanlış sayıyı akladı. İkinci sürüm doğru sayıya kırmızı
+yandı. **Yanlış alarm veren denetim, susan denetimden hızlı ölür**; birkaç kez
+bağırdıktan sonra kimse bakmaz → [[genel-notlar]]
+
+İlgili: [[genel-esszamanli-oturumlar]]
