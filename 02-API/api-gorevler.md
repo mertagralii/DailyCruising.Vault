@@ -160,6 +160,36 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟢 Tamamlandı
 
+- [x] **A-153** Arama servisi bugünü saat kaynağından okuyor · bitti: 2026-09-09
+
+      Vault oturumunun **kontrol 24**'ü (yazılı desen kodda çiğnenmiş mi)
+      13 `DateTime` kullanımı listeledi ve gözden geçirmemi istedi.
+
+      ⚠️ **Aradığı kusur çıkmadı, başka bir kusur çıktı.** Kontrolün
+      hedefi `Kind` belirsizliğinin çalışma anında fırlaması; 13'ünü de
+      inceledim ve hiçbiri veritabanına çıplak `DateTime` göndermiyor —
+      ya `Kind.Utc` verilmiş ya da `DateTimeOffset`'e sarılmış ya da
+      yalnız yerel değişken.
+
+      Ama tarama sırasında **başka bir yazılı kuralın** ihlali görüldü:
+      `SystemDateTimeProvider`'ın kendi belgesi *"uygulama katmanı
+      doğrudan `DateTimeOffset.UtcNow` çağırmaz"* diyor ve
+      `SearchService` çağırıyordu — **51 sınıfın enjekte ettiği yerde
+      tek ihlal**.
+
+      ⚠️ **Bedeli davranış değil ölçülebilirlikti.** Mevcut test 2020'yi
+      reddediyordu; o test 2040'ta da geçer ve sınırın nerede olduğunu
+      hiç ölçmez. Ölçülmeyen soru: *bugünün turu aranabiliyor mu?*
+      Saat enjekte edilince sınır oynatılabilir oldu ve test yazılabildi.
+
+      Kanıt: `dotnet test` **730/730**, commit `ba6306b`. Mutasyon:
+      `<` → `<=` (bugünü de reddet) → `Todays_date_is_not_treated_as_past`
+      kırmızı. Eski test bu mutasyonda **yeşil kalıyordu**.
+
+      ⚠️ Ders: bir tarama aradığını bulamayınca "temiz" denip kapatılmaz.
+      Kontrol 24 hedefini ıskaladı ama **yanından geçtiği** kusuru
+      gösterdi — listeyi okumak, listenin ölçütüne güvenmekten değerli.
+
 - [x] **A-152** Personel listesi role göre süzülüyor · bitti: 2026-09-09
 
       Mert: *"bu rolün ne olduğunu, neleri yapabildiğini ve bu role sahip

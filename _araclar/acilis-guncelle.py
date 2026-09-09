@@ -24,7 +24,8 @@ Cikaramadigi degeri **yazmaz**: OLCULEMEDI der ve metne dokunmaz. Uydurma sayi,
 bayat sayidan kotudur — bayat olan en azindan bir zaman dogruydu.
 
 Kullanim: python3 _araclar/acilis-guncelle.py [--kuru]
-  --kuru : dosyaya yazmaz, ne degisecegini basar
+  --kuru : dosyaya yazmaz, ne degisecegini basar.
+           Cikis kodu 0 = acilis guncel, 1 = uretilen deger metinden farkli.
 """
 import json
 import re
@@ -156,8 +157,11 @@ def main():
     for d in degisenler:
         print("  " + d)
     if KURU:
+        # Cikis kodu ANLAMLI: 1 = "uretilen deger metinden farkli".
+        # dogrula.py kontrol 22 bunu kullaniyor — boylece uretilen ama hicbir
+        # kaynak dosyada gecmeyen sayilar (not, kontrol) da denetlenebiliyor.
         print("(--kuru: dosya yazilmadi)")
-        return 0
+        return 1
 
     # Icerik degisti: beyan da degismeli, yoksa kontrol 19 hakli olarak bagirir.
     yeni = re.sub(r"^guncelleme: .*$", f"guncelleme: {date.today().isoformat()}",

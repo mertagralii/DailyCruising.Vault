@@ -250,6 +250,18 @@ def m_desen_ihlali(k):
                    encoding="utf-8")
 
 
+def m_acilis_uretilmemis(k):
+    # acilis'teki URETILEN bir sayiyi elle degistir. Kaynagi dosya olmayan
+    # sayilar (not, kontrol) metin karsilastirmasiyla dogrulanamaz; tek yol
+    # ureticiyi kosup "farkli deger hesapliyor mu" diye sormaktir.
+    metin = oku(k, D_ACILIS)
+    m = re.search(r"(\d+)\s*not\b", metin)
+    if m:
+        yaz(k, D_ACILIS, metin.replace(m.group(0), f"{int(m.group(1)) + 43} not", 1))
+    else:
+        yaz(k, D_ACILIS, metin + "\n\n424242 not\n")
+
+
 def m_durum_bayat(k):
     r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
@@ -361,6 +373,7 @@ SENARYOLAR = [
     (22, "acilis birim sayisi kaynaktan kopuk", "acilis sayisi",      m_acilis_birim_sayisi),
     (23, "alan durumu kod commitlerinin gerisinde", "durum geride",  m_alan_durumu_geride),
     (24, "kodda yazili desen cignenmis",         "desen ihlali",    m_desen_ihlali),
+    (22, "acilis sayisi elle yazilmis",         "acilis uretilmemis", m_acilis_uretilmemis),
 ]
 
 

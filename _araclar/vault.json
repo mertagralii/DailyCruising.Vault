@@ -182,7 +182,9 @@
       "Her kural, *-desenler.md'de yazili bir kurala karsilik gelmek ZORUNDA —",
       "'kaynak' alani onu gosterir. Uydurulmus kural buraya girmez.",
       "tavan = bugunku borc. Artarsa kirmizi (cirnik/ratchet); azalirsa betik",
-      "tavani indirmeni soyler. Sifirlanamayan borcu sifir gostermek yalan olur."
+      "tavani indirmeni soyler. Sifirlanamayan borcu sifir gostermek yalan olur.",
+      "Yorum satirlari sayilmaz: bir ihlali duzeltip yerine 'bunu yapma' diye",
+      "gerekce yazan kisi, cirnikta geri gitmis gorunmemeli (2026-09-09 olcumu)."
     ],
     "kurallar": [
       {
@@ -195,7 +197,7 @@
           "Migrations"
         ],
         "ara": "\\bDateTime(?!Offset|Provider)\\b",
-        "tavan": 13,
+        "tavan": 12,
         "kaynak": "api-desenler: 'Tarih daima DateTimeOffset' — Npgsql DateTime'in Kind'ini UTC ister, belirsiz Kind CALISMA ANINDA firlar"
       },
       {
@@ -210,7 +212,7 @@
           "global-error"
         ],
         "ara": "#[0-9a-fA-F]{6}\\b",
-        "tavan": 91,
+        "tavan": 87,
         "kaynak": "web-desenler: 'Bilesende sabit renk kodu yazilmaz' — istisnasi src/emails/*.html (e-posta istemcileri) ve global-error (kok duzeni degistirir, Tailwind yok)"
       },
       {
@@ -221,7 +223,7 @@
         ],
         "yol_disi": [],
         "ara": "dangerouslySetInnerHTML",
-        "tavan": 5,
+        "tavan": 1,
         "kaynak": "CLAUDE.md kapi listesi — her kullanim gerekcesiyle birlikte yazilmali"
       }
     ]

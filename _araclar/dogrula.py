@@ -845,9 +845,11 @@ if _A22 and _acilis_yol.exists():
         for _m in re.finditer(_b["desen"], _a_metin):
             _bakilan22 += 1
             if not _gecerli:
+                # Kaynagi dosya degil HESAP olan birimler (not sayisi, kontrol
+                # sayisi). Bunlari asagidaki uretici kosumu dogruluyor.
                 olcumler.append(
-                    f"kontrol 22 · '{_m.group(0).strip()}': kaynakta bu birimden "
-                    f"hic beyan yok — OLCULEMEDI")
+                    f"kontrol 22 · '{_m.group(0).strip()}': kaynagi hesap — "
+                    f"uretici kosumuyla dogrulaniyor")
             elif _m.group(1) not in _gecerli:
                 sorunlar.append(
                     f"[acilis sayisi] {_rel_a}: '{_m.group(0).strip()}' kaynagin "
@@ -856,6 +858,33 @@ if _A22 and _acilis_yol.exists():
                     f"dosyadan kopmus")
     olcumler.append(
         f"kontrol 22 · {_rel_a}: {_bakilan22} sayi iddiasi kaynagiyla karsilastirildi")
+
+    # Uretici dogrulamasi: acilis'teki sayilar URETILEN degerle ayni mi.
+    # Metin karsilastirmasinin ulasamadigi iki sayi var — not ve kontrol
+    # sayisi, cunku kaynaklari bir dosya degil hesabin kendisi. Onlari
+    # dogrulamanin tek yolu ayni hesabi tekrar yapmak: uretici --kuru
+    # kosulur, "degisiklik istiyorum" derse acilis ya elle duzenlenmis ya
+    # betik calistirilmamistir. Ikisi de hata.
+    _uretici = VAULT / "_araclar" / "acilis-guncelle.py"
+    if _uretici.exists():
+        try:
+            _u = subprocess.run([sys.executable, str(_uretici), "--kuru"],
+                                capture_output=True, text=True, timeout=60)
+        except Exception as _e:
+            olcumler.append(f"kontrol 22 · uretici kosulamadi ({_e}) — OLCULEMEDI")
+        else:
+            if _u.returncode == 1:
+                _istek = [x.strip() for x in _u.stdout.split("\n")
+                          if x.startswith("  ")]
+                sorunlar.append(
+                    f"[acilis uretilmemis] {_rel_a}: uretici farkli deger "
+                    f"hesapliyor ({'; '.join(_istek) or 'ayrinti yok'}). "
+                    f"`python3 _araclar/acilis-guncelle.py` calistirilmali — "
+                    f"elle yazilan sayi bir sonraki degisiklikte bayatlar")
+            elif _u.returncode != 0:
+                olcumler.append(
+                    f"kontrol 22 · uretici hata verdi (kod {_u.returncode}) "
+                    f"— OLCULEMEDI")
 elif not _A22:
     olcumler.append("kontrol 22 · vault.json'da acilis_sayilari yok — OLCULEMEDI")
 
@@ -974,6 +1003,14 @@ for _k in _D24:
         except Exception:
             continue
         for _no24, _satir24 in enumerate(_icerik24.split("\n"), 1):
+            # Yorum satiri ihlal DEGILDIR. 2026-09-09'da backend olctu:
+            # 13 sayilan `DateTime`in biri, "burada DateTime.UtcNow cagirma"
+            # diye YAZILMIS UYARIYDI. Yani bir ihlali duzeltip yerine
+            # gerekcesini yazan kisi cirnikta hic ilerlememis gorunuyordu —
+            # tam da tesvik edilmek istenen davranis cezalandiriliyordu.
+            _sade24 = _satir24.lstrip()
+            if _sade24.startswith(("//", "/*", "*", "#", "<!--")):
+                continue
             if _desen24.search(_satir24):
                 _sayi24 += 1
                 if _ornek24 is None:

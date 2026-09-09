@@ -278,4 +278,42 @@ Türkçe olması, ham değeri **daha** göze batmaz hâle getiriyor: okuyan
   kapalı küme değil, kod boyunca dağılmış düz dizeler. Ön yüzde sözlük
   tutmak `satisfies` ile korunamaz → [[web-enum-uretilemez]]
 
+## Uç enum'una denk gelen sözlük `satisfies` ile yazılır
+
+**Kural, ölçülebilir hâliyle:** anahtarları `openapi.json`'daki bir enum'un
+**tam kümesine** eşit olan çeviri sözlüğü `satisfies Record<Enum, string>`
+ile yazılır. Anahtarları serbest dize olanlar (kategori, hata kodu, kayıt
+türü) **kapsam dışı** — onlarda korunacak bir küme yok.
+
+```ts
+export const TEKNE_DURUMU = {
+  Draft: "Taslak", Published: "Yayında", Inactive: "Pasif",
+} satisfies Record<BoatStatus, string> as Sozluk;
+```
+
+`satisfies` eksik **ve** uydurma anahtarı derleme hatası yapıyor; `as Sozluk`
+çağıranı gevşek bırakıyor, yani `?? ham` çalışma zamanı koruması duruyor.
+
+⚠️ **Kural neden bu kadar dar:** `Record<string, string>` 51 yerde geçiyor ve
+çoğu serbest dize eşlemesi. Hepsini kapsayan bir kural %100 ihlal edilirdi ve
+ölçülemezdi. Ölçüt **enum'a tam eşleşme**; o zaman ihlal sayısı bugün
+**sıfır** ve artışı görünür.
+
+### Ölçüm bu kuralı yazarken üç ihlal buldu (2026-09-09)
+
+Kural yazılırken 22 sözlük enum'larla karşılaştırıldı; üçü tam eşleşti ve
+`satisfies` taşımıyordu:
+
+| Sözlük | Enum | Ne çıktı |
+|---|---|---|
+| `partner-profile.tsx: DURUM` | `PartnerStatus` | `ISLETME_DURUMU`'nun **birebir kopyası** |
+| `document-list.tsx: BELGE_DURUMU` | `BoatDocumentStatus` | `panel.ts`'teki sözlüğün **ikinci kopyası** |
+| `messaging/types.ts: KONUSMA_KAPANMA` | `ConversationCloseReason` | korumasız |
+
+⚠️ **Üçünden ikisi kopyaydı** — aynı gün `TEKNE_DURUMU` (üç kopya, biri
+ayrışmış) ve `TALEP_DURUMU` (iki kopya) düzeltilmişti. Yani `satisfies`
+kuralı yalnız eksik anahtarı değil, **kopyayı da** açığa çıkarıyor: kopya
+yazan kişi `satisfies` yazmıyor, çünkü tipi import etmek zorunda kalsa
+zaten mevcut sözlüğü görürdü.
+
 İlgili: [[web-notlar]] · [[web-mimari]] · [[web-kararlar]] · [[web-gorevler]] · [[web-araclar]]
