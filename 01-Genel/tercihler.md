@@ -1,7 +1,7 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -49,6 +49,26 @@ değil, bir maliyettir.
 - Kod repolarına AI araç dosyası (`CLAUDE.md`, `AGENTS.md`) **eklenmez**.
 - Yazar daima `Mert Ağralı <mmertagrali@gmail.com>`.
 - Commit ve push **yalnızca Mert isteyince**.
+
+### Mesaj ne anlatır — 2026-09-09 talimatı
+
+**Konu koddur, konuşma değil.** Mesaj *"ne yapıldı"* sorusunu cevaplar: hangi
+sorun çözüldü, ne geliştirildi, ne değişti. Teknik ve dolaysız.
+
+**Yazılmaz:**
+- *"Mert'in kararı: …"*, *"Mert şunu söyledi"*, *"konuştuk ve şöyle yaptık"* —
+  kararın sahibi commit mesajının konusu değildir
+- Sayfalarca gerekçe, alternatif tartışması, tasarım muhakemesi. Bunların yeri
+  `*-kararlar.md`; commit mesajı onların özeti değil, **işin tarifi**
+- Anlatı üslubu: *"bu yüzden"*, *"öyle olunca"*, *"aslında"* zincirleri
+
+**Yazılır:** başlık İngilizce ve imperative (`add`, `fix`, `refactor`); gövdede
+**kısa** bir *neden* — bir iki cümle, teknik sebep. Uzun gerekçe vault'a gider.
+
+⚠️ Bunun sebebi kısalık değil **yer**: git geçmişi kodun geçmişidir, kararın
+değil. Kararın gerekçesi `*-kararlar.md`'de aranır; commit mesajında aranmaz ve
+oraya yazılırsa iki kopya doğar — biri bayatladığında hangisinin doğru olduğu
+bilinmez.
 
 ⚠️ Bu kural bir kez delindi: 2026-09-05'te oturum ayarı trailer'ı zorunlu kıldı
 ve commit öyle gitti. Mert fark ettirmeden düzeltilmedi — söylendi, `--amend`
