@@ -873,6 +873,12 @@ elif not _A22:
 #
 # Olcut mtime degil `guncelleme`: dosyaya dokunmak onu guncel yapmaz, beyan
 # edilen tarih ile kodun gercegi karsilastirilir (kontrol 15 ile ayni ilke).
+#
+# ⚠️ SINIRI: bu kontrol TARIHE bakar, ICERIGE degil. Yesil olmasi dosyanin
+# guncel oldugunu degil, TARIHININ guncel oldugunu soyler. 2026-09-09'da
+# web-durum'un frontmatter'i bugunu, icerigi dunu anlatiyordu ve kontrol
+# sustu. Sinir yazili olmazsa kontrol oldugundan guclu sanilir — bu vault'ta
+# en pahali hata sinifi budur (kontrol 15 dokuz gun kor kalmisti).
 for _alan, _v in AYAR["alanlar"].items():
     if not _v.get("kod_repo"):
         continue
