@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -18,10 +18,10 @@ Bu vault, ECC `living-docs-governance` skill'inin dört rolüne göre düzenlenm
 |---|---|---|
 | Constitution | Uyulması zorunlu kurallar | [[CLAUDE]], [[calisma-duzeni]] |
 | Map | Ne var, nerede | bu dosya, [[proje]], [[api-mimari|API mimari]], [[web-mimari|Web mimari]] |
-| Status | Şu anki durum, blocker, açık uç | [[durum]] (genel) · [[api-durum]] · [[web-durum]] |
+| Status | Şu anki durum, blocker, açık uç | [[durum]] (genel) · [[api-durum]] · [[web-durum]] · [[mobil-durum]] |
 | Gate | Yayın günü sağlanması gereken koşullar | [[yayin-oncesi]] |
 | History | Kalıcı kararlar ve gerekçeleri | [[genel-kararlar]] (genel / API / Web) |
-| Notlar | Claude'un serbest gözlemleri | [[genel-notlar]] · [[api-notlar]] · [[web-notlar]] |
+| Notlar | Claude'un serbest gözlemleri | [[genel-notlar]] · [[api-notlar]] · [[web-notlar]] · [[mobil-notlar]] |
 
 ## Şunu yapacaksan buraya bak
 
@@ -29,6 +29,7 @@ Bu vault, ECC `living-docs-governance` skill'inin dört rolüne göre düzenlenm
 |---|---|---|
 | API'de kod değiştir | `02-API/api-kararlar.md` → `02-API/api-mimari.md` | `dotnet build` |
 | Web'de kod değiştir | `03-Web/web-kararlar.md` → `03-Web/web-mimari.md` | `npm run build` |
+| Mobilde kod değiştir | `05-Mobil/mobil-kararlar.md` → `05-Mobil/mobil-mimari.md` | `npx tsc --noEmit` — **görünüm kanıtı değil** |
 | Domain / iş kuralı konuş | `01-Genel/proje.md` → `01-Genel/durum.md` | — (henüz kod yok) |
 | Bir tuzağa/tekrar eden soruna takıldım | ilgili `*-notlar.md` hub'ı | notu oku, yoksa yaz |
 | "Neden böyle yapmıştık" | ilgili `*-kararlar.md` | — gerekçe **yalnızca** burada, git log'da yok |
@@ -70,6 +71,17 @@ Bu vault, ECC `living-docs-governance` skill'inin dört rolüne göre düzenlenm
 - [[web-araclar]] — Web tarafında hangi araç ne zaman
 - [[web-durum]] — Web'in güncel durumu — **frontend oturumu yazar**
 - [[web-notlar]] — Claude'un Web gözlemleri (hub) → `03-Web/notlar/`
+
+**05-Mobil** (`DailyCruising.Mobil/` → `mertagralii/DailyCruising.Mobil`, private) — henüz uygulama kodu yok
+- [[mobil-mimari]] — Expo 57 / RN 0.86 iskeleti, ne var ne yok
+- [[mobil-kararlar]] — alanın neden açıldığı, klasör numarası, yığın
+- [[mobil-desenler]] — büyük ölçüde **devralınmış** kurallar; mobilde ölçülmedi
+- [[mobil-gorevler]] — Mobil görev panosu (`M-`)
+- [[mobil-araclar]] — mobilde hangi araç ne zaman; web'in ölçüm araçları burada çalışmaz
+- [[mobil-durum]] — Mobil'in güncel durumu — **mobil oturumu yazar**
+- [[mobil-notlar]] — Claude'un mobil gözlemleri (hub) → `05-Mobil/notlar/`
+
+⚠️ Numara boşluğu bilinçli: `04` arşive ait, yeniden adlandırılmadı → [[mobil-kararlar]]
 
 **04-Oturumlar** — günlük çalışma notları, compact öncesi anlık görüntüler
 **Arşivdir, otorite değildir.** "Nerede kaldık" cevabı yalnızca [[durum]] içindedir.

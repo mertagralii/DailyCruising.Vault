@@ -1,7 +1,7 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -20,6 +20,7 @@ Kökte repo **yok**. Her komut ilgili alt klasörde:
 ```bash
 cd DailyCruising.Back-End  && git ...   # → DailyCruising.API
 cd DailyCruising.Front-End && git ...   # → DailyCruising.Web
+cd DailyCruising.Mobil     && git ...   # → DailyCruising.Mobil
 ```
 
 - Varsayılan dal: `main`
@@ -37,6 +38,7 @@ Dil kuralı [[tercihler]] içinde — projeden bağımsızdır.
 | API | `dotnet build` | 0 uyarı, 0 hata |
 | API | `curl localhost:5163/api/health` | `{"status":"healthy"}` |
 | Web | `npm run build` | başarılı |
+| Mobil | `npx tsc --noEmit` · `npx expo-doctor` | 0 hata · **görünüm kanıtı değildir** → [[mobil-desenler]] |
 
 | API | `dotnet test` | 609 test yeşil (2026-09-05 backend ölçümü) |
 
@@ -104,6 +106,7 @@ zorunlu değil, istenildiği kadar dosya açılabilir.
 | Genel | `01-Genel/notlar/` | `genel-` | [[genel-notlar]] |
 | API | `02-API/notlar/` | `api-` | [[api-notlar]] |
 | Web | `03-Web/notlar/` | `web-` | [[web-notlar]] |
+| Mobil | `05-Mobil/notlar/` | `mobil-` | [[mobil-notlar]] |
 
 **Zorunlu üç kural** (üçü de `dogrula.py` tarafından denetlenir):
 1. Dosya adı alan önekiyle başlar — vault genelinde benzersizliği bu sağlar

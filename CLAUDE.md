@@ -1,7 +1,7 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -16,6 +16,7 @@ Kanonik dosya `DailyCruising.Vault/CLAUDE.md`; kökteki `CLAUDE.md` buna symlink
 |---|---|---|
 | `DailyCruising.Back-End/` | `mertagralii/DailyCruising.API` (private) | .NET 10 Web API |
 | `DailyCruising.Front-End/` | `mertagralii/DailyCruising.Web` (private) | Next.js 16 |
+| `DailyCruising.Mobil/` | `mertagralii/DailyCruising.Mobil` (private) | Expo 57 + React Native 0.86 |
 | `DailyCruising.Vault/` | repo değil, yerel | Bu notlar |
 
 Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çalıştır.
@@ -168,6 +169,7 @@ olmadığı için geri alınamaz. Bu yüzden yazma hakkı bölünmüştür. Öl�
 |---|---|
 | Backend kodu | `02-API/*` (durum → `api-durum.md`) |
 | Frontend kodu | `03-Web/*` (durum → `web-durum.md`) |
+| Mobil kodu | `05-Mobil/*` (durum → `mobil-durum.md`) |
 | Vault / genel | `00-Index.md` · `04-Oturumlar/` · `01-Genel/durum.md` |
 
 **Vault artık bir git reposudur** (`mertagralii/DailyCruising.Vault`, private).
@@ -198,6 +200,7 @@ Serbest biçim — şablon zorunluluğu yok, istediğim kadar dosya açabilirim.
 | Genel | `01-Genel/notlar/` | `genel-` | `genel-notlar.md` |
 | API | `02-API/notlar/` | `api-` | `api-notlar.md` |
 | Web | `03-Web/notlar/` | `web-` | `web-notlar.md` |
+| Mobil | `05-Mobil/notlar/` | `mobil-` | `mobil-notlar.md` |
 
 **İki bağlantı zorunlu:** (1) not kendi hub'ından linklenmeli, (2) not en az bir
 başka nota link vermeli. `_araclar/dogrula.py` ikisini de denetler — bağlanmamış
@@ -214,5 +217,8 @@ geçmişindeki bilgiler, tek oturumluk geçici detay. Bunlar kod değişince yal
 - "Generated with Claude Code" / "Created by Anthropic" benzeri ibare **ekleme**
 - Repolara AI araç dosyası (`CLAUDE.md`, `AGENTS.md`) **ekleme**
 - Yazar daima `Mert Ağralı <mmertagrali@gmail.com>`
+- Mesaj **ne yapıldığını** anlatır: hangi sorun çözüldü, ne geliştirildi. *"Mert
+  şunu dedi"* ve sayfalarca gerekçe **yazılmaz** — gerekçenin yeri
+  `*-kararlar.md` → [[tercihler]]
 
 İlgili: [[00-Index]] · [[calisma-duzeni]] · [[durum]]

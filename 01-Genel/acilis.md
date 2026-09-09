@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -20,6 +20,7 @@ Platform tekne sahibi değil, aracı: listeler, tahsilatı yapar, komisyon alır
 |---|---|---|
 | `DailyCruising.Back-End/` | .NET 10 Web API, Clean Architecture | `mertagralii/DailyCruising.API` |
 | `DailyCruising.Front-End/` | Next.js 16 + Tailwind v4 | `mertagralii/DailyCruising.Web` |
+| `DailyCruising.Mobil/` | Expo 57 + React Native 0.86 | `mertagralii/DailyCruising.Mobil` |
 | `DailyCruising.Vault/` | bu notlar | repo değil |
 | `r-ht-m-temeller-sayfas/` | tasarım kaynağı | repo değil |
 
@@ -32,16 +33,18 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 - **Web:** 25 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
   Pano **4 yapılacak / 64 tamamlandı** — kalan beşi de **Mert'in kararında**
-- **Genel:** 84 not · `dogrula.py` 21 kontrol, 21/21 bozulup kırmızıya döndürüldü ·
+- **Mobil:** iskelet + private repo var, **ekran yok** · kapsam (`M-02`) **API ve
+  web bitene kadar ertelendi** — o zamana kadar mobil kod yazılmaz
+- **Genel:** 97 not · `dogrula.py` 21 kontrol, 21/21 bozulup kırmızıya döndürüldü ·
   makine `_araclar/vault.json` ile taşınabilir
 
 Aktif engel tek (-> [[durum]]): **KVKK yolcu listesi dayanağı** — Mert'te.
 
-**2026-09-05 — Mert'in önceliği: kendi makinesinde uçtan uca test.** Yayın
-adımları bilinçli ertelendi. 29 sorunun tamamı 4 Eylül'de cevaplandı.
+**Mert'in önceliği: kendi makinesinde uçtan uca test** (5 Eylül); yayın adımları
+bilinçli ertelendi.
 
 ⚠️ **"Karar bekliyor" ile "hesap bekliyor" ayrı şeydir.** Mert'te kalanların
-hiçbiri artık karar değil: Postmark/Netgsm hesapları · Paratika (`A-41`,
+hepsi hesap (mobil kapsamı ertelendi): Postmark/Netgsm · Paratika (`A-41`,
 İyzico'dan geçildi) · S3 kovası (`S-24`) · `W-40` aydınlatma metni ·
 `G-13` mali müşavir. Bunlar bugün kimseyi durdurmuyor, **yayın günü durduracak**.
 
@@ -53,8 +56,7 @@ yoksa **sayfa o uca göre yapılır** · tasarım bir temeldir, **kısıt değil
 çelişkide backend gerçeği kazanır. Sapma yasağı *var olan* ekranın görünümü
 içindir, *olmayan* ekranı engellemez.
 
-Mert'te bekleyenler: `A-41` (alt üye iş yeri — para bugün işletmeye gitmiyor) ·
-`S-18` (kupon kırpma çelişkisi) · `S-12` (iade oranı, iptal e-postasını kilitliyor) ·
+Mert'te bekleyenler: `S-18` (kupon kırpma çelişkisi) · `S-12` (iade oranı, iptal e-postasını kilitliyor) ·
 testlerdeki iki ad değişikliği
 
 ## Okuma tetikleyicileri — koşulsuz
@@ -107,7 +109,8 @@ Bir not koda aykırı çıkarsa: kodu doğru kabul et, notun frontmatter'ında
 ## Birden fazla oturum açıksa
 
 Yazma hakkı bölünmüştür (ölçüt cwd değil, **üzerinde çalışılan alan**):
-backend → `02-API/*` · frontend → `03-Web/*` · vault/genel → `01-Genel/*`.
+backend → `02-API/*` · frontend → `03-Web/*` · mobil → `05-Mobil/*` ·
+vault/genel → `01-Genel/*`.
 `durum.md`'ye yalnız vault oturumu yazar. Başka oturum açıkken git durumu ve
 "şu an ne yapılıyor" bilgisi vault'a yazılmaz, önce `SendMessage` ile sorulur.
 

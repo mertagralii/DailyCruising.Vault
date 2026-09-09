@@ -13,7 +13,9 @@
     "02-API":   { "onek": "api",  "kod_repo": "DailyCruising.Back-End",
                   "kaynak": "src", "uzantilar": [".cs", ".csproj", ".slnx"] },
     "03-Web":   { "onek": "web",  "kod_repo": "DailyCruising.Front-End",
-                  "kaynak": "src", "uzantilar": [".ts", ".tsx", ".js", ".jsx", ".css"] }
+                  "kaynak": "src", "uzantilar": [".ts", ".tsx", ".js", ".jsx", ".css"] },
+    "05-Mobil": { "onek": "mobil", "kod_repo": "DailyCruising.Mobil",
+                  "kaynak": ".", "uzantilar": [".ts", ".tsx", ".js", ".jsx"] }
   },
   "bolmeler": ["desenler", "gorevler", "araclar"],
   "notlar_klasoru": "notlar",

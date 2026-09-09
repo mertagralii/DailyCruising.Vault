@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -24,6 +24,7 @@ frontend işi yapan oturumun `pwd`'si vault çıktı, yani klasör güvenilir bi
 |---|---|---|
 | Backend kodu | `02-API/*` | [[api-durum]] |
 | Frontend kodu | `03-Web/*` | [[web-durum]] |
+| Mobil kodu | `05-Mobil/*` | [[mobil-durum]] |
 | Vault / genel | `00-Index.md` · `04-Oturumlar/` · **bu dosya** | — |
 
 **Alan oturumları bu dosyaya yazmaz.** Kendi `*-durum.md` dosyasına yazar; genel
@@ -39,6 +40,32 @@ açıkken **git durumu, dosya sayısı ve "şu an ne yapılıyor" bilgisi vault'
 yazılmaz** — yazılacaksa önce o oturuma sorulur → [[genel-esszamanli-oturumlar]]
 
 ## ➡️ Şu an nerede duruyoruz
+
+**2026-09-08: dördüncü alan açıldı — `05-Mobil`.** Mert `DailyCruising.Mobil/`
+klasörünü kurdu (Expo 57 · React Native 0.86 · TS 6). Vault'ta alanı, altı bölmesi ve `M-` panosu açıldı; makine
+`_araclar/vault.json` üzerinden dört alanı birden denetliyor → [[mobil-durum]]
+
+Mobil tarafta **uygulama kodu yok**, bu yüzden iki şey Mert'e bağlı ve ikisi de
+cevaplanmadan yazılacak kod atılacak koddur: kapsam (`M-02`) ve Expo yönetilen
+akışta kalınıp kalınmayacağı → [[mobil-kararlar]]
+
+**2026-09-09 — mobil beklemeye alındı, kararı Mert verdi.** *"Mobil neyi
+taşıyacak"* sorusu (`M-02`) **API ve web bitene kadar ertelendi**; tetikleyicisi
+tarih değil olay: iki panoda da Mert'e bağlı olmayan iş kalmaması. Bu süre
+boyunca mobil tarafta kod yazılmaz → [[mobil-kararlar]] · [[mobil-durum]]
+
+Expo'nun resmî Claude eklentisi (`expo@claude-plugins-official`, 24 skill)
+kuruldu ve **yalnız bu projenin ayarında** etkin; küresel ayar kirletilmedi.
+
+**2026-09-09:** `mertagralii/DailyCruising.Mobil` private reposu açıldı, iskelet
+push'landı, `M-01` kapandı. Expo şablonunun `AGENTS.md` · `CLAUDE.md` ·
+`.claude/settings.json` dosyaları repodan düşürüldü ve yok sayıldı — **bağlam
+vault'ta yaşar, kod reposunda değil**; API ve Web'de de kural aynı.
+
+⚠️ **Yeni alanın bilinen boşluğu:** web'in en çok iş gören kapısı tarayıcı
+ölçümüydü; mobilde karşılığı **yok**. `npx tsc --noEmit` temiz çıkması ekranın
+doğru göründüğünü göstermez → [[mobil-desenler]] · `M-03`
+
 
 **2026-08-28: aktif blocker sayısı 1'e indi — kalan tek engel Mert'te.**
 
