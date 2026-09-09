@@ -987,6 +987,49 @@ for _k in _D24:
         olcumler.append(
             f"kontrol 24 · {_k['ad']}: kod koku yok ({_kok}) — OLCULEMEDI")
         continue
+    # Betik tipi kural: olcum mantigi alanin kendi reposunda yasar, cirnigi
+    # denetim uygular. Regex'e sigmayan olcutler icin (ornegin bir sozlugun
+    # anahtar kumesinin enum kumesine esit olup olmadigi). Sozlesme tek satir:
+    # betigin son satiri `IHLAL=<sayi>`.
+    if _k.get("betik"):
+        _byol = VAULT.parent / _repo / _k["betik"]
+        if not _byol.exists():
+            olcumler.append(
+                f"kontrol 24 · {_k['ad']}: betik yok ({_byol}) — OLCULEMEDI")
+            continue
+        try:
+            _b24 = subprocess.run([sys.executable, str(_byol)], cwd=str(VAULT.parent),
+                                  capture_output=True, text=True, timeout=120)
+        except Exception as _e24:
+            olcumler.append(f"kontrol 24 · {_k['ad']}: betik kosulamadi ({_e24}) — OLCULEMEDI")
+            continue
+        _m24 = re.search(r"IHLAL=(\d+)\s*$", _b24.stdout.strip())
+        if not _m24:
+            olcumler.append(
+                f"kontrol 24 · {_k['ad']}: betik IHLAL=<sayi> basmadi "
+                f"(cikis {_b24.returncode}) — OLCULEMEDI")
+            continue
+        # Betigin kendi bildirdigi atlama/olcememe satirlari GORUNUR kalmali:
+        # web oturumu uyardi — openapi.json yoksa betik IHLAL=0 basip cikiyor,
+        # yani kural sessizce kapaniyor. Sessiz kapanan kural, olmayan kuraldir.
+        for _satir_b in _b24.stdout.split("\n"):
+            if re.search(r"atlan|olculem|ölçülem|bulunamad", _satir_b, re.I):
+                olcumler.append(f"kontrol 24 · {_k['ad']}: betik diyor ki: {_satir_b.strip()}")
+        _sayi24, _ornek24, _tavan24 = int(_m24.group(1)), "betik ciktisi", _k.get("tavan", 0)
+        if _sayi24 > _tavan24:
+            sorunlar.append(
+                f"[desen ihlali] {_k['alan']} · {_k['ad']}: {_sayi24} yer, tavan "
+                f"{_tavan24} ({_k['betik']} ciktisi). Yazili kural: {_k['kaynak']}")
+        elif _sayi24 < _tavan24:
+            olcumler.append(
+                f"kontrol 24 · {_k['ad']}: {_sayi24} yer (tavan {_tavan24}) — "
+                f"BORC AZALDI, vault.json'da tavani {_sayi24} yap")
+        else:
+            olcumler.append(
+                f"kontrol 24 · {_k['ad']}: {_sayi24} yer, tavanda ({_k['betik']}) "
+                f"— buyumesi kirmizi yanar")
+        continue
+
     _desen24 = re.compile(_k["ara"])
     _uz = set(_k.get("uzantilar", []))
     _sayi24, _ornek24 = 0, None

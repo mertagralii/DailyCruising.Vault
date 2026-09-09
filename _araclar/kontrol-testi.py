@@ -262,6 +262,19 @@ def m_acilis_uretilmemis(k):
         yaz(k, D_ACILIS, metin + "\n\n424242 not\n")
 
 
+def m_betik_kurali(k):
+    # Betik tipi kuralin cirnigini bir kertik indir. Regex tipiyle ayni olcut
+    # ama AYRI kod yolu: betigi kosup IHLAL=<sayi> okuyan dal.
+    yol = k / "_araclar" / "vault.json"
+    ayar = json.loads(yol.read_text(encoding="utf-8"))
+    for kural in (ayar.get("desen_ihlalleri") or {}).get("kurallar", []):
+        if kural.get("betik"):
+            kural["tavan"] = -1
+            yol.write_text(json.dumps(ayar, ensure_ascii=False, indent=2) + "\n",
+                           encoding="utf-8")
+            return
+
+
 def m_durum_bayat(k):
     r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
@@ -374,6 +387,7 @@ SENARYOLAR = [
     (23, "alan durumu kod commitlerinin gerisinde", "durum geride",  m_alan_durumu_geride),
     (24, "kodda yazili desen cignenmis",         "desen ihlali",    m_desen_ihlali),
     (22, "acilis sayisi elle yazilmis",         "acilis uretilmemis", m_acilis_uretilmemis),
+    (24, "betik tipi kuralin cirnigi indi",    "desen ihlali",    m_betik_kurali),
 ]
 
 

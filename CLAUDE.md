@@ -41,6 +41,7 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | **Yapıya dokunacağım** — yeni proje, katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — "ne var" sorusunun tek cevabı |
 | **Bir hata mesajı aldım** | Mesajın metnini `<alan>/notlar/` içinde **ara** — hatırlamaya güvenme. Notlar hata metnini birebir taşır, tetikleyici budur |
 | Domain / iş kuralı konuşulacak | `01-Genel/domain-gereksinimler.md` + `01-Genel/durum.md` |
+| **Ölçütü regex'e sığmayan bir desen denetlenecek** | Ölçüm betiğini **kod reposuna** yaz (`<repo>/araclar/`), son satırı `IHLAL=<sayı>` bassın; `vault.json: desen_ihlalleri` içine `"betik"` kuralı olarak bağla. Betik iki repoya birden bakabilir, vault bakamaz |
 | **Bir deseni bilerek çiğneyeceğim** (sabit renk, `dangerouslySetInnerHTML`, `DateTime`) | `_araclar/vault.json: desen_ihlalleri` — o desenin **tavanı** orada; tavanı aşmak `dogrula.py` kontrol 24'te kırmızı yanar. İhlali azalttıysan tavanı indir |
 | **`dogrula.py` TEMİZ dedi ama bir kontrol hiç konuşmuyor** | `python3 _araclar/kontrol-testi.py` — hangi kontrolün gerçekten ölçtüğü yalnız orada görülür; sessizlik aklanma değildir |
 | **Vault budanacak · yeni bölme/klasör açılacak · şablonlaştırma konuşulacak** | `python3 _araclar/okunma.py` — hangi katmanın gerçekten okunduğu yalnız orada; tahminle budama, ölçerek buda |
