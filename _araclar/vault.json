@@ -175,5 +175,55 @@
     "genel_alan": "01-Genel",
     "kod_alan": "02-API",
     "ikinci_alan": "03-Web"
+  },
+  "desen_ihlalleri": {
+    "_aciklama": [
+      "Kontrol 24: YAZILI desenin kodda cignenip cignenmedigini olcer.",
+      "Her kural, *-desenler.md'de yazili bir kurala karsilik gelmek ZORUNDA —",
+      "'kaynak' alani onu gosterir. Uydurulmus kural buraya girmez.",
+      "tavan = bugunku borc. Artarsa kirmizi (cirnik/ratchet); azalirsa betik",
+      "tavani indirmeni soyler. Sifirlanamayan borcu sifir gostermek yalan olur."
+    ],
+    "kurallar": [
+      {
+        "ad": "DateTimeOffset yerine DateTime",
+        "alan": "02-API",
+        "uzantilar": [
+          ".cs"
+        ],
+        "yol_disi": [
+          "Migrations"
+        ],
+        "ara": "\\bDateTime(?!Offset|Provider)\\b",
+        "tavan": 13,
+        "kaynak": "api-desenler: 'Tarih daima DateTimeOffset' — Npgsql DateTime'in Kind'ini UTC ister, belirsiz Kind CALISMA ANINDA firlar"
+      },
+      {
+        "ad": "bilesende sabit renk kodu",
+        "alan": "03-Web",
+        "uzantilar": [
+          ".ts",
+          ".tsx"
+        ],
+        "yol_disi": [
+          "/emails/",
+          "global-error"
+        ],
+        "ara": "#[0-9a-fA-F]{6}\\b",
+        "tavan": 91,
+        "kaynak": "web-desenler: 'Bilesende sabit renk kodu yazilmaz' — istisnasi src/emails/*.html (e-posta istemcileri) ve global-error (kok duzeni degistirir, Tailwind yok)"
+      },
+      {
+        "ad": "dangerouslySetInnerHTML",
+        "alan": "03-Web",
+        "uzantilar": [
+          ".tsx"
+        ],
+        "yol_disi": [],
+        "ara": "dangerouslySetInnerHTML",
+        "tavan": 5,
+        "kaynak": "CLAUDE.md kapi listesi — her kullanim gerekcesiyle birlikte yazilmali"
+      }
+    ]
   }
 }

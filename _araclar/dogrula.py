@@ -26,6 +26,7 @@ Tarar:
  21. Kodun verdigi vault atiflari olu mu
  22. acilis.md'deki sayilar kaynagiyla celisiyor mu
  23. Alan durumu kod reposundaki commit'lerin gerisinde mi
+ 24. Yazili desen kodda cignenmis mi (cirnik: borc buyuyemez)
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -925,6 +926,70 @@ for _alan, _v in AYAR["alanlar"].items():
         olcumler.append(
             f"kontrol 23 · {_rel_d}: beyan {_tarih} · kod reposunun son "
             f"commit'i {_son_commit} — durum geride degil")
+
+
+
+# ---------------------------------------------------------------------------
+# 24: yazili desen kodda cignenmis mi
+#
+# 2026-09-09'da web oturumu kendi kusurunu bildirdi ve bu kontrolun gerekcesi
+# oldu: `web-desenler`'e o gun ALTI KEZ yazdi, SIFIR kez karar vermek icin
+# okudu. Somut bedeli: "sunucudaki sayinin kopyasi arayuzde tutulmaz" deseni
+# yaziliydi ve parola ekraninda tam o kusur yasamaya devam ediyordu — deseni
+# okuyarak degil, ucu OLCEREK bulundu.
+#
+# Ders: **yazili desen okunmuyor, olculen desen calisiyor.** Kontrol 8 desen
+# DOSYASININ varligini olcuyordu; bu kontrol dosyanin ICINDEKI kuralin kodda
+# tutulup tutulmadigini olcer.
+#
+# Olcut CIRNIK (ratchet): bugunku borc `tavan` olarak yazilidir, artarsa
+# kirmizi yanar. Sifir gostermek yalan olurdu (91 sabit renk var); borcu
+# gizlemeden buyumesini engellemenin yolu budur. Borc azalirsa betik tavani
+# indirmeni soyler — kendi kendini sikan bir kural.
+_D24 = (AYAR.get("desen_ihlalleri") or {}).get("kurallar", [])
+for _k in _D24:
+    _alan = AYAR["alanlar"].get(_k["alan"], {})
+    _repo = _alan.get("kod_repo")
+    if not _repo:
+        olcumler.append(f"kontrol 24 · {_k['ad']}: alan yapilandirmasi yok — OLCULEMEDI")
+        continue
+    _kok = VAULT.parent / _repo / (_alan.get("kaynak") or ".")
+    if not _kok.exists():
+        olcumler.append(
+            f"kontrol 24 · {_k['ad']}: kod koku yok ({_kok}) — OLCULEMEDI")
+        continue
+    _desen24 = re.compile(_k["ara"])
+    _uz = set(_k.get("uzantilar", []))
+    _sayi24, _ornek24 = 0, None
+    for _f24 in _kok.rglob("*"):
+        if not _f24.is_file() or _f24.suffix not in _uz:
+            continue
+        _yol24 = _f24.as_posix()
+        if any(_x in _yol24 for _x in _k.get("yol_disi", [])):
+            continue
+        if any(_h in _f24.parts for _h in ("node_modules", "obj", "bin", ".next")):
+            continue
+        try:
+            _icerik24 = _f24.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            continue
+        for _no24, _satir24 in enumerate(_icerik24.split("\n"), 1):
+            if _desen24.search(_satir24):
+                _sayi24 += 1
+                if _ornek24 is None:
+                    _ornek24 = f"{_f24.relative_to(VAULT.parent).as_posix()}:{_no24}"
+    _tavan24 = _k.get("tavan", 0)
+    if _sayi24 > _tavan24:
+        sorunlar.append(
+            f"[desen ihlali] {_k['alan']} · {_k['ad']}: {_sayi24} yer, tavan "
+            f"{_tavan24} (orn. {_ornek24}). Yazili kural: {_k['kaynak']}")
+    elif _sayi24 < _tavan24:
+        olcumler.append(
+            f"kontrol 24 · {_k['ad']}: {_sayi24} yer (tavan {_tavan24}) — "
+            f"BORC AZALDI, vault.json'da tavani {_sayi24} yap ki geri yukselmesin")
+    else:
+        olcumler.append(
+            f"kontrol 24 · {_k['ad']}: {_sayi24} yer, tavanda — buyumesi kirmizi yanar")
 
 
 print(f"Vault: {VAULT}")

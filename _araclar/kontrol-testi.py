@@ -235,6 +235,21 @@ def m_alan_durumu_geride(k):
         return
 
 
+def m_desen_ihlali(k):
+    # Cirnigi bir kertik indir: tavan dususe mevcut kod tavani asar. Gercek
+    # kusur karsiligi, kodda yeni bir ihlal eklenmesidir — kopyaya kod
+    # reposu dahil olmadigi icin borc tarafi degil TAVAN tarafi bozulur;
+    # olculen sey ayni: sayim ile tavan arasindaki iliski.
+    yol = k / "_araclar" / "vault.json"
+    ayar = json.loads(yol.read_text(encoding="utf-8"))
+    kurallar = (ayar.get("desen_ihlalleri") or {}).get("kurallar", [])
+    if not kurallar:
+        return
+    kurallar[0]["tavan"] = 0
+    yol.write_text(json.dumps(ayar, ensure_ascii=False, indent=2) + "\n",
+                   encoding="utf-8")
+
+
 def m_durum_bayat(k):
     r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
@@ -345,6 +360,7 @@ SENARYOLAR = [
     (22, "acilis pano sayisi panodan kopuk",   "acilis sayisi",       m_acilis_pano_sayisi),
     (22, "acilis birim sayisi kaynaktan kopuk", "acilis sayisi",      m_acilis_birim_sayisi),
     (23, "alan durumu kod commitlerinin gerisinde", "durum geride",  m_alan_durumu_geride),
+    (24, "kodda yazili desen cignenmis",         "desen ihlali",    m_desen_ihlali),
 ]
 
 

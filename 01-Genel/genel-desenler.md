@@ -917,7 +917,6 @@ kalmış bir satır yüzünden yanlış sayıyı akladı. İkinci sürüm doğru
 yandı. **Yanlış alarm veren denetim, susan denetimden hızlı ölür**; birkaç kez
 bağırdıktan sonra kimse bakmaz → [[genel-notlar]]
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Ölü zorunlu satır, yanındaki canlı kuralı da öldürür
 
@@ -958,3 +957,30 @@ yazan oturumu cezalandırdı; *"dosyanın son yazılma anı"* ise dosyaya dokunm
 aklanma sayıp kontrolü tamamen susturdu. Kalan ölçüt gün karşılaştırması.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Yazılı desen okunmuyor, ölçülen desen çalışıyor
+
+2026-09-09'da web oturumu kendi kusurunu bildirdi: `web-desenler`'e o gün **altı
+kez yazdı, sıfır kez karar vermek için okudu**. Somut bedeli şu: *"sunucudaki
+sayının kopyası arayüzde tutulmaz"* deseni orada yazılıyken parola ekranında tam
+o kusur yaşamaya devam ediyordu — deseni okuyarak değil, **ucu ölçerek** bulundu.
+
+Backend bağımsız olarak aynı yere geldi: `api-desenler`'i o oturumda hiç açmadı.
+
+Kontrol 8 desen **dosyasının** varlığını ölçüyordu. Kontrol 24 dosyanın
+**içindeki kuralın kodda tutulup tutulmadığını** ölçer.
+
+### Çırnık (ratchet) — borcu gizlemeden büyümesini engelle
+
+Ölçüm sıfır çıkmıyor: 91 sabit renk kodu, 13 `DateTime`, 5
+`dangerouslySetInnerHTML` var. Sıfır göstermek yalan, hepsini hata saymak
+gürültü olurdu — ikisi de kontrolü öldürür.
+
+Onun yerine **bugünkü borç tavan olarak yazılır**: artarsa kırmızı yanar,
+azalırsa betik *"tavanı indir"* der. Kural kendi kendini sıkar.
+
+⚠️ Buraya yalnız `*-desenler.md`'de **yazılı** bir kurala karşılık gelen ölçüm
+girer; her kuralın `kaynak` alanı onu gösterir. Uydurulmuş kural, ölçülse bile
+kuraldır sayılmaz — kimsenin bedelini ödemediği kural ilk yoğun günde delinir.
+
+İlgili: [[genel-esszamanli-oturumlar]]
