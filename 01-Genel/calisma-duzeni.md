@@ -154,10 +154,11 @@ karardır (`*-kararlar.md`); **bir daha aynı tuzağa düşmemek için** yazıla
 ## Vault sağlık kontrolü
 
 ```bash
-python3 DailyCruising.Vault/_araclar/dogrula.py
+python3 DailyCruising.Vault/_araclar/dogrula.py        # denetler
+python3 DailyCruising.Vault/_araclar/acilis-guncelle.py  # acilis sayilarini URETIR
 ```
 
-21 kontrol çalıştırır. Kontrollerin kendisi `_araclar/kontrol-testi.py` ile
+23 kontrol çalıştırır. Kontrollerin kendisi `_araclar/kontrol-testi.py` ile
 ölçülür, notların okunma oranı `_araclar/okunma.py` ile; projeye bağlı sabitler
 `_araclar/vault.json` içindedir → [[genel-desenler]]
 

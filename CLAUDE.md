@@ -86,6 +86,7 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | **`dogrula.py`'ye kontrol ekledim veya değiştirdim** | `_araclar/kontrol-testi.py`'ye o kontrol için bozma senaryosu yaz ve çalıştır. **Senaryosu olmayan kontrol ölçülmüyor sayılır** — yazılı olması çalıştığının kanıtı değil |
 | **Vault'a alan/bölme eklendi · klasör adı değişti · bir eşik değiştirildi** | `_araclar/vault.json` — betiklere elle sabit yazma. Makine projeden bağımsızdır, projeye bağlı tek dosya odur |
 | **Mert projeye özel OLMAYAN bir çalışma talimatı verdi** | `01-Genel/tercihler.md`. Projeye özel olan (port, repo, komut) `01-Genel/calisma-duzeni.md` |
+| **Panoda görev kapandı/açıldı · test veya rota sayısı değişti** | `python3 _araclar/acilis-guncelle.py` çalıştır → `01-Genel/acilis.md`'deki sayılar **yeniden üretilir**. Elle yazma: 2026-09-09'da aynı gün iki kez bayatladı |
 | **Migration uygulandı** | `DailyCruising.Back-End/araclar/sema-cikar.py` çalıştır → `02-API/api-sema-guncel.md` yeniden üretilir. **Elle yazma** |
 | **"Bu üretimde şu koşulla çalışır"** cümlesini kurduğum an | `01-Genel/yayin-oncesi.md` — sonraya bırakma, koşullar yan ürün olarak doğar |
 | **Bir hata aldım ve çözdüm** | Kod karşılığı **varsa** gerekçe o satırın yanına yazılır — vault'a değil. Kod karşılığı **yoksa** (ortam, araç, süreç, dış servis) `<alan>/notlar/` altına, **hata metni birebir** içinde geçecek şekilde |

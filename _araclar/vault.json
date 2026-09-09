@@ -9,20 +9,62 @@
   ],
   "proje": "DailyCruising",
   "alanlar": {
-    "01-Genel": { "onek": "genel", "kod_repo": null },
-    "02-API":   { "onek": "api",  "kod_repo": "DailyCruising.Back-End",
-                  "kaynak": "src", "uzantilar": [".cs", ".csproj", ".slnx"] },
-    "03-Web":   { "onek": "web",  "kod_repo": "DailyCruising.Front-End",
-                  "kaynak": "src", "uzantilar": [".ts", ".tsx", ".js", ".jsx", ".css"] },
-    "05-Mobil": { "onek": "mobil", "kod_repo": "DailyCruising.Mobil",
-                  "kaynak": ".", "uzantilar": [".ts", ".tsx", ".js", ".jsx"] }
+    "01-Genel": {
+      "onek": "genel",
+      "kod_repo": null
+    },
+    "02-API": {
+      "onek": "api",
+      "kod_repo": "DailyCruising.Back-End",
+      "kaynak": "src",
+      "uzantilar": [
+        ".cs",
+        ".csproj",
+        ".slnx"
+      ]
+    },
+    "03-Web": {
+      "onek": "web",
+      "kod_repo": "DailyCruising.Front-End",
+      "kaynak": "src",
+      "uzantilar": [
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx",
+        ".css"
+      ]
+    },
+    "05-Mobil": {
+      "onek": "mobil",
+      "kod_repo": "DailyCruising.Mobil",
+      "kaynak": ".",
+      "uzantilar": [
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx"
+      ]
+    }
   },
-  "bolmeler": ["desenler", "gorevler", "araclar"],
+  "bolmeler": [
+    "desenler",
+    "gorevler",
+    "araclar"
+  ],
   "notlar_klasoru": "notlar",
   "arsiv_klasoru": "04-Oturumlar",
-  "denetim_disi": ["README.md"],
-  "yetim_muaf": ["00-Index", "CLAUDE"],
-  "tetikleyici_dosyalari": ["CLAUDE.md", "01-Genel/acilis.md"],
+  "denetim_disi": [
+    "README.md"
+  ],
+  "yetim_muaf": [
+    "00-Index",
+    "CLAUDE"
+  ],
+  "tetikleyici_dosyalari": [
+    "CLAUDE.md",
+    "01-Genel/acilis.md"
+  ],
   "ozel": {
     "acilis": "01-Genel/acilis.md",
     "durum": "01-Genel/durum.md",
@@ -45,7 +87,11 @@
     "dayanak": "\\*\\*Dayanak:\\*\\*(.+)",
     "dayananlar": "\\*\\*Buna dayananlar:\\*\\*(.+)"
   },
-  "mutable_roller": ["map", "status", "not"],
+  "mutable_roller": [
+    "map",
+    "status",
+    "not"
+  ],
   "esikler": {
     "bayat_gun": 60,
     "durum_bayat_gun": 7,
@@ -63,19 +109,68 @@
       "kaynagi baska dosyadadir. Burasi hangi sayinin nerede dogrulanacagini",
       "soyler. pano_deseni: acilis'te pano sayimi nasil yaziliyor.",
       "birimler: '<sayi> <birim>' bicimindeki iddia, o alanin dosyalarinda",
-      "ayni sayiyla geciyor mu."
+      "ayni sayiyla geciyor mu.",
+      "uretim: acilis-guncelle.py bu ayarla sayilari YENIDEN URETIR;",
+      "elle yazilmaz. cikar: her birimin otoritesi hangi dosyada, hangi desenle."
     ],
     "pano_desenleri": [
       "pano\\s+\\*{0,2}(\\d+)\\s*/\\s*(\\d+)",
       "\\*\\*(\\d+)\\s+Yapılacak\\s*/\\s*(\\d+)\\s+Tamamlandı\\*\\*"
     ],
     "birimler": [
-      { "desen": "(\\d+)\\s*test", "kelime": "test", "kaynaklar": ["02-API/api-durum.md", "02-API/api-mimari.md"] },
-      { "desen": "(\\d+)\\s*rota", "kelime": "rota", "kaynaklar": ["03-Web/web-durum.md", "03-Web/web-mimari.md"] }
-    ]
+      {
+        "desen": "(\\d+)\\s*test",
+        "kelime": "test",
+        "kaynaklar": [
+          "02-API/api-durum.md",
+          "02-API/api-mimari.md"
+        ],
+        "cikar": {
+          "dosya": "02-API/api-durum.md",
+          "desen": "dotnet test`?\\*{0,2}\\s*\\*{0,2}(\\d+)\\s*/",
+          "sec": "ilk"
+        }
+      },
+      {
+        "desen": "(\\d+)\\s*rota",
+        "kelime": "rota",
+        "kaynaklar": [
+          "03-Web/web-durum.md",
+          "03-Web/web-mimari.md"
+        ],
+        "cikar": {
+          "dosya": "03-Web/web-mimari.md",
+          "desen": "(\\d+)\\s*rota sayfası",
+          "sec": "son"
+        }
+      },
+      {
+        "desen": "(\\d+)\\s*not",
+        "kelime": "not",
+        "kaynaklar": [],
+        "cikar": {
+          "sayim": "vault_md"
+        }
+      },
+      {
+        "desen": "(\\d+)\\s*kontrol",
+        "kelime": "kontrol",
+        "kaynaklar": [],
+        "cikar": {
+          "sayim": "dogrula_kontrol"
+        }
+      }
+    ],
+    "alan_etiketleri": {
+      "02-API": "**API:**",
+      "03-Web": "**Web:**",
+      "01-Genel": "**Genel:**"
+    }
   },
   "oturum_kayit_deseni": "*DailyCruising*",
-  "otomatik_yuklenen": ["acilis"],
+  "otomatik_yuklenen": [
+    "acilis"
+  ],
   "kontrol_testi": {
     "genel_alan": "01-Genel",
     "kod_alan": "02-API",
