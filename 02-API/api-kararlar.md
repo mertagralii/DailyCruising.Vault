@@ -5645,3 +5645,52 @@ engelliyor ve boş bir rolün silinmesi kimseden yetki almıyor.
 
 Simetri bir gerekçe değildir. `A-150`'de iki kapı vardı diye buraya da iki
 kapı koymak, ikincisini süse çevirirdi.
+
+## 2026-09-09 · Ekrana basılan sayı ile silme kapısının sayısı ayrı — ve ayrı kalmalı
+
+Rol ayrıntısındaki `assignedStaffCount` **görünür** personeli sayıyor
+(anonimleştirilmiş hesap hariç); silmeyi engelleyen `RoleInUseAsync` ise
+**her** `UserRoles` satırına bakıyor.
+
+**Neden:** iki sorunun cevabı gerçekten farklı ve tek sayıya indirmek
+ikisinden birini bozar.
+
+- Ekrandaki sayı **listeyle** aynı kişileri saymalı. Saymasaydı "3
+  personelde kullanılıyor" yazarken `?roleId=` süzgeci 2 satır döndürürdü
+  ve okuyan listenin bozuk olduğunu sanardı. Web oturumu tam bu soruyu
+  sordu ve cevabı ilk hâlinde HAYIR'dı — soru kusuru buldu.
+- Silme kapısı **yabancı anahtarla** aynı şeye bakmalı. Kapatılmış hesabın
+  `UserRoles` satırı duruyor; görünür sayıya bakan bir kapı o rolü
+  silmeye kalkar ve kullanıcıya anlaşılır bir hata yerine ham Postgres
+  hatası döner.
+
+⚠️ İkincisi işletme tarafında **yaşanmış** bir kusur: orası önce yalnız
+aktif çalışanları sayıyordu ve "çalışanı çıkar, sonra rolü sil" akışı
+veritabanı hatasıyla patlıyordu → [[api-gerekce-arsivi-application]]
+
+Mesaj da ayrı: görünür personel sıfırken "önce onların rolünü değiştirin"
+demek, yöneticiyi var olmayan bir personeli aramaya gönderirdi.
+
+⚠️ **Genel kural:** bir sayı ekrana basılıyorsa **yanındaki listeyle**
+aynı ölçütü kullanmalı; bir sayı kapı olarak kullanılıyorsa **arkasındaki
+kısıtla** aynı ölçütü kullanmalı. Aynı isimle iki iş yaptırmak, ikisinden
+birinin sessizce yanlış olması demek.
+
+## 2026-09-09 · "Rolün personeli" ayrı uç değil, personel listesinin süzgeci
+
+`GET /api/platform/staff?roleId=…` yazıldı; `GET /roles/{id}/staff`
+**açılmadı**.
+
+**Neden:** ayrı uç ikinci bir personel listesi demek. Sayfalama, arama ve
+durum süzgeci zaten birinde var; ikincisi bunları ya kopyalar ya kaybeder,
+ve zamanla ikisi ayrışır — biri askıdakini gösterir, diğeri göstermez.
+Süzgeç olunca satır şekli (`PlatformStaffItem`) tek kalıyor ve ön yüz aynı
+bileşeni ikinci kez basıyor.
+
+Gerekçe web oturumundan geldi ve ekrandaki karşılığı ölçülmüştü:
+`TEKNE_DURUMU`'nun üç, `TALEP_DURUMU`'nun iki kopyası. Bu, o kusurun uç
+tarafındaki hâli olurdu.
+
+⚠️ Tanınmayan `roleId` **hata veriyor** (`UnknownRole`), boş liste değil —
+tanınmayan `status` ile aynı gerekçe: boş liste "bu rolde kimse yok" diye
+okunur, oysa rol hiç yok.

@@ -399,6 +399,45 @@ gördüğü şey aynıydı: `204`, toast "güncellendi", ve sessizce giden bir v
 Ölçüm salt okunurdu; yazma tarafı hâlâ personel/işletme hesabıyla
 doğrulanmadı.
 
+## ✅ 2026-09-09 — personel, roller ve parola akışı
+
+Panelde **15 modül uca bağlı**, 9'u statik. Bugün eklenenler: personel
+listesi + ayrıntı + etkinlik geçmişi, personel ekleme/düzenleme, **Roller ve
+yetkiler** modülü (oluşturma · düzenleme · silme · kişiye özel rol), ve
+parola akışı.
+
+### 🔴 Parola ekranı **maketti** — akışı kopartıyordu
+
+`/account/password` gönderim kodu taşımıyordu, alanda `defaultValue="parola12"`
+gömülüydü ve kural metni uydurmaydı ("10 karakter, bir büyük harf, bir
+rakam"; gerçek kural **8, karmaşıklık şartı yok**).
+
+Kusur "ilk girişte parola değiştirme" isteğiyle görünür oldu: backend kapıyı
+yazdı (bayrak açıkken her uç `403`) ama **çıkış yolu yoktu** — yönetici
+tarafından açılan personel giriş yapıp hiçbir şey gönderemiyordu.
+
+⚠️ Aynı ekranda **uydurma giriş geçmişi** vardı ("Bodrum · iPhone · 18 Ağu").
+Bir **güvenlik ekranında** uydurma veri, kullanıcıya hesabına başka şehirden
+girildiğini düşündürür. Kaldırıldı; uçta giriş geçmişi yok.
+
+### Kilitlenme kapıları **uçta**, ekranda değil
+
+`CannotModifySelf` · `LastAdmin` · `SystemRoleImmutable` · `RoleInUse`.
+Ekranda denetim yazılmadı: iki gerçek olur ve `curl` ile atlanırdı. Ekranın
+işi kodu okunur cümleye çevirmek → [[web-kararlar]]
+
+⚠️ Bir rolün yetkisini almak, o rolü taşıyan **herkesin** yetkisini alıyor ve
+hepsinin oturumu düşüyor. Ekran kaç kişiyi etkilediğini **denemeden önce**
+yazıyor.
+
+### Ölçüm
+
+`41 rota · 132 bileşen · 12 API istemcisi` · `tsc` · `lint` · `build` temiz.
+
+⚠️ **Panel hâlâ tarayıcıda gezilmedi** (giriş parolası Mert'te). Bugünkü
+kusurların tamamı ölçümle ya da backend oturumunun ekran raporlarıyla
+bulundu — gözle bulunacaklara hiç sıra gelmedi.
+
 ## 🟡 2026-09-07 — yönetim panelinde sekiz kusur, hiçbiri gözle değil ölçümle çıktı
 
 Panel gün boyu gerçek veriye bağlandı. **Bulunan kusurların tamamı ölçümden

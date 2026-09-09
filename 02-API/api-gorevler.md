@@ -160,6 +160,39 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟢 Tamamlandı
 
+- [x] **A-152** Personel listesi role göre süzülüyor · bitti: 2026-09-09
+
+      Mert: *"bu rolün ne olduğunu, neleri yapabildiğini ve bu role sahip
+      olan kullanıcıları görebilmek istiyorum."* İlk ikisi `A-151`'de vardı;
+      üçüncüsü bu.
+
+      `GET /api/platform/staff?roleId=…`
+
+      ⚠️ **Ayrı bir `GET /roles/{id}/staff` ucu AÇILMADI.** Web oturumunun
+      gerekçesi kabul edildi: ayrı uç ikinci bir personel listesi demekti ve
+      ikisi zamanla ayrışırdı — biri sayfalamayı kazanır diğeri kazanmaz,
+      biri askıdakini gösterir diğeri göstermez. Ekranda `TEKNE_DURUMU`'nun
+      üç kopyasında görülen şeyin uç tarafındaki hâli.
+
+      ⚠️ **Web'in sorduğu "iki sayı aynı şeyi mi sayıyor" sorusunun cevabı
+      ilk hâlinde HAYIR'dı ve soru kusuru buldu.** `assignedStaffCount`
+      bütün `UserRoles` satırlarını sayıyordu, personel listesi ise
+      anonimleştirilmiş hesabı atıyor. Ekranda "2 personelde kullanılıyor"
+      yazarken listede 1 satır görünecekti.
+
+      Hizalandı — ama **silme kapısı ayrıldı**: o hâlâ HER satıra bakıyor
+      (`RoleInUseAsync`), çünkü kapatılmış hesabın satırı duruyor ve yabancı
+      anahtar silmeyi zaten reddeder. Görünür sayıya bakan bir kapı ham
+      veritabanı hatası bırakırdı — işletme tarafında tam olarak bu yaşandı.
+      O durumda ayrı bir mesaj dönüyor: rolü değiştirilecek personel yok.
+
+      Kanıt: `dotnet test` **729/729**, commit `bc88857`. Dört mutasyon,
+      dördü de doğru testi kırdı: süzgecin etkisizleşmesi · sayının yine her
+      satırı sayması · silme kapısının görünür sayıya bakması · tanınmayan
+      rolün sessizce boş dönmesi.
+      Canlıda: `assignedStaffCount = 1` ↔ `?roleId=…` `totalCount = 1`
+      (süzgeçsiz 10), olmayan rol → `UnknownRole`.
+
 - [x] **A-151** Platform rolleri panelden düzenlenip silinebiliyor · bitti: 2026-09-09
 
       Web oturumu istedi: *"mevcut rolleri düzenleyebilmek ve kişiye özel

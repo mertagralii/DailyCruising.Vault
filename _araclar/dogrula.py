@@ -205,7 +205,8 @@ for _ad, (_t, _e, _b) in sorted(_karar_sayaci.items()):
         olcumler.append(
             f"kontrol 6 · {_ad}: {_t} karar · elenen secenek {_e} "
             f"({_e * 100 // _t}%) · bedel {_b} ({_b * 100 // _t}%) "
-            f"— OLCUM, dayatma degil")
+            f"— OLCUM, dayatma degil · olcut: vault.json isaretler."
+            f"elenen_deseni / bedel_deseni")
 
 # 8: her alanda desenler / gorevler / araclar var mi
 ALAN_BOLME = {a: v["onek"] for a, v in AYAR["alanlar"].items()}
