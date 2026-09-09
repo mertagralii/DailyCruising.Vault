@@ -896,7 +896,6 @@ etti ve haklıydı:
 Araç düzeltildi: yazma-değerli dosyalar ölçü dışı, ve bu **rapora yazılıyor** —
 sessizce dışlanan şey, ölçülmediği fark edilmeyen şeydir.
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Tazelik doğruluk değildir
 
@@ -919,3 +918,43 @@ yandı. **Yanlış alarm veren denetim, susan denetimden hızlı ölür**; birka
 bağırdıktan sonra kimse bakmaz → [[genel-notlar]]
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Ölü zorunlu satır, yanındaki canlı kuralı da öldürür
+
+Karar şablonu üç zorunlu satır istiyordu. 2026-09-09'da üçü de ölçüldü:
+
+| Satır | Kararlarda | Sonuç |
+|---|---|---|
+| `**Sonucu:**` | **%0** (225 kararın hiçbiri) | silindi |
+| `**Alternatifler:**` | %7 başlık, içeriği düzyazıda çok daha sık | başlık silindi, içerik `Neden`e taşındı |
+| `**Neden:**` | %61 | **tek zorunlu satır olarak kaldı** |
+
+`Sonucu` unutulduğu için değil **yazılamadığı** için boştu: karar anında var
+olmayan bir bilgiyi istiyordu. Ama asıl bedeli tek başına boş kalması değil —
+**yanındaki `**Neden:**`i de %61'e düşürmesiydi.** Uyulmayan bir zorunluluk,
+yanındaki zorunluluğun da ciddiyetini götürüyor.
+
+Yerlerine dayatma değil **ölçüm** kondu: `dogrula.py` kontrol 6 her koşumda
+elenen seçenek ve bedel oranlarını basar. Oran düşerse görünür olur.
+
+**Kural:** yeni bir zorunlu alan eklerken sorulacak soru *"faydalı mı"* değil,
+**"bugün kaç kararda kendiliğinden yazılıyor"**dur. Sıfıra yakınsa o alan
+zorunlu olamaz; olsa olsa koşullu olur (kısıtlayıcı kararlarda bedel gibi).
+
+## Durum dosyasının tetikleyicisi commit'tir
+
+2026-09-09: backend bir günde kod reposuna **sekiz commit** attı, `api-durum`'a
+**sıfır** kez yazdı. Sonuç, dosyanın tepesi "706 test" derken gerçek 725'ti;
+bayat sayı önce [[acilis]]'e, oradan her oturumun bağlamına yayıldı.
+
+Disiplin hatası değildi: yazma tablosunda *"alanın güncel durumu"* satırı vardı
+ama **ne zaman** yazılacağı yoktu → [[CLAUDE]]. Tetikleyici artık yazılı ve
+kontrol 23 ölçüyor: kod, durumun beyan ettiği günden **daha yeni bir günde**
+ilerlemişse hata.
+
+⚠️ Kontrol 23'ün ölçütü de iki kez yanlış seçildi ve ikisini de kör test
+yakaladı: *"beyan gününden beri kaç commit"* aynı gün commit atıp sonunda durumu
+yazan oturumu cezalandırdı; *"dosyanın son yazılma anı"* ise dosyaya dokunmayı
+aklanma sayıp kontrolü tamamen susturdu. Kalan ölçüt gün karşılaştırması.
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

@@ -79,6 +79,7 @@ Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, sonra t
 | Hangi durumda hangi plugin, skill, MCP | `<alan>-araclar.md` |
 | **Yapının kendisi değişti** — proje, katman, controller, uç nokta, migration, dış servis eklendi/kaldırıldı | `<alan>-mimari.md` (sayılar dahil: kaç entity, kaç migration) |
 | **Alanın güncel durumu** | `02-API/api-durum.md` · `03-Web/web-durum.md` — o alanda çalışan oturum buraya yazar |
+| **Kod reposuna commit attım** | aynı gün `<alan>-durum.md` — sayı, test, uç ne değiştiyse. `dogrula.py` kontrol 23 ölçer: kod, durumun beyan ettiği günden daha yeni bir günde ilerlediyse hata verir |
 | **Genel durum, "nerede kaldık"** | `01-Genel/durum.md` — **tek otorite**, yalnız vault oturumu yazar |
 | Cevapsız soru / blocker / çelişki / silinen şey | `01-Genel/durum.md` |
 | **`durum.md`'de blocker açıldı/kapandı veya kritik yol değişti** | aynı oturumda `01-Genel/acilis.md` — her oturuma yüklenen özet odur |

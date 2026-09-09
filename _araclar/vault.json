@@ -40,6 +40,8 @@
   },
   "isaretler": {
     "neden": "**Neden",
+    "elenen_deseni": "elend|eleme sebebi|alternatif|yerine .{0,40}seçildi|vazgeç|denendi ama",
+    "bedel_deseni": "bedeli|pahasına|karşılığında|feda|dezavantaj|riski|borç|zorlaştır",
     "dayanak": "\\*\\*Dayanak:\\*\\*(.+)",
     "dayananlar": "\\*\\*Buna dayananlar:\\*\\*(.+)"
   },

@@ -86,15 +86,37 @@ Her not `İlgili: [[x]] · [[y]]` satırıyla biter.
 
 **Karar:** ne yapılacağı, net ve ölçülebilir.
 
-**Neden:** gerekçe. Bu satır atlanırsa not değersizdir — "ne" koddan okunur, "neden" okunmaz.
-
-**Alternatifler:** değerlendirilip elenenler ve eleme sebepleri.
-
-**Sonucu:** bu kararın yarattığı kısıt, borç veya risk.
+**Neden:** gerekçe. Bu satır atlanırsa not değersizdir — "ne" koddan okunur,
+"neden" okunmaz. Değerlendirilip **elenen bir seçenek varsa adı ve elenme
+sebebi bu satırın içinde geçer.**
 ```
 
-`Alternatifler` ve `Sonucu` boşsa satırı yaz ve "yok" de — atlama. Eksik satır,
-sonradan "bunu neden böyle yapmıştık" sorusunu cevapsız bırakır.
+⚠️ **2026-09-09'da iki zorunlu satır kaldırıldı** — ölçüldükleri için:
+
+| Satır | Kararlarda bulunma oranı | Karar |
+|---|---|---|
+| `**Sonucu:**` | **%0** (225 kararın hiçbirinde) | **silindi** |
+| `**Alternatifler:**` | %7 başlık olarak, ama içeriği düzyazıda çok daha sık | **başlık silindi, içerik `Neden`e taşındı** |
+
+`Sonucu` unutulduğu için değil **yazılamadığı** için boştu: "bu kararın sonucu
+ne oldu" ancak haftalar sonra bilinir ve o an kimse eski karara dönmüyor.
+
+⚠️ Asıl bedeli şuydu: **%0'da duran zorunlu satır, yanındakinin ağırlığını da
+götürdü** — `**Neden:**` aynı dosyada %61'de kaldı. Ölü kural, yanındaki canlı
+kuralı öldürür → [[genel-desenler]]
+
+### Kısıtlayıcı karar bedelini yazar
+
+Bir şeyi **yasaklayan, kapatan veya tek yol bırakan** karar, bedelini de söyler:
+neyi zorlaştırdı, hangi borcu doğurdu.
+
+Koşulludur, zorunlu satır değildir — ve bu bilinçli: bedel bugün kararların
+yalnız beşte birinde yazılıyor. Koşulsuz zorunlu yapmak, geriye dönük yüzlerce
+karara borç yazar ve üçüncü bir ölü satır üretirdi.
+
+**Denetim:** `dogrula.py` yalnız `**Neden:**`i zorunlu tutar (kontrol 6); elenen
+seçenek ve bedel **ölçülür, dayatılmaz** — her koşumda oranları basar. Oran
+düşerse görünür olur; sessizce çürümez.
 
 ## Claude'un not klasörleri
 

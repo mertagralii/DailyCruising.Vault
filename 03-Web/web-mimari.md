@@ -444,6 +444,26 @@ tam oraya yönlendiriyor; Paratika gerçek anahtarlarla bağlanınca kapanır.
 
 Ölçüm (beyan değil): **41 rota sayfası · 110 bileşen · 12 API istemcisi.**
 
+### Tarayıcı isteklerinin geçtiği vekil
+
+```
+src/app/api/dc/[...path]/route.ts     IZINLI listesi burada
+```
+
+Tarayıcıdan giden her istek bu vekilden geçiyor ve **yolun ilk parçası**
+listede yoksa `404` dönüyor — backend'e hiç ulaşmıyor. GET · POST · PUT ·
+PATCH · DELETE hepsi aynı kapıdan.
+
+Bugünkü önekler: `search · blog · favorites · coupons · lookups · boats ·
+pricing · reservations · payments · conversations · reviews · support ·
+partner · partners · platform · boarding · account · health`
+
+⚠️ **Bu satırlar bir tuzağın tetikleyicisi olarak buraya yazıldı.** Aynı
+tuzağa **üç kez** düşüldü: yeni bir uç bağlanıyor, tarayıcıdan çağrılıyor ve
+`404` dönüyor. Hata mesajı "yol yok" diyor, oysa yol var — **önek listede
+yok**. Tuzağın kendisi `web-mimari`'de yazılıydı ama **listenin nerede
+olduğu** yazılı değildi, o yüzden her seferinde aranması gerekti.
+
 > 2026-09-09 ölçümü: **41 rota · 132 bileşen · 12 API istemcisi.** Bileşen
 > sayısı 22 arttı; yönetim panelinin müşteri, rezervasyon, personel ve rol
 > ekranları o gün yazıldı. Rota ve istemci sayısı değişmedi — panel modülleri

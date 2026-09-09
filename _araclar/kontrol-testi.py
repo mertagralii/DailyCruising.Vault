@@ -216,6 +216,25 @@ def m_acilis_birim_sayisi(k):
     yaz(k, D_ACILIS, metin + "\n\n999999 test\n")
 
 
+def m_alan_durumu_geride(k):
+    # Alan durumunun beyanini geriye cek: kod reposunda o tarihten sonra
+    # esigi asan commit vardir. Gercek kusur: 2026-09-09'da backend sekiz
+    # commit atti, api-durum'a sifir kez yazdi; sonuc 706 vs 725 celiskisi.
+    for alan, v in AYAR["alanlar"].items():
+        if not v.get("kod_repo"):
+            continue
+        rel = f"{alan}/{v['onek']}-durum.md"
+        if not (k / rel).exists():
+            continue
+        yaz(k, rel, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
+                           oku(k, rel), count=1, flags=re.M))
+        # dosya kirli kalmasin: olcut mtime'a degil beyana dussun diye commit'le
+        git(k, "add", rel)
+        git(k, "-c", "user.email=d@d", "-c", "user.name=d",
+            "commit", "-q", "-m", "beyan geriye cekildi")
+        return
+
+
 def m_durum_bayat(k):
     r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
@@ -325,6 +344,7 @@ SENARYOLAR = [
     (21, "kodun atif verdigi dosya adi degisti", "olu atif",            m_olu_atif),
     (22, "acilis pano sayisi panodan kopuk",   "acilis sayisi",       m_acilis_pano_sayisi),
     (22, "acilis birim sayisi kaynaktan kopuk", "acilis sayisi",      m_acilis_birim_sayisi),
+    (23, "alan durumu kod commitlerinin gerisinde", "durum geride",  m_alan_durumu_geride),
 ]
 
 

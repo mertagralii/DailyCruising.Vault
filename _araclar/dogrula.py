@@ -25,10 +25,13 @@ Tarar:
  20. Cok linkli dosyanin tetikleyicisi var mi
  21. Kodun verdigi vault atiflari olu mu
  22. acilis.md'deki sayilar kaynagiyla celisiyor mu
+ 23. Alan durumu kod reposundaki commit'lerin gerisinde mi
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
 """
+import collections
+from datetime import datetime
 import re
 import sys
 import datetime
@@ -169,6 +172,7 @@ for p2 in notlar:
         sorunlar.append(f"[yalitilmis not] {rel}: hicbir nota link vermiyor")
 
 # 6: gerekcesiz karar girisi
+_karar_sayaci = collections.defaultdict(lambda: [0, 0, 0])
 for p in notlar:
     if not p.name.endswith("kararlar.md"):
         continue
@@ -181,7 +185,27 @@ for p in notlar:
             sorunlar.append(
                 f"[gerekcesiz karar] {p.relative_to(VAULT)}: '{baslik}' "
                 f"icinde **Neden:** yok")
+        # 2026-09-09: sablonun iki zorunlu satiri kaldirildi. `Sonucu` 225
+        # kararin HICBIRINDE yoktu — unutuldugu icin degil, karar aninda var
+        # olmayan bilgiyi istedigi icin. `Alternatifler` basligi %7'deydi ama
+        # icerigi duzyazida cok daha sik geciyordu: ihtiyac gercek, kalip yanlis.
+        #
+        # Yerlerine DAYATMA degil OLCUM kondu. Sebebi olculmus: %0'da duran
+        # zorunlu satir, yanindaki `**Neden:**`i de %61'de tutmustu. Ucuncu bir
+        # olu satir eklemek ayni bedeli yeniden odemek olurdu.
+        # Oran her kosumda basilir; dusesse gorunur, sessizce curumez.
+        _karar_sayaci[p.name][0] += 1
+        if re.search(AYAR["isaretler"]["elenen_deseni"], blok, re.I):
+            _karar_sayaci[p.name][1] += 1
+        if re.search(AYAR["isaretler"]["bedel_deseni"], blok, re.I):
+            _karar_sayaci[p.name][2] += 1
 
+for _ad, (_t, _e, _b) in sorted(_karar_sayaci.items()):
+    if _t:
+        olcumler.append(
+            f"kontrol 6 · {_ad}: {_t} karar · elenen secenek {_e} "
+            f"({_e * 100 // _t}%) · bedel {_b} ({_b * 100 // _t}%) "
+            f"— OLCUM, dayatma degil")
 
 # 8: her alanda desenler / gorevler / araclar var mi
 ALAN_BOLME = {a: v["onek"] for a, v in AYAR["alanlar"].items()}
@@ -832,6 +856,69 @@ if _A22 and _acilis_yol.exists():
         f"kontrol 22 · {_rel_a}: {_bakilan22} sayi iddiasi kaynagiyla karsilastirildi")
 elif not _A22:
     olcumler.append("kontrol 22 · vault.json'da acilis_sayilari yok — OLCULEMEDI")
+
+
+# ---------------------------------------------------------------------------
+# 23: alan durumu, kod reposundaki commit'lerin gerisinde mi
+#
+# 2026-09-09'da backend oturumu kendi kusurunu bildirdi: o gun kod reposuna
+# SEKIZ commit atti, `api-durum.md`'ye SIFIR kez yazdi. Sonuc, dosyanin tepesi
+# "706/706 test" derken gercek 725'ti — ve o bayat sayi once acilis.md'ye,
+# oradan her oturumun baglamina yayildi.
+#
+# Bu bir disiplin hatasi degildi: yazma tablosunda "alanin guncel durumu" satiri
+# vardi ama NE ZAMAN yazilacagi yazmiyordu. Tetikleyicisi olmayan dosya curur —
+# kuralin kendi ornegi, bu kez durum dosyasinda.
+#
+# Olcut mtime degil `guncelleme`: dosyaya dokunmak onu guncel yapmaz, beyan
+# edilen tarih ile kodun gercegi karsilastirilir (kontrol 15 ile ayni ilke).
+for _alan, _v in AYAR["alanlar"].items():
+    if not _v.get("kod_repo"):
+        continue
+    _dyol = VAULT / _alan / f"{_v['onek']}-durum.md"
+    _repo = VAULT.parent / _v["kod_repo"]
+    _rel_d = f"{_alan}/{_v['onek']}-durum.md"
+    if not _dyol.exists():
+        olcumler.append(f"kontrol 23 · {_rel_d}: DOSYA YOK — OLCULEMEDI")
+        continue
+    if not _repo.exists():
+        olcumler.append(
+            f"kontrol 23 · {_alan}: kod reposu yok ({_repo}) — OLCULEMEDI")
+        continue
+    _fm = frontmatter(_dyol.read_text(encoding="utf-8")) or {}
+    _tarih = _fm.get("guncelleme")
+    if not _tarih or not re.match(r"^\d{4}-\d{2}-\d{2}$", _tarih):
+        olcumler.append(f"kontrol 23 · {_rel_d}: beyan tarihi yok — OLCULEMEDI")
+        continue
+    # Olcut: BEYAN EDILEN gun ile kod reposunun EN YENI commit gunu.
+    #
+    # Iki olcut denendi ve ikisi de kor testte elendi:
+    #   "beyan gunu 00:00'dan beri kac commit" -> ayni gun dokuz commit atip
+    #     sonunda durumu yazan oturum da kirmizi yandi (yanlis alarm).
+    #   "dosyanin son yazilma ani" -> dosyaya dokunmak olcutu sifirliyordu;
+    #     beyan 2026-01-01'e cekilse bile kontrol susuyordu (olcmuyordu).
+    #
+    # Kalan olcut gun karsilastirmasi: kod, durumun BEYAN ETTIGI gunden daha
+    # yeni bir gunde ilerlemisse durum geridedir. Ayni gun icindeki sira
+    # onemsiz — commit'ten sonra yazan oturum cezalandirilmaz, ertesi gune
+    # birakan yakalanir.
+    _son_commit = (_git_repo(_repo, ["log", "-1", "--format=%cs"]) or "").strip()
+    if not _son_commit:
+        olcumler.append(f"kontrol 23 · {_alan}: git okunamadi — OLCULEMEDI")
+        continue
+    if _son_commit > _tarih:
+        _gun = (_git_repo(_repo, ["log", f"--since={_tarih} 23:59",
+                                  "--format=%H"]) or "").split()
+        sorunlar.append(
+            f"[durum geride] {_rel_d}: beyan {_tarih}, kod reposunun son "
+            f"commit'i {_son_commit} ({len(_gun)} commit sonrasinda). "
+            f"Kod ilerledi, alanin durumu yazilmadi — bayat durum once "
+            f"{OZEL['acilis']}'e, oradan her oturuma yayilir")
+    else:
+        olcumler.append(
+            f"kontrol 23 · {_rel_d}: beyan {_tarih} · kod reposunun son "
+            f"commit'i {_son_commit} — durum geride degil")
+
 
 print(f"Vault: {VAULT}")
 print(f"Not sayisi: {len(notlar)}")
