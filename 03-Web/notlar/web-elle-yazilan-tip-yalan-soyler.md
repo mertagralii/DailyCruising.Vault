@@ -1,14 +1,20 @@
 ---
 rol: not
 kapsam: web
-guncelleme: 2026-08-28
+guncelleme: 2026-09-07
 durum: guncel
 ---
 
 # Elle yazılan yanıt tipi sessizce yalan söyler
 
 `openapi.json` **85 işlemin hiçbiri için yanıt şeması taşımıyor**, bu yüzden
-bütün yanıt tipleri elle yazılıyor. Elle yazılan tip, uçla uyuşmadığında
+bütün yanıt tipleri elle yazılıyor.
+
+> ⚠️ **2026-09-07 — bu artık doğru değil.** Belge bugün **183/184** işlem için
+> yanıt şeması taşıyor. Aşağıdaki tuzak tarifi hâlâ geçerli (tipler *hâlâ* elle
+> yazılı ve *hâlâ* sessizce yalan söyleyebilir) ama **sebebi** ortadan kalktı:
+> üretime geçilebilir -> [[web-gorevler]] W-92 · [[web-enum-uretilemez]]
+ Elle yazılan tip, uçla uyuşmadığında
 **hiçbir araç uyarmıyor**: `tsc` temiz, `lint` temiz, `build` temiz.
 
 ## 2026-08-28'de iki örneği aynı dosyada çıktı

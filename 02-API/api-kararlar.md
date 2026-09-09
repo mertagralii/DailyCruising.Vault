@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: api
-guncelleme: 2026-09-05
+guncelleme: 2026-09-08
 durum: guncel
 ---
 
@@ -4792,3 +4792,644 @@ ikisini de gösteriyor (biri `Sent`, biri gerekçesiyle `Rejected`) → kabul
 **Kanıt (mutasyon):** üçü de yakalandı — ret işletmeyi de kapattı (2 kırmızı),
 gerekçe zorunluluğu kaldırıldı (2 kırmızı), gerekçe kırpılmadı (1 kırmızı).
 **609 test yeşil.**
+
+## 2026-09-06 — Dalışçı sayısı yolcuların alt kümesidir ve kontenjan sefer düzeyinde denetlenir
+
+Mert: *"rezervasyon formunu da değiştir, dalışçı sayısı sorulsun"*
+
+### Karar 1 — dalışçı ek yolcu değil, yolcuların alt kümesi
+
+`DiverCount <= AdultCount + ChildCount`. Dalan kişi zaten koltuk tutuyor.
+
+**Neden:** ayrı bir sayı olsaydı kapasite iki kez sayılırdı — 4 yolcu + 3
+dalışçı 7 koltuk gibi görünür, tekne dolmadan dolu görünürdü. Bu tür bir
+hata ekranda hata olarak da görünmez: yalnız satılmayan koltuk olarak.
+
+Bebekler üst sınırın dışında: bebek dalmaz ve koltuk da tutmuyor.
+
+### Karar 2 — kontenjan SEFERİN tamamı için denetlenir
+
+`Voyages.SoldDivers` sayacı + `CK_Voyages_SoldDivers`.
+
+**Neden:** `dalis-turu` paylaşımlı bir tur (`PerPerson` / `Shared`). Yalnız
+gelen isteği kontenjanla karşılaştıran bir denetim "koruma var, kapsamı
+yanlış"tır: kontenjan 8 iken beş ayrı rezervasyonun her biri 8 dalışçı
+yazabilir, hepsi tek tek geçer ve tekne 40 dalışçıyla kalkar.
+
+Fiyat servisindeki tek-istek denetimi KALDI ama işi başka: erken ve
+anlaşılır bir hata vermek (`400`, "en fazla 6 dalışçı yeri var"). Sınırın
+gerçekten aşılamaz olduğu yer veritabanı kısıtı (`409`, "kontenjan doldu").
+
+### Karar 3 — sayaç `SoldSeats` ile AYNI işlevin içinde
+
+`sync_voyage_sold_seats()` artık iki sayacı birlikte yazıyor.
+
+**Neden:** iki sayaç iki ayrı tetikleyiciden güncellenseydi, birini
+güncelleyip diğerini unutan ilk kod yolu ikisini KALICI olarak ayrıştırırdı
+ve kısıtlar bunu yakalayamazdı — sayılar hâlâ sınır içinde kalabilir, yalnız
+yanlış. Durum süzgeci de aynı: ayrışsaydı iptal edilen bir rezervasyonun
+dalışçısı, koltuğu boşalmışken yerini tutmaya devam ederdi.
+
+`UPDATE OF` listesine `"DiverCount"` eklenmesi işin yarısı değil tamamı:
+liste eksik kalsaydı yalnız dalışçı sayısını değiştiren bir güncelleme
+tetikleyiciyi hiç çalıştırmaz, sayaç eski değerde kalırdı.
+
+### Karar 4 — `supportsDivers` tekne detayına eklendi
+
+**Neden:** cephe "dalışçı sayısı sorayım mı" sorusunu `diverCapacity != null`
+ile cevaplamak zorunda kalırdı ve bu, **kontenjanı sınırsız olan bir dalış
+turunu dalış yapılmayan turdan ayırt edemezdi.** Çıkarımın doğru olduğu
+durum yaygın, yanlış olduğu durum sessiz: o turda dalışçı alanı hiç
+görünmez ve kimse hata görmez.
+
+Aynı sınıf: `?? 24` ve `?? false` istemci varsayılanları → [[api-desenler]]
+
+**Kanıt:** 640 test yeşil · üç mutasyon üç doğru kırmızı · canlı ölçümün
+tamamı → [[api-gorevler]] `A-108`
+
+### Karar 5 — bayrak teklife de kondu (aynı gün, cephenin ölçümüyle)
+
+`QuoteResponse.supportsDivers`.
+
+**Neden:** cephe somut bir ÜÇÜNCÜ hâl bildirdi. Rezervasyon formu bayrağı
+tekne detayından okuyor ve adres çubuğunda `boat` parametresi yokken bayrağı
+**bilmiyor**. Bilinmeyeni `false` saymak, dalış turunda alanı sessizce hiç
+sormak olurdu — Karar 4'ün kapattığı tuzağın aynısı, bir adım sonra.
+
+Teklif zaten her hâlde çağrılıyor. Bayrak oraya konunca "bilinmiyor" hâli
+hiç doğmuyor: kapı ile sınır aynı cevapta, yan yana.
+
+**Ders bunun kendisi:** bir bayrağı TEK bir uca koymak, o ucu okumayan her
+akış için bayrağın yokluğu demek. Soru "alan bir yerde var mı" değil, **"onu
+kullanacak akış onu okuyor mu"**.
+
+**Kanıt:** 642 test · bayrak iki durumda da ölçüldü · mutasyon (`true`
+sabitlendi) doğru testi kırdı · canlı: dalış turu `true`/6, dalış olmayan tur
+`false`/`null` → commit `7f58ced`
+
+## 2026-09-06 — Sözleşme şablonu: yetki, sürüm ve pasife alma
+
+Mert: *"Sözleşme oluşturma şablonunu da yap o zaman hadi"*
+
+### Karar 1 — yetki `contract.write`, `contract.send` degil
+
+**Neden:** hazır bir metinden sözleşme göndermek ile platformun sözleşme
+METNİNİ yazmak aynı ağırlıkta iş değil. `contract.write` katalogda zaten
+"Sözleşme şablonu düzenleme" olarak tanımlıydı ve hiçbir uç kullanmıyordu —
+tanımlanmış ama bağlanmamış bir yetki, verilmiş gibi görünüp hiçbir şey
+yapmaz.
+
+⚠️ **Gerekçemin ilk hâli yanlıştı ve düzeltildi.** "`contract.send`
+platform-destek rolünde de var" diye ölçmüştüm; o rol GELİŞTİRME
+veritabanındaki demo verisinden geliyordu. Temiz kurulumda `platform-destek`
+yok, `platform.support` var ve onda `contract.send` yok. Karar değişmedi,
+gerekçesi değişti — ve testi katalogdaki bir role dayandırmaktan vazgeçtim:
+test yalnız `contract.send` taşıyan bir rolü KENDİ kuruyor. Katalog yarın
+değişse bile ölçülen sınır aynı kalıyor.
+
+### Karar 2 — metin değişirse sürüm artar, ad ya da yürürlük değişirse artmaz
+
+**Neden:** gönderilmiş her sözleşme `TemplateVersion` alanında bir numara
+saklıyor. Numara artmadan metin değişseydi aynı (şablon, sürüm) çiftinin
+altında iki farklı metin bulunurdu ve o kayıt hangi metnin onaylandığını
+söylemekten çıkardı. Tersi de doğru: her düzenlemede artan bir sayaç sürümü
+"kaç kez dokunuldu" sayısına çevirir ve künyedeki numaranın anlamını
+boşaltırdı.
+
+Gönderilmiş sözleşmeler zaten etkilenmiyor — `BodyHtmlSnapshot` gönderim
+anında kopyalanıyor. Ama bu güvence test yazılana kadar yalnız bir varsayımdı.
+
+### Karar 3 — şablon silinmiyor, pasife alınıyor
+
+**Neden:** silmek, o şablondan üretilmiş sözleşmelerin künyesindeki bağı
+koparırdı. Liste `includeInactive` süzgeciyle iki soruya birden cevap
+veriyor: gönderme formu yalnız aktifleri, yönetim ekranı hepsini görüyor.
+Pasif şablon her yerden kaybolsaydı geri açmanın yolu kalmaz, panelden
+yapılan bir tıklama geri alınamaz olurdu.
+
+### Kusur — aynı bulucu iki işi göremez
+
+İlk yazımda düzenleme, gönderme yolunun bulucusunu kullanıyordu:
+`AsNoTracking` + `IsActive` süzgeci. İkisi de o yolun DOĞRU davranışı, ama
+düzenlemede birincisi değişikliği sessizce yutuyor, ikincisi pasif şablonu
+düzenlenemez yapıyordu.
+
+**Uç `200` dönüyordu ve gövde yeni değerleri gösteriyordu** — cevap sunucunun
+elindeki nesneden kuruluyordu, veritabanından değil. Sürüm testi cevaba
+baktığı için YEŞİLDİ. Pasife alma testi listeyi geri okuduğu için kırmızı
+verdi.
+
+**Ders:** *ürettiğim bir iddia ölçüm değildir.* Yazma ucunun testi, yazılan
+değeri BAŞKA bir yoldan geri okumak zorunda. Sürüm testi de geri okumaya
+çevrildi.
+
+**Kanıt:** 652 test · üç mutasyon üç doğru kırmızı → [[api-gorevler]] `A-109`
+
+## 2026-09-06 — Kupon: kimlik listede, düzenleme yok, geri açma yok
+
+Web oturumunun ölçümüyle doğdu.
+
+### Karar 1 — atama listesi kimliği taşır, silme ucu e-posta kabul etmez
+
+**Neden:** e-posta değişebilir bir alan, kimlik değişmez. Silme yolu
+değişebilen bir anahtara bağlansaydı, adresini değiştiren bir kullanıcının
+ataması kaldırılamaz hâle gelirdi. Eksik olan ucun anahtarı değil, listenin
+taşıdığı bilgiydi.
+
+### Karar 2 — kupon düzenlenmez
+
+**Neden:** müşteri kodu görüp planını ona göre yapıyor. Yüzdesi sonradan
+değişen bir kupon, aynı kodu kullanan iki müşteriye iki farklı indirim
+verirdi. Yanlış açılan kupon kapatılır, yerine yenisi açılır — ve yeni
+kuponun kendi sayacı, kendi tarihi olur.
+
+### Karar 3 — pasife alınan kupon geri açılmaz
+
+**Neden:** pasife alınmış bir kupon, müşterinin "kod geçersiz" cevabı aldığı
+kupondur. Aynı kodu sessizce geri açmak reddedilen müşteriye hiçbir şey
+söylemez; o müşteri kampanyayı çoktan kaybetmiştir.
+
+### Ortak desen — beşinci kez
+
+Bugünün tekrar eden kusuru: **veri var, onu kullanacak akış ona ulaşamıyor.**
+`supportsDivers` tekne detayındaydı, rezervasyon formu ulaşamıyordu; kupon
+atamasının kimliği veritabanındaydı, ekran ulaşamıyordu; sözleşme şablonu
+tablosu vardı, yaratacak uç yoktu.
+
+Soru artık "alan bir yerde var mı" değil: **onu kullanacak akış onu okuyor
+mu.**
+
+**Kanıt:** 655 test · canlı ölçümün tamamı → [[api-gorevler]] `A-110`
+
+## 2026-09-06 — "Müşteri" kimdir: temiz kural, yanlış kapsam
+
+Mert'in ilk tanımı: *"burada sadece bizim sitemizde kayıtlı olan müşteriler
+yer alacak. İşletmeci, destek ekibi, site sahibi vesayre barınmayacak."*
+
+Karşılığı basitti: personel değil VE işletme üyesi değil.
+
+**Neden değişti:** o kural, tur satın almış bir işletme sahibini hiçbir
+listede müşteri saymıyordu. Parası ödenmiş, rezervasyonu duruyor, ama
+"kaç müşterim var" sayısında yok. Mert bunu görünce kuralı genişletti:
+
+> (personel değil VE işletme üyesi değil) VEYA (en az bir rezervasyonu var)
+
+İkinci koşulla girenler `alsoRole` ile işaretleniyor — listede görünüyorlar
+ama sıradan müşteri gibi görünmüyorlar. Bu ayrım işlevsel: toplu müşteri
+e-postası gönderilirken o satırların ayırt edilebilmesi gerekiyor.
+
+**Ders — bugünün tekrar eden dersinin bir başka yüzü:** temiz bir kural,
+kapsamı dışında kalanı YOK SAYDIĞI için yanlış olabilir. Süzgeç doğru
+görünür çünkü dışarıda bıraktığı şey süzgece bakarak görülmez; ancak
+"kim eksik" diye sorulduğunda ortaya çıkar.
+
+Aynı sebeple `topRatedBoats`'a asgari yorum eşiği KONMADI: eşik de listeyi
+okuyanın göremediği bir süzgeç olurdu.
+
+**Kanıt:** 672 test · iki mutasyon iki doğru kırmızı · canlı ölçümün tamamı
+→ [[api-gorevler]] `A-117`
+
+## 2026-09-07 — Belge, telde görüneni bildirmek zorunda
+
+`JsonStringEnumConverter` serileştirmede uygulanıyordu ama OpenAPI belgesine
+yansımıyordu: tel `"Paid"` gönderiyor, belge `integer` diyordu.
+
+**Neden bu bir kusur, biçim tercihi değil:** belgeden üretilen her istemci
+tipi yanlış olur. Web tarafı `ReservationStatus: number` üretiyordu — telde
+hiçbir zaman görülmeyen bir tip. Yanlış belge, elle yazmayı ZORUNLU kılıyor;
+yani belge yanlış olduğu sürece "belgeden üret" kuralı hiç kurulamıyor.
+
+**İkinci ders — sessizliğin ikinci katmanı:** belgede `enum` dizisi hiç
+yoktu. Yani yalnız tür yanlış değildi, değerlerin VARLIĞI da yazılı değildi.
+Cephe çeviri tablolarını elle yazmak zorundaydı ve aynı gün iki kez ayrıştı.
+
+**Ders:** *bir sözleşmenin yanlış olması, onu kullanmayı imkânsız kılar ve
+bu, kullanılmadığı için de fark edilmez.* Belge kimse ona güvenmediği için
+sessizce yanlış kaldı; ancak biri "buradan üretelim" dediğinde ölçüldü.
+
+⚠️ **Kusuru bulan şey benim yanlış önerimdi.** "Enum'ları belgeden üretin"
+dedim; web oturumu ölçtü, üretilecek bir şey olmadığını gösterdi. Yanlış
+öneri, ölçüldüğü için işe yaradı — ölçülmeden kabul edilseydi çalışan elle
+yazılmış tipleri yanlış olanlarla değiştirecekti.
+
+**Kanıt:** enum şeması 0 → 29 · 678 test · mutasyon doğru kırmızı
+→ [[api-gorevler]] `A-121`
+
+## 2026-09-07 — Testin yeşil olması, doğru şeyi ölçtüğü anlamına gelmiyor
+
+`A-123`'te belgedeki `number|string` birleşimini düzelttim ve bunu ölçen bir
+test yazdım. Test yeşil verdi. Ama **242 alan hâlâ bozuktu**: test yalnız
+`number` + `string` arıyordu, `integer` + `string` aramıyordu; ve yalnız
+`components.schemas` içine bakıyordu, sorgu parametrelerine bakmıyordu.
+
+**Neden:** testi, düzelttiğim kusurun ŞEKLİNE göre yazdım — kusurun
+SINIFINA göre değil. Elimdeki altı örneğin hepsi `decimal`di, ben de
+`number` aradım.
+
+**Bu, bugün başkalarında altı kez bulduğum kusurun testimdeki hâli:**
+koruma var, kapsamı yanlış. Ve testler için özellikle tehlikeli, çünkü
+yeşil bir test aktif olarak güven üretiyor — korumasız kalmaktan farkı,
+korumalı olduğunu SANMAK.
+
+**Kural:** bir koruma yazarken sorulacak soru "elimdeki örnekleri yakalıyor
+mu" değil, **"bu sınıftan başka ne var ve onu da yakalıyor mu"**.
+
+Sorunu web oturumu ölçüp bildirdi. İki oturum aynı kusur sınıfını gün boyu
+birbirine gösterdi; bu sonuncusunda gösteren onlardı.
+
+**Kanıt:** 215 → 0 · 27 → 0 · mutasyon 242 ihlal sayarak kırmızı
+→ [[api-gorevler]] `A-124`
+
+## 2026-09-07 — Biniş jetonu artık saklanıyor: bilinerek verilmiş bir güvenlik ödünü
+
+**Önceki tasarım:** jetonun yalnız SHA-256 özeti saklanıyordu. Düz metin
+müşteriye bir kez veriliyor, bir daha hiçbir yerden okunamıyordu.
+Veritabanını ele geçiren biri geçerli bilet üretemezdi.
+
+**Mert'in kararı (web oturumu üzerinden, riski yazılı olarak önündeyken):**
+panelde mevcut karekod görünsün. Aktarılan cümle: *"veritabanı sızarsa
+saldırgan geçerli biniş bileti üretebilir hâle gelir."*
+
+Üç seçenek sunulmuştu: (A) bugünkü hâl — karekod yok · (B) personel yeni
+bilet üretir, eskisi iptal olur · (C) jetonu sakla. **C seçildi.**
+
+**Neden bu bir ürün kararı, teknik bir hata değil:** karekodun panelde
+görünmesi iskelede gerçek bir işi çözüyor ve müşterinin belgesini
+bozmuyor. Güvenlik tarafı zayıflıyor; hangisinin ağır bastığı ürün
+sahibinin kararı.
+
+### Ödünün maliyetini düşüren üç şey
+
+1. **Şifreli, düz metin değil.** AES-GCM, anahtar **veritabanının
+   dışında** (yapılandırmada). Yalnız veritabanı sızarsa jetonlar okunamaz.
+   ⚠️ Bu "hiç saklamamak" kadar güvenli DEĞİL ve öyle anlatılmamalı: iki
+   farklı sırrın birden sızmasını gerektiriyor, o kadar.
+
+2. **Uygulama anahtarsız açılmıyor.** Varsayılan anahtar konsaydı, onu
+   değiştirmeyi unutan kurulum "şifreli" görünüp herkesin bildiği bir
+   anahtarla korunurdu — şifrelemenin en kötü hâli, çünkü koruma sanılıyor.
+
+3. **Görüntüleme kayda geçiyor** (`boarding.ticket.viewed`). Sızıntı
+   riskini kaldırmıyor, kötüye kullanımı görünür yapıyor: panelde bir
+   personel misafirin biniş kodunu izsiz alabilir hâle geliyordu.
+   Jetonun KENDİSİ günlüğe yazılmıyor — erişimi kaydeden mekanizma ikinci
+   bir sızıntı yüzeyi olmamalı ve olay günlüğü temizlenemiyor.
+
+### AES-GCM neden
+
+Hem gizliyor hem **bütünlüğü doğruluyor**. Yalnız gizleyen bir kip (CBC)
+kullanılsaydı, veritabanına yazma erişimi olan biri jetonu sessizce
+değiştirebilir ve kimse fark etmezdi.
+
+Özet KALDI: okutma doğrulaması hâlâ onun üstünden çalışıyor, çünkü şifreli
+metin her seferinde farklı çıkıyor ve aramaya elverişsiz.
+
+**Geri doldurma imkânsız:** bu karardan önce üretilmiş biletlerin düz metni
+hiçbir yerde yok. O rezervasyonlarda `token: null`.
+
+**Kanıt:** 688 test · 7 şifreleme testi · canlı: müşteriye verilen jeton ile
+panelde görünen AYNI, veritabanında düz metin YOK, görüntüleme günlüğe
+yazıldı → [[api-gorevler]] `A-127`
+
+## 2026-09-07 — Günün üç kusur sınıfı
+
+Bugün iki oturum birbirine sekiz kusur gösterdi ve **hiçbiri gözle
+görülmedi, hepsi ölçümden çıktı** — panel hâlâ tarayıcıda gezilmedi.
+Üçü tekrar eden sınıf:
+
+### 1. Boş ya da tek çeşit veri, kusuru gizler
+
+· Destek sekmesi boşken durum sütunu hiç sınanmamıştı; veri gelince ham
+  İngilizce çıktı.
+· Dört kuponun dördü de listeliydi; "listelenene kişi atanamaz" dalı hiç
+  çalışmamış, ekranda ölü bir düğme duruyordu.
+· Müşteri listesindeki "işletme üyesi" işareti, rezervasyon yapan bir
+  işletme sahibi olmadığı için canlıda hiç görünmemişti.
+· Ekstra tablosu boştu, "yok" ile "bozuk" ayırt edilemiyordu.
+
+⚠️ Tersi de doğru ve daha ince: **tablo dolsun diye doldurmak** da yanlış —
+kimsenin okumadığı veri, kimsenin fark etmediği yanlış demek. Ölçüt
+"tablo dolu mu" değil, **"bu ekranın dalları çalıştı mı"**.
+
+### 2. Aracın ne ölçtüğünü sormadan sayısına güvenmek
+
+· `pg_stat_user_tables.n_live_tup` bayat: kuponlar yazılmışken 0 gösterdi.
+· Web'in üreteci "183/184 yanıt şeması" diyordu; 400'ün `ApiError`'ını
+  sayıyordu, gerçek sayı 129.
+· `grep -c` satır sayar, eşleşme değil.
+· Benim `contract.send` ölçümüm demo verisindendi, temiz kurulumda o rol
+  yok.
+
+Ortak hâl: sayı doğru görünüyor ve kimse **neyi saydığını** sormuyor.
+
+### 3. Korumanın kendi kapsamını ölçmemek
+
+· `number|string` testim 242 alanı kaçırdı: kusurun ŞEKLİNE göre yazılmıştı,
+  SINIFINA göre değil.
+· Web'in `TEKNE_DURUMU`'u üç kopyaydı ve yalnız birinde ayrışmıştı.
+
+En tehlikelisi bu, çünkü yeşil bir test **aktif olarak güven üretiyor**.
+Korumasız olmaktan farkı: korumalı olduğunu sanmak.
+
+**Kural:** bir koruma yazarken sorulacak soru *"elimdeki örnekleri
+yakalıyor mu"* değil, **"bu sınıftan başka ne var ve onu da yakalıyor
+mu"**.
+
+**Neden:** bu üç sınıf bugün sekiz kusurun tamamını üretti ve hiçbiri
+gözle görülmedi. Kaydedilmeselerdi, yarın aynı sınıftan dokuzuncusu yine
+ölçümle bulunacaktı — üstelik her seferinde farklı bir kılıkta, yani
+"aynı hatayı yapıyoruz" cümlesi hiç kurulmayacaktı. Sınıfın adı olmadan
+tekrar görünmüyor.
+
+
+## 2026-09-07 · Karekod üretimi ödemeyi düşüremez
+
+Ödeme tamamlandığında biniş karekodu kendiliğinden üretiliyor
+(`PaymentService.EnsureBoardingTicketAsync`). Üretim bloğu **bilerek**
+`catch (Exception) when (!ct.IsCancellationRequested)` ile yutuluyor.
+
+**Neden:** İki iş aynı çağrıda ama ağırlıkları aynı değil. Ödeme
+kaydedildiğinde para çoktan çekilmiş, defter satırı atılmış olur;
+o noktada fırlatılan bir istisna müşteriye "ödeme başarısız" der ve
+kayıtla gerçek ayrışır. Karekod ise **sonradan elle de üretilebilir**
+(uç nokta zaten var), ödeme üretilemez. Ucuz olanı feda ediyoruz.
+
+⚠️ Bunun bedeli: karekod üretimi sessizce başarısız olabilir. Kabul
+edildi çünkü alternatifi — başarılı bir ödemeyi başarısız göstermek —
+kıyaslanamaz derecede kötü.
+
+## 2026-09-07 · Aynı gerçeği iki alanda tutmak, tutarsızlığı görünmez yapar
+
+`Voyages` hem `DepartureDate` hem `StartsAt` taşıyor. Demo betiği yıllardır
+yalnız `StartsAt`'i kaydırıyordu; 68 seferin 4'ünde iki alan **farklı gün**
+söylüyordu ve hiçbir ekran şikâyet etmedi.
+
+**Neden görünmedi:** iki alan farklı yerlerde okunuyor — ekranlar
+`DepartureDate`, biniş penceresi ve iade dilimleri `StartsAt`. Her okuyucu
+kendi alanını tutarlı buluyor. Tutarsızlık ancak **ikisini aynı anda
+kullanan** bir iş çıkınca (bilet üretimi) ortaya çıktı.
+
+**Ders:** türetilebilir bir alanı ayrıca saklıyorsak, onu yazan **her**
+yolun ikisini birden yazdığını denetlemek gerekir; "kim güncellemeyi
+unutur" sorusu değil, "unutulduğunda ne bağırır" sorusu önemli. Burada
+hiçbir şey bağırmıyordu. → [[api-desenler]]
+
+## 2026-09-08 · Okutma bileti iptal etmiyor — "okutuldu" biletten okunamaz
+
+Başarılı okutmadan sonra `BoardingTickets.RevokedAt` **null kalıyor** ve
+`isUsable` **true** dönmeye devam ediyor. Ölçüldü: `6UGJC9S4` okutuldu,
+bilet hâlâ geçerli görünüyor.
+
+**Neden:** `BoardingService` `Boarded` durumundaki rezervasyonun tekrar
+okutulmasını kabul ediyor ve `AlreadyBoarded: true` dönüyor. Kaptan aynı
+kodu ikinci kez okuttuğunda korkutucu bir hata değil, "zaten binildi"
+görmeli — iskelede tereddüt, yanlış kabulden pahalı.
+
+**Bedeli:** ön yüz "okutuldu" hâlini `boardingTicket`'tan **türetemez**.
+Bugün tek doğru yol `boardingScans.some(s => s.succeeded)`.
+
+⚠️ **`succeeded` süzgeci zorunlu.** `boardingScans` başarısız denemeleri de
+taşıyor (bilerek — iskelede çalışmayan kodun sebebi yalnız orada yazılı).
+`length > 0` yazan bir ön yüz, yalnızca başarısız denemesi olan GEÇERLİ bir
+bileti "okutuldu" diye soluklaştırır.
+
+`status === 'Boarded'` daha zayıf bir vekil: biniş elle de işaretlenebiliyor
+(`2A2UA3HS` öyle kurulmuş), o zaman okutma yokken "okutuldu" denir.
+
+**`usedAt` alanı YAZILDI ve GERİ ALINDI.** Ön yüz — tek tüketicisi —
+istemedi: türetmeyi tek satırla ve `succeeded` süzgeciyle doğru yapıyor,
+alan eklemek sözleşme yüzeyini tüketicisi olmayan bir şeyle büyütürdü.
+Gerekçe kabul edildi.
+
+**Yeniden istenmesinin koşulu yazılı:** müşterinin kendi ekranı bu bilgiyi
+isterse. `MyReservationItem`'da bilet alanı **hiç yok**, dolayısıyla orada
+türetilecek `boardingScans` de olmayacak — o gün `usedAt` doğru cevap olur.
+
+Bu turun kazancı alan değil, **ölçüm**: ön yüz "okutuldu" hâlini
+`boardedAt`ten türetiyordu ve `2A2UA3HS` gibi ELLE işaretlenmiş bir binişte
+ortada hiç okutma yokken "bu kod okutuldu" diyordu. Ölçüm o kusuru açtı,
+alan değil.
+
+## 2026-09-08 · Tekrar okutma "başarısız" yazılmaz
+
+Web oturumu, ikinci okutmanın denetim kaydına `Succeeded = false` +
+`FailureReason = "AlreadyBoarded"` yazılmasını önerdi. **Reddedildi.**
+
+**Neden:** `Succeeded` "biniş oldu mu" demiyor, **"okutma kabul edildi mi"**
+diyor. Ölçüldü — `false` yazılan bütün hâller (`TokenExpired`, `NotPaid`,
+`Cancelled`, `Refunded`, `Expired`, `AlreadyCompleted`, `NotBoardable`)
+`BoardingException` fırlatıyor: istek reddedilmiş, kaptan hata görmüş,
+misafir binememiş. Tekrar okutma bunların hiçbiri değil — `BoardingResult`
+dönüyor ve kaptan yolcu listesini görüyor.
+
+İki somut bedeli olurdu:
+
+1. `IX_BoardingScans_ScannedAt WHERE Succeeded = false` kısmi dizini
+   iskelede **çalışmayan** kodları bulmak için var. Zararsız tekrarlar
+   oraya dolarsa işletmesel değeri olan tek sorgu seyrelir.
+
+2. ⚠️ **Ön yüzün "elle işaretlendi, kod okutulmadı" hâlini yalancı
+   çıkarırdı.** Sıra: biniş elle işaretlenir (`Boarded`, okutma yok), sonra
+   kaptan gerçek karekodu okutur. O okutma `Succeeded = false` yazılırsa
+   rezervasyonun TEK okutması "başarısız" olur ve ekran "bu kod okutulmadı"
+   der — okutulduğu hâlde. `2A2UA3HS` tam olarak bu şekil.
+
+**Gerçek problem ekrandaydı, kayıtta değil:** iki "Okutuldu" satırı insana
+iki biniş gibi okunuyordu. Biniş sayısı okutma sayısı değil;
+`ReservationStatusHistory`'de `Paid → Boarded` bir kez var. Çözüm ön yüzde
+tek satır: **ilk** başarılı okutma binişi yapandır, sonrakiler yeniden
+okumadır.
+
+**Ders:** bir alanın adı ("Succeeded") ne ölçtüğünü söylemiyor; ne zaman
+`false` yazıldığına bakmadan anlamı bilinemez. Ekranı düzeltmek için
+kaydın anlamını kaydırmak, ekranı düzeltir ve kaydı bozar.
+→ [[api-gorevler]] `A-134`
+
+## 2026-09-08 · Ekranda toplanacak sayılar, tek tek değil TOPLAMI korunarak üretilir
+
+Ödeme dökümü tur/ek hizmet/indirim/KDV satırlarını alt alta gösteriyor.
+Her satır kendi "doğru" formülüyle yuvarlansaydı dört ayrı yuvarlama
+birbirini bir kuruş ıskalayabilir ve **ekranda toplamayan bir döküm**
+çıkardı.
+
+**Karar:** üç kalem netleştirilip yuvarlanıyor, **KDV artakalan olarak**
+bulunuyor (`GrandTotal − net`). Kalem satırlarında da **son kalem
+yuvarlama artığını üstleniyor**.
+
+**Neden:** hangi satırın kuruşu üstleneceği bir seçimdir ve vergi satırı,
+kalem fiyatlarından daha esnektir. Kullanıcı "kahvaltı 533,33 yazıyor ama
+toplamı 533,34 olmalı" demez; "üç sayı toplanmıyor" der.
+
+⚠️ **`MidpointRounding.AwayFromZero` açıkça veriliyor.** .NET'in varsayılanı
+bankacı yuvarlaması, Postgres'in `numeric` `round`'u yarımı yukarı yuvarlar;
+varsayılan bırakılsaydı aynı rezervasyonun KDV'si SQL'de bir, ekranda başka
+bir kuruş çıkardı.
+
+## 2026-09-08 · "Toplam şu artı bu" cümlesi tahsilatı da gösterimi de tarif edebilir
+
+Mert *"tur bedeli + ek hizmet + KDV = genel toplam"* dedi. Bunu **tahsilat
+modeli** olarak okudum: ilan fiyatları KDV hariç olacak, müşteri %20 fazla
+ödeyecek. `PricingService` değiştirilmeye, `CK_Reservations_GrandTotal` için
+migration planlanmaya başlandı. Kastı **yalnız o ekrandaki gösterimdi.**
+
+**Neden yanılttı:** iki farklı şey aynı cümleyle söyleniyor ve aradaki fark
+kelimede değil BEDELDE — biri CSS kadar ucuz, diğeri fiyat, ödeme, fatura,
+komisyon ve hakediş demek.
+
+**Kural:** bir cümle para AKIŞINI mı yoksa para GÖSTERİMİNİ mi değiştiriyor,
+koda dokunmadan önce sorulur. Ayırt edici soru şu: *"müşterinin ödediği tutar
+değişiyor mu?"* — cevabı hayırsa bu bir ekran işidir.
+
+Yanılgının ucuz kapanmasının sebebi, değişikliği yapmadan önce **kapsamı
+ölçüp yazmış olmam**: "müşteri ilan fiyatının %20 fazlasını öder" cümlesini
+görünce Mert hemen düzeltti. Ölçüm, yanlış anlamayı koda dönüşmeden yakaladı.
+
+## 2026-09-08 · Bir alanın süzgeçte olması, izdüşümde olduğu anlamına gelmez
+
+`SupportTicketMessage.IsInternal` sorguda **süzüyordu**
+(`isPlatformStaff || !m.IsInternal`) ama izdüşüme hiç girmiyordu. Yani
+kural işliyordu, **sonucu görünmüyordu**: personelin ekranında iç not ile
+müşteriye gitmiş yanıt birebir aynıydı.
+
+**Neden fark edilmedi:** süzgecin testi vardı ve yeşildi — "müşteri iç notu
+görmüyor, personel görüyor" doğru ölçülüyordu. Eksik olan şey görünürlük
+değil **ayırt edilebilirlikti**, ve onu ölçen hiçbir test yoktu.
+
+**Ders:** bir bayrak sorguda kullanılıyorsa, o bayrağın **dışarı da
+dönmesi gerekip gerekmediği** ayrı bir sorudur. "Süzüyoruz" ile
+"gösteriyoruz" farklı işler; birincisinin testi ikincisini kapsamıyor.
+
+⚠️ Testin doğru kurulması da ayrı bir iş: yalnız iç notun `true` döndüğünü
+ölçmek yetmez, aynı talepte müşteriye GİDEN bir personel yanıtının `false`
+döndüğü de ölçülmeli — yoksa her personel mesajına `true` yazan kod da
+geçer. → [[api-gorevler]] `A-137`
+
+## 2026-09-08 · Demo veri "var" olmakla sınamaz, ARTIK üretmesi gerekir
+
+Ön yüz "ek hizmetli bir rezervasyon" istedi. Ayşe'nin her zamanki teknesinin
+ek hizmet fiyatları 150/450/1200 ve **üçü de 1,2'ye tam bölünüyor** — o
+teknede hangi kalem seçilirse seçilsin kuruş yuvarlaması hiç sınanmıyor.
+
+Tekne, artık üreten fiyatı olan Deniz Kızı ile değiştirildi (280×1 → 233,33
+ve 320×2 → 533,33, ama toplamın neti 766,67).
+
+**Neden:** demo verinin işi ekranı DOLDURMAK değil, korumayı **çalıştırmak**.
+"Ek hizmet var" bir varlık ölçüsü; "yuvarlama artığı var" bir davranış
+ölçüsü. Birincisiyle yetinen demo veri, ikinci sınıf kusurları sessizce
+gizler — bu, günün ilk kararının (*"boş ya da tek çeşit veri kusuru gizler"*)
+bir adım incelmiş hâli: **tek çeşit olmayan ama hepsi aynı köşeye düşen**
+veri de gizler.
+
+## 2026-09-08 · Sayfa zarfı `totalCount`; istisna kendi ucumdu
+
+Ön yüz ölçtü: panelin sayfalı şemalarının **12'si `totalCount`**, **2'si
+`total`** — ve ikincilerden biri aynı gün yazdığım `PlatformStaffPage`'ti.
+Ayrışmayı ekleyen bendim. Çoğunluğa çekildi (`c7da3b3`).
+
+**Neden önemliydi:** bedeli sessiz. Alışkanlıkla `totalCount` yazan bir ekran
+`undefined` okur, toplamı 0 sanır, sayfa sayısını **hep 1** hesaplar ve
+sayfalama hiç görünmeden kaybolur. Dört kayıtlık bir listede fark bile
+edilmezdi — kusur ancak liste büyüdüğünde, yani en kötü anda çıkardı.
+
+⚠️ Kalan tek istisna `BlogListResponse` (`total`); daha eski ve
+dokunulmadı. **Bilerek bırakıldı**, çünkü onu değiştirmek çalışan bir ekranı
+kırar; ama ayrışma yazılı olmalı ki bir sonraki uç yanlış tarafa
+kopyalanmasın.
+
+**Ders:** ad tutarlılığı kozmetik değil. Aynı kavramın iki adı olduğunda,
+yanlış olanı yazan istemci **hata almaz** — sessizce yanlış davranır.
+
+## 2026-09-08 · Demo veri ekranın DALLARINI dolaşmalı, satırlarını değil
+
+Personel ekranının üç dalı vardı ve **üçü de hiç çalışmıyordu**, çünkü dört
+demo personelin dördü de yönetici ve hepsi tek rollüydü:
+
+| Dal | Görünmüyordu çünkü |
+|---|---|
+| `support` dolu | kimsede destek rolü yoktu |
+| ortalama `null` ama nesne dolu | yanıtsız talebi olan destek personeli yoktu |
+| `roleNames` çoğul | kimsenin ikinci rolü yoktu |
+
+Üç personel eklendi (Selin, Kerem, Deniz) ve her biri **bir dalı** açıyor.
+
+**Neden:** demo verinin işi ekranı doldurmak değil, **kodun her yolundan bir
+kez geçmek**. "Personel listesi dolu" bir satır ölçüsü; "üç dalın üçü de
+çalıştı" bir yol ölçüsü.
+
+Bu, günün en çok tekrarlayan dersinin beşinci hâli — ve her seferinde biraz
+daha inceldi: önce *boş tablo*, sonra *tek çeşit veri*, sonra *hepsi aynı
+köşeye düşen veri* (`A-136`, ek hizmet fiyatlarının hepsinin 1,2'ye tam
+bölünmesi), şimdi *kodun bir dalına hiç uğramayan veri*.
+
+## 2026-09-08 · Çalıştırılmış migration düzenlenmez, yenisi yazılır
+
+`A03_YetkiKatalogu`'nun tohum verisi ASCII'ye indirgenmişti. Düzeltme, o
+dosyayı değiştirerek DEĞİL yeni bir migration (`A111`) ile yapıldı.
+
+**Neden:** çalıştırılmış bir migration'ı düzenlemek, onu zaten uygulamış
+veritabanlarında **hiçbir şey yapmaz** — `__EFMigrationsHistory` o kaydı
+görür ve atlar. Geliştirici kendi veritabanını sıfırdan kurduğu için
+"düzeldi" sanır; üretim bozuk kalır ve bu ancak aylar sonra fark edilir.
+
+Uyarı web oturumundan geldi ve doğruydu.
+
+⚠️ **`Down` bilerek boş.** Geri alma, doğru yazılmış isimleri bozuk
+hâllerine döndürmek olurdu. Şema değişmediği için teknik bir gerekçesi de
+yok — iskeletin **boş üretilmiş olması** bunun kanıtı: EF hiçbir şema farkı
+bulamadı, dosya yalnız veri düzeltiyor.
+
+## 2026-09-08 · Yazılan ama okunmayan veri bayatlar ve kimse duymaz
+
+Yetki adları 24 Ağustos'ta yazıldı, 8 Eylül'e kadar **hiçbir ekran onları
+basmadı** ve iki hafta boyunca bozuk durdular. Hata vermediler, test
+düşürmediler, kimse şikâyet etmedi — çünkü okuyan yoktu.
+
+Aynı gün ikinci örneği: `Voyages.DepartureDate` ile `StartsAt`, 68 seferin
+4'ünde farklı gün söylüyordu ve **farklı ekranlar farklı alanı okuduğu**
+için tutarsızlık ancak ikisini birden kullanan bir iş çıkınca göründü.
+
+**Neden:** bir alanın doğruluğu, onu okuyan bir yol olduğunda ölçülür.
+Yazılıp okunmayan alanda "doğru" ile "bozuk" ayırt edilemez — hiçbir kanal
+farkı bildirmez. Bu yüzden yeni bir ekran eski bir alanı ilk kez bastığında
+**o alan doğrulanmamış sayılmalı**, çalışıyor varsayılmamalı.
+
+**Ders:** bir alanın doğruluğu, onu okuyan bir yol olduğunda ölçülür.
+Yazılıp okunmayan alan için "doğru" ile "bozuk" ayırt edilemez hâldedir;
+ilk okuyucu geldiğinde bulduğu şey veridir, kusur değil — kusur zaten
+oradaydı. → [[api-gorevler]] `A-139`
+
+## 2026-09-08 · Derleyici koruyamıyorsa test korur — sözlük sunucuda kalır
+
+77 olay türünün okunur karşılığı **sunucuda** tutuluyor, ön yüzde değil.
+
+**Neden:** ön yüzdeki bir çeviri tablosunu hiçbir şey koruyamaz — olay
+türleri belgede enum değil, düz dize. 78. tür eklendiği gün ekranda ham
+İngilizce belirir ve **kimse fark etmez**. Aynı gerekçe yetki adlarında da
+işlemişti (`A-139`): sözlük yerine `name` göndermek sorunu kökten kaldırdı.
+
+⚠️ **Ama sunucuda da derleyici koruyamıyor:** `EventTypes` bir
+`const string` sınıfı, `switch` bütünlüğü zorlanamıyor. Koruma bu yüzden
+bir **teste** taşındı: bütün sabitler yansımayla okunuyor, her birinin
+başlığı olduğu doğrulanıyor, ve **ters yön** de ölçülüyor — sözlükte
+`EventTypes`'ta karşılığı olmayan anahtar kalamaz.
+
+**Ders:** "derleyici zorlayamıyor" ile "koruma yok" aynı şey değil.
+Yansımalı bir test, enum'un verdiği garantinin çalışma zamanı karşılığını
+üretir; tek koşulu, testin **kaynağı koddan okuması** — elle yazılmış bir
+liste ile karşılaştırsaydı ikinci bir bakım noktası olurdu.
+
+## 2026-09-08 · Denetim kaydında `read | write` yetmez, üçüncüsü `denied`
+
+Web oturumu olayları `read | write` diye ikiye ayırmamı istedi. Üçe
+ayrıldı: `Read` · `Write` · `Denied`.
+
+**Neden:** red ve başarısızlık olayları (`PlatformDenied`, `LoginFailed`,
+`BoardingFailed`) ikisinden de değil — hiçbir şeyi değiştirmiyorlar ama
+"bakma" da değiller. `Write` sayılsalardı ekran "bu personel şunu
+değiştirdi" derdi; `Read` sayılsalardı "yalnızca baktı" derdi. İkisi de
+yanlış, ve **reddedilen deneme denetimde en çok bakılası satırdır.**
+
+⚠️ Tanınmayan tür `Write` sayılıyor, `Read` değil: ekranın varsayılan
+süzgeci "yalnız değişiklikler" olacak ve bilinmeyen bir olayı okuma saymak
+onu o süzgeçten **sessizce** düşürürdü. Yanlış tarafa düşecekse görünen
+tarafa düşsün.

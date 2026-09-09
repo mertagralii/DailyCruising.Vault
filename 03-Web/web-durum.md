@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: web
-guncelleme: 2026-09-05
+guncelleme: 2026-09-07
 durum: guncel
 ---
 
@@ -274,3 +274,213 @@ sözleşme gönderiyor ve rozet kendiliğinden kalkıyor → `W-86`
 Aynı gün yerleşim de düzeltildi: yat işletmeleri tablosu kabından 510px
 taşıyordu, sütunlar oransal yapıldı ve yönetim paneli 1440px kaba alındı.
 1440 ve 1280'de yatay taşma 0. `982ee73`
+
+## 🟡 2026-09-06 — tekne yönetimi altı ekran yazıldı, hiçbiri doğrulanmadı
+
+Mert canlı paneli (`dailycruising.com.tr/admin/tekne-yonetimi`) gösterdi:
+*"tekne ekleye bak, teknelerin listelenmesine bak, sonrasında fiyat özellik
+rota menü resimler ve detay kısmına bak … buna göre bizim tekne ekle
+kısımlarını yapmanı istiyorum."* Dipnotu: **tekne sahibi seçimi yalnız
+platform panelinde**.
+
+Altı ekran yazıldı ve `build`/`lint`/`tsc` temiz: liste (`c829c26`), tekne
+ekle (`5497725`), düzenle · detay · belgeler (`df1a74f`), fiyat · resimler
+(`60cadfb`). Backend dört uç ailesini `40e59ff` ile açtı.
+
+⚠️ **Hiçbiri personel hesabıyla açılmadı.** Yereldeki tarayıcı oturumu Mert'in
+müşteri hesabı (`my_mert07@hotmail.com`), `/admin` doğru şekilde 403 veriyor.
+Parolayı ben yazmıyorum. Doğrulanacak iki şey var ve ikincisi daha ağır:
+
+1. `PanelKabuk` refaktörü **işletme panelindeki beş modalı** bozmuş olabilir.
+2. Her yazma **uçtan geri okunarak** ölçülmeli — toast kanıt değil; bu
+   oturumda "kaydedildi" yazıp hiçbir şey kaydetmeyen iki ekran çıktı.
+
+Yol boyunca ölçülen iki kusur düzeltildi: `/admin/tekneler` **yoktu** (arama
+ve sayfalama 404 veriyordu), ve `boat-media` sınırı 20 iken sunucununki 24 —
+ekran, sunucunun kabul edeceği dört görseli reddediyordu → [[web-kararlar]]
+
+## ✅ 2026-09-06 — gün aralığı açığı kapandı
+
+Kiralama tipinde `MinNights`/`MaxNights` **yoktu**; tek sınır 365 gecelik genel
+tavandı. *"3 günlük"* ilan edilen tarife `nights: 1` ile üçte bir fiyata
+alınabiliyordu ve **korumanın tek dayanağı bizim ekranımızın `nights`
+göndermemesiydi** — istemci hatası değil, sözleşme boşluğu.
+
+Mert onayladı, backend bağlayıcı yaptı (`e1e6c12`). Fiyat hesabı aralığı
+uyguluyor ve hata mesajı sayıyı söylüyor. Formda alan var (yalnız çok günlü
+tipte), müşteri sayfasında rozet olarak görünüyor (`fe33940`).
+
+⚠️ **Aralık tanımlı değilse denetim yok** — var olan tiplerin hiçbirinde
+değer yok ve zorunlu saymak bugün satılan turları satılamaz hâle getirirdi.
+Boş bırakılması hata değil.
+
+## 🟡 2026-09-06 — dalışçı kontenjanı kaydediliyor ama uygulanmıyor
+
+`diverCapacity` / `nonDiverCapacity` tipe eklendi, panelde giriliyor, müşteri
+ucundan dönüyor — **ama hiçbir yerde uygulanmıyor.** Rezervasyon
+dalışçı/refakatçi ayrımı taşımıyor; yalnız yetişkin/çocuk/bebek sayısı var.
+
+Müşteri sayfasında **gösterilmedi**: rozet şeridi "bu tekne şunu garanti
+ediyor" diye okunuyor ve uygulanmayan bir kontenjanı oraya yazmak olmayan bir
+söz vermek olurdu. Panelde alan var ve yanında uygulanmadığı yazılı.
+
+**Mert kararını 2026-09-06'da iki kez verdi ve ikincisi geçerli.** Önce
+*"bilgi olarak gösterilsin"*, sonra backend oturumuna *"rezervasyon formunu da
+değiştir, dalışçı sayısı sorulsun"* — yani **bağlayıcı**. İkinci karar bana
+aktarıldığında inşaya başlamadım; aktarılan cümle onay sayılmıyor, Mert'e
+doğrudan sordum ve *"Evet, bağlayıcı olsun"* dedi. Bağlandı (`3c8b844`).
+
+⚠️ Kontenjan **seferin tamamı** için geçerli, istek başına değil: teklif `200`
+dönse bile rezervasyon `409` dönebilir. Arayüz ikisini ayırıyor — `400` formu
+düzeltmek, `409` başka tarih seçmek.
+
+İlk karar (aşağıda) tarih olarak duruyor: Tekne sayfasında
+"Dalış kontenjanı" bölümü, tarife başına satır, altında *"Bu sayılar işletmenin
+beyanıdır. Rezervasyon sırasında dalışçı sayısı sorulmuyor, bu yüzden yerinizi
+işletmeyle teyit edin."* Uygulanmadığı bilgisi **cümlenin kendisinde** taşınıyor
+(`fe33940` · sonraki commit).
+
+⚠️ Rozet şeridine **konmadı ve konmayacak**: şerit müşteri tarafından bir vaat
+gibi okunuyor. Aynı cümle rozet olarak yazılsaydı, kelimeler değişmeden anlamı
+değişirdi — *bulunduğu yer* bilgiyi güvenceye çeviriyor.
+
+Ayrıca Mert kataloğa `supportsDivers` bayrağı eklenmesini onayladı; kapsam
+bugünkü iki tip (`dalis-turu`, `ozel-dalis-turu`), şnorkel/yüzme **dahil değil**.
+Backend yazacak; gelince formdaki dört kutu ona bağlanacak. O güne kadar alanlar
+her tipte görünüyor — yanlış gizlemektense fazladan göstermek geri alınabilir.
+
+## 🟡 2026-09-06 — işletme kendi belgesini panelden yükleyemiyor
+
+`POST /api/partner/documents` **var**, ekranı **yok**. İşletme panelinde
+belgeler yalnız okunuyor (`isletmeBelgeleri`, eylem sütunu "Görüntüle").
+Yani bir işletme ruhsatını ya da vergi levhasını platforma panelden
+gönderemiyor; **tekne** belgeleri için yükleme var, **işletmenin kendi**
+belgeleri için yok.
+
+Bu bugün ortaya çıktı çünkü `document-uploads.tsx` silindi: sahte dosya
+adlarıyla ("elverislilik-2026.pdf") bir belge listesi ve tıklanamayan bir
+`<span>` basan, **hiçbir yerden çağrılmayan** bir bileşendi. Başlığında
+*"dosya alma servisi yok"* yazıyordu ve bu cümle artık yanlıştı. Ölü mock
+gittiği için altındaki gerçek boşluk göründü.
+
+⚠️ Ders: **ölü mock, kapattığı boşluğu da gizler.** Dosya orada durduğu
+sürece "belge yükleme yapılmış" görünüyordu.
+
+`limits.partnerDocumentMaxBytes` uçta hazır (`0864abc`) ve tipte duruyor;
+ekran yazıldığında sayı elle yazılmayacak.
+
+## 🔴 2026-09-06 — profil kaydı TÜRSAB numarasını siliyordu
+
+Backend `PUT`'un **tam değiştirme** olduğunu sözleşmeye yazınca (`b681aee`)
+bütün `PUT` gövdelerini şemalarına karşı ölçtüm: on bir şema, ikisi yanlış
+alarm, **biri gerçek**.
+
+İşletme profili formu **6 alan** gönderiyordu, şema **7** tanıyor.
+`tursabNumber` hiç gitmiyordu → her kaydetmede `null`. Ardından
+`PartnerProfileService.UpdateAsync` doğrulama damgasını da düşürüyor.
+Yani **işletme telefonunu düzeltince TÜRSAB numarasını ve doğrulamasını
+kaybediyordu**; damgayı yalnız platform personeli geri verebiliyor ve
+`partner-card.tsx` müşteriye giden güven satırını o damgaya bağlıyor.
+
+⚠️ **Kökü ikinci bir alan listesiydi.** `formDegerleri` aynı kümeyi elle
+tekrar sayıyordu; biri güncellenip diğeri unutuldu. Okuma, yazma ve render
+artık tek listeye bakıyor (`25f9197`).
+
+⚠️ **Bu kusuru hiçbir kapı yakalamıyordu ve yakalayamazdı**: `Disallow`
+kilidi *fazla* alanı reddediyor, **eksik** alanı değil. Eksik alan geçerli
+bir istek — "o alanı boşalt" demek. Sözleşme yazılana kadar ikimizin de
+gördüğü şey aynıydı: `204`, toast "güncellendi", ve sessizce giden bir veri.
+
+Ölçüm salt okunurdu; yazma tarafı hâlâ personel/işletme hesabıyla
+doğrulanmadı.
+
+## 🟡 2026-09-07 — yönetim panelinde sekiz kusur, hiçbiri gözle değil ölçümle çıktı
+
+Panel gün boyu gerçek veriye bağlandı. **Bulunan kusurların tamamı ölçümden
+çıktı; hiçbiri "ekrana bakınca" görülmedi** — ve panel hâlâ **tarayıcıda hiç
+gezilmedi** (giriş parolası Mert'te).
+
+| Kusur | Nasıl çıktı |
+|---|---|
+| Destek sekmesi `Answered`/`other` ham basıyordu | veri gelince |
+| `TEKNE_DURUMU` `Inactive`'i kaçırıyordu, üç kopyadan biri ayrışmıştı | `satisfies` kapısı |
+| `SATIS_MODU` `Exclusive` diyordu, değer `ExclusiveOpen` | `satisfies` kapısı |
+| `KUPON_RED_METNI` `NotYours` taşımıyordu (**müşteri ödeme akışı**) | `satisfies` kapısı |
+| Listelenen kuponda ölü "Kişiye ata" düğmesi | demo veri çeşitlenince |
+| Ek hizmetler bölümü boşken gizleniyordu | Mert ekrana baktı |
+| Rezervasyon ayrıntısına giden yol yoktu | Mert kodu aradı, bulamadı |
+| "183 uç" sayısı yanlıştı, doğrusu 129 | peer ölçtü |
+
+**Ortak sınıf ve günün ana dersi:** *boş ya da tek çeşit veri, kusuru
+gizler.* Destek talepleri 0'dı, ek hizmetler boştu, dört kuponun dördü de
+listeliydi, biletlerin hepsi jetonsuzdu. Her biri veri çeşitlendiği an
+kusurunu gösterdi.
+
+⚠️ İkinci sınıf: **aracın ne ölçtüğünü sormadan sayısına güvenmek.** Üreteç
+"183/184" basıyordu ve hata şemalarını sayıyordu; doğru sayı 129. Aynı
+oturumda `grep -c` (satır sayar, eşleşme değil) ve backend'in
+`n_live_tup`'ı (bayat olabiliyor) da aynı aileden çıktı.
+
+## ✅ 2026-09-07 — sözleşme zinciri üç halkalı, üçü de otomatik
+
+```
+enum/sayı → belge : backend testi (e0c53ac, 30eb60b)
+belge     → tip   : npm run build → tip-uret --kontrol (5c04112)
+tip       → sözlük: satisfies Record<Enum, string> (7d49d26)
+```
+
+Kapı ilk iki gününde **üç kez** gerçekten durdurdu. Boşluk bir derleme
+kadar; tamamen kapatmak her derlemede kardeş repoyu okumak olurdu.
+
+Belgede artık **29 enum değerleriyle** ve **sıfır `number|string` birleşimi**
+var; ikisi de gün içinde ölçülüp bildirildi ve backend düzeltti
+→ [[web-enum-uretilemez]] · [[web-gorevler]] W-92
+
+## 🔴 2026-09-07 — biniş jetonu artık saklanıyor (güvenlik dengesi değişti)
+
+Panelde karekod gösterilebilsin diye jeton **saklanmaya başladı**; eskiden
+yalnız SHA-256 özeti duruyordu. Mert riski açıkça yazılmış hâliyle seçti
+→ [[web-kararlar]] 2026-09-07.
+
+Backend AES-GCM ile şifreli saklıyor, anahtar veritabanı dışında, görüntüleme
+olay günlüğüne yazılıyor. **"Hiç saklamamak kadar güvenli değil"** — iki ayrı
+sırrın birden sızmasını gerektiriyor, o kadar. Yayın öncesi anahtar yönetimi
+konuşulmalı → [[yayin-oncesi]]
+
+
+## 🔴 2026-09-06 — veritabanı sıfırlandı, tek hesap kaldı
+
+Mert uçtan uca test için `dailycruising_dev`'i sıfırlattı: 70 kullanıcı,
+31 işletme, 23 tekne, 157 rezervasyon silindi. Duran tek şey referans
+katalogu (bölge, tekne tipi, kiralama tipi, olanak, kural, vergi oranı,
+yorum ölçütü) — hepsi migration'lardan geliyor.
+
+**Tek hesap:** `admin@dailycruising.test` (platform.admin). İşletme yok,
+tekne yok, sözleşme şablonu bile yok.
+
+⚠️ **Ekranlardaki her ölçüm bu tarihten önceyse geçersiz.** "23 tekne
+listeleniyor", "31 işletme" gibi kanıtlar artık boş listeye bakıyor.
+
+### Sözleşme şablonu ekranı — sistemi açan parça
+
+Şablon **yaratan uç yoktu**; metin yalnız SQL ile yazılabiliyordu. Sıfır
+veritabanında platform hiçbir işletmeye sözleşme gönderemiyor, tekne eklemek
+onaylı sözleşmeye bağlı olduğu için **sistem baştan tıkalıydı**. Uçlar
+`bb29101` ile geldi, ekran `de0f2ce` ile yazıldı ve yönetim panelindeki
+"Sözleşme listesi" modülünün yerine geçti.
+
+⚠️ `bodyHtml` **ham ve sunucuda temizlenmiyor**. `dangerouslySetInnerHTML`
+kullanılmadı; `<iframe sandbox="">` deseni (`contract-viewer`,
+`contract-accept`) aynen uygulandı. *"Metni personel yazıyor"* bir yalıtım
+değil — aynı HTML işletmenin ekranında da basılıyor.
+
+⚠️ `isActive` her `PUT`'ta açıkça gönderiliyor: alanın sunucudaki varsayılanı
+`true` ve `PUT` tam değiştirme, yani pasif bir şablonu düzenlerken alanı
+atlamak onu **sessizce geri açardı** → [[web-desenler]]
+
+### Düzeltilen bir vault kaydı
+
+Daha önce buraya *"`contract.send` platform-destek rolünde de var"* diye
+yazılmıştı. Backend ölçümünü düzeltti: o ölçüm **demo verisindenmiş**, temiz
+kurulumda `platform-destek` diye bir rol yok. Yetki ayrımının kendisi doğru,
+gerekçesi yanlıştı.

@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: api
-guncelleme: 2026-09-05
+guncelleme: 2026-09-08
 durum: guncel
 ---
 
@@ -88,11 +88,967 @@ Biçim ve gerekçe -> [[genel-desenler]]
       alanında — backend oturumu oraya yazmıyor
       Kabul: web tarafı elle tip yazmaz
 
+### Web oturumunun bildirdiği eksikler — sıra Mert'te
+
+> Yönetim panelinin **25 modülünden 15'inin ucu yok**. Liste web tarafında
+> `admin-durum.ts` tarafından ÜRETİLİYOR, elle yazılmıyor.
+
+- [ ] **A-112** Yasal metin sürümleri ve onay sayıları · 🔴 **MERT'TE** ·
+      ⚠️ **uyum konusu olabilir**
+      Tasarımdaki "Sözleşme listesi" işletme sözleşmesi şablonları DEĞİL,
+      sitenin yasal metinleri: kullanım koşulları, gizlilik politikası, her
+      birinin sürümü ve kaç kullanıcının onayladığı.
+      **Ölçüldü:** `ConsentDocuments` (2 satır, `BodyHtml` dahil) ve
+      `ConsentRecords` (UserId, ConsentType, DocumentVersion, AcceptedAt, Ip,
+      UserAgent) tabloları VAR. Veri modeli hazır, "kaç kullanıcı onayladı"
+      sorusu bugün SQL'de cevaplanabiliyor. **Eksik olan yalnız uç** — hiçbir
+      uç bu iki tabloyu okumuyor ya da yazmıyor.
+      Onaylanırsa desen `A-109` ile aynı olmalı: metin değişince yeni SÜRÜM,
+      eski sürüm okunmaya devam eder çünkü kullanıcı onu kabul etmiştir
+
+- [ ] **A-113** Ucu olmayan 12 panel modülü (müşteri listesi `A-117`, rezervasyon listesi `A-128` ile kapandı) (genel bakış `A-115` ile kapandı) · 🔴 **SIRALAMA MERT'TE**
+      platform personeli · müsaitlik (platform kapsamı) · iptal talebi kuyruğu ·
+      rezervasyon ayarları · personel adına rezervasyon · bölge yazma ·
+      reklam · platform finans · e-posta şablonları · SMS şablon + gönderim
+      kayıtları · log okuma · **aktivite (denetim izi)**
+      ⚠️ Web oturumu birini ayırıyor: **aktivite kaydı**. Panelde artık para
+      ve müşteri verisi üzerinde işlem yapılıyor (kupon açma/kapatma,
+      sözleşme gönderme, yorum denetleme) ve "kim yaptı" sorusu bugün yalnız
+      veritabanına bakarak cevaplanabiliyor. Yazma uçları çoğaldıkça ağırlaşır
+
+- [ ] **A-114** Blog moderasyon listesi kategori ADI döndürsün
+      Bugün kategori kimliği dönüyor, cephe ikinci bir istekle çözüyor.
+      Küçük iş; liste büyüdüğünde maliyeti artar
+
 ## 🟡 Yapılıyor
 
-_(boş)_
+- [ ] **A-133** Biniş red sebepleri enum'a çevrilsin, belgeye girsin
+
+      `NotPaid`, `Cancelled`, `TokenExpired`, `TokenNotFound`, `Refunded`,
+      `Expired`, `AlreadyCompleted`, `NotBoardable` — hepsi
+      `BoardingService.cs` içinde **düz dize sabiti**. C# enum'u olmadıkları
+      için OpenAPI belgesine girmiyorlar.
+
+      Sonucu: ön yüz bu anahtarları Türkçeye çeviren bir sözlük tutuyor ama
+      `satisfies` kapısı onu koruyamıyor — sunucuya yeni bir sebep
+      eklendiğinde sözlük sessizce eksik kalır ve ekranda **ham İngilizce**
+      görünür. Ön yüz bunu bir kez yaşadı (`4a015e7`): `NotPaid` olduğu gibi
+      basılıyordu, Mert'in "Paid yazıyor" dediği kusurun aynısı.
+
+      Bugün ayrışmış değil; kusur, ayrışmayı **hiçbir şeyin yakalamayacak
+      olması**. Enum'a çevrilirse `EnumSchemaTransformer` (`A-122`) onları
+      belgeye sokar ve kapı çalışmaya başlar.
+
+      🔴 **SIRALAMA MERT'TE**
+
+- [ ] **A-134** Okutulmuş karekod tekrar okutulduğunda sunucu ne yapmalı?
+
+      Mert: *"Okutulmuş QR tekrar okutulamamalı, ama okutulursa uyarı
+      vermeli."* Bugün ikinci okutma **kabul ediliyor**: biniş tekrar
+      işaretlenmiyor (`isFirstBoarding` false), `AlreadyBoarded: true`
+      dönüyor, kaptan yolcu listesini görüyor.
+
+      Harfiyen uygulanırsa sunucunun ikinci okutmayı **reddetmesi** gerekir —
+      o zaman manifestoyu teyit etmek için okutan kaptan hata alır. Hem API
+      hem web oturumu buna karşı; karar Mert'in.
+
+      ⚠️ **Reddedilen bir ara yol:** ikinci okutmayı `Succeeded = false` +
+      `FailureReason = "AlreadyBoarded"` yazmak. Üç sebeple hayır, ölçüldü →
+      [[api-kararlar]]
+
+      🔴 **MERT'TE**
 
 ## 🟢 Tamamlandı
+
+- [x] **A-142** İşlem geçmişi sınıfa göre süzülüyor · blog ve yorum etiketleri · bitti: 2026-09-08
+
+      ⚠️ **Süzgeç UÇTA, istemcide değil — sebebi `totalCount`.** Web oturumu
+      süzgeci basmayı bekledi ve doğru yaptı: istemcide süzseydi yalnız açık
+      sayfa süzülür, sayaç 36'da kalır ve ekranda sekiz satır dururken
+      "36 kayıt" yazardı.
+
+      ⚠️ **`Write` süzgeci DIŞLAMAYLA kuruldu, kapsamayla değil.** `KindOf`
+      tanınmayan türü `Write` sayıyor; kapsama listesi kurulsaydı sözlükte
+      olmayan bir olay süzgeçten **düşerdi** — aynı satır ekranda
+      "Değişiklik" rozetiyle görünürken süzgeçte kaybolurdu. Testte sözlükte
+      olmayan bir tür yazılıp ölçüldü; mutasyon kapsamaya çevirince beklenen
+      2 yerine 1 döndü.
+
+      `subjectType`'ın **tam listesi ölçüldü: 20 tür.** Web oturumu 8 yazmıştı
+      ve tahminle yazdığını söyledi — tam görünen ama sessizce eksik bir
+      sözlük. Blog ve yorum etiketi eklendi (5 → 7 tür çözülüyor).
+
+      Kanıt: `9496b8f` + `56f8bf7` · 706/706 · uçtan: 10+21+5 = 36 ve her
+      süzgeçte `totalCount` satır sayısına eşit · **ekranda görüldü**, üç çip
+      de doğru, Reddedilen deneme dalı ilk kez
+
+- [x] **A-141** Personelin işlem geçmişi ucu · bitti: 2026-09-08
+
+      Mert: *"personel detayına girdiğimde ekstra olarak neler yapmış onu da
+      göreyim."* Kaynak zaten vardı (`EventLog`), ucu yoktu.
+
+      ⚠️ **`ActorType` değeri `Platform`, `PlatformStaff` DEĞİL.** Web
+      oturumu öyle sanıyordu; enum'da o değer yok. Ölçülmeseydi sorgu
+      **herkes için boş** döner ve ekran "hiçbir şey yapmamış" derdi —
+      hata da vermeden. Peer'ın verdiği bir değeri doğrulamanın karşılığı.
+
+      ⚠️ **Okunur başlık sunucuda, koruma bir TESTTE.** `EventTypes` bir
+      `const string` sınıfı, enum değil — derleyici bütünlüğü zorlayamıyor.
+      Yansımayla 77 sabitin hepsi okunup başlığı olduğu doğrulanıyor, ters
+      yön de (sözlükte fazlalık kalamaz). → [[api-kararlar]]
+
+      ⚠️ **`kind` üç değerli**, web oturumunun istediği iki değil:
+      `Read` · `Write` · `Denied`. Red/başarısızlık olayları ikisinden de
+      değil; sıkıştırmak denetim ekranında yalan üretirdi.
+
+      `payload` dönmüyor (içeriği bilinmiyor, kişisel veri riski).
+      Yetki `eventlog.read`, `staff.manage` değil.
+
+      Kanıt: `1a093f3` · `dotnet test` 705/705 · **üç mutasyon, üçü kırmızı**
+      · uçtan doğrulandı, 36 satır, başlıksız 0
+
+- [x] **A-139** Yetki ve rol adlarındaki Türkçe karakterler · bitti: 2026-09-08
+
+      Ölçüm: **51 yetkinin 51'inde** Türkçe karakter yoktu, sıfır istisna.
+      Roller de öyle. Kaynağı `A03_YetkiKatalogu` (24 Ağustos) tohum verisi.
+
+      ⚠️ **Kusur iki hafta görünmedi çünkü bu isimleri hiçbir ekran
+      basmıyordu.** `A-138`'in personel ayrıntısı onları ilk kez gösterdi.
+      "Yazılan ama okunmayan veri" — bayatlığı hiçbir şeyin bağırmadığı bir
+      alan, `DepartureDate`/`StartsAt` ile aynı sınıf.
+
+      ⚠️ **Eski migration DEĞİŞTİRİLMEDİ, yenisi yazıldı.** Çalıştırılmış
+      bir migration'ı düzenlemek onu zaten uygulamış veritabanlarında hiçbir
+      şey yapmaz — *"geliştirmede düzeldi, üretimde bozuk kaldı"*nın klasik
+      yolu budur. Uyarı web oturumundan geldi.
+
+      `Category` de düzeltildi; ekranda gruplama başlığı ve yarısını
+      düzeltmek aynı ekranda iki yazım demekti. `Key` değişmedi.
+
+      İskeletin **boş** üretilmesi şemanın değişmediğinin kanıtı. `Down`
+      bilerek boş: geri alma, doğru isimleri bozuğa döndürmek olurdu.
+
+      Kanıt: `ff66132` · 51 addan 46'sında Türkçe karakter var, kalan 5'i
+      ("Fatura kes", "Destek talebi ata"…) gerçekten diakritiksiz ·
+      `dotnet test` 702/702 · **ekranda görüldü**: "Kullanıcıları
+      görüntüle", başlıklarda "MESAJLAŞMA" · migration `dailycruising`
+      rolüyle uygulandı
+
+- [x] **A-140** Personel sayfası `totalCount` diyor · üç dalı sınayan demo personel · bitti: 2026-09-08
+
+      Ön yüz zarf ayrışmasını ölçtü: sayfalı şemaların **12'si
+      `totalCount`**, 2'si `total` — biri benim dünkü ucumdu. Çoğunluğa
+      çekildi. Kalan istisna `BlogListResponse`, bilerek bırakıldı.
+
+      Demo personel üç dalı açıyor: **Selin** (ortalama 60 dk) · **Kerem**
+      (yalnız yanıtsız talep → ortalama `null`, ekran "—" basmalı) ·
+      **Deniz** (iki rollü, `(UserId, RoleId)` bileşik anahtarının ilk
+      canlı örneği).
+
+      Kanıt: `c7da3b3` · 702/702 · uçtan doğrulandı, zarf `totalCount`,
+      üç dal da görünür · personel 4 → 7
+
+- [x] **A-138** Platform personeli listesi ve ayrıntısı · bitti: 2026-09-08
+
+      Panelin Personel Listesi modülünün ucu yoktu. `/api/partner/members`
+      İŞLETME personeli — başka kapsam. Karışma riski veritabanında da
+      kapalı: `trg_user_role_is_platform` işletme rolünün `UserRoles`'a
+      yazılmasını reddediyor.
+
+      ⚠️ **`roleNames` ÇOĞUL ve bu ölçülerek seçildi.** `UserRoles`'un
+      anahtarı `(UserId, RoleId)` bileşik; ikinci rolü engelleyen kısıt yok.
+      Bugünkü veride herkesin **tam olarak bir** rolü var — yani tekil bir
+      alan bugün doğru görünür ve ikinci rol verildiği gün o rol ekranda
+      **hiç görünmezdi, hata da vermeden**. Günün ilk dersinin dördüncü
+      tekrarı: tek çeşit veri kusuru gizler.
+
+      ⚠️ **Destek ölçütleri ROLE değil YETKİye bağlı** (`support.read`).
+      Role bakılsaydı `platform.admin` rolündeki biri gerçekten talep
+      üstlendiği hâlde ölçütsüz görünürdü — o rol de bu yetkiyi taşıyor.
+      Ön yüz "yalnız destek rolündekiler" demişti; daraltma kabul edildi.
+
+      Gönderilmeyen iki alan, ikisi de sistemde YOK: **departman**
+      (`Domain`'de kavram hiç geçmiyor) ve **memnuniyet puanı** (puanlama
+      hiç toplanmıyor). İkisi de tasarımda ve örnek veride gerçekmiş gibi
+      duruyordu — ön yüz ölçüp bildirdi, ikimiz de göndermedik.
+
+      Kanıt: `af69017` · `dotnet test` 702/702 · **üç mutasyon, üçü kırmızı**
+      (rolleri `Take(1)` ile tekile indirmek · yetki kapısını kaldırıp
+      ölçütü herkese vermek · açık talebi toplam talep saymak) · uçtan
+      doğrulandı
+
+- [x] **A-137** Destek mesajı iç not olup olmadığını söylüyor · bitti: 2026-09-08
+
+      `IsInternal` **süzgeçte hep vardı ama izdüşümde yoktu**: iç notlar
+      personele dönüyor, panelde müşteriye gitmiş bir yanıtla **birebir aynı**
+      görünüyordu. Personel iç notu okuyup müşteriye *"size yazmıştık"* der,
+      ya da gerçek yanıtı iç not sanıp aynı şeyi ikinci kez yazar.
+
+      ⚠️ `fromStaff`'ın yerine geçmiyor, onunla BİRLİKTE anlam kazanıyor —
+      iki ayrı eksen. Müşteri tarafında hep `false`; gizleme değil süzgecin
+      sonucu, iç notlar ona zaten hiç dönmüyor.
+
+      ⚠️ **Test tek bayrağı değil, iki eksenin AYRI olduğunu ölçüyor.** Aynı
+      talepte müşteriye giden bir personel yanıtı da var ve `false` olması
+      aranıyor; yoksa her personel mesajına `true` yazan kod da geçerdi.
+      Mutasyon (`IsInternal = m.FromStaff`) kırmızı verdi.
+
+      Kanıt: `abc87a8` · `dotnet test` 696/696
+
+- [x] **A-136** Ayşe'ye ödeme dökümünün her parçasını taşıyan rezervasyon · bitti: 2026-09-08
+
+      Konuşulan her şey üç ayrı kayda dağılmıştı ve biri (`TWMWER6R`)
+      **misafir** Ayşe'nindi — kayıtlı müşterinin detay sekmesinde hiç
+      görünmüyor, iki Ayşe farklı kişiler.
+
+      ⚠️ **Ödenmiş `6UGJC9S4`'e kalem EKLENMEDİ.** En az iş gibi görünüyordu
+      ama ödeme kaydı ₺2.900 diyor; kalem eklenince rezervasyon başka bir
+      tutar söyler ve **defterle çelişirdi**.
+
+      ⚠️ **Tekne ölçülerek seçildi.** Ayşe'nin her zamanki teknesinin ek
+      hizmet fiyatları (150/450/1200) 1,2'ye TAM bölünüyor — orada hangi
+      kalem seçilirse seçilsin kuruş yuvarlaması **sınanmadan geçerdi**.
+      Deniz Kızı'nda 280×1 → 233,33 ve 320×2 → 533,33 ama toplamın neti
+      766,67: bir kuruş artık. "Ek hizmetli bir kayıt" istemek yetmiyordu,
+      **artık üreten** bir kayıt gerekiyordu.
+
+      Kanıt: `008cc29` · `ZJYWDJBW` · ekranda görüldü: Meze tabağı **233,34**
+      (artık üstlenilmiş), satır toplamı = genel toplam, karekod ve okutma
+      kaydı dolu
+
+- [x] **A-135** Ödeme dökümü kalem kalem KDV'siz karşılığıyla dönüyor · bitti: 2026-09-08
+
+      Mert: panelde *"tur bedeli · ek hizmetler · KDV · genel toplam"* alt
+      alta görünsün.
+
+      ⚠️ **İsteği önce YANLIŞ anladım.** "Tur bedeli + ek hizmet + KDV =
+      toplam" tarifini "KDV üste eklenecek" diye okudum ve fiyat kodunu
+      değiştirmeye başladım — `PricingService`, DB kısıtı, migration
+      planlandı. Mert durdurdu: *"yok ilan fiyatında yine kdvli tutarı
+      görsün müşteri sadece bu sana bahsettiğim sayfada böyle gözüksün."*
+      Geri alındı; **fiyatlandırma dokunulmadı.**
+
+      Ders: "toplam şu artı bu" cümlesi, tahsilat modelini mi yoksa
+      GÖSTERİMİ mi tarif ediyor — ikisi aynı cümleyle söyleniyor ve
+      birbirinden ancak sorunca ayrılıyor. Yanlış olanı seçmek burada
+      migration + fiyat değişikliği demekti.
+
+      Ayrıştırmanın kuralı: ekranda alt alta yazılan her sayı üstündeki
+      toplamı tutmak zorunda. Bu yüzden değerler tek tek "doğru"
+      hesaplanmıyor, **toplamları koruyacak** şekilde üretiliyor — KDV
+      artakalan olarak bulunuyor, son kalem yuvarlama artığını üstleniyor.
+
+      ⚠️ **Testimin İKİ hâli de ölçmüyordu, ikisini de mutasyon gösterdi:**
+      (1) "net + KDV = toplam" bir totolojiydi — net zaten çıkarmayla
+      üretiliyor, KDV ne olursa olsun tutuyordu. (2) Seçtiğim 640+900
+      tutarları yuvarlama artığı BIRAKMIYOR; artığı düzelten satırı sildim,
+      test yine yeşil kaldı. Artık bırakan çifti hesaplayarak buldum
+      (100+100 → satır başına 83,33 ama toplamın neti 166,67).
+
+      Kanıt: `ce82522` · `dotnet test` 695/695 · uçtan (restart sonrası)
+      `4P3WVK4Z`: satırların toplamı = genel toplam ✓, kalemlerin neti =
+      ek hizmet toplamı ✓
+
+- [x] **A-132** Karekodu saklanmış binilmiş bir demo rezervasyonu · bitti: 2026-09-08
+
+      Mert binilmiş bir rezervasyonda karekodu göremiyordu. Ölçüldü:
+      `2A2UA3HS`'te **jeton değil, biletin kendisi yok** — `BoardingTickets`
+      satırı hiç oluşmamış, biniş bilet olmadan işaretlenmiş. Silme kodu
+      arandı, yok: bu kayıt jeton saklama gelmeden önce öyle kurulmuş.
+
+      ⚠️ **O kayda geçmişe dönük jeton YAZILMADI.** Düz metin jeton hiçbir
+      yerde saklanmamış, geri getirilemez; yeni bir jeton basmak
+      **okutulmamış bir jetonu okutulmuş gibi göstermek** olurdu — okutma
+      kaydı `BoardingScans`'te ayrı duruyor ve panel ikisini yan yana
+      gösteriyor. Denetim kaydı uydurulmaz.
+
+      Bunun yerine `22-binilmis-karekod.py` akışın tamamını gerçek uçlardan
+      geçiriyor: rezervasyon → ödeme → belge → okutma. Veritabanındaki
+      şifreli jeton, gerçekten okutulmuş olanın ta kendisi.
+
+      Kanıt: `2ddb93c` · `6UGJC9S4` · **uçtan** okundu
+      (`GET /api/platform/reservations/6UGJC9S4`): `token` dolu,
+      `isUsable` true, okutan "Mavi Yolculuk Kaptan" · ödemeden SONRA
+      sayılan bilet 1 — kendiliğinden üretim canlı yolda da kanıtlandı,
+      yalnız testte değil
+
+      🔴 **MERT'TE:** biniş penceresi kapanmış, binilmiş bir rezervasyonda
+      ekran ne göstermeli? Öneri: karekod değil, "biniş yapıldı · tarih ·
+      kim okuttu". Kullanılmış karekodun tekrar gösterilecek işlevi yok.
+
+- [x] **A-131** Sefer kaydırılırken kalkış tarihi de kayıyor · bitti: 2026-09-07
+
+      `demo-veri.sh`'nin `dilim_yerlestir`'i iade dilimlerini kurmak için
+      seferi `now()`'a göre kaydırıyor ama yalnız `StartsAt`/`EndsAt`'i
+      güncelliyordu. **68 seferin 4'ünde** iki alan farklı GÜN söylüyordu —
+      panel 5 Kasım, sistem 1 Eylül.
+
+      Kusurun sessiz kalma sebebi, iki alanın **farklı yerlerde okunması**:
+      ekranlar `DepartureDate` gösteriyor, biniş penceresi ve iade dilimleri
+      `StartsAt`'ten hesaplanıyor. İkisi de kendi içinde tutarlı göründüğü
+      için hiçbir ekran şikâyet etmedi; ancak bilet üretilmeye çalışıldığında
+      "bu turun biniş penceresi kapandı" diye ortaya çıktı.
+
+      Onarım yönü **ölçülerek** seçildi: kaydırmayı yapan alan `StartsAt`,
+      `DepartureDate` dokunulmadan kalan taraftı — bu yüzden 4 satır
+      `StartsAt`'e göre düzeltildi, tersi değil.
+
+      Kanıt: `b65bfb1` · tutarsız sefer 4 → 0 · `dotnet test` 694/694
+
+- [x] **A-130** Sorgu parametreleri belgede küçük harfle başlıyor · bitti: 2026-09-07
+
+      Belge `?Page=2` yazıyordu, sunucu `?page=2`'yi de kabul ediyordu —
+      ASP.NET sorgu bağlaması büyük/küçük harfe duyarsız (ölçüldü). Yani
+      belge yanlış olanı söylüyor ama hiçbir istemci patlamıyordu; sözleşme
+      sessizce yalan söylüyordu.
+
+      Dönüştürücü yalnız `in: query` olanlara dokunuyor. **Yol parametreleri
+      bilerek dışarıda:** `{id}` şablonuyla birebir eşleşmek zorundalar,
+      orada küçültme belgeyi bozardı.
+
+      Kanıt: `b77fa54` · büyük harfle başlayan sorgu parametresi 25 → 0 ·
+      16 yol parametresinin tamamı hâlâ şablonuyla eşleşiyor
+
+- [x] **A-129** Ödeme tamamlanınca biniş karekodu kendiliğinden üretiliyor · bitti: 2026-09-07
+
+      Mert: *"müşteri rezervasyonunu yapıp ödemeyi yaptığında otomatik
+      olarak QR'da oluşacak."* Önce karekod ayrı bir çağrı istiyordu;
+      ödenmiş rezervasyonun yanında gösterilecek bir şey yoktu.
+
+      `PostPaymentAsync` sonrasına bağlandı. Sefer başlangıcı ve
+      kullanılabilir bilet var mı — `FindTicketContextAsync` ikisini **tek
+      sorguda** okuyor.
+
+      ⚠️ **Üretim bloğu bilerek yutuluyor.** Karekod üretilemedi diye ödeme
+      düşmemeli: para çekilmiş, kayıt tutulmuş durumda. Karekod sonradan
+      elle de üretilebilir, ödeme üretilemez. → [[api-kararlar]]
+
+      ⚠️ **Mutasyon, korumamın sandığım şey OLMADIĞINI gösterdi.**
+      `HasUsableTicket`'i bozdum, tekrarlı geri bildirim testi yine yeşil
+      kaldı — çünkü `CompleteAsync` zaten `Succeeded`'da erken dönüyor.
+      Test bunu kapsıyormuş gibi değil, olduğu gibi yazıyor.
+
+      Kanıt: `b5986bc` · ödenmiş 31 rezervasyonun **31'inde** bilet ve
+      şifreli jeton var (ikinci yoldan, psql ile okundu) · `dotnet test`
+      694/694
+
+- [x] **A-128** Platform geneli rezervasyon listesi + iki listede tur türü · bitti: 2026-09-07
+
+      Mert `BJT8F9NB` kodlu rezervasyonu panelde arayıp **bulamadı**. Sebep
+      ölçüldü: ayrıntıya tek giriş noktası müşteri kartıydı ve o rezervasyon
+      **misafir** rezervasyonu — müşteri kaydı yok, hiçbir yoldan
+      ulaşılamıyordu. Kodu bilmek de yetmiyordu.
+
+      `GET /api/platform/reservations?q&status&from&to&partnerId&boatId&sort&page&pageSize`
+
+      ⚠️ **Varsayılan sıralama düz tarih sıralaması DEĞİL:** önce gelecek
+      turlar en yakından uzağa, sonra geçmiş turlar en yeniden eskiye.
+      Personelin sorduğu şey *"bugün ne kalkıyor"*; artan tarih sıralaması
+      listenin başına yıllar önceki turları koyardı. "Son gelenler" ayrı bir
+      soru ve ayrı bir seçenek (`sort=created`).
+
+      "Bugün" Türkiye saatine göre — sunucunun saat dilimine göre
+      hesaplansaydı, sunucu taşındığı gün liste sessizce kayardı.
+
+      `rentalTypeName` iki listeye de eklendi (Mert'in isteği); ayrıntıdaki
+      alanla AYNI kaynaktan.
+
+      Kanıt: **692 test yeşil** · 4 yeni test · **iki mutasyon iki doğru
+      kırmızı** (düz tarih sıralaması · misafirleri süz) · canlı: 51
+      rezervasyon, sıralama 26 Eylül'den başlıyor, `q=BJT8F9NB` misafir
+      rezervasyonunu buluyor (`userId: null`), durum/tarih süzgeçleri,
+      tanınmayan sıralama 400, kimliksiz 401
+      ⚠️ Testlerimden biri tek başına yeşil, TAM TAKIMDA kırmızı verdi:
+      süzgeçsiz sorulan liste paylaşılan veritabanında ilk sayfaya
+      düşmüyordu — `A-115`'teki tuzağın aynısı, ikinci kez
+
+- [x] **A-127** Biniş jetonu şifreli saklanıyor, panel mevcut karekodu gösteriyor · bitti: 2026-09-07
+
+      ⚠️ **Bilinerek verilmiş bir güvenlik ödünü.** Mert üç seçenek arasından
+      C'yi seçti (jetonu sakla), riski yazılı olarak önündeyken. Gerekçe ve
+      sınırlar → [[api-kararlar]] 2026-09-07
+
+      Maliyeti düşüren üç şey: AES-GCM ile şifreli saklama (anahtar
+      veritabanının DIŞINDA) · uygulama anahtarsız açılmıyor · her
+      görüntüleme olay günlüğüne yazılıyor.
+
+      Kanıt: **688 test yeşil** · 7 şifreleme testi (gidiş-dönüş · her
+      seferinde farklı çıktı · yanlış anahtar `null` · kurcalanmış metin
+      reddediliyor · bozuk girdi) · canlı uçtan uca: müşteriye verilen jeton
+      ile panelde görünen **AYNI**, veritabanında düz metin **YOK**,
+      `boarding.ticket.viewed` günlüğe yazıldı, eski bilette `token: null`
+      ⚠️ Üretim kapıları testi ilk koşuda kırmızı verdi: yeni anahtar kapısı
+      diğer kapılardan ÖNCE ateşliyor ve test ölçmek istediklerine hiç
+      ulaşamıyordu — kapı sırası da ölçülmesi gereken bir şeymiş
+
+- [x] **A-126** Demo betikleri sabit damgadan kurtuldu, boş tablolar doldu · bitti: 2026-09-07
+
+      Sekiz betik `DAMGA = "1788556570"` diye sabit bir zaman damgasına göre
+      hesap arıyordu. Veritabanı sıfırlanınca damga yok oldu ve **sekizi
+      birden hiçbir şey yapmadan bitti** — hata vermeden, "0 ekstra eklendi"
+      deyip.
+
+      **Ders:** boş sonuç dönen sorgu, hata veren sorgudan tehlikeli — biri
+      durur, diğeri başarıyla yanlış üretir. Sonucu panelin yarısının boş
+      görünmesiydi ve o boşluk bugün dört kez kusur gizledi.
+
+      `ortak.py` yapısal çözücüler kazandı: `demo_hesaplar` (bir işletmenin
+      üyesi olan demo kullanıcı) · `demo_platform` (platform rolü bağlı) ·
+      `demo_musteriler` (ne üye ne personel). Sonuç dönmezse betik açıkça
+      duruyor.
+
+      Kanıt: gerçek sayımla — 32 ekstra · 26 rezervasyon-ekstra · 18
+      işletme belgesi · 24 tekne belgesi · 8 konuşma · 24 mesaj · 8 teklif ·
+      5 blog · 4 kupon · 6 favori · 2 alıcı hesabı · 1 biniş bileti · 2
+      okutma · 51 rezervasyon · 68 sefer · 33 ödeme · 132 defter satırı
+
+      ⚠️ **`pg_stat_user_tables` BAYAT olabiliyor:** kuponlar yazıldığı hâlde
+      `n_live_tup` 0 gösterdi ve bir an "betik çalışmadı" sandım. Tablo
+      doluluğu ölçerken gerçek `count(*)` kullanılmalı — istatistik tablosu
+      tahmindir.
+      Bugün üçüncü kez aynı aile: **ölçüm aracının ne ölçtüğünü sormadan
+      sayıya güvenmek.**
+
+      Hâlâ boş olanlar ve sebepleri: `Passengers` (yolcu listesi isteyen
+      tekne yok) · `Notifications` (giden kutusu gönderim işiyle boşalıyor) ·
+      `CouponAssignments` (kuponlar herkese açık) · `ReviewReplies` (işletme
+      hiç cevap yazmadı) · `CalendarModeRules` (o ekran hiç kullanılmadı).
+      Bunlar "veri yok" değil **"o akış hiç çalışmadı"** demek
+
+- [x] **A-125** Rezervasyon ayrıntısı: tur türü, biniş belgesi, geçişi yapan · bitti: 2026-09-07
+
+      Mert ekrana bakıp üç eksik bildirdi.
+
+      `rentalTypeName` + `pricingStrategy` — şemada `rental` geçen tek bir
+      alan yoktu, panel "tur türü" satırını basacak veri bulamıyordu.
+
+      `history[].changedByName` — Mert: *"Durum geçmişinde QR'ı kimin
+      okuttuğu yazılmıyor, o da yazmalı."* `ChangedByUserId` zaten
+      yazılıyordu, yalnız izdüşümde yoktu. Boş bırakılabilir ve **boşluğu
+      bir BİLGİ**: tutma süresi dolduğu için düşen geçişleri kimse
+      yapmamıştır; "sistem" yazmak geçişi bir kişiye bağlıymış gibi
+      gösterirdi.
+
+      ⚠️ **`A-119` kapandı ama istenen cevapla DEĞİL.** Salt okunur biniş
+      belgesi ucu **yazılamaz**: veritabanında jetonun yalnız SHA-256 özeti
+      duruyor, düz metni hiçbir yerde saklanmıyor. "Mevcut belgeyi üretmeden
+      okuyan uç" için okunacak bir düz metin yok. Bu eksiklik değil tasarım —
+      özet saklamak, veritabanını ele geçiren birinin geçerli bilet
+      üretememesi demek.
+      Yerine belgenin DURUMU dönüyor (`issuedAt · expiresAt · revokedAt ·
+      isUsable`) ve okutma denemeleri. **Başarısız denemeler asıl değerli
+      olan:** başarılı okutma zaten durum geçmişinde var, iskelede
+      çalışmayan bir karekodun sebebi yalnız orada yazılı.
+
+      **Demo betiklerinde sessiz boş geçiş bulundu:** sekiz betik
+      `DAMGA = "1788556570"` diye sabit bir damgaya göre hesap arıyordu.
+      Veritabanı sıfırlanınca damga yok oldu ve sekizi birden **hiçbir şey
+      yapmadan** bitti — hata vermeden, "0 ekstra eklendi" deyip. `ortak.py`
+      yapısal çözücüler kazandı (`demo_hesaplar`, `demo_platform`,
+      `demo_musteriler`).
+      **Ders:** boş sonuç dönen sorgu, hata veren sorgudan tehlikeli — biri
+      durur, diğeri başarıyla yanlış üretir.
+
+      Kanıt: **681 test yeşil** · canlı uçtan uca: 32 ek hizmet → 13
+      ekstralı rezervasyon → ödeme → biniş belgesi → **karekod gerçekten
+      okutuldu** → ayrıntıda `Boarded · QR okutuldu · Akdeniz Mavi Tur
+      Kaptan` ve iki satırlık ekstra dökümü · mutasyon (geçişi yapan boş
+      dönsün) doğru testi kırdı
+
+- [x] **A-124** Tam sayılar da telde göründüğü gibi bildiriliyor · bitti: 2026-09-07
+
+      `A-123` altı alanı düzeltti, **242'sini bıraktı**. Web oturumu ölçtü:
+      215 şema alanı + 27 sorgu parametresi hâlâ `integer|string` taşıyordu.
+
+      ⚠️ **KUSUR TESTİMDEYDİ.** `A-123`'te yazdığım test yalnız `number` +
+      `string` arıyordu ve yalnız `components.schemas` içine bakıyordu.
+      Yeşil verdi, belge doğru göründü.
+
+      **Koruma vardı, kapsamı yanlıştı** — bu oturumda başkalarında
+      defalarca bulduğum kusurun, kendi testimdeki hâli. Ders:
+      *bir testin yeşil olması, ölçmesi gerekeni ölçtüğünü göstermiyor.*
+
+      Gerekçe tam sayıda daha güçlüymüş: kayan noktada metin seçeneğinin bir
+      mazereti vardı (`NaN`, `Infinity`), tam sayıda o mazeret HİÇ YOK. Yani
+      en zayıf gerekçeli olanlar en son düzeltildi.
+
+      Test artık hem `number` hem `integer` arıyor, hem şema alanlarına hem
+      PARAMETRELERE bakıyor, artık kalan `pattern` kalıplarını da yakalıyor.
+
+      Kanıt: `integer|string` **215 → 0** · sorgu parametresi **27 → 0** ·
+      artık kalıp **0** · **680 test yeşil** · mutasyon (tam sayılar kapsam
+      dışı) 242 ihlali adıyla sayarak kırmızı verdi
+
+- [x] **A-123** Belge sayıları telde göründüğü gibi bildiriyor · bitti: 2026-09-07
+
+      `A-121`'in ikizi. Çerçeve `decimal` için `["number","string"]`,
+      `double` için de aynısını üretiyordu. Metin biçimi bu uygulamada
+      **hiçbir yönde** kullanılmıyor — üç yönden ölçüldü:
+      çıkışta her tutar JSON sayısı · girişte metin `400` alıyor
+      (`AllowReadingFromString` kapalı) · `NaN`/`Infinity` üretilemiyor
+      (`AllowNamedFloatingPointLiterals` kapalı).
+
+      Bedeli: belgeden tip üreten taraf her tutarı `number | string` görüyor
+      ve o birleşim koda yayılıyor. **Web'in elle tip yazma gerekçelerinden
+      üçüncüsü ve sonuncusu buydu; üçü de bugün düştü.**
+
+      Boş bırakılabilirlik KORUNDU (`decimal?` hâlâ `null` alıyor) — onu da
+      kaldırmak, gerçekten var olan bir hâli belgeden silmek olurdu.
+
+      Kanıt: `number|string` taşıyan alan **6 → 0** · **680 test yeşil** ·
+      yeni test BÜTÜN şemaları tarıyor (örnekleme yapan test yeni alanı
+      kaçırırdı) · mutasyon altı alanı adıyla sayarak kırmızı verdi
+      ⚠️ **İlk mutasyonum yanlıştı:** koşulu daraltacağım derken her şeyi
+      kapsar hâle getirdim, test haklı olarak yeşil kaldı. Mutasyonun kendisi
+      de ölçülmek zorunda — yanlış mutasyon, testin değil mutasyonun zayıf
+      olduğunu gösterir
+
+- [x] **A-122** Belgedeki enum değerleri kodla karşılaştırılıyor · bitti: 2026-09-07
+
+      `A-121` belgeyi düzeltti ama bir boşluk bıraktı ve web oturumu tarif
+      etti: *"kapı belge ile kod arasını tutuyor, enum ile belge arasını
+      değil."*
+
+      Mevcut testler yeni bir **uç** eklendiğinde belgenin bayatladığını
+      söylüyor. Var olan bir numaralandırmaya yeni bir **değer** eklemek ise
+      hiçbir uç eklemiyor — belge bayatlıyor, hiçbir test konuşmuyordu.
+
+      Bedeli somut: cephe çeviri tablolarını belgeden üretilen birleşim
+      tipine karşı sınıyor. Belge eskiyse yeni değer tabloya girmez, derleme
+      kırılmaz ve o değer ekranda ham İngilizce basılır — bugün üç kez
+      yaşandı (`Inactive`, `ExclusiveOpen`, `NotYours`).
+
+      **Testin kendi kapsamı da ölçüldü:** ilk yazımda çerçevenin `DayOfWeek`
+      numaralandırmasını "kodda yok" diye bildirdi — kodu değil kendi
+      kapsamını yakaladı.
+
+      Kanıt: **679 test yeşil** · mutasyon: `ReviewStatus`'e `Flagged`
+      eklenip belge üretilmeyince test doğru mesajla kırmızı verdi
+
+      **Zincirin bugünkü hâli** — üç halka, ikisi otomatik:
+      enum → belge (benim testim) · belge → tip (cephenin `tip-uret`'i, elle)
+      · tip → sözlük (cephenin `satisfies` kapısı, derlemede)
+
+- [x] **A-121** Belge numaralandırmaları telde göründüğü gibi bildiriliyor · bitti: 2026-09-07
+
+      **Belge YALAN söylüyordu.** Uygulama `JsonStringEnumConverter`
+      kullanıyor, telde `"status":"Paid"` gidiyor; belge ise aynı alan için
+      `{"type":"integer"}` yazıyordu. Dönüştürücü serileştirmeye uygulanıyor
+      ama belgeye yansımıyordu.
+
+      Kusuru **web oturumu buldu** ve benim yanlış bir önerimi ölçerek
+      buldu: "enum'ları belgeden üret" demiştim, ölçtü, belgede `enum`
+      dizisi taşıyan şema sayısının **sıfır** olduğunu gösterdi.
+
+      İki somut bedeli vardı:
+      1. Web belgeden tip üretince `ReservationStatus: number` çıkıyordu —
+         telde HİÇBİR ZAMAN görülmeyen bir tip. Cephe elle yazdığı `string`
+         tiplerle örtmek zorundaydı; **belge yanlış olduğu için elle yazma
+         zorunluydu.**
+      2. Değerlerin varlığı hiçbir yerde yazılı değildi. Cephe çeviri
+         tablolarını elle yazıyor ve aynı gün İKİ KEZ aynı kusuru yaşadı —
+         biri var olmayan anahtar (`Confirmed`), diğeri eksik anahtarlar
+         (`Paid`, `Boarded`).
+
+      `EnumSchemaTransformer` yazıldı; değerler `Enum.GetNames`'ten okunuyor,
+      elle yazılmıyor — elle yazılan liste yeni değer eklendiği gün sessizce
+      eksik kalırdı, yani düzeltilen kusurun aynısı.
+
+      Kanıt: enum dizisi taşıyan şema **0 → 29** · `ReservationStatus` artık
+      yedi değeriyle `"type":"string"` · **678 test yeşil** · yeni test hem
+      TÜRÜ hem DEĞERLERİ ölçüyor (yalnız tür ölçülseydi boş dizi de geçerdi)
+      · mutasyon (`integer`'a geri al) doğru testi kırdı
+      -> [[api-kararlar]] 2026-09-07
+
+- [x] **A-120** Yorum satırı tekne adresini, kapağını ve moderatörünü taşıyor · bitti: 2026-09-07
+
+      Mert: *"Yorum onaylanma tarihi, Yorumu onaylayan Personel vs onlarda
+      olsun."*
+
+      `boatSlug` kimlik YERİNE değil yanında: herkese açık tekne sayfası
+      `/boats/{slug}` ile açılıyor, kimlikle bağlantı kurulamıyor — alan
+      olmadan ekran adı basıyor ama tıklanamıyordu. `moderatedByName` ad
+      taşıyor, kimlik değil. `boatCoverUrl` genel bakıştaki desenin aynısı.
+
+      **Cephenin şüphesi ölçüldü ve eşleşme DOĞRU çıktı:** destek listesi de
+      müşteri alt ucu da `SupportTickets.UserId` okuyor. Sekmenin boş
+      görünmesinin sebebi eşleşme değil veri yokluğuydu — `20-destek-talepleri.py`
+      ile üç talep açıldı, durumları GERÇEK personel eylemleriyle ilerledi.
+
+      Kanıt: **677 test yeşil** · canlı: destek sekmesi 3 talep
+      (Open/Answered/Resolved · mesaj 1/4/2), `status=Resolved` → 1, yorum
+      satırı slug + kapak + moderatör adı taşıyor
+      ⚠️ Mesaj sayısı İÇ NOTLARI da sayıyor; personel listesi için doğru olan
+      bu, müşterinin kendi ekranındaki sayıdan farklı olması normal
+
+- [x] **A-118** Müşteri ayrıntısı: dönem sayaçları, üç alt liste, rezervasyon ayrıntısı · bitti: 2026-09-07
+
+      Mert: *"bu sayede ben bir müşterimin durumunu da ön görebilirim. Diğer
+      zamanlarda ne yapmış ne etmiş gibi gibi."*
+
+      Beş uç: ayrıntı `?period=`, rezervasyon/yorum/destek alt listeleri
+      (sayfalı + süzgeçli), `GET /api/platform/reservations/{code}`.
+
+      ⚠️ **Rezervasyon listesi ayrıntı gövdesinden ÇIKARILDI.** Gömülü
+      kaldığı sürece aynı veri iki yoldan gelirdi: gövdedeki sınırsız ve
+      süzgeçsiz, uçtan gelen sayfalı ve süzgeçli. İkisi bir gün ayrışır ve
+      hangisinin doğru olduğu sorulamazdı.
+
+      ⚠️ **Dönem sayaçları künyedekilerden AYRI AD taşıyor:** `customer.*`
+      hayat boyu, `stats.*` seçilen dönem. Aynı ada iki anlam yüklenseydi
+      okuyanın hangi sayıya baktığı ekrandan ekrana değişirdi.
+
+      **Canlı ölçümde kusur bulundu ve düzeltildi:** `period=all` için
+      "önceki dönem" HAYAT BOYU toplamı döndürüyordu — depoda boş sınır
+      "süzme yok" demek, "boş aralık" değil. Ekran "geçen döneme göre %0
+      değişim" yazacaktı. Sorgu artık hiç çalıştırılmıyor.
+
+      **Yeni yetki `platform.reservation.read`** (migration `A109`). Mevcut
+      `reservation.read` katalogda **işletmeye verilebilir**; onunla
+      korunsaydı bir işletme, başka işletmelerin rezervasyonlarını komisyon
+      oranıyla birlikte okuyabilirdi. `boat.write` kusurunun aynısı.
+
+      Rezervasyon ayrıntısı müşteriye dönen tipten ayrı; yolcu kimlik
+      NUMARASI çekilmiyor — "liste doldurulmuş mu" sorusuna ad ve doğum
+      tarihi yetiyor.
+
+      Kanıt: **676 test yeşil** · 6 yeni test · **iki mutasyon iki doğru
+      kırmızı** (alt liste müşteri kapısı kalksın · künye sayacı döneme
+      bağlansın) · canlı: dört dönem doğru, `all`'da önceki 0 / oran `null`,
+      üç alt liste sayfalı, rezervasyon ayrıntısı 200 · olmayan kod 404 ·
+      kimliksiz 401
+
+- [x] **A-117** Müşteri listesi ve müşteri ayrıntısı · bitti: 2026-09-06
+
+      `GET /api/platform/customers?q&status&page&pageSize` + `/{userId}` ·
+      yetki `user.read`.
+
+      ⚠️ **"Müşteri" tanımını Mert İKİ AŞAMADA koydu; ikincisi yürürlükte.**
+
+      İlk hâli: *"burada sadece bizim sitemizde kayıtlı olan müşteriler yer
+      alacak. İşletmeci, destek ekibi, site sahibi vesayre barınmayacak."*
+
+      O kural temizdi ama **gerçek para harcamış birini görünmez yapıyordu**:
+      tur satın almış bir işletme sahibi hiçbir listede müşteri sayılmıyordu.
+      Mert görünce genişletti:
+
+      > (personel değil VE işletme üyesi değil) VEYA (en az bir rezervasyonu var)
+
+      İkinci koşulla girenler `alsoRole` ile işaretli dönüyor
+      (`PlatformStaff` / `PartnerMember` / boş). İkisi birden olan
+      `PlatformStaff` sayılıyor.
+
+      **Ders:** temiz bir kural, kapsamı dışında kalanı yok saydığı için
+      yanlış olabiliyor. Süzgecin dışarıda bıraktığı şey, süzgece bakarak
+      görülmüyor → [[api-kararlar]]
+
+      **Canlı ölçümde ikinci bir kusur bulundu:** arama Türkçe harflere
+      duyarlıydı — aynı listede `Yılmaz` dört sonuç, `Yilmaz` sıfır sonuç
+      veriyordu. `unaccent` iki tarafa da uygulandı. Türkçe bir sitede arama
+      kutusuna noktalı ı yazdırmak, arayana "adı doğru yaz" demektir.
+      ⚠️ Bedeli biliniyor: `unaccent()` sabit sayılmadığı için süzgeç indeks
+      kullanmıyor. Müşteri sayısı büyüyünce ifadeye dayalı indeks gerekir
+
+      `birthDate` YOK — veritabanında böyle bir alan yok, tasarımda vardı.
+      `lastLoginAt` VAR ve gerçek; konum bilgisi yok, uydurulmadı.
+
+      Kanıt: **672 test yeşil** · 8 yeni test · **iki mutasyon iki doğru
+      kırmızı** (işaret hep boş dönsün · rezervasyon koşulu kalksın) ·
+      canlı: 33 müşteri, sayfa 1-2 çakışmıyor, `pageSize=100000` → 100'e
+      kırpıldı, `status=Suspended` → 3, işaretli satır `PartnerMember`,
+      personel kimliğiyle ayrıntı **404**, kimliksiz **401**,
+      `Yilmaz`=`Yılmaz`=4 sonuç
+      Kanıt-2: 30 müşteri daha yazıldı (`19-musteri-coklat.py`) — sayfalama
+      ancak birden çok sayfa varken denenebiliyor
+
+- [x] **A-116** Genel bakış kapak görseli + ekranın tabloları dolduruldu · bitti: 2026-09-06
+
+      Mert: *"Adım adım gideceğiz bak mesela ben şuanda nereyi yapıyorum
+      admin sayfasının Genel bakışını öyle değil mi? Ona göre buranın ilgili
+      tablolarının yerlerini doldur."*
+
+      `coverUrl` üç tekne listesine eklendi. Adres SQL'de üretilemiyor
+      (`IFileStorage` bir SQL ifadesi değil): anahtar çekiliyor, adres
+      bellekte üretiliyor — `PartnerBoatListItem` ile aynı desen.
+
+      Yeni betik `18-genel-bakis.py`: rezervasyon, kullanıcı ve işletme
+      kayıtlarını son on iki aya yayıyor, onaylı yorum yazıyor. Katalog
+      betikleri her şeyi BUGÜNE yazıyordu; o hâlde ekran çalışıyor ama
+      **çalıştığı görülemiyordu** — eğriler tek noktalı, "önceki dönem"
+      sıfır, puan listesi tek satırlıktı.
+
+      ⚠️ **Türetilmiş hiçbir sayı elle yazılmıyor:** tekne puanı ve yorum
+      sayısı tetikleyiciden, ciro rezervasyon satırlarından. Elle yazılsaydı
+      ekrandaki puan altındaki yorumların ortalamasını tutmayabilirdi ve bunu
+      ancak elle bölen biri fark ederdi.
+
+      Kanıt: canlı ölçüm, tutarlılık doğrulandı — ay → 47.350/3 = **15.783,33** =
+      `averageBasketTry` ✓ · yıl → 455.300/32 = **14.228,12** ✓ ·
+      68.295/455.300 = **%15,0** = sözleşme komisyon oranı ✓ · gün → veri
+      yok, üç oran da `null` (boş hâl de canlıda görülebiliyor)
+      Kanıt-2: 8 tekne · 6 işletme · 12 kullanıcı · 34 rezervasyon (32
+      ödenmiş) · 22 onaylı yorum · 9 ayda veri · 664 test yeşil
+
+      **Demo betiğinde sessiz veri kaybı bulundu ve düzeltildi:** betik
+      `amenityIds` gönderiyordu, uç `amenities` bekliyor ve gövde artık
+      `[{amenityId, inclusion}]` taşıyor (`A-101`). Sunucu 201 dönüyordu
+      çünkü tanımadığı alanı sessizce atıyordu — **demo teknelerinin donanımı
+      hiç yazılmamıştı.** `UnmappedMemberHandling` kilidi (`A-107`) olmasa
+      bugün de fark edilmezdi
+      ⚠️ Sözleşme şablonu adımı da psql'den `POST /api/platform/contract-templates`
+      ucuna taşındı — demo verisi artık yeni ucu da sınıyor
+
+- [x] **A-115** Yönetim panelinin genel bakış ucu · bitti: 2026-09-06
+
+      Mert onayladı (web oturumu üzerinden), doluluk ölçütünü **kaldırdı** ve
+      yerine geçen döneme göre değişim istedi.
+
+      `GET /api/platform/overview?period=day|week|month|year` — sekiz ölçüt,
+      altı liste, üç aylık eğri.
+
+      **Yeni yetki `platform.overview.read`** (migration `A108`, yalnız
+      `platform.admin`, işletmeye verilemez). Katalogdaki hiçbir anahtar doğru
+      değildi: ekran para (ciro, komisyon) ve kişisel veriyi (müşteri adı,
+      e-posta) BİR ARADA taşıyor. `ledger.read` ile korunsaydı defteri okuyan
+      müşteri e-postalarını da görürdü; `user.read` ile korunsaydı kullanıcı
+      yetkisi sessizce ciroyu açardı — yetkiyi VEREN ne verdiğini bilemezdi.
+
+      ⚠️ **`publishedBoats` STOK, dönemden etkilenmez ve etkilenemez:**
+      teknenin geçmişteki durumu saklanmıyor. `newUsers`/`newPartners` akış.
+      İkisi aynı kartta yan yana; ekran ayrımı yazmazsa "bu ay 342 tekne
+      yayınlandı" diye okunur.
+
+      ⚠️ **Bölen sıfırken `null`, `0` değil** — `averageBasketTry`,
+      `cancellationRate`, `reservationChangeRate`. Sıfır bir ölçüm iddiası:
+      "ortalama sepet sıfır lira" ile "ortalamalanacak satış yok" farklı
+      şeyler. Sıfırdan kurulan veritabanında **ilk açılışta görülecek hâl bu**.
+
+      Dönem sınırları Türkiye saatine göre, yarı açık aralık; hafta pazartesi
+      başlıyor. UTC'ye göre kesilseydi "bugün" yerel 03:00'te başlar, sabahın
+      ilk satışları önceki güne yazılırdı.
+
+      **Doluluk oranı bilerek yok:** tanımı belirsizdi (satılan koltuk/kapasite
+      mi, dolu gün/açık gün mü). Web oturumu istemedi, Mert de kaldırdı.
+
+      Kanıt: **664 test yeşil** · 7 yeni test · **üç mutasyon üç doğru
+      kırmızı** (`null`→`0` · `null`→`%100` · sınırlar UTC'de) · canlı: dört
+      dönem de doğru sınır, boş veritabanında üç oran `null`, listeler `[]`,
+      seri 12 nokta, tanınmayan dönem 400, kimliksiz 401
+      ⚠️ Testler tek başına yeşil, TAM TAKIMDA kırmızıydı: özet sorguları
+      bütün veritabanını topluyor ve takım tek Postgres konteyneri paylaşıyor.
+      Ölçüm penceresi kimsenin yazmadığı bir yıla (2031) taşındı
+      ⚠️ EF tuzağı ikinci kez: `Select(...).OrderBy(kayıt alanı)` SQL'e
+      çevrilemiyor — sıralama izdüşümden ÖNCE (bkz. `A-110`)
+      -> [[api-kararlar]] 2026-09-06
+
+- [x] **A-111** Destek kuyruğu temsilciyi, moderasyon listesi yazarı gösteriyor · bitti: 2026-09-06
+
+      Web oturumu bildirdi, ikisi de aynı sınıftan: **alan var ama onu
+      kullanacak ekran ona ulaşamıyor.**
+
+      Destek talebi bir temsilciye ATANABİLİYORDU (`assignedToUserId`) ama
+      atandığı hiçbir listede GÖRÜLEMİYORDU — yazılabilen ama okunamayan bir
+      alan. `TicketListItem` artık `requestedByUserId/Name` ve
+      `assignedToUserId/Name` taşıyor.
+
+      ⚠️ **Dördü de `staff` kapısının ardında.** Aynı sorgu müşterinin kendi
+      listesini de üretiyor; kapı olmasaydı hangi temsilcinin talebine
+      baktığı müşteriye açılırdı. Koşul izdüşümün İÇİNDE — dışarıda olsaydı
+      iki ayrı izdüşüm doğar, birine eklenen alan diğerinde eksik kalırdı.
+
+      Yorum moderasyon listesi yazarı göstermiyordu. Ad, herkese açık
+      listeyle AYNI yardımcıdan geçiyor (`AuthorName.ForPublicDisplay`):
+      ayrı kaynaklardan okunsaydı moderatörün gördüğü ad ile sitede
+      yayınlanan ad ayrışabilir, moderatör onayladığı şeyi görmemiş olurdu.
+
+      Kanıt: **657 test yeşil** · 2 yeni test · mutasyon (personel kapısı
+      kaldırıldı) doğru testi kırdı · testin iki yarısı da ölçülüyor —
+      yalnız "personel görüyor" ölçülseydi sızıntı yeşil testin arkasında
+      kalırdı
+
+- [x] **A-110** Kupon atama listesi kimliği taşıyor, platform kuponu kapatabiliyor · bitti: 2026-09-06
+
+      Web oturumu bildirdi: atama listesi yalnız e-posta döndürüyor, kaldırma
+      ucu kimlik istiyor (`DELETE .../assignments/{userId}`), ikisini çeviren
+      uç yok. **Atama yapılabiliyor ama kaldırılamıyordu.** Düğmeyi basmayıp
+      haber vermeleri doğru karardı.
+
+      Kimlik listeye kondu (`assignedTo: [{ userId, email }]`); ucun e-posta
+      kabul etmesi SEÇİLMEDİ — e-posta değişebilir, kimlik değişmez. Silme
+      yolu değişebilen bir anahtara bağlansaydı, adresini değiştiren
+      kullanıcının ataması kaldırılamaz olurdu.
+
+      İkinci eksik daha ağır çıktı: `POST /api/platform/coupons/{id}/deactivate`
+      yoktu. Mevcut uç işletmenin KENDİ kuponuna bakıyor, platform kuponunun
+      ise `PartnerId`'si boş — yanlış yüzdeyle açılan platform kuponunu
+      kapatmanın hiçbir yolu yoktu.
+
+      Düzenleme ve geri açma uçları bilerek yazılmadı → [[api-kararlar]]
+
+      Kanıt: **655 test yeşil** · mutasyon (listeye boş kimlik) doğru testi
+      kırdı · canlı: kupon 201 → atama 204 → listeden okunan kimlikle kaldırma
+      **204** → pasife alma 204 → `isActive: false` · olmayan kupon 404 ·
+      kimliksiz 401
+      ⚠️ EF tuzağı: `Select(...).OrderBy(kayıt alanı)` SQL'e çevrilemiyor,
+      sıralama izdüşümden ÖNCE yazılmalı — test çalışma anında yakaladı
+
+- [x] **A-109** Sözleşme şablonu panelden yaratılıp düzenleniyor · bitti: 2026-09-06
+
+      Mert: *"Sözleşme oluşturma şablonunu da yap o zaman hadi"* — sıfırdan
+      test kurulumu için veritabanı silinecekti ve **şablon yaratan uç yoktu**;
+      metin yalnız doğrudan SQL ile yazılabiliyordu. Temiz bir kurulumda
+      platform hiçbir işletmeye sözleşme gönderemiyor, tekne eklemek onaylı
+      sözleşmeye bağlı olduğu için sistem baştan tıkalı kalıyordu.
+
+      `POST` + `PUT /api/platform/contract-templates` · yetki `contract.write`
+      · liste `?includeInactive=true` ile katalogu da veriyor.
+
+      ⚠️ **Yetki `contract.send` DEĞİL.** Hazır metinden sözleşme göndermek
+      ile metnin kendisini yazmak aynı ağırlıkta iş değil. Test bunu
+      katalogdaki bir role dayanmadan ölçüyor: yalnız `contract.send` taşıyan
+      bir rol kurup şablon yazmayı deniyor, `403` alıyor.
+
+      ⚠️ **Metin değişirse sürüm artar, ad/yürürlük değişirse artmaz.**
+      Gönderilmiş her sözleşme `TemplateVersion` saklıyor; numara artmadan
+      metin değişseydi aynı (şablon, sürüm) çiftinin altında iki farklı metin
+      bulunur ve o kayıt hangi metnin onaylandığını söylemekten çıkardı.
+
+      ⚠️ **Şablon silinmiyor, pasife alınıyor** — silmek gönderilmiş
+      sözleşmelerin künyesindeki bağı koparırdı.
+
+      **İlk yazımda güncelleme HİÇ KAYDEDİLMİYORDU:** mevcut bulucu
+      `AsNoTracking` + `IsActive` süzgeci taşıyordu (gönderme yolunun doğru
+      davranışı). Uç `200` dönüyor, gövde yeni değerleri gösteriyor,
+      veritabanı eskide kalıyordu. Sürüm testi CEVABA baktığı için yeşildi;
+      pasife alma testi GERİ OKUDUĞU için kırmızı verdi. Düzenleme için ayrı
+      bir bulucu yazıldı, sürüm testi de geri okumaya çevrildi.
+
+      Kanıt: **652 test yeşil** · 10 yeni test · **üç mutasyon üç doğru
+      kırmızı** (yetki `contract.send`'e düşürüldü → yetki testi · sürüm hiç
+      artmasın → sürüm testi · bulucu yine izlemesiz → iki test)
+      -> [[api-kararlar]] 2026-09-06
+
+- [x] **A-108** Rezervasyon formunda dalışçı sayısı · bitti: 2026-09-06
+
+      Mert (2026-09-06): *"rezervasyon formunu da değiştir, dalışçı sayısı
+      sorulsun"*
+
+      `Reservations.DiverCount` · `Voyages.SoldDivers` + `DiverCapacity` ·
+      migration `A107_RezervasyonDaliscSayisi`.
+
+      ⚠️ **Dalışçı yolcuların ALT KÜMESİ, ek yolcu değil.** Ayrı sayılsaydı
+      kapasite iki kez sayılır, tekne dolmadan dolu görünürdü. Kısıt:
+      `DiverCount <= AdultCount + ChildCount` (bebek dalmaz, koltuk da tutmaz).
+
+      ⚠️ **Kontenjan SEFERİN TAMAMI için denetleniyor, istek başına değil.**
+      `dalis-turu` paylaşımlı (`PerPerson`): beş ayrı rezervasyon sekizer
+      dalışçı yazsaydı her biri tek başına sınırın altında kalır, tekne kırk
+      dalışçıyla kalkardı. Sayacı `sync_voyage_sold_seats()` tetikleyicisi
+      tutuyor — `SoldSeats` ile AYNI işlevin içinde, çünkü iki sayaç iki ayrı
+      yerden güncellenseydi birini unutan ilk kod yolu ikisini kalıcı olarak
+      ayrıştırırdı. Sınırı `CK_Voyages_SoldDivers` koyuyor.
+
+      Kanıt: **640 test yeşil** (`tam3.trx`) · 11 yeni test
+      Kanıt-2: **üç mutasyon, üçü de doğru testi kırdı** — fabrika `0` yazınca
+      4 kırmızı · sefer kısıtı zayıflatılınca YALNIZ sefer testi kırmızı ·
+      sayacın durum süzgecine `'Cancelled'` eklenince YALNIZ iptal testi kırmızı
+      Kanıt-3: **canlı** (`:5163`) — teklif `diverCount:3` → **200**,
+      `diverCount/diverCapacity` gövdede · yolcudan fazla → **400** · kontenjan
+      üstü → **400** "en fazla 6 dalışçı yeri var" · dalış olmayan tur → **400**
+      · rezervasyon 4 dalışçı → **201** · aynı sefere 3 daha (toplam 7 > 6) →
+      **409** "kontenjan doldu" · 2 daha (toplam 6 = sınır) → **201** ·
+      `Voyages.SoldDivers` = 6 (tetikleyici saydı) · müşteri kendi
+      rezervasyonunu okuyunca `diverCount: 4`
+      Kanıt-4: veritabanında ölçüldü — üç kısıt `convalidated = t`,
+      tetikleyicinin `UPDATE OF` listesinde `DiverCount` var
+
+      **Sızıntı testi yine iş gördü:** `QuoteResponse`'a iki alan eklenince
+      `A_new_field_cannot_silently_widen_the_response` kırmızı verdi ve soruyu
+      sordurdu. İkisi de EVET: `diverCount` sunucunun neyi fiyatladığının
+      yankısı, `diverCapacity` ise `Capacity` ile aynı sınıfta — formun kendi
+      alanını neyle sınırlayacağı.
+
+      ⚠️ **`supportsDivers` tekne detayına eklendi ve asıl mesele bu.** Cephe
+      "dalışçı sorayım mı" sorusunu `diverCapacity != null` ile cevaplasaydı,
+      **kontenjanı olmayan bir dalış turu dalış yapılmayan turdan ayırt
+      edilemezdi** — sınırsız dalış turunda alan hiç görünmezdi
+
+- [x] **A-107** Tanınmayan alan taşıyan gövde reddediliyor · bitti: 2026-09-05
+
+      `UnmappedMemberHandling = Disallow`. Varsayılan davranış tanımadığı
+      alanı SESSİZCE atıyordu ve bu gerçek bir veri kaybı üretti: panel
+      `amenityIds` gönderiyordu, uç `amenities` bekliyordu, sunucu **200**
+      döndü ve hiçbir şey yazılmadı.
+
+      ⚠️ Sınırı bilinerek kabul edildi: kilit İSİM uyuşmazlığını yakalar,
+      TİP uyuşmazlığını yakalamaz → `A-07`
+
+      Kanıt: **619 test yeşil**. Canlı: geçerli giriş 200, `amenityIds`
+      eklenmiş aynı giriş **400** ve yanıt alan adını söylüyor. Web tarafı
+      tekne düzenlemeyi canlıda ölçtü, 400 yok. Kilit açılır açılmaz
+      `15-tekne-zenginlestir.py` içinde de fazlalık alan buldu (`pricingStrategy`)
+
+- [x] **A-106** Tekne sayfasında işletme künyesi · bitti: 2026-09-05
+
+      `PublicBoatDetail.Partner`: TÜRSAB belge no, satışa başlama günü,
+      yayındaki tekne sayısı, puan, yorum sayısı. Belge YALNIZ doğrulanmışsa
+      dönüyor; doğrulama `POST /api/platform/partners/{id}/tursab-verification`
+      ve `PartnerApprove` izniyle. Numara değişirse damga düşüyor.
+      Gerekçeler → [[api-kararlar]] 2026-09-05
+
+      Kanıt: **617 test yeşil**. Canlı zincir: damgasızken `null` → yetkisiz
+      doğrulama **401** → platform **204** → numara görünüyor → numara
+      değişti → damga düştü, müşteriye yine `null`
+
+- [x] **A-105** Olanağın fiyata dahilliği · bitti: 2026-09-05
+
+      `BoatAmenities.Inclusion` = `OnBoard` / `Included` / `Extra`. Katalogda
+      değil TEKNE BAĞINDA: aynı olanak bir teknede dahil, diğerinde ücretli.
+      `SaveBoatRequest.AmenityIds` → `Amenities` (atama listesi).
+
+      Kanıt: **615 test yeşil**. Aynı olanak iki teknede iki farklı değer
+      dönüyor. `EnumConstraintTests` kısıtı NOT VALID bırakmamı yakaladı,
+      VALIDATE eklendi
+
+- [x] **A-104** Sezon fiyat tablosu · bitti: 2026-09-05
+
+      `rentalTypes[].seasons` — tarihler HAM, etiket değil: ekran "bugün
+      hangi aralıktayız" kıyasını ancak tarihle yapabiliyor. Geçmiş sezon ve
+      temel fiyat listeye girmiyor.
+
+      ⚠️ Ölçüldü: `rentalTypes[].adultPrice` TEMEL fiyattır, bugünün sezon
+      fiyatı değil — ve bu tutarlılık, çünkü arama da tarihsiz sorgulandığında
+      temel fiyatı döndürüyor
+
+      Kanıt: **614 test yeşil**. Canlı üç sezon dönüyor, biri bugünü kapsıyor
+
+- [x] **A-103** Tekne detayı künye alanları · bitti: 2026-09-05
+
+      `boatTypeName`, `regionName`, `widthMeters` eklendi; aramaya da
+      `regionName`. Üçü de veritabanında vardı, izdüşümde yoktu.
+
+      Kanıt: **612 test yeşil**. Canlı: `Gulet` · `Fethiye` · `6.4`
+
+- [x] **A-102** Fiyat teklifi çarpanı döndürüyor · bitti: 2026-09-05
+
+      `Quote.BilledDays` + `QuoteResponse.BilledDays`. `boatPrice` GÜNLÜK
+      bedel; çarpan dönmediği için ekran "42.000 / 126.000" diye çelişik
+      görünüyordu. Alan adı değiştirilmedi — yayınlanmış sözleşmede ve
+      rezervasyon kaydında duruyor.
+
+      ⚠️ İlk denemede alan yalnız İÇ nesneye eklendi, tel sözleşmesine
+      geçmedi ve `openapi.json`'da hiç görünmedi. Web yakaladı
+
+      Kanıt: **613 test yeşil**, mutasyon kırmızı. Canlı: `42000 × 3 = 126000`
+
+- [x] **A-101** Platform sözleşme listesi ret gerekçesini döndürüyor · bitti: 2026-09-05
+
+      Gerekçe işletme ucunda dönüyor, platform ucunda dönmüyordu — yani
+      zorunlu tutulan bir metin hiç kimseye gösterilmiyordu.
+
+      Kanıt: **611 test yeşil**, mutasyon kırmızı. Canlı platform ucu
+      `Rejected | 2026-09-05T02:13:21 | canım istedi kardeşş` döndürdü,
+      yetkisiz aynı istek **401**
 
 - [x] **A-88** Kuponlar — üç tür · bitti: 2026-09-05
   Kanıt: `AYSEYE20` canlı → Ayşe `indirim 580`, Can `0 + "size tanımlı değil"`,

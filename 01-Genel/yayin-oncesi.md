@@ -70,6 +70,7 @@ Bir koşulun **sağlanmadığında nasıl belli olduğu**, ne olduğundan daha �
 | Y-09 | E-posta şablonları **gerçek istemcide** denenmeli | Web | HTML e-posta istemcileri farklı işler; build ve test bunu yakalamaz |
 | Y-10 | `W-40` aydınlatma metni + saklama süresi | Mert | *"onu ben yazıcam en son"* — KVKK, blocker 7 |
 | Y-11 | Veri göçü | ertelendi | önce site ayağa kalksın |
+| Y-12 | **Ters vekil `X-Forwarded-For` eklemeli VE adresi `ForwardedHeaders:KnownProxies` listesinde olmalı** — iki parçalı, `S-19` | Mert + Backend | kayıtlara kullanıcının IP'si değil **vekilin IP'si** yazılır ve uygulama **hiçbir hata üretmez**. Etkilenen alanlar: `Contracts.ApprovedIp` (sözleşme onayının delili), `RefreshTokens.CreatedIp` (oturum geçmişi). ⚠️ Sözleşme onay ekranında *"IP adresin kaydedilir"* yazacaksak bu koşul sağlanmadan **yazılamaz** — yazılırsa beyan yalan olur ve uyuşmazlıkta kaydımız `::1` der. **Kabul ölçütü:** dağıtımdan sonra bir kez giriş yap, `RefreshTokens` son satırındaki `CreatedIp`'ye bak; vekilin adresi çıkıyorsa koşul **sağlanmamıştır**. Aynı ölçüm iki parçayı birden yakalar · **2026-09-05 ölçümü:** yerelde `CreatedIp = ::1`, `UserAgent` **gerçek tarayıcı** (o taraf kapandı) |
 
 ### 🔬 Doğrulanmamış — yazıldı, gerçek hesap olmadan sınanamadı
 

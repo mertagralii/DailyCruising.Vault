@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-05
+guncelleme: 2026-09-08
 durum: guncel
 ---
 
@@ -30,6 +30,7 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[api-terk-edilen-sefer-kilidi]] — süre dolunca sefer bırakılmazsa takvim kilitleniyor
 - [[api-eszamanlilik-testi-yarismayabilir]] — "iki eşzamanlı istek" testi kısıtı ölçmüyor
 - [[api-launchsettings-ortami-eziyor]] — üretim kapısı denemesi aslında Development'ı ölçüyor
+- [[api-testlerde-aralikli-kirilma]] — bir kez kırılıp dört tur geçen test; kapatılmadı, izleniyor
 - [[api-mv-ile-geri-alma-eski-dll]] — `mv` ile geri alınan mutasyon eski ikiliyi koşturuyor
 
 ### Gerekçe arşivi (2026-08-27)
@@ -54,3 +55,4 @@ ararken önce [[api-kararlar]]'a, orada yoksa buraya bak.
 - [[api-hiz-siniri-tetikleme]] — kova ömürleri, 429 tarifi, jetonsuz isteklerin de sayılması
 - [[api-yazilmis-ama-uygulanmamis-kontrol]] — üç kez çıkan kusur sınıfı ve onu yakalayan iki soru
 - [[api-uc-envanteri-2026-08-30]] — web panosundaki 12 iş için ölçülmüş uç envanteri ve eksikler
+- [[api-eski-panel-tekne-ekranlari]] — canlı yönetim panelinin tekne ekranları, ölçülmüş yapı ve API boşlukları

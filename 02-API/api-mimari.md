@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-05
+guncelleme: 2026-09-08
 durum: guncel
 ---
 
@@ -17,6 +17,50 @@ durum: guncel
 >
 > **Buradaki her sayı ölçülerek yazıldı, hatırlanarak değil.**
 
+
+## Platform vekâlet uçları — 2026-09-06
+
+Platform personeli bir işletme ADINA tekne yönetiyor. Kapsam **adresten**
+geliyor (`/api/platform/partners/{partnerId}/boats/...`), oturumdan değil.
+
+| Uç ailesi | Fiiller |
+|---|---|
+| `platform/boats` | genel liste: `q`, `partnerId`, `regionId`, `status`, sayfalı |
+| `platform/partners/{p}/boats` | POST · `{boatId}` GET/PUT |
+| `.../boats/{b}/rental-types` | GET POST · `{id}` PUT DELETE |
+| `.../rental-types/{id}/prices` | GET POST · `{priceId}` PUT DELETE |
+| `.../rental-types/{id}/extras` | GET POST · `{extraId}` PUT DELETE |
+| `.../boats/{b}/media` | GET POST · `order` PUT · `{id}` DELETE |
+| `.../boats/{b}/documents` | GET POST · `{id}` DELETE |
+
+**İzin `partner.boat.manage`** (`A104` göçü, yalnız platform rollerinde).
+⚠️ `boat.write` KULLANILAMAZ: o izin işletme rollerinde de var, yani kapı
+işletme hesabını durdurmuyor — ölçüldü, 403 yerine 400 dönüyordu.
+
+**Servisler ÇOĞALTILMADI.** `BoatCatalogService`, `PricingCatalogService`,
+`BoatMediaService` ve `BoatDocumentService`'te kapsam çözümü tek bir
+noktadan geçiyordu; o noktaya isteğe bağlı bir vekâlet kimliği eklendi.
+Kimlik verildiğinde servis ayrıca `IsPlatformStaff` denetliyor — kapsam
+istekten geldiği için tek savunma uç özniteliği olamaz.
+
+⚠️ **Belge yolları iki kökte:** okuma `platform/boats/{id}/documents`,
+yazma `platform/partners/{p}/boats/{b}/documents`. Yazma hangi işletme
+adına yapıldığını adresten söylemeli; okuma belge kimliğiyle tekil.
+Birleştirme bilinçli olarak ERTELENDİ (kırıcı değişiklik) → [[api-durum]]
+
+## Sınırlar tek kaynaktan okunuyor — 2026-09-06
+
+`GET /api/lookups` yanıtına `limits` eklendi: `boatPhotoMax`,
+`boatPhotoMaxBytes`, `boatDocumentMaxBytes`. Sayılar servis sabitlerinden
+okunuyor, uçta tekrar yazılmıyor.
+
+⚠️ Sebep ölçülmüş bir ayrışma: sunucu 24 görsele izin verirken arayüz
+20'de duruyordu ve ekran, sunucunun kabul edeceği dört görseli reddedip
+işletmeye "sınıra ulaştın" diyordu. **Bu ayrışmayı hiçbir kapı
+yakalamıyor** — alan adı doğru, tip doğru, yalnız sayı farklı;
+`UnmappedMemberHandling` bunu göremez ve iki taraf da kendi içinde
+tutarlı olduğu için test kırmızı yanmaz.
+
 ## Katmanlar
 
 Clean Architecture, dört proje. Bağımlılık **tek yönlü, içe doğru**:
@@ -31,8 +75,8 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 |---|---|---|
 | `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **84 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
-| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **55 migration**, **13 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
-| `DailyCruising.Api` | Application + Infrastructure | **38 controller, 119 yol / 149 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **65 migration**, **12 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
+| `DailyCruising.Api` | Application + Infrastructure | **45 controller, 147 yol / 188 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 

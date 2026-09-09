@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-05
+guncelleme: 2026-09-07
 durum: guncel
 ---
 
@@ -256,6 +256,39 @@ SMS, SMS gönderimleri, log, aktivite, destek).
 **19/19 tasarım sayfası uygulandı.** `isBreak` bilerek yapılmadı — tasarımcının
 kırılımları gösterdiği vitrin, gerçek sayfa değil.
 
+## Yönetim paneli yeniden bölündü (2026-09-06/07)
+
+Tek dosyalık `admin-panel-view.tsx` 25 modül + 22 alt ekranı taşıyamazdı;
+modül başına dosya + ortak parça kütüphanesi kuruldu.
+
+```
+components/panel/kit.tsx              ortak parçalar — kart · Tablo · ListeModulu ·
+                                      SuzgecSeridi · SayacSeridi · SekmeSeridi ·
+                                      KunyeIzgarasi · SutunGrafigi · SiraliListe ·
+                                      DurumRozeti · VeriKaynagi · GeriBasligi
+components/panel/admin/               19 modül dosyası (overview, customers,
+                                      coupons, documents, staff, reservations,
+                                      availability, cancellations, regions,
+                                      adverts, finance, email, sms, sms-log,
+                                      logs, activity, phone-booking,
+                                      reservation-settings, reservation-detail)
+lib/data/admin-durum.ts               MODUL_DURUMU — hangi ekran uca bağlı,
+                                      hangisi değil; `VeriKaynagi` rozeti ve
+                                      back-end eksik listesi **aynı** kaynaktan
+lib/data/admin-ornek.ts               örnek veri, **tek dosyada**: uç gelince o
+                                      modülün export'u siliniyor, `grep` hangi
+                                      ekranın hâlâ uydurduğunu söylüyor
+lib/api/types/                        elle yazılan yanıt tipleri — overview ·
+                                      customers · coupons · partners ·
+                                      platform-boats · support
+app/admin/tekneler/                   tekne alt ekranları (liste · yeni · detay ·
+                                      düzenle · belgeler · fiyat · resimler)
+```
+
+⚠️ **`lib/api/types/` tarafsız katman**: `lib/api/panel.ts` `server-only` ve
+istemci bileşenleri oradan okuyamıyor. Uç anahtarı → Türkçe etiket sözlükleri
+oraya konmazsa tarayıcı tarafı kendi kopyasını yazıyor → [[web-desenler]]
+
 ## İmza öğe (2026-08-22)
 
 `components/ui/wave-stitch.tsx` — "dalga dikişi", markanın imza öğesi.
@@ -400,6 +433,48 @@ arızasını da gizliyor. **Yeni uç bağlarken ilk bakılacak yer burası.**
 Ölçüldü: geliştirmede `200`, `next start` ile üretim derlemesinde `404`.
 ⚠️ `/payment/mock` **açık kalmalı** — yerel ödeme akışı (`payments/start`)
 tam oraya yönlendiriyor; Paratika gerçek anahtarlarla bağlanınca kapanır.
+
+## 2026-09-06 — tekne detayı ve yönetim panelinde tekne yönetimi
+
+Ölçüm (beyan değil): **41 rota sayfası · 110 bileşen · 12 API istemcisi.**
+
+### Yeni katman: platform tekne yönetimi
+
+`/admin/tekneler` modülün **kendi adresi**; alt ekranlar
+`/admin/tekneler/{partnerId}/{boatId}/…` altında (düzenle · fiyat · resimler ·
+belgeler · detay). İşletme kimliği **yolda** taşınıyor çünkü bütün platform
+uçları kapsamı adresten alıyor → [[web-kararlar]]
+
+| Ekran | Dosya | Uç kökü |
+|---|---|---|
+| Liste (arama + sayfalama) | `components/panel/boat-list.tsx` | `GET /api/platform/boats` |
+| Ekle / düzenle | `components/panel/boat-form.tsx` | `platform/partners/{p}/boats[/{b}]` |
+| Fiyat · program · menü | `components/panel/boat-pricing.tsx` | `…/boats/{b}/rental-types` (+`/prices`, `/extras`) |
+| Görseller | `components/panel/boat-media.tsx` | `…/boats/{b}/media` (+`/order`) |
+| Belgeler | `components/panel/boat-documents.tsx` | `…/boats/{b}/documents` · içerik `platform/boat-documents/{id}/content` |
+| Detay (salt okunur) | `app/admin/tekneler/[partnerId]/[boatId]/detay/` | `GET …/boats/{b}` |
+
+### `PanelKabuk` — aynı gövde iki yüzeyde
+
+`components/panel/panel-kabuk.tsx` yeni bir **kabuk** katmanı: fiyat, görsel
+ve belge bileşenleri işletme panelinde modal, yönetim panelinde sayfa olarak
+basılıyor. Fark yalnız `gorunum` prop'unda; gövde ve iş kuralları tek yerde.
+
+⚠️ Alt formlar (tip, fiyat, ek hizmet, belge yükleme) **her iki kipte de
+modal** — bir işin ortasında açılıyorlar ve arkadaki liste kaybolmamalı.
+
+### `PanelShell` artık açılış modülü alıyor
+
+Etkin modül istemci durumu ve **adreste yaşamıyordu**. Bir modülün kendi
+adresi olması gerektiğinde (tekne listesinin araması gibi) `baslangic`
+prop'u panele hangi modülü açacağını söylüyor. Bu prop olmadan
+`/admin/tekneler?q=…` "Genel bakış"ta açılırdı.
+
+### Sayfa yükleyicisi ortak
+
+`lib/api/admin-sayfa.ts` (`server-only`): `/admin` ve `/admin/tekneler` aynı
+altı çağrıyı yapıyor. İkinci sayfaya kopyalansaydı biri güncellenip diğeri
+unutulurdu.
 
 ## Bu dosya nasıl güncel kalır
 

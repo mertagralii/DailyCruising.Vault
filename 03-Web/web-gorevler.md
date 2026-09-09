@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: web
-guncelleme: 2026-09-05
+guncelleme: 2026-09-07
 durum: guncel
 ---
 
@@ -54,9 +54,63 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 ### 🟦 E — Altyapı
 
+- [ ] **W-92** Yanıt tiplerini üretilen belgeden almak
+      2026-09-07'de ölçüldü: `openapi.json` **129 işlem** için gövdeli başarı
+      yanıtı şeması taşıyor (kalan 55'i `204`, yani gövdesiz — üretilecek tip
+      yok. Üretecin bastığı "183/184" hata şemalarını da sayıyor, o sayıya
+      göre iş planlanmaz). Not yazıldığında (2026-08-28) **hiçbiri** taşımıyordu ve elle
+      yazılan yanıt tiplerinin gerekçesi buydu -> [[web-elle-yazilan-tip-yalan-soyler]]
+      Aynı gün enum'lar da belgeye girdi ve sözlükler `satisfies` ile sınanır
+      oldu -> [[web-enum-uretilemez]]
+      ⚠️ **Büyük iş ve şu an sıra bunda değil**: Mert'in odağı yönetim panelinin
+      bitmesi. `src/lib/api/types/` altındaki elle yazılan tipler kademeli
+      değiştirilir; her biri değiştirilirken **canlı gövdeyle** karşılaştırılmalı,
+      çünkü şemanın doğru olduğu bugün ölçüldü ama alan alan doğrulanmadı.
+
 ## 🟡 Yapılıyor
 
+- [~] **W-91** Yönetim panelinde tekne yönetimi — altı ekran
+      Mert canlı paneli (`dailycruising.com.tr/admin/tekne-yonetimi`) gösterip
+      *"bizim mevcut sistemimiz artı bununla harmanlayarak"* dedi.
+      **Yazıldı:** liste (`c829c26`), tekne ekle (`5497725`), düzenle · detay ·
+      belgeler (`df1a74f`), fiyat · resimler (`60cadfb`).
+      Backend dört uç ailesini `40e59ff` ile açtı; bloke kalktı.
+      ⚠️ **Kalan iş doğrulama.** `build`/`lint`/`tsc` temiz ve altı rota da
+      derleniyor ama **hiçbiri personel hesabıyla açılmadı**: yereldeki oturum
+      Mert'in müşteri hesabı, `/admin` doğru şekilde 403 veriyor. Parolayı ben
+      yazmıyorum, giriş Mert'te.
+      Doğrulanacak: (1) işletme panelindeki beş modal refaktörden sonra
+      bozulmamış, (2) her yazma **uçtan geri okunarak** — toast kanıt değil,
+      bu oturumda "kaydedildi" yazıp hiçbir şey kaydetmeyen iki ekran çıktı.
+
 ## 🟢 Tamamlandı
+
+- [x] **W-89** Tekne detayı tasarıma tamamlandı · 2026-09-05
+      Mert tasarım ekranlarını gönderdi: *"detayına girdiğim zaman
+      front-end tarafında eksiklikler var."* Ölçüm eksikleri **üçe**
+      ayırdı ve ayrım işin kendisini belirledi: ekran eksik / uçta alan
+      yok / alan var veri boş. Karıştırılsaydı yanlış yer düzeltilirdi.
+      Eklenenler: künyeye tekne tipi, bölge, genişlik · **günün akışı** ·
+      **kalkış noktası + gerçek harita** · **sezon fiyat tablosu** ·
+      donanımın **üç sütunu** (fiyata dahil / dahil değil / teknede) ·
+      **işletme künyesi** · **hesaplayan rezervasyon kartı**.
+      🔴 **En büyük bulgu ekran değil, sessiz veri kaybıydı.** Sözleşme
+      `amenityIds` → `amenities` olarak değişmişti; panel eskisini
+      göndermeye devam ediyor, uç sessizce atıyordu. İşletme donanımı
+      düzenleyip "kaydedildi" görüyor ve **hiçbir şey değişmiyordu**.
+      `tsc` yakalamadı: istek tipleri elle yazılıyor.
+      Kök kapatıldı — backend tanınmayan alanı artık **400** ile
+      reddediyor. Ön koşul olarak `PUT` gövdesi **izin listesine**
+      alındı: ölçüm `GET` 33 alan / `PUT` 26 alan, aradaki yedi salt
+      okunur alan gövdeye giriyordu.
+      Kanıt: canlı, uçtan uca — `Lodos Yelkenli`'de donanım seçildi,
+      **200**, sonra uçtan okundu (`Klima: Included`, önceki iki olanak
+      korunmuş), sonra geri alındı ve demo veri bulunduğu hâle döndü.
+      ⚠️ Toast'a güvenilmedi, uca soruldu: *"kaydedildi"* yazısı
+      bugünkü hatanın tam olarak kendisiydi.
+      Sayfa: yatay taşma 0, `build`/`lint`/`tsc` temiz.
+      `25a2b8b` · `25359e2` · `7f430fa` · `71ee8ce` · `f1b193d` ·
+      `4adcce9` · `30bccf5`
 
 - [x] **W-88** Sözleşme onay ekranı iki sütuna alındı · 2026-09-05
       🔴 **Mert testte gördü:** *"etrafta çok fazla boşluk var, burası

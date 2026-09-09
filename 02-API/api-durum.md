@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: api
-guncelleme: 2026-09-05
+guncelleme: 2026-09-08
 durum: guncel
 ---
 
@@ -12,6 +12,216 @@ durum: guncel
 > Genel dosya bu dosyayı özetler → [[durum]]
 
 ## Nerede duruyoruz
+
+**2026-09-08 gecesi — müşteri ve personel modülleri bitti, on commit.**
+`dotnet test` 706/706. Panelde çalışan ekranlar: müşteri listesi/detayı,
+rezervasyon detayı (ödeme dökümü + karekod + okutma kaydı), destek talebi
+detayı, personel listesi/detayı, personelin işlem geçmişi.
+
+⚠️ **Günün tek dersi, beş kez farklı kılıkta çıktı: veri kusuru gizler.**
+Sırasıyla inceldi — boş tablo → tek çeşit veri → hepsi aynı köşeye düşen
+veri (ek hizmet fiyatlarının 1,2'ye tam bölünmesi) → kodun bir dalına hiç
+uğramayan veri (herkesin tek rollü olması) → **yazılıp hiç okunmayan veri**
+(51 yetki adı iki hafta bozuk durdu, çünkü onları basan ekran yoktu).
+
+⚠️ **İkinci ders: benim ürettiğim iddia ölçüm değildir.** Bugün üç test
+yazdım ve üçü de ilk hâlinde ÖLÇMÜYORDU; üçünü de mutasyon gösterdi:
+"net + KDV = toplam" totolojiydi · seçtiğim ek hizmet tutarları yuvarlama
+artığı bırakmıyordu · "aralıklı" sandığım kırılma aslında kesindi ve onu
+ölçerken kendim düzeltmiştim.
+
+**Ortak çalışma deseni oturdu:** web oturumu ekranı ölçüyor, ben veriyi ve
+sözleşmeyi; ikimizin de göremediği yeri **tarayıcıda ben** kapatıyorum.
+Bugün dört kusur bu üçlüden çıktı — ekranda kuruş atılması, iki rolün
+kırpılması, `isInternal`'ın telde olmaması, uzun blog başlığının taşması.
+
+🔴 **Mert'te açık soru yok.** Sıradaki modülü o söyleyecek.
+
+---
+
+## Önceki durum
+
+**2026-09-08 — karekod akışı kapandı, dört commit** (`b77fa54` · `b5986bc` ·
+`b65bfb1` · `2ddb93c`), `dotnet test` 694/694.
+
+Ödeme tamamlandığı anda biniş karekodu kendiliğinden üretiliyor; ödenmiş 31
+rezervasyonun 31'inde bilet ve şifreli jeton var. Mert `6UGJC9S4` koduna
+bakıyor: binilmiş, karekodu görünen, okutanı yazan bir kayıt.
+
+⚠️ **Günün asıl dersi bir alan değil, bir ret.** Web oturumu ikinci
+okutmanın `Succeeded = false` yazılmasını önerdi; ölçüm reddetti. `Succeeded`
+"biniş oldu mu" demiyor, "okutma kabul edildi mi" diyor — bu ayrım ancak
+`false` yazılan yedi hâlin **hepsinin hata fırlattığı** görülünce anlaşılıyor.
+Alanın adı ne ölçtüğünü söylemiyordu. → [[api-kararlar]]
+
+Aynı gün ikinci kez **yazılan bir şey geri alındı**: `PlatformBoardingTicket`
+`usedAt` alanı. Tek tüketicisi istemedi ve haklıydı. İkisinin ortak dersi:
+**bu turda değer üreten şey kod değil ölçümdü** — biri ön yüzün "okutuldu"
+türetmesindeki kusuru açtı, diğeri eklenmemesi gereken alanı gösterdi.
+
+Üçüncüsü de aynı sınıftan: `DepartureDate` ile `StartsAt` 68 seferin 4'ünde
+farklı GÜN söylüyordu ve **hiçbir ekran şikâyet etmiyordu**, çünkü ikisi
+farklı yerlerde okunuyor.
+
+🔴 **Mert'te iki soru:** `A-133` (red sebepleri enum'a çevrilsin mi — ön
+yüzün sözlüğünü koruyabilecek tek yol) · `A-134` (tekrar okutma sunucuda
+reddedilsin mi — API ve web oturumu ikisi de karşı, karar onun).
+
+---
+
+## Önceki durum
+
+**2026-09-05 akşamı — tekne detay sayfası tamamlandı, yedi iş
+(`A-89`…`A-95`).** Hepsi web oturumunun ölçümlerinden doğdu ve
+**tamamı aynı kusur sınıfıydı: veri VARDI, izdüşümde yoktu.**
+
+| İş | Eksik olan | Nerede duruyordu |
+|---|---|---|
+| `A-89` | ret gerekçesi | işletme ucunda vardı, platform ucunda yoktu |
+| `A-90` | gün çarpanı | iç hesap nesnesinde vardı, TEL sözleşmesinde yoktu |
+| `A-91` | tip/bölge adı, genişlik | veritabanında vardı, izdüşümde yoktu |
+| `A-92` | sezon fiyatları | tarifede vardı, detayda yoktu |
+| `A-93` | dahil/hariç | hiç yoktu — tek gerçek şema eksiği |
+| `A-94` | işletme künyesi | hesaplanabiliyordu, dönmüyordu |
+
+⚠️ **Dört kez aynı tuzak: İKİ AYRI İZDÜŞÜM.** Birine alan eklemek diğerini
+etkilemiyor ve **tek tarafa bakan ölçüm eksiği göstermiyor**. Dördünü de web
+oturumu yakaladı, ben değil — çünkü ben yazdığım tarafa bakıyordum.
+
+**Kural:** iki tarafı olan bir akışta ölçüm İKİ TARAFTAN da yapılır. Bir alan
+eklerken sorulacak soru "ekledim mi" değil, **"müşteriye giden yanıtta
+göründü mü"**.
+
+## 2026-09-06 — geliştirme veritabanı sıfırlandı, uçtan uca test başlıyor
+
+Mert bütün akışı kendi elleriyle yürüyecek: işletme başvurusu → sözleşme
+gönderme → kabul → tekne ekleme → müşteri kaydı → rezervasyon.
+
+`dailycruising_dev` düşürülüp migration'larla sıfırdan kuruldu. Silinen: 70
+kullanıcı, 31 işletme, 23 tekne, 157 rezervasyon, tüm demo verisi. Geri gelen:
+referans katalogu — 10 bölge, 5 tekne tipi, 8 kiralama tipi, 9 olanak, 3 kural,
+vergi oranı, 4 yorum ölçütü; hepsi migration SQL'lerinden.
+
+**Tek hesap:** `admin@dailycruising.test` (`platform.admin`).
+
+⚠️ **Sıfırlama, `A-109`'u zorunlu kıldı.** Silmeden önce ölçüldü: şablon
+YARATAN bir uç yoktu. Temiz veritabanında platform hiçbir işletmeye sözleşme
+gönderemez, tekne eklemek onaylı sözleşmeye bağlı olduğu için sistem baştan
+tıkalı kalırdı. Sıfırlama planı bu yüzden önce ucu yazmaya döndü.
+
+**Ders:** bir sistemin gerçekten kurulabilir olduğu, ancak SIFIRDAN kurulmayı
+denerken görülüyor. Demo verisi bu eksiği üç haftadır gizliyordu — 13 şablon
+vardı, hepsi betiklerin SQL'inden.
+
+⚠️ Ölçülen ikinci şey: geliştirme veritabanındaki `platform-destek` rolü de
+demo verisindenmiş. Temiz kurulumda yalnız `platform.admin` ve
+`platform.support` var. Rol katalogu üstüne kurulan çıkarımlar demo veriyle
+ölçülmemeli.
+
+## 2026-09-06 — rezervasyon formu dalışçı sayısını soruyor (`A-108`)
+
+Mert: *"rezervasyon formunu da değiştir, dalışçı sayısı sorulsun"*
+
+**Sırada ne var:** cepheye gövde şekilleri bildirildi; ekranda ölçüm web
+oturumunda. Backend tarafında dalışçı işi bitti.
+
+İki karar bu işi diğer alan eklemelerinden ayırıyor:
+
+**1. Dalışçı yolcuların ALT KÜMESİ.** Ek yolcu sayılsaydı kapasite iki kez
+sayılırdı ve tekne dolmadan dolu görünürdü — ekranda hata olarak değil,
+yalnız satılmayan koltuk olarak görünen bir kusur.
+
+**2. Kontenjan seferin tamamı için denetleniyor.** Yalnız gelen isteği
+sınırla karşılaştıran bir denetim bu oturumun tanıdık kusuru olurdu:
+**koruma var, kapsamı yanlış.** Kontenjan 8 iken beş ayrı rezervasyonun
+sekizer dalışçı yazması hepsinden tek tek geçerdi. Sayacı veritabanı
+tetikleyicisi tutuyor, sınırı `CK_Voyages_SoldDivers` koyuyor.
+
+Üçüncüsü bir uç sözleşmesi kararı: **`supportsDivers` tekne detayına
+eklendi.** Cephe soruyu `diverCapacity != null` ile cevaplasaydı, kontenjanı
+sınırsız olan bir dalış turu dalış yapılmayan turdan ayırt edilemezdi.
+Çıkarımın doğru olduğu durum yaygın, yanlış olduğu durum sessiz.
+
+Kanıt zinciri → [[api-gorevler]] `A-108` · gerekçeler → [[api-kararlar]]
+2026-09-06
+
+⚠️ Ölçüm sırasında `/api/auth/login` **429** verdi: hesap sınırı IP başına
+15 dakikada 10 istek. Demo hesap parolası aranırken art arda deneme yapmak
+kendi ölçümümü kilitledi. Geliştirmede sınır bellekte tutuluyor, API'yi
+yeniden başlatmak pencereyi sıfırlıyor.
+
+## 2026-09-05 — sessiz kaybın kökü kapatıldı (`A-95`)
+
+Sunucu tanımadığı alanı **sessizce atıyordu**. Panel `amenityIds`
+gönderiyordu, uç `amenities` bekliyordu: **200**, "kaydedildi", hiçbir şey
+yazılmadı. Ne hata, ne uyarı, ne günlük satırı.
+
+`UnmappedMemberHandling = Disallow` açıldı — ama **açılmadan önce ölçüldü**:
+web tarafı yedi salt okunur alanı geri gönderdiğini buldu ve izin listesine
+çevirdi. Habersiz açılsaydı tekne düzenleme ekranı anında kırılırdı.
+
+⚠️ **Kilit açılır açılmaz KENDİ betiğimde de kusur buldu**
+(`15-tekne-zenginlestir.py` → `pricingStrategy`). Bu, kilidin gerekçesini
+web'in hatasından daha iyi anlatıyor: **kuralı savunan da aynı hatayı
+yapıyordu ve fark etmemişti.** "Dikkatli ol" bir çözüm değil; ölçen bir kapı
+gerekiyordu.
+
+⚠️ **Sınırı bilinerek kabul edildi:** kilit İSİM uyuşmazlığını yakalar, TİP
+uyuşmazlığını yakalamaz. Sınıfın gerçek çözümü istek tiplerinin de
+sözleşmeden üretilmesi → `A-07`.
+
+## ⚠️ 2026-09-05 — kendi hatalarım
+
+**1. Var olan uç için "yok" dedim ve üç dosyanın üzerine yazdım.** Planda
+*"işletme kendi profilini düzenleyemiyor, yeni uç lazım"* yazdım; `PUT
+/api/partner/profile` **31 Ağustos'tan beri vardı** (`e694f1f`). Yalnız
+`PartnerApplicationsController`'a bakıp hüküm vermiştim. Sonra `cat >` ile üç
+dosyayı yeni sanıp **üzerine yazdım**; fark edip `git show HEAD:` ile geri
+koydum, kayıp olmadı. **Ders: yeni dosya yazmadan önce var mı diye BAK.**
+
+**2. Aynı dosyada ilk-eşleşme değiştirme üç kez yanlış kayda düştü.**
+`BoatCatalogContracts.cs` gibi çok benzer kayıt taşıyan dosyalarda düz
+metin değiştirme, hedeflenen kaydın yerine ilk benzerini vuruyor. Derleme
+yakaladı ama yakalamayabilirdi. **Ders: hedef kaydın adından itibaren arama
+yap, dosyanın başından değil.**
+
+**3. Tam küme çıktısını `grep`'ten geçirdim, başarısız testin ADI kayboldu.**
+Bir saat yeniden koşmak gerekti. `trx` yazılır.
+
+
+**2026-09-05 — IP/tarayıcı kaydı: yarısı düzeldi, yarısı yayın koşulu oldu.**
+Zincirin üç ayrı yerinde kopukluk vardı ve **hiçbiri tek başına ölçümle
+görünmüyordu**:
+
+| Nerede | Neydi | Bugün |
+|---|---|---|
+| API yapılandırması | `ForwardedHeaders` hiçbir kaynakta yok → XFF okunmuyor | ✅ `KnownProxies = ["127.0.0.1","::1"]` (`75fb5ed`) |
+| Next `/api/dc/*` vekili | `User-Agent` hiç iletilmiyordu → `node` yazılıyordu | ✅ web düzeltti |
+| Next kimlik uçları | `login`/`register`/`refresh` vekilden geçmiyor, ayrı yol; orada da başlık iletilmiyordu | ✅ web düzeltti (`call()`) |
+
+Ölçüm, gerçek tarayıcı girişi: `UserAgent` artık gerçek Chrome dizesi,
+`CreatedIp` hâlâ **`::1`**.
+
+⚠️ **`::1` bir kusur DEĞİL, dağıtım koşulu.** Web `X-Forwarded-For`'u
+**uydurmuyor**, yalnız gelen istekte varsa iletiyor — uydursaydı ölçüm yeşil
+görünür ve yanlış olurdu: istemcinin bildirdiği adresi gerçek sanardık. Gerçek
+istemci IP'si ancak önümüzde XFF ekleyen bir ters vekil varken oluşur.
+
+**Sonuç, ekrana yazılabilecek beyan:**
+- "tarayıcı bilgin kaydedilir" → **yazılabilir** (ölçüldü)
+- "IP adresin kaydedilir" → **bugün yazılamaz**, `S-19`'a bağlı
+
+⚠️ **Koşulun iki parçası var ve ikisi de sessizce kırılıyor:** vekil XFF
+ekleyecek **VE** vekilin adresi `KnownProxies`'te olacak. İkincisi eksikse
+başlık yok sayılır, uygulama **hata vermez**, yine vekilin adresi kaydedilir —
+`S-24` ile aynı sınıf. Bu yüzden `yayin-oncesi.md`'ye koşul değil **ölçüt**
+yazılması önerildi (web yazıyor): *dağıtımdan sonra bir kez giriş yap,
+`RefreshTokens.CreatedIp` vekilin adresi çıkıyorsa koşul sağlanmamıştır.*
+
+**Ders:** `ApprovedIp` kolonu DOLUYDU ve kısıt geçiyordu; kusur "alan boş mu"
+diye bakarak değil **değere** bakarak görüldü. Zorunluluk kısıtı alanın
+dolduğunu ölçer, doğru şeyin yazıldığını değil.
+
 
 **2026-09-05 — sözleşme onayında kaydedilen IP kullanıcının DEĞİL, vekilin.**
 Ölçüm, Mert'in kendi onayladığı gerçek satır:

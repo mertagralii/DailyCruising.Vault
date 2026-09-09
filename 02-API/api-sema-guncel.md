@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-05
+guncelleme: 2026-09-08
 durum: uretilen
 ---
 
@@ -141,6 +141,7 @@ Kısıtlar:
 | `IssuedAt` | timestamp with time zone | hayır |  |
 | `ExpiresAt` | timestamp with time zone | hayır |  |
 | `RevokedAt` | timestamp with time zone | evet |  |
+| `TokenEncrypted` | character varying | evet |  |
 
 ## `BoatAmenities`
 
@@ -148,6 +149,11 @@ Kısıtlar:
 |---|---|---|---|
 | `BoatId` | uuid | hayır |  |
 | `AmenityId` | uuid | hayır |  |
+| `Inclusion` | character varying | hayır | `'OnBoard'::character varying` |
+
+Kısıtlar:
+
+- `CK_BoatAmenities_Inclusion_Enum` — `CHECK ((("Inclusion")::text = ANY ((ARRAY['OnBoard'::character varying, 'Included'::character varying, 'Extra'::character varying])::text[])))`
 
 ## `BoatCrewLanguages`
 
@@ -235,12 +241,18 @@ Kısıtlar:
 | `SortOrder` | integer | hayır |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
 | `UpdatedAt` | timestamp with time zone | hayır |  |
+| `DiverCapacity` | integer | evet |  |
+| `MaxNights` | integer | evet |  |
+| `MinNights` | integer | evet |  |
+| `NonDiverCapacity` | integer | evet |  |
 
 Kısıtlar:
 
 - `CK_BoatRentalTypes_AgeLimits` — `CHECK ((("InfantMaxAge" >= 0) AND ("ChildMaxAge" > "InfantMaxAge")))`
+- `CK_BoatRentalTypes_DiverCapacity` — `CHECK (((("DiverCapacity" IS NULL) OR ("DiverCapacity" >= 0)) AND (("NonDiverCapacity" IS NULL) OR ("NonDiverCapacity" >= 0))))`
 - `CK_BoatRentalTypes_ListCurrency_Enum` — `CHECK ((("ListCurrency")::text = ANY ((ARRAY['TRY'::character varying, 'USD'::character varying, 'EUR'::character varying, 'GBP'::character varying])::text[])))`
 - `CK_BoatRentalTypes_MinPassengers` — `CHECK ((("MinPassengers" IS NULL) OR ("MinPassengers" > 0)))`
+- `CK_BoatRentalTypes_NightRange` — `CHECK (((("MinNights" IS NULL) OR ("MinNights" >= 1)) AND (("MaxNights" IS NULL) OR ("MaxNights" >= 1)) AND (("MinNights" IS NULL) OR ("MaxNights" IS NULL) OR ("MinNights" <= "MaxNights"))))`
 - `CK_BoatRentalTypes_TimeRange` — `CHECK ((("StartTime" IS NULL) OR ("EndTime" IS NULL) OR ("StartTime" < "EndTime")))`
 - `CK_BoatRentalTypes_WeekStartDay_Enum` — `CHECK ((("WeekStartDay" IS NULL) OR ("WeekStartDay" = ANY (ARRAY['Sunday'::text, 'Monday'::text, 'Tuesday'::text, 'Wednesday'::text, 'Thursday'::text, 'Friday'::text, 'Saturday'::text]))))`
 
@@ -341,6 +353,7 @@ Kısıtlar:
 | `ReviewCount` | integer | hayır |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
 | `UpdatedAt` | timestamp with time zone | hayır |  |
+| `DraftMeters` | numeric | evet |  |
 
 Kısıtlar:
 
@@ -907,6 +920,8 @@ Kısıtlar:
 | `BusinessType` | character varying | evet |  |
 | `Iban` | character varying | evet |  |
 | `District` | character varying | evet |  |
+| `TursabNumber` | character varying | evet |  |
+| `TursabVerifiedAt` | timestamp with time zone | evet |  |
 
 Kısıtlar:
 
@@ -914,6 +929,7 @@ Kısıtlar:
 - `CK_Partners_Iban` — `CHECK ((("Iban" IS NULL) OR (("Iban")::text ~ '^TR[0-9]{24}$'::text)))`
 - `CK_Partners_RejectionReason` — `CHECK (((("Status")::text <> 'Rejected'::text) OR ("RejectionReason" IS NOT NULL)))`
 - `CK_Partners_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['ApplicationReceived'::character varying, 'UnderReview'::character varying, 'ContractSent'::character varying, 'Active'::character varying, 'Rejected'::character varying, 'Suspended'::character varying])::text[])))`
+- `CK_Partners_TursabVerified` — `CHECK ((("TursabVerifiedAt" IS NULL) OR ("TursabNumber" IS NOT NULL)))`
 
 ## `Passengers`
 
@@ -1098,6 +1114,7 @@ Kısıtlar:
 | `ExtraDayCount` | integer | hayır |  |
 | `SortOrder` | integer | hayır |  |
 | `IsActive` | boolean | hayır |  |
+| `SupportsDivers` | boolean | hayır | `false` |
 
 Kısıtlar:
 
@@ -1191,6 +1208,7 @@ Kısıtlar:
 | `RefundDueTry` | numeric | evet |  |
 | `RefundReason` | character varying | evet |  |
 | `VatRate` | numeric | hayır |  |
+| `DiverCount` | integer | hayır | `0` |
 
 Kısıtlar:
 
@@ -1201,6 +1219,7 @@ Kısıtlar:
 - `CK_Reservations_CouponFundedByValue` — `CHECK ((("CouponFundedBy" IS NULL) OR ("CouponFundedBy" = ANY (ARRAY['Platform'::text, 'Partner'::text]))))`
 - `CK_Reservations_CouponFundedBy_Enum` — `CHECK ((("CouponFundedBy" IS NULL) OR ("CouponFundedBy" = ANY (ARRAY['Platform'::text, 'Partner'::text]))))`
 - `CK_Reservations_DiscountBound` — `CHECK (("DiscountAmountTry" <= ("TotalTry" + "ExtrasTotalTry")))`
+- `CK_Reservations_DiverCount` — `CHECK ((("DiverCount" >= 0) AND ("DiverCount" <= ("AdultCount" + "ChildCount"))))`
 - `CK_Reservations_ExchangeRate` — `CHECK (("ExchangeRate" > (0)::numeric))`
 - `CK_Reservations_GrandTotal` — `CHECK (("GrandTotalTry" = (("TotalTry" + "ExtrasTotalTry") - "DiscountAmountTry")))`
 - `CK_Reservations_HoldExpiry` — `CHECK (((("Status")::text <> 'Pending'::text) OR ("HoldExpiresAt" IS NOT NULL)))`
@@ -1478,11 +1497,15 @@ Kısıtlar:
 | `CancelledAt` | timestamp with time zone | evet |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
 | `UpdatedAt` | timestamp with time zone | hayır |  |
+| `DiverCapacity` | integer | evet |  |
+| `SoldDivers` | integer | hayır | `0` |
 
 Kısıtlar:
 
 - `CK_Voyages_CancellationReason_Enum` — `CHECK ((("CancellationReason" IS NULL) OR (("CancellationReason")::text = ANY ((ARRAY['Weather'::character varying, 'MinPassengersNotMet'::character varying, 'OwnerCancelled'::character varying, 'CustomerCancelled'::character varying, 'OfferExpired'::character varying, 'Other'::character varying])::text[]))))`
+- `CK_Voyages_DiverCapacity` — `CHECK ((("DiverCapacity" IS NULL) OR ("DiverCapacity" >= 0)))`
 - `CK_Voyages_RentalTypeRequired` — `CHECK ((((("VoyageType")::text = 'Block'::text) AND ("BoatRentalTypeId" IS NULL)) OR ((("VoyageType")::text <> 'Block'::text) AND ("BoatRentalTypeId" IS NOT NULL))))`
+- `CK_Voyages_SoldDivers` — `CHECK ((("SoldDivers" >= 0) AND (("DiverCapacity" IS NULL) OR ("SoldDivers" <= "DiverCapacity"))))`
 - `CK_Voyages_SoldSeats` — `CHECK ((("SoldSeats" >= 0) AND ("SoldSeats" <= "Capacity")))`
 - `CK_Voyages_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['Planned'::character varying, 'Completed'::character varying, 'Cancelled'::character varying])::text[])))`
 - `CK_Voyages_TimeRange` — `CHECK (("StartsAt" < "EndsAt"))`

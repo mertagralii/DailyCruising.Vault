@@ -1,7 +1,7 @@
 ---
 rol: not
 kapsam: api
-guncelleme: 2026-08-26
+guncelleme: 2026-09-08
 durum: guncel
 ---
 
@@ -45,3 +45,37 @@ Aynı koşuda ikinci bir ölçüm hatası daha oldu: macOS'ta `timeout` komutu y
 bu boşluk "hata yok" gibi okunabilirdi. **Boş çıktı, geçti demek değildir.**
 
 İlgili: [[api-eszamanlilik-testi-yarismayabilir]] · [[api-desenler]] · [[api-kararlar]]
+
+## 2026-09-08 · Aynı tuzağın TERS yönü: `--no-launch-profile`
+
+Yukarısı profilin ortam değişkenini ezmesini anlatıyor. Ters yönü de var ve
+bugün ona düştüm.
+
+Geliştirme sunucusu şöyle ayakta:
+
+```bash
+dotnet run --no-launch-profile --urls http://localhost:5163
+```
+
+`--no-launch-profile` profili **hiç** uygulamıyor — yani profilin verdiği
+`ASPNETCORE_ENVIRONMENT=Development` de gelmiyor. Ortam `Production` sayılıyor
+ve **user-secrets yüklenmiyor**, çünkü user-secrets yalnız Development'ta
+okunur. Sonuç:
+
+```
+Unhandled exception. System.InvalidOperationException:
+ConnectionStrings:Default tanımlı değil.
+```
+
+Mesaj "user-secrets kur" diyor ve **secrets zaten kurulu**; eksik olan ortam.
+Doğrusu:
+
+```bash
+ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile --urls http://localhost:5163
+```
+
+**Ders:** profil ile ortam değişkeni arasındaki ilişki iki yönlü bir tuzak.
+Profil varsa değişkeni ezer; profil yoksa değişken hiç doğmaz. İkisinde de
+hata mesajı yanlış yeri gösteriyor.
+
+İlgili: [[api-notlar]] · [[api-mv-ile-geri-alma-eski-dll]]

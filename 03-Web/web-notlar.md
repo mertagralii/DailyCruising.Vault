@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-28
+guncelleme: 2026-09-07
 durum: guncel
 ---
 
@@ -34,6 +34,7 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[web-hiz-siniri-yoklamasi]] — reddedilen isteğin de sayılması, yoklamayı kalıcı kilide çevirmesi
 - [[web-baglanmamis-token-tuzagi]] — `@theme inline`'a bağlanmamış token'ın sessizce ölü sınıf üretmesi
 - [[web-mock-hatayi-gizler]] — mock verinin yanlış bilgi göstermesi değil, **hatanın kendisini görünmez yapması**
+- [[web-enum-uretilemez]] — enum sözlüğünün şemadan üretilememesi; ölçüldü, bildirildi, aynı gün düzeldi
 
 - [[web-eksik-detay-ekranlari]] — liste var, detay ekranı yok; 106 bölüm eksikti
 - [[web-tasarimi-tarayicida-acmak]] — tasarımı localhost'ta açıp hesaplanmış stilleri karşılaştırma

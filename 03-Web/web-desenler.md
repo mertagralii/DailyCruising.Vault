@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-08-28
+guncelleme: 2026-09-08
 durum: guncel
 ---
 
@@ -173,5 +173,85 @@ tamamı ikisinden de temiz geçti, yalnız tarayıcıda görüldü.
 Ölçüt **bölüm sayımı**, ekran sayısı değil -> [[web-kararlar]] 2026-08-22.
 Liste tablosu yapılmış olması detay ekranının yapıldığı anlamına gelmez —
 bu hata bir kez yapıldı, 106 bölüm eksik çıktı -> [[web-eksik-detay-ekranlari]]
+
+## Sunucudaki bir sayının kopyası arayüzde tutulmaz
+
+Bir sınır, eşik veya çarpan sunucuda tanımlıysa **arayüzde yeniden yazılmaz**;
+uçtan okunur. `boat-media` sınırı `20` yazıyordu, sunucununki `24`'tü —
+ekran, sunucunun kabul edeceği dört görseli reddediyor ve işletmeye
+*"sınıra ulaştın"* diyordu.
+
+⚠️ **Bu sınıf en sessizi.** Alan adı uyuşmazlığını backend'in
+`UnmappedMemberHandling = Disallow` kilidi 400 ile kapatıyor; tip
+uyuşmazlığını kapatmıyor; **sayı uyuşmazlığını hiç göremiyor** — iki taraf da
+kendi içinde tutarlı olduğu için hiçbir test kırmızı yanmıyor.
+
+- Sınır `GET /api/lookups` → `limits` içinde gelir (`ff013e0`)
+- Uç sınırı vermiyorsa **varsayılan uydurulmaz**: yükleyici gizlenmez, sunucu
+  kendi mesajıyla reddeder. Uydurulan varsayılan, kaldırılan kopyayı geri
+  getirir
+- Aynı kural sayı **ilişkileri** için de geçerli: `boatPrice` ile
+  `grandTotalTry` arasındaki çarpanı arayüzde kurmak yerine uca `billedDays`
+  eklendi -> [[web-kararlar]] 2026-09-05
+
+## `PUT` gövdesi şemanın **tamamını** taşır
+
+Bu API'de `PUT` **tam değiştirmedir**: gövdede olmayan alan `null`'a çekilir.
+Yani bir formda alanı unutmak, o alanı **her kaydetmede silmek** demek.
+
+- Yeni bir `PUT` formu yazarken gövde `openapi.json`'daki `Save*Request`
+  alanlarıyla **karşılaştırılır**; eksik alan varsa ya gönderilir ya da
+  boşaltılmasının kasıtlı olduğu koda yazılır
+- Alan listesi **tek yerde** durur. Okuma, yazma ve render ayrı listelere
+  bakarsa biri güncellenip diğeri unutulur — `tursabNumber` kusuru
+  tam olarak buydu -> [[web-durum]] 2026-09-06
+- ⚠️ **Hiçbir otomatik kapı bunu yakalamıyor.** Backend'in
+  `UnmappedMemberHandling = Disallow` kilidi *fazla* alanı reddeder,
+  **eksik** alanı değil: eksik alan geçerli bir istektir
+
+## `server-only` bir sözlük, tarayıcıda **ikinci kopyasını doğurur**
+
+Çeviri sözlükleri (`Open → Açık`, `other → Diğer`) hem sunucu tarafında hem
+istemci bileşenlerinde gerekiyor. Sözlük `server-only` bir dosyada yaşıyorsa
+istemci onu **okuyamaz** ve kopyalar; kopya sessizce ayrışır.
+
+2026-09-07'de ölçüldü: `TALEP_DURUMU` iki yerde yazılıydı —
+`lib/api/panel.ts:384` (`server-only`) ve `components/panel/support-ticket.tsx`
+— ve müşteri detayına destek sekmesi eklenirken **üçüncüsü** yazılmak üzereydi.
+
+- Uç anahtarı → Türkçe etiket sözlükleri `lib/api/types/<alan>.ts` içinde
+  durur: o katman **tarafsız**, iki taraf da okuyabilir
+- Sözlükte olmayan anahtar `?? ham` ile **ham geçer**, gizlenmez:
+  *uydurma anahtar sessiz, eksik anahtar görünür* -> [[web-kararlar]] 2026-09-06
+- Anahtarlar backend enum'undan ya da izin listesinden **ölçülür**; İngilizce
+  bir değeri tahmin etmek, ekrana hiç uğramayan ölü bir satır üretir
+
+## Doğrulama, **ekranın bastığı katmanda** yapılır
+
+Bir hesabın tuttuğunu göstermek için uçtan gelen sayıları toplamak yetmiyor;
+kullanıcı o sayıları değil, **biçimlendirilmiş hâllerini** görüyor.
+
+2026-09-08'de ölçüldü: rezervasyon ödeme dökümünde satırların toplamı
+uçtaki değerlerle **tutuyordu** ama ekranda tutmuyordu — para tam sayıya
+yuvarlanıyor ve üç ayrı yuvarlama toplamı ıskalıyordu.
+
+```
+F6BUGQXM  3.958 + 908 + 973 = 5.839    ekranda genel toplam 5.840
+U7RPXUDR  7.917 + 642 + 1.712 = 10.271 ekranda genel toplam 10.270
+```
+
+⚠️ Ben aynı gün bu dökümü "doğrulamıştım" — **veriyi** toplayarak. Kusur
+gösterim katmanındaydı ve doğrulamam oraya hiç bakmadı. Ölçüm doğruydu,
+**ölçtüğü yer yanlıştı.**
+
+- Toplanması gereken sayılar **kuruşuyla** basılır (`tlKurusla`); ilan ve
+  liste fiyatları tam sayı kalır (`tl`). Ayrım *"para mı"* değil,
+  **"bu sayı bir toplamın parçası mı"**
+- Sapma **iki yönde** olabiliyor, yani "hep bir eksik" diye telafi edilemez
+- ⚠️ **Tek örnek yeterli değil**: bazı rezervasyonlarda yuvarlama hataları
+  birbirini götürüp tesadüfen tutuyor. `4P3WVK4Z` tutuyordu, `F6BUGQXM`
+  tutmuyordu — ilkine bakıp "çalışıyor" demiştim
+- Doğrulama, biçimlendiricinin çıktısı **yeniden ayrıştırılıp** toplanarak
+  yapılır; girdi sayıları toplanarak değil
 
 İlgili: [[web-notlar]] · [[web-mimari]] · [[web-kararlar]] · [[web-gorevler]] · [[web-araclar]]

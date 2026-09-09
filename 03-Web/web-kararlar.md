@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: web
-guncelleme: 2026-09-05
+guncelleme: 2026-09-08
 durum: guncel
 ---
 
@@ -1421,6 +1421,154 @@ Beş düğmeye çıkan hücrede sonuç dağınıktı. Izgarada hepsi 99px, aynı
 eşit yükseklikte. Sabit yükseklik **verilmedi**: dar sütunda uzun etiket iki satıra
 sarıyor ve sabit yükseklik metni kırpardı — hizayı yükseklik değil ızgara sağlıyor.
 
+## 2026-09-07 — Panelde karekod **gösterilmiyor**, belgenin durumu gösteriliyor
+
+Yönetim panelindeki rezervasyon ayrıntısı biniş karekodunu basmıyor. Bunun
+yerine belgenin durumu (üretildi mi, geçerli mi, ne zamana kadar) ve okutma
+kayıtları (kim, ne zaman, hangi yöntemle, başarılı mı) gösteriliyor.
+
+**Neden:** karekod **okunamıyor** — eksiklik değil, tasarım. Veritabanında
+jetonun yalnız SHA-256 özeti duruyor; düz metni hiçbir yerde saklanmıyor.
+Yani "mevcut belgeyi üretmeden okuyan uç" yazılamaz, okunacak düz metin yok.
+Özet saklamak, veritabanını ele geçiren birinin geçerli bilet üretememesi
+demek (backend ölçümü, 2026-09-07).
+
+⚠️ **İlk teşhisim yanlıştı ve Mert düzeltti.** Uç her çağrıda yeni kod yazıp
+eskisini geçersiz kıldığı için bunu bir kusur sanmıştım. Oysa o davranış
+**özelliğin kendisi**: müşteri kendi sayfasından karekodunu yenileyebiliyor.
+Ders: bir davranışı kusur ilan etmeden önce **kimin işine yaradığı**
+sorulmalı — panelden bakınca kusur görünen şey, müşteri akışında özellikti.
+
+**Üç hâl üç ayrı cümle:** belge yok · geçerli · iptal/süresi dolmuş. Tek bir
+"geçersiz" yazmak, personelin iki farklı sorunu aynı cümleyle karşılayıp
+misafiri yanlış yönlendirmesine yol açardı — birincisinde misafirin
+telefonunda hiçbir şey yok, ikincisinde bir şey var ama iskelede çalışmıyor.
+
+**Başarısız okutmalar da basılıyor** ve asıl değerli olan onlar: başarılı
+okutma zaten durum geçmişinde `Boarded` olarak görünüyor; iskelede
+*çalışmayan* bir karekodun sebebi ise yalnız o listede yazılı.
+
+## 2026-09-07 — Panelde karekod **gösteriliyor** (aynı günkü kararı iptal eder)
+
+Yukarıdaki *"panelde karekod gösterilmiyor"* kararı **iptal edildi**. Panel
+artık biniş karekodunu çiziyor: müşterinin telefonundakiyle **birebir aynı**
+kod, yeni bilet üretilmeden.
+
+**Neden:** Mert istedi. Üç seçenek sunuldu — (A) bugünkü hâl, (B) personelin
+yeni kod üretmesi, (C) jetonun saklanması — ve C seçildi. Riski seçeneğin
+metninde açıkça yazılıydı: *"veritabanı sızarsa saldırgan geçerli biniş
+bileti üretebilir hâle gelir; bugünkü tasarımın tam tersi."* Yani bilerek
+verilmiş bir ürün kararı, atlanmış bir uyarı değil.
+
+⚠️ **Önceki karar teknik olarak yanlış değildi.** Jetonun yalnız özetinin
+saklanması doğru bir tercihti; ürün sahibi başka bir dengeyi seçti. Kararın
+iptal edilme sebebi bir kusur değil, bir öncelik değişimi — ikisini
+karıştırmamak için bu satır burada.
+
+**Uygulama, kararın içinde kalan daha iyi biçimde:** jeton düz metin değil
+**AES-GCM ile şifreli**, anahtar veritabanının dışında; uygulama anahtarsız
+açılmıyor. Görüntüleme olay günlüğüne yazılıyor (`boarding.ticket.viewed`),
+jetonun kendisi günlüğe **yazılmıyor** — erişimi kaydeden mekanizma ikinci
+bir sızıntı yüzeyi olmamalı.
+
+⚠️ **"Güvenli" denmiyor ve denmemeli.** Hiç saklamamak kadar güvenli değil;
+yalnız **iki ayrı sırrın birden** sızmasını gerektiriyor. Ekranda güvenlik
+cümlesi kurulacaksa bu ayrım korunur.
+
+**Ekranda jetonun düz metni basılmıyor.** Karekod okutulmak için var;
+yanına kodu yazmak omuz üstünden bakanın işini kolaylaştırır ve hiçbir işe
+yaramaz — kaptanın elle girdiği şey rezervasyon kodu, jeton değil.
+
+`token` `null` gelebilir (özellikten önce üretilmiş biletler; eski
+jetonların düz metni hiçbir yerde yok, geri doldurulamaz). O hâlde ekran
+*"karekod gösterilemiyor"* diyor, *"belge yok"* demiyor — ikisi farklı
+cümle ve misafiri farklı yönlendirir.
+
+## 2026-09-08 — Kullanılmış karekod **gizlenmiyor**, durumu yazılıyor
+
+Okutulmuş, süresi dolmuş ya da iptal edilmiş biniş karekodu panelde
+gösterilmeye devam ediyor; altındaki cümle durumunu söylüyor.
+
+**Neden:** Mert'in kararı, birebir: *"kullanılmış karekod tekrar gösterilsin
+zaten tekrar binilmiş olan yada okutulan karekod tekrardan okutulamaz sadece
+biz o sırada enazından okutulan karekodu da görebilelim."*
+
+Backend "kullanılmış kodun tekrar gösterilecek işlevi yok, yerine biniş
+bilgisi yazılsın" önerdi; Mert **görünür kalmasını** seçti.
+
+⚠️ **Mert'in gerekçesinin bir yarısı yanlış ve düzeltildi:** okutulmuş kod
+**tekrar okutulabiliyor**. `BoardingService`, `Boarded` bir rezervasyon
+yeniden okutulduğunda isteği reddetmiyor — `AlreadyBoarded: true` dönüyor ve
+`BoardingScans`'e ikinci satır yazıyor. Zararsız (durum değişmiyor) ama
+"tekrar okutulamaz" doğru değil. Karar bundan etkilenmiyor: gösterilen kod
+gerçekten çalışıyor, sadece işini görmüş.
+
+**Beş hâl beş ayrı cümle** — dördü ölçülebilir kaynaktan, biri türetme:
+
+| Hâl | Kaynak |
+|---|---|
+| Okutuldu | `boardingScans.some(s => s.succeeded)` |
+| Biniş elle işaretlendi | `boardedAt` var, başarılı okutma yok |
+| İptal edilmiş | `boardingTicket.revokedAt` |
+| Süresi doldu | `boardingTicket.isUsable === false` |
+| Misafirin telefonundakiyle aynı | kalan hâl |
+
+⚠️ **"Okutuldu" `boardedAt`ten türetilemez**: biniş elle de işaretlenebiliyor
+ve o zaman ortada okutma yokken "bu kod okutuldu" denirdi — karekodun
+altındaki cümle bir **denetim ifadesi**, yanlış olması okutma kaydının kanıt
+değerini götürür.
+
+⚠️ `succeeded` denetimi de atlanamaz: `boardingScans` başarısız denemeleri de
+taşıyor. `length > 0`, yalnız başarısız denemesi olan **geçerli** bir kodu
+"okutuldu" sayardı — aynı kusurun aynadaki hâli.
+
+⚠️ Okutulmuş kod **soluklaştırılmıyor**, süresi dolmuş/iptal edilmiş
+soluklaştırılıyor: ilki hâlâ okunuyor, ikincisi okunmuyor.
+
+## 2026-09-08 — Tekrar okutma **reddedilmiyor**, uyarı yeterli
+
+Okutulmuş bir biniş karekodu tekrar okutulabiliyor. Sunucu binişi ikinci kez
+işaretlemiyor, `AlreadyBoarded: true` dönüyor ve panelde satır *"Kod tekrar
+okutuldu · biniş zaten yapılmıştı"* diye görünüyor.
+
+**Neden:** Mert önce *"okutulmuş QR tekrar okutulamamalı"* dedi; bedeli
+ölçülüp anlatıldıktan sonra **A**'yı seçti — reddetme yok, uyarı var.
+
+Bedel şuydu: kaptan turdan önce yolcu listesini teyit etmek için kodu
+tekrar okutuyor. Reddedilseydi hata alır ve **listeyi göremezdi**. Yani
+kural harfiyen uygulanınca iskeledeki gerçek bir işi engelliyordu.
+
+⚠️ **Mert'in ilk gerekçesi yanlıştı ve düzeltildi**: "zaten tekrar
+okutulamaz" sanıyordu; okutulabiliyor.
+
+### Ayrım kayıtta değil **etikette**
+
+Sunucudan ikinci okutmayı `Succeeded = false` yazması istenmişti; backend
+ölçüp reddetti ve **haklıydı**:
+
+1. `Succeeded` "biniş oldu mu" değil **"okutma kabul edildi mi"** demek.
+   `false` yalnız `BoardingException` fırlatılan hâllerde yazılıyor.
+2. Kısmi dizin (`WHERE "Succeeded" = false`) tam olarak "iskelede ne
+   çalışmadı" sorusu için var; zararsız tekrarlar onu seyreltirdi.
+3. ⚠️ **Teklif kendi ekranımızı yalancı çıkarıyordu:** biniş elle
+   işaretlenip **sonra** gerçek kod okutulduğunda o tek okutma "başarısız"
+   yazılır, `some(s => s.succeeded)` false döner ve ekran *"bu kod
+   okutulmadı"* derdi — okutulduğu hâlde. Aynı gün `boardedAt`ten
+   türetirken düzeltilen kusurun **ters yöndeki hâli**.
+
+Binişi yapan, zamanca **en erken başarılı** okutma; sonrakiler yeniden
+okuma. Kayıt olduğu gibi kalıyor — *"kaç kez okutuldu"* sorusunun tek
+cevabı o.
+
+### Ölçülüp değiştirilmeyen: yetki
+
+*"QR'ı yalnız rezervasyonun ait olduğu işletme okutabilir"* kuralı **zaten
+uygulanıyordu**: `ScanAsync` → `FindByTokenHashAsync(partnerId, hash, …)`,
+arama çağıranın işletmesine kapsanmış. Başka işletme `TokenNotFound` alıyor.
+
+⚠️ Hatanın *"başka işletmeye ait"* değil *"tanınmadı"* olması **kasıtlı**:
+aksi hâlde kodun başka bir yerde geçerli olduğunu ele verirdi.
+
 İlgili: [[web-desenler]] · [[web-gorevler]] · [[web-durum]]
 
 ---
@@ -1505,3 +1653,128 @@ bekleyen (`demo-kekova`), ret formu açık. Mobilde tek sütuna düşüyor ve
 yapışkanlık kapanıyor. `22a749e`
 
 İlgili: [[web-desenler]] · [[web-durum]] · [[web-gorevler]]
+
+---
+
+## 2026-09-05 — Tekne detayına hesaplayan rezervasyon kartı
+
+Sağ sütunda sabit bir **"Başlangıç fiyatı"** duruyordu: kullanıcı tarih ve kişi
+seçemiyor, ödeyeceği tutarı rezervasyon sayfasına geçmeden göremiyordu.
+
+🔴 **Tasarıma birebir bir panel zaten yazılmıştı** (`booking-panel.tsx`, 236
+satır) ama `lib/data/boat-detail` mock'una bağlıydı ve **hiçbir sayfada
+kullanılmıyordu**. Sayfa gerçek uca bağlanırken sadeleştirilmiş, o hâliyle
+kalmıştı. Ölü bileşen kimseyi rahatsız etmediği için kimse fark etmedi.
+
+**Karar:** kart yeniden yazıldı (`detail-booking.tsx`), tarife + tarih + kişi
+seçimi var, **kırılım ve toplam `pricing/quote`'tan** basılıyor.
+
+**Neden istemcide çarpmıyoruz:** indirim, ek hizmet ve KDV kuralları sunucuda.
+Burada `yetişkin × birim` yazsaydık kupon ya da yaş kademesi devreye girdiği
+anda ekrandaki toplam sunucununkinden **ayrışırdı** — ve ayrıştığı, ancak biri
+farklı tutar ödediğinde fark edilirdi.
+
+⚠️ **Kişi sayacı yalnız `PerPerson` tarifede.** Tekne başı tarifede kişi sayısı
+tutarı değiştirmiyor; sayaç göstermek kullanıcıya **olmayan bir kaldıraç** vaat
+ederdi.
+
+### Uçtan gelen iki sayı birbirini tutmuyordu
+
+Kırılıma ilk `boatPrice` basılmıştı. Ölçüm: 3 günlük tarifede uç
+`boatPrice: 42000` ve `totalTry: 126000` döndürüyor — birincisi **günlük**
+bedel. Ekranda *"Tekne bedeli ₺42.000 / Toplam ₺126.000"* çıkıyordu ve okuyan
+aradaki çarpanı göremiyordu.
+
+İlk çözümüm çarpanı **etikete** yazmaktı ve gün sayısını `durationDays`'ten
+kuruyordum. Backend daha iyisini yaptı: uca **`billedDays`** ekledi. Gerekçesi
+benim çözümümü çürütüyor — çarpanı arayüzde kurmak **üç kuralı kopyalamak**
+demek: `Nights` çarpanı geçersiz kılabiliyor, gün içi turlarda hep 1, çok
+günlülerde tarifenin kendi alanından geliyor. Aynı hesabı iki yerde tutmak bir
+gün sessizce ayrışmaları demekti.
+
+**Kural:** *sunucudan gelen iki sayı arasındaki ilişkiyi arayüzde yeniden
+kurmuyoruz; ilişkiyi de sunucudan istiyoruz.* Etiket düzeltmesi kusuru gizler,
+alan eklemek kaldırır.
+
+**Neden:** aynı hesabın iki yerde yaşaması, ayrıştığında **hangisinin doğru
+olduğunu kimse bilemez** ve ayrışma ancak para yanlış hesaplandığında görünür.
+
+Kanıt: canlı — kart "Tekne bedeli · 3 gün ₺126.000 / Toplam ₺126.000" basıyor;
+künyede "Tekne tipi: Gulet · Bölge: Fethiye · Genişlik: 6,4 m"; yatay taşma 0.
+`25a2b8b` · `25359e2` · `7f430fa`
+
+---
+
+## 2026-09-06 — Aynı gövde iki yüzeyde: `PanelKabuk`
+
+**Karar:** Fiyat, görsel ve belge yönetimi **tek bileşen**. İşletme panelinde
+modal, yönetim panelinde kendi adresi olan sayfa; farkı `gorunum` prop'u ve
+`PanelKabuk` taşıyor.
+
+**Neden:** kopyalansaydı iş kuralları — *onaylı belge silinemez*, *en fazla 24
+görsel*, *taban fiyatsız tip satışa çıkmaz* — bir kopyada güncellenip
+diğerinde eskirdi. Bu oturumda "iki izdüşüm ayrışır" sınıfından **altı** hata
+çıktı; yedincisini yazmamak için kabuk ayrıldı, gövde değil.
+
+⚠️ **Alt formlar her iki kipte de modal.** Tip, fiyat ve ek hizmet formları
+bir işin ortasında açılıyor; arkadaki listeyi kaybetmemek gerekiyor.
+
+Kanıt: `60cadfb`. `boat-pricing` · `boat-media` · `boat-documents` üçü de
+`PanelKabuk` kullanıyor; işletme panelindeki çağrılar `gorunum` **vermiyor**
+ve varsayılan modal.
+
+---
+
+## 2026-09-06 — Platform alt ekranlarında `partnerId` adreste
+
+**Karar:** yönetim panelindeki tekne alt ekranlarının adresi
+`/admin/tekneler/{partnerId}/{boatId}/…`. İşletme kimliği sorgu dizesinde ya
+da ikinci bir istekte değil, **yolda**.
+
+**Neden:** bütün platform uçları kapsamı adresten alıyor
+(`platform/partners/{partnerId}/boats/{boatId}/…`) ve liste bu kimliği kart
+başına **zaten** veriyor. Kimliği sonradan aramak, listenin verdiği bilgiyi
+ikinci bir yoldan üretmek olurdu; yolda taşımak ise sayfanın yarım durumda
+açılmasını imkânsız kılıyor.
+
+---
+
+## 2026-09-06 — Rotası olmayan giriş basılmaz
+
+**Karar:** tekne kartındaki yönetim girişleri ve alt ekran sekmeleri
+`hazir` bayrağından süzülüyor; ekranı yazılmamış giriş **hiç görünmüyor**.
+
+**Neden:** `404` veren bir düğme, personelin bunu **kendi yetkisizliği**
+sanmasına yol açar — sistemin ona söyleyeceği hiçbir şey olmadan. Eksik olanı
+gizlemek değil, olmayanı vaat etmemek.
+
+⚠️ Canlı panelde altı giriş var, bizde dört. Üç sapmanın da sebebi veri
+modelinde: **Özellik** katalogdan seçiliyor (serbest metin arama süzgecini
+öldürürdü), **Rota ve Menü tekne başına değil kiralama tipi başına**
+(program tipin `translations.{dil}.program` alanı, menü tipin `extras`
+listesi — günlük tur ile haftalık charter aynı akışı paylaşmıyor),
+**Belgeler** eklendi.
+
+---
+
+## 2026-09-06 — Ölçülen iki kusur: ölü rota ve eksik görsel sınırı
+
+**Karar:** `/admin/tekneler` gerçek bir sayfa oldu; `PanelShell` açılışta
+hangi modülün etkin olacağını `baslangic` prop'uyla alıyor.
+
+**Neden:** tekne listesi `/admin` içinde yaşıyordu ama arama formu ve
+sayfalama `/admin/tekneler`'e bağlıydı — **ikisi de 404 veriyordu**. `/admin`'e
+göndermek de yetmezdi: etkin modül istemci durumu, arama sonucu "Genel
+bakış"ta açılırdı. Modülün kendi adresi olması gerekiyorsa, o adresin panele
+hangi modülü açacağını söylemesi de gerekiyor.
+
+**İkinci kusur:** `boat-media` sınırı `20`, sunucununki
+`BoatMediaService.MaxPhotos = 24`. Ekran, sunucunun kabul edeceği dört
+görseli reddediyor ve işletmeye *"sınıra ulaştın"* diye **yalan söylüyordu**.
+Sınır ölçüldü ve eşitlendi.
+
+⚠️ Ders: **sunucudaki bir sayının kopyası arayüzde durursa, ayrıştığında
+kullanıcıya yalan söyler** — ve bu ayrışma hiçbir testte kırmızı yanmaz,
+çünkü iki taraf da kendi içinde tutarlı.
+
+İlgili: [[web-desenler]] · [[web-gorevler]] · [[web-durum]]
