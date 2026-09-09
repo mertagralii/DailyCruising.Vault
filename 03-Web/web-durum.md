@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: web
-guncelleme: 2026-09-07
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -51,6 +51,11 @@ biri (`W-06`) Mert'te.
 
 **36 rota**, `npm run build` ve `npm run lint` temiz, 17 sayfa 390px'te
 **sıfır yatay taşma**. On dört commit, hepsi `origin/main`'de.
+
+> ⚠️ **Bu satırdaki 36 o günün ölçümü, bugünün değil** (2026-09-09'da
+> düzeltildi). Güncel sayı **41**; ölçüm `web-mimari` sonundaki blokta
+> yaşıyor ve orası tek otorite. Tarihli bir bölümdeki sayıyı güncellemek
+> o günün kaydını bozardı, o yüzden satır duruyor ama işaretlendi.
 
 ### Gerçek uçlara bağlananlar
 

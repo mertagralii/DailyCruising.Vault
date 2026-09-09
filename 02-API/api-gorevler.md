@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: api
-guncelleme: 2026-09-08
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -159,6 +159,197 @@ Biçim ve gerekçe -> [[genel-desenler]]
       🔴 **MERT'TE**
 
 ## 🟢 Tamamlandı
+
+- [x] **A-151** Platform rolleri panelden düzenlenip silinebiliyor · bitti: 2026-09-09
+
+      Web oturumu istedi: *"mevcut rolleri düzenleyebilmek ve kişiye özel
+      rol oluşturabilmek."* İkincisi mevcut uçlarla kuruluyor (rol yarat +
+      ata); yazılan şey birincisi.
+
+      `GET · PUT · DELETE /api/platform/staff/roles/{roleId}`
+
+      ⚠️ **Yeni sınıf bir tehlike: bir rolü değiştirmek o rolü taşıyan
+      HERKESİ değiştirir.** `A-150`'de bir kişi etkileniyordu. Web
+      oturumunun uyarısı doğruydu ve kapı uçta.
+
+      **Ayrıntı ucu ZORUNLUYDU, süs değil:** liste ucu yalnız
+      `permissionCount` döndürüyor. Düzenleme formu hangi kutuları
+      işaretleyeceğini hiçbir yerden okuyamazdı.
+
+      **Sistem rolleri hiç düzenlenemiyor — adları bile.** Gerekçe
+      ölçüldü → [[api-kararlar]] 2026-09-09.
+
+      **`LastAdmin` kapısı bilerek YAZILMADI.** Çağıranın `staff.manage`
+      yetkisi zaten var; rolden sonra da kalıyorsa sistemde yönetici var,
+      kalmıyorsa `CannotModifySelf`'e takılıyor. Yani hiç
+      ateşlenemezdi. `A-150`'de küresel değişmezi yalıtmayı öğrendikten
+      sonraki adım bu: **ateşlenemeyen kapıyı hiç yazmamak.**
+      → [[api-kararlar]] 2026-09-09
+
+      Kanıt: `dotnet test` 725/725. **Altı mutasyon, altısı da doğru testi
+      kırmızıya döndürdü:** sistem rolü kapısı · ad benzersizliğinde kendini
+      hariç tutma · damganın yalnız ilk taşıyıcıda yenilenmesi · yetki
+      kümesinin değiştirilmek yerine birleştirilmesi · `RoleInUse` ·
+      `CannotModifySelf`'in her zaman reddetmesi.
+      Canlıda (`:5163`) dört kapı da doğrulandı: `SystemRoleImmutable`
+      (düzenleme ve silme), `RoleInUse`, ve gerçek bir düzenlemede
+      `payout.read` rolden düştü, sonra geri verildi.
+
+- [x] **A-150** Personel düzenleme, rol değiştirme ve durum uçları · bitti: 2026-09-09
+
+      ⚠️ **İki kilitlenme kapısı, ikisi de UÇTA.** Web oturumu buldu ve
+      "ekranda olursa curl ile atlanır" dedi — doğru.
+
+      `CannotModifySelf`: çağıran kendi yönetim yetkisini kaldıramaz.
+      Kaldırabilseydi **geri veremezdi** — yetki gidince rol değiştirme ucu
+      da kapanır.
+
+      `LastAdmin`: yönetim yetkisi taşıyan son AKTİF kişi korunuyor. Sayım
+      **yetkiye** göre, rol adına göre değil (özel rol de `staff.manage`
+      taşıyabilir); askıdaki kişi sayılmıyor.
+
+      `Closed` kabul edilmiyor → [[api-kararlar]]. E-posta düzenlenemiyor:
+      giriş kimliği o.
+
+      ⚠️ **İlk testim HİÇBİR ŞEY ölçmüyordu** ve yeşildi: "son yönetici"
+      küresel bir değişmez, paylaşılan veritabanındaki diğer yöneticiler
+      sayıyı 1'in üstünde tutuyor ve kapı hiç ateşlenmiyordu.
+      → [[api-kararlar]]
+
+      Kanıt: `96264b8` · 720/720 · üç mutasyon, üçü kırmızı
+
+- [x] **A-149** Zorunlu parola değişikliği gerçekten zorlanıyor · bitti: 2026-09-09
+
+      Bayrak + jetonda `mcp` talebi + ara katman kapısı +
+      `POST /api/account/change-password`.
+
+      ⚠️ **Bayrak tek başına bir söz olurdu.** Kapı, bayrak açıkken dar bir
+      izin listesi dışındaki her uca `403` veriyor. Liste, parolanın
+      değiştirilebilmesi için ZORUNLU olanlarla sınırlı — mutasyonla
+      ölçüldü: `change-password` listeden çıkarılınca kullanıcı kilitleniyor.
+
+      Mevcut parola soruluyor; yeni parola eskisiyle aynı olamıyor (yoksa
+      zorunluluk tek tuşla aşılırdı). Değişince damga yenileniyor, **eski
+      jeton 401 alıyor** — ön yüzün vekil katmanını ilgilendiriyor.
+
+      Kanıt: `37ce71c` + `cac35c5` · üç mutasyon kırmızı · kodlar:
+      `InvalidCredentials` · `PasswordTooShort` · `PasswordUnchanged`
+
+- [x] **A-148** Platform ve işletme kapsamları veritabanında ayrıldı · bitti: 2026-09-09
+
+      Mert: *"İşletme çalışanı platform rolü veremez. Platform yöneticisi
+      sadece kendi platform yönetimi için roller ve kişiler alabilir."*
+
+      `A-146`'da ölçülen açık kapatıldı: iki tetikleyici de yalnız **rolün
+      doğru tabloya** gitmesini zorluyordu. Artık iki yönlü ve ikisi de
+      geri alınan işlemlerde ölçüldü.
+
+      Kanıt: `37ce71c` · migration `A112` · `dailycruising` rolüyle uygulandı
+
+- [x] **A-147** Personel rol seçenekleri ucu · bitti: 2026-09-09
+
+      ⚠️ **Eksik BENDEYDİ:** `A-145` `roleIds` istiyordu ama kimliklerin
+      okunacağı bir uç yoktu. Ön yüzün tek seçeneği GUID'leri koda gömmekti
+      ve veritabanı sıfırlandığında form **sessizce** yanlış role atardı.
+      Web oturumu bunu reddedip bildirdi — doğru karardı.
+
+      Yalnız platform rolleri dönüyor (6 işletme rolü listede yok).
+      `permissionCount` ile "Destek Personeli — 11 yetki" yazılabiliyor;
+      Mert'in *"yetkileri de ayarlayalım"* isteğinin karşılanabilen kısmı.
+
+      `PlatformStaffRole` artık `id` de taşıyor — ikinci eksik.
+
+      ⚠️ Test **"liste doldu"** demiyor, "listeden alınan kimlik oluşturmada
+      çalışıyor" diyor. Uç zaten `POST /api/platform/staff`'ı beslemek için
+      var; kimlik orada kabul edilmezse liste dolu görünüp işe yaramaz.
+
+      Kanıt: `f4966dc` · 715/715 · iki mutasyon, ikisi kırmızı · uçtan
+      doğrulandı
+
+- [x] **A-145** Panelden platform personeli hesabı açılabiliyor · bitti: 2026-09-09
+
+      Mert: *"e-posta adresini, şifresini, rolünü … buradan ayarlayıp
+      personeli oluşturacağız. Ardından artık personelimiz siteye giriş
+      yapabilecek."*
+
+      ⚠️ **Başarı ölçütü kayıt yazılması DEĞİL, girişin çalışması** —
+      Mert'in cümlesi bunu söylüyor. Test de üretimin gerçek parola
+      doğrulayıcısına soruyor, kendi iddiasını üretmiyor.
+
+      Parola kuralı tekrar yazılmadı; aynı sayı `limits.passwordMinLength`
+      ile ön yüze veriliyor. Karmaşıklık şartı yok ve bu bilinçli.
+
+      🔴 **Karşılanamayan istek:** *"gerekliyse yetkilerini de ayarlayalım"*
+      — `RolePermission` rol bazlı, kişiye özel yetki kavramı yok. Rol
+      oluşturma ucu (`POST /api/platform/roles`) yazılmadı, Mert'te.
+
+      🔴 **`mustChangePassword` YOK.** Yöneticinin belirlediği parolayı iki
+      kişi biliyor; sistemde "ilk girişte değiştir" kavramı yok ve uç onu
+      icat etmedi. → [[api-kararlar]]
+
+      ⚠️ Test saati **2034**'e taşındı: üretim yolundan yazılan kullanıcılar
+      servisin saatini taşıyor ve 2031'de `OverviewTests`'in YIL penceresine
+      düşüyorlardı. İlk deneme (2026 → 2031) durumu kötüleştirdi (4 → 20);
+      yıllar sayılarak boş olan seçildi.
+
+      Kanıt: `a759914` · 714/714 · **üç mutasyon, üçü kırmızı** · uçtan:
+      oluşturma 201 → **yeni personel girişi 200** · kısa parola 400 ·
+      kayıtlı e-posta 400
+
+- [x] **A-144** Müşteri ve personel ayrıntısı aynı dönem seçimini kabul ediyor · bitti: 2026-09-09
+
+      İki uç asimetrikti: müşteri yalnız `period`, personel yalnız
+      `from`/`to`. Mert ikisinde de ikisini istedi. Ortak çözücü
+      (`PeriodSelection`) yazıldı; dönem sözlüğü `OverviewPeriod`'dan
+      geliyor ve **çoğaltılmadı** — iki sözlük sessizce ayrışır.
+
+      ⚠️ **`period` ile `from`/`to` birlikte gelirse `400 PeriodAndRange`.**
+      Web oturumu "aralık kazansın" önerdi, reddedildi → [[api-kararlar]]
+
+      Personeldeki `rangeStart`/`rangeEnd` → `periodStart`/`periodEnd`;
+      müşteri ucu zaten bu adı kullanıyordu. Yanına dönem adı eklendi,
+      serbest aralıkta `custom`.
+
+      Varsayılanlar **bilerek farklı**: müşteride `all`, personelde `month`.
+
+      Kanıt: `03d1ce4` · 712/712 · **iki mutasyon, ikisi kırmızı** · uçtan
+      ikisinde de `all/day/week/month/year` + `custom` + `400`
+
+- [x] **A-143** İşlem ayrıntısı · ömür boyu çözülen · destek sayaçlarında tarih süzgeci · bitti: 2026-09-09
+
+      ⚠️ **`payload` kararı tersine çevrilmedi, KAPSAMI değişti.** 08 Eylül'de
+      "ham JSON gönderme" denmişti; gerekçe ekrana yaramaması ve içeriğinin
+      bilinmemesiydi. Mert *"ne değişti"* isteyince gövde **izin
+      listesinden** geçirilerek Türkçe etiketli alanlara çevrildi.
+
+      ⚠️ **İzin listesi, yasak listesi DEĞİL — ve gerekçesi ölçüldü:**
+      `AuthService` başarısız girişte kullanıcının **tam e-postasını**
+      gövdeye yazıyor (`NormalizeEmailForLog` yalnız biçim doğruluyor).
+      Yasak listesi kurulsaydı o alanı tek tek hatırlamak gerekirdi ve
+      gövdeye yarın eklenecek alan kendiliğinden ekrana düşerdi.
+
+      🔴 **Karşılanamayan istek, uydurulmadı:** *"hangi izin eksikti"* gövdede
+      YOK. Red olayları `action` ve `reason` taşıyor, izin anahtarı hiçbir
+      yerde kaydedilmiyor. Olay yazan tarafı değiştirmek ayrı bir iş.
+
+      ⚠️ **Red sebepleri kümesi KAPALI değil** ve bu sözleşmede yazılı: olay
+      türlerinin aksine tek yerde tanımlı değiller, yansımayla sayılamıyorlar.
+      18'i çevrildi, tanınmayan ham geçiyor. `EventTitles`'daki bütünlük
+      testinin karşılığı burada **kurulamıyor**.
+
+      Sayaç anlambilimi: `openTickets` ve `resolvedTotal` aralıktan
+      **etkilenmiyor** — biri anlık durum, diğeri ömür boyu. → [[api-kararlar]]
+
+      ⚠️ **Ekranda bir kusur çıktı ve düzeltildi (`8bb1257`):** alan
+      etiketleri Türkçeydi ama DEĞERLER ham geçiyordu — *"İşlem:
+      moderation.publish"*. `action`, `stage`, `resource` için de sözlük
+      eklendi. Kusuru ne derleme ne test ne uçtan bakmak yakaladı;
+      tarayıcıda göründü.
+
+      Kanıt: `f429d7e` + `8bb1257` · 709/709 · **dört mutasyon, dördü
+      kırmızı** · uçtan:
+      "yalnız bugün" aralığında `resolvedInRange` 1→0 düşerken açık ve ömür
+      boyu değişmedi · ters aralık `400 InvalidRange`
 
 - [x] **A-142** İşlem geçmişi sınıfa göre süzülüyor · blog ve yorum etiketleri · bitti: 2026-09-08
 

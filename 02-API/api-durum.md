@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: api
-guncelleme: 2026-09-08
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -13,8 +13,23 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-09 — personel ve rol yönetimi bitti, sekiz commit.**
+`dotnet test` **725/725**. Son commit `7455692`.
+
+Bugün eklenenler: zorunlu ilk giriş parola değişikliği (`A-149`,
+middleware), platform↔işletme kapsam ayrımı veritabanında iki yönlü
+(`A-148`), personel düzenleme · rol · durum uçları (`A-150`), platform
+rollerinin düzenlenmesi ve silinmesi (`A-151`).
+
+⚠️ **`api-durum` iki gün geride kaldı ve bunu vault oturumu yakaladı, ben
+değil.** 706 sayısı `A-150` ve `A-151` testlerinden önceydi. Ders: alan
+durumu **commit başına** güncellenmezse, güncelleyeceğim anı hatırlamıyorum
+— tetikleyicisi olmayan dosya çürüyor, bu dosya da bir istisna değil.
+
+---
+
 **2026-09-08 gecesi — müşteri ve personel modülleri bitti, on commit.**
-`dotnet test` 706/706. Panelde çalışan ekranlar: müşteri listesi/detayı,
+O günün ölçümü: `dotnet test` 706/706. Panelde çalışan ekranlar: müşteri listesi/detayı,
 rezervasyon detayı (ödeme dökümü + karekod + okutma kaydı), destek talebi
 detayı, personel listesi/detayı, personelin işlem geçmişi.
 

@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-08
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -56,3 +56,4 @@ ararken önce [[api-kararlar]]'a, orada yoksa buraya bak.
 - [[api-yazilmis-ama-uygulanmamis-kontrol]] — üç kez çıkan kusur sınıfı ve onu yakalayan iki soru
 - [[api-uc-envanteri-2026-08-30]] — web panosundaki 12 iş için ölçülmüş uç envanteri ve eksikler
 - [[api-eski-panel-tekne-ekranlari]] — canlı yönetim panelinin tekne ekranları, ölçülmüş yapı ve API boşlukları
+- [[api-gelistirme-verisindeki-artiklar]] — "test artığı" sanılan kaydın gerçek kaynağı ve ayırt eden üç soru

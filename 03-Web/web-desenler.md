@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-08
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -253,5 +253,29 @@ gösterim katmanındaydı ve doğrulamam oraya hiç bakmadı. Ölçüm doğruydu
   tutmuyordu — ilkine bakıp "çalışıyor" demiştim
 - Doğrulama, biçimlendiricinin çıktısı **yeniden ayrıştırılıp** toplanarak
   yapılır; girdi sayıları toplanarak değil
+
+## Yarım çeviri, hiç çevirmemekten daha yanıltıcı
+
+Bir satırın **etiketi** Türkçe, **değeri** ham İngilizce kalırsa okuyan o değeri
+bir veri sanıyor, çevrilmemiş bir anahtar olduğunu anlamıyor.
+
+2026-09-09'da ölçüldü. Personel etkinlik ayrıntısı şunu basıyordu:
+
+```
+İşlem     moderation.publish          ← ham
+Sebep     İnceleme aşamasında değil   ← çevrilmiş
+```
+
+Aynı pencerede iki satır, biri çevrilmiş biri değil. Etiketlerin düzgün
+Türkçe olması, ham değeri **daha** göze batmaz hâle getiriyor: okuyan
+"etiketler çevrilmiş, demek ki bu da doğru biçimi" diye geçiyor.
+
+- Çeviri **çift** yapılır: etiket ve değer. Biri yapılıp diğeri bırakılırsa
+  yapılan kısım, yapılmayanı gizler
+- Bu kusur **derlemede, testte ve uçtan bakınca görünmüyor** — yalnız
+  ekranda, bir cümlenin ortasında görünüyor
+- ⚠️ Sözlüğü **sunucu taşır**: değerler (`action`, `reason`, `stage`)
+  kapalı küme değil, kod boyunca dağılmış düz dizeler. Ön yüzde sözlük
+  tutmak `satisfies` ile korunamaz → [[web-enum-uretilemez]]
 
 İlgili: [[web-notlar]] · [[web-mimari]] · [[web-kararlar]] · [[web-gorevler]] · [[web-araclar]]

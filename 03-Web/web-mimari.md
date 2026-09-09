@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-07
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -47,6 +47,12 @@ gizli bilgi konmaz.
 
 Henüz yazılmış bir API istemcisi/fetch katmanı **yok**. OpenAPI'den tip üretimi
 kurulmadı → [[durum]]
+
+> ⚠️ **Bu, 2026-08-21 günün kaydı; bugün geçerli değil.** Şu an 12 API
+> istemcisi var, tip üretimi kurulu (`npm run tip-uret`) ve `npm run build`
+> tiplerin bayatlığını denetliyor. Satır tarihli bölümün parçası olduğu için
+> silinmedi, ama "ne var" sorusunun cevabı **dosyanın sonundaki ölçüm
+> bloğunda** — buraya bakan yanılır.
 
 `src/lib/data/*.ts` içindeki alan adları API sözleşmesinin taslağı sayılır.
 2026-08-26 itibarıyla sözleşmeye girmesi beklenen iki ad: rezervasyon yanıtında
@@ -437,6 +443,11 @@ tam oraya yönlendiriyor; Paratika gerçek anahtarlarla bağlanınca kapanır.
 ## 2026-09-06 — tekne detayı ve yönetim panelinde tekne yönetimi
 
 Ölçüm (beyan değil): **41 rota sayfası · 110 bileşen · 12 API istemcisi.**
+
+> 2026-09-09 ölçümü: **41 rota · 132 bileşen · 12 API istemcisi.** Bileşen
+> sayısı 22 arttı; yönetim panelinin müşteri, rezervasyon, personel ve rol
+> ekranları o gün yazıldı. Rota ve istemci sayısı değişmedi — panel modülleri
+> tek rota altında yaşıyor.
 
 ### Yeni katman: platform tekne yönetimi
 

@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: api
-guncelleme: 2026-09-08
+guncelleme: 2026-09-09
 durum: guncel
 ---
 
@@ -5433,3 +5433,215 @@ yanlış, ve **reddedilen deneme denetimde en çok bakılası satırdır.**
 süzgeci "yalnız değişiklikler" olacak ve bilinmeyen bir olayı okuma saymak
 onu o süzgeçten **sessizce** düşürürdü. Yanlış tarafa düşecekse görünen
 tarafa düşsün.
+
+## 2026-09-09 · Denetim ekranına giden gövde İZİN listesinden geçer
+
+Personel işlem ayrıntısı olay gövdesini ham göndermiyor; anahtarlar bir
+**izin listesinden** geçiyor ve listede olmayan her alan düşüyor.
+
+**Neden:** yasak listesi ("şunları gizle, kalanı göster") gövdeye **yarın
+eklenecek** bir alanı kendiliğinden ekrana düşürür ve kimse fark etmez.
+Denetim ekranı, sızıntının en pahalı olacağı yer — orada varsayılan
+"gizle" olmalı, "göster" değil.
+
+⚠️ Gerekçe tahmin değil ölçüm: `AuthService` başarısız girişte kullanıcının
+**tam e-postasını** gövdeye yazıyor. `NormalizeEmailForLog` biçim
+doğruluyor, **maskelemiyor**. Yasak listesi kurulsaydı bu alanı tek tek
+hatırlamak gerekirdi; izin listesinde adı geçmediği için zaten düşüyor.
+
+Kimlik taşıyan alanlar (`boatId`, `voyageId`, `onBehalfOf`) da dışarıda —
+GUID ekranda hiçbir şey söylemiyor; `subjectLabel` kararının aynısı.
+
+⚠️ **Bu, 2026-09-08'in "payload gönderme" kararını iptal ETMİYOR**, kapsamını
+değiştiriyor: ham JSON hâlâ dönmüyor. Dönen şey gövdeden **seçilmiş**,
+etiketlenmiş, biçimlenmiş alanlar.
+
+## 2026-09-09 · Aralık verilince sayacın SAYISI değil ANLAMI değişir
+
+Destek sayaçları `from`/`to` ile süzülebiliyor ama **hepsi değil**:
+
+| Sayaç | Aralıktan etkilenir mi |
+|---|---|
+| `openTickets` | **Hayır** — anlık durum |
+| `resolvedTotal` | **Hayır** — tanımı gereği ömür boyu |
+| `resolvedInRange` | Evet |
+| ortalama ilk yanıt | Evet, aralıkta **AÇILAN** talepler üzerinden |
+
+**Neden:** "açık talep" bir dönemin olayı değil, bir andır — bugün açık
+duran talep hangi aralığa bakılırsa bakılsın bugün açıktır. Aralığa göre
+süzülseydi sayı doğru, **anlamı yalan** olurdu: "geçen ay kaç talep açıktı"
+gibi cevaplanamayan bir soruyu cevaplıyormuş gibi görünürdü.
+
+Ortalamanın aralıkta **açılan** taleplerden alınmasının sebebi ayrı: "ilk
+yanıt süresi" açılıştan ölçülüyor; aralık dışında açılmış bir talebi içeri
+almak, süreyi aralığa ait olmayan bir başlangıçtan hesaplamak olurdu.
+
+⚠️ Bu ayrımı **testin ölçtüğünden emin olmak ayrı bir iş oldu:** ilk sürümde
+açık taleplerin hepsi aralığın içindeydi, dolayısıyla sayacı aralığa göre
+süzen bir mutasyon testten geçti. Aralığın DIŞINDA açılmış, hâlâ açık bir
+talep eklenince koruma gerçekten ölçmeye başladı.
+
+## 2026-09-09 · Etiketi çevirip değeri bırakmak yarım çeviridir
+
+Olay ayrıntısında alan **etiketleri** Türkçeleştirilmişti ama **değerler**
+ham geçiyordu. Ekranda şöyle görünüyordu:
+
+    İşlem     moderation.publish          ← ham
+    Sebep     İnceleme aşamasında değil   ← çevrilmiş
+
+**Neden önemli:** yarım çeviri, okuyanı etiketin hiç çevrilmemiş olması
+kadar yanıltır — üstelik daha sinsi, çünkü satırın yarısı Türkçe olduğu
+için "çevrilmiş" görünür ve gözden kaçar.
+
+`action`, `stage` ve `resource` için de sözlük eklendi.
+
+⚠️ **Bu kümeler de kapalı DEĞİL ve ölçüldü:** veritabanındaki 17 `action`
+değeri ile kodda literal olarak bulunan 16 değer **aynı küme değil** —
+bazıları değişkenden geliyor. `reason` gibi, tanınmayan değer ham geçiyor
+ve `EventTitles`'daki bütünlük testinin karşılığı burada kurulamıyor.
+
+⚠️ **Kusuru ne derleme, ne test, ne uçtan bakmak yakaladı** — hepsinde
+`moderation.publish` geçerli bir dizeydi. Ekranda, bir cümlenin ortasında
+göründü. Web oturumu 401 aldığı için ekranı göremiyor; bu sınıf kusuru
+yalnız tarayıcıya bakan taraf bulabiliyor.
+
+## 2026-09-09 · Çelişkili iki parametre reddedilir, biri sessizce seçilmez
+
+`period` ile `from`/`to` birlikte gelirse uç `400 PeriodAndRange` veriyor.
+Web oturumu "aralık kazansın, dönem yok sayılsın" önerdi.
+
+**Neden reddedildi:** sessiz seçim, istemcinin **gönderdiği ama
+uygulanmayan** bir parametre bırakır. Ekranda "bu ay" çipi seçili
+görünürken veri başka aralıktan gelir; hata yok, uyarı yok, fark eden yok.
+
+Ayrıca bu kod tabanının deseni zaten reddetmek: `UnknownStatus`,
+`UnknownPeriod`, `InvalidRange` — hepsi hata veriyor, varsayılana
+düşmüyor. Burada sessiz seçmek, deseni tam da en çok gerektiği yerde
+delerdi.
+
+⚠️ Serbest aralıkta dönem adı **`custom`** dönüyor, `null` değil: `null`
+"hiç seçim yok" ile karışırdı ve ekran hangi seçimin uygulandığını
+bilemezdi.
+
+## 2026-09-09 · Aynı kavramın iki adı, ekranda iki okuma yolu demektir
+
+Müşteri ayrıntısı `periodStart`/`periodEnd`, personel ayrıntısı
+`rangeStart`/`rangeEnd` diyordu — **aynı işi yapan iki ad**. Personel ucu
+bir günlüktü, o değiştirildi.
+
+**Neden:** ön yüzün iki uçtan aynı bilgiyi iki farklı adla okuması, her
+yeni ekranda "bu uç hangisini kullanıyordu" sorusunu doğurur ve o soru
+derlemede sorulmaz. `totalCount`/`total` ayrışmasının (2026-09-08) aynısı;
+orada da bedeli sessizdi.
+
+⚠️ Ama **varsayılanlar bilerek farklı bırakıldı**: müşteride `all`,
+personelde `month`. Birleştirme adların birleştirilmesidir, davranışların
+değil — ekranların soruları farklı ("bu müşteri toplam ne harcadı" ile "bu
+personel bu ay ne yaptı") ve tek varsayılan birini anlamsız yapardı.
+
+## 2026-09-09 · Yöneticinin belirlediği parolayı iki kişi bilir
+
+`POST /api/platform/staff` yeni hesabı yönetici tarafından belirlenen bir
+parolayla açıyor. Sistemde **"ilk girişte değiştirmeye zorla" diye bir
+kavram yok** ve bu uç onu icat etmedi.
+
+**Neden icat edilmedi:** böyle bir bayrak, giriş akışını, parola değiştirme
+ekranını ve jeton üretimini birlikte ilgilendirir — uçtan tek başına
+eklenen bir alan, hiçbir yerde uygulanmayan bir söz olurdu. Yarım bir
+koruma, olmayandan kötü: ekranda "değiştirmesi istenecek" yazarken
+değiştirilmezse kimse fark etmez.
+
+⚠️ **Risk yazılı olarak duruyor** (sözleşme ve uç belgesinde): personel
+parolasını değiştirmezse, hesabına erişebilen ikinci bir kişi kalıcı olarak
+var olur. Web oturumu bayrağı önerdi; karar Mert'te.
+
+## 2026-09-09 · "Kimsenin dokunmadığı yıl" ölçülür, varsayılmaz
+
+Paylaşılan Testcontainers veritabanında yeni testlerin yarattığı
+kullanıcılar `OverviewTests`'in dönem sayacını bozdu (beklenen 2, görülen 4).
+
+İlk düzeltme sabit saati 2031'e taşıdı ve **durumu kötüleştirdi** (4 → 20):
+`OverviewTests` de 2031'i kullanıyor ve YIL penceresi hepsini yuttu.
+Takımdaki yıllar sayıldı — 2026 (27 yer), 2031 (11), 2027 (1) — ve boş olan
+2034 seçildi.
+
+**Neden iki kez yanlış:** "başka test bu yılı kullanmıyor" bir varsayımdı ve
+iki kez ölçülmeden yapıldı. Üstelik ikinci kez, düzeltmenin kendisi kusuru
+büyüttü.
+
+⚠️ İkinci ders daha ince: **üretim yolundan yazılan kayıt da sahte saati
+taşıyor.** Testin elle kurduğu satırların tarihini değiştirmek yetmedi,
+çünkü asıl kullanıcılar servisin `clock.UtcNow`'undan doğuyordu.
+
+## 2026-09-09 · `Closed` paneleden yazılmaz — aynı kelime iki anlam taşıyamaz
+
+Personel durum ucu yalnız `Active` ↔ `Suspended` kabul ediyor; `Closed`
+hiç alınmıyor.
+
+**Neden:** `Closed` bugün hesap silme akışının (`AnonymizationRepository`)
+çıktısı ve o yol kişisel veriyi **anonimleştiriyor**. O yoldan kapanmış bir
+hesabı `Active` yapmak, içi boşaltılmış bir hesabı diriltmek olurdu.
+Panelden yazılan `Closed` ise geri dönüşlü olurdu — yani aynı enum değeri
+biri geri alınamaz, diğeri alınabilir **iki farklı şey** demeye başlardı ve
+ekranda ayırt edilemezdi.
+
+Web oturumu bunu sordu ("geri dönüşlü mü, değilse onay diyaloğu göstermem
+gerek") ve soru cevabı üretti: ayırt edilemeyecek bir değeri hiç kabul
+etmemek, onay diyaloğu göstermekten temiz.
+
+## 2026-09-09 · Küresel bir değişmez, paylaşılan veritabanında yalıtılmadan ölçülemez
+
+"Sistemde `staff.manage` taşıyan son kişi" bir **küresel** değişmez.
+İlk yazdığım test onu ölçmüyordu ve **yeşildi**: paylaşılan Testcontainers
+veritabanında başka testlerin bıraktığı yöneticiler sayıyı hep 1'in üstünde
+tutuyor, kapı hiç ateşlenmiyordu.
+
+**Neden tehlikeli:** test yeşil, koruma yazılı, mutasyon yapılmasa kimse
+fark etmez. Kapının kaldırıldığı mutasyon da yeşil kalırdı — yani testin
+kendisi bir koruma değil, koruma **görüntüsüydü**.
+
+**Çözüm:** ölçümden önce testin dışındaki bütün aktif yetki sahiplerini
+askıya almak. Küresel değişmezin testi, ölçüm penceresini kendisi
+kurmak zorunda.
+
+⚠️ Bu, "ölçüm penceresini boş yıla taşımak" (2026-09-09, `A-145`) ile aynı
+ailenin üçüncü örneği: paylaşılan veritabanı, testin ölçtüğünü sandığı şeyi
+sessizce değiştiriyor.
+
+## 2026-09-09 · Sistem rolleri panelden hiç düzenlenemez — adları bile
+
+`platform.admin` ve `platform.support` için `PUT` ve `DELETE`
+`SystemRoleImmutable` dönüyor. Yalnız yetkileri değil, **adı** da kilitli.
+
+**Neden:** ölçüldü. Beş migration bu rolleri `Key` üzerinden bulup yeni
+yetki bağlıyor (`WHERE r."Key" = 'platform.admin'`), ve `A111` (2026-09-08)
+rollerin **adlarını migration'dan yeniden yazdı**. Panelden düzenlenebilseydi
+aynı alanın iki yazarı olurdu ve çakışmayı migration **sessizce** kazanırdı:
+yönetici adı değiştirir, bir sonraki migration geri alır, kimse sebebini
+bilmez. Yetkilerde de aynısı — panelden kaldırılan bir yetkiyi sonraki
+migration geri bağlar.
+
+Web oturumu "adı değişebilir, yetkileri değişmemeli" önerdi; ölçüm daha
+katı bir cevap verdi. Ad da üretilen bir alan; üretilen alan elle
+yazılmaz → [[genel-desenler]]
+
+⚠️ Kısıtın bedeli var ve kabul edildi: farklı yetkili bir yönetim rolü
+isteyen, **yeni rol tanımlıyor**. Zaten tasarım o.
+
+## 2026-09-09 · Ateşlenemeyen kapı hiç yazılmaz
+
+Rol düzenlemede `LastAdmin` kapısı **bilerek yok**. Çağıranın `staff.manage`
+yetkisi kesin var (uçtaki süzgeçten geçti). Rolden o yetki kalkarken iki
+ihtimal var: çağıran yetkiyi başka bir rolden de alıyor — o hâlde sistemde
+en az bir yönetici kalıyor; ya da almıyor — o hâlde `CannotModifySelf`
+ateşleniyor. Üçüncü ihtimal yok, yani `LastAdmin` bu yolda **hiç
+çalışamazdı**.
+
+**Neden:** `A-150`'de küresel bir değişmezi yalıtmayı öğrendik. Bir adım
+sonrası bu: hiçbir mutasyonun kırmızıya döndüremeyeceği bir dal yazmak,
+korumayı artırmıyor — **ölçülemeyen kod ekliyor**. Aynı gerekçeyle rol
+silmede de ayrı bir yönetim kapısı yok: `RoleInUse` dolu rolü zaten
+engelliyor ve boş bir rolün silinmesi kimseden yetki almıyor.
+
+Simetri bir gerekçe değildir. `A-150`'de iki kapı vardı diye buraya da iki
+kapı koymak, ikincisini süse çevirirdi.
