@@ -58,16 +58,36 @@ _AL = AYAR["alanlar"]
 GENEL, KOD, IKINCI = _KT["genel_alan"], _KT["kod_alan"], _KT["ikinci_alan"]
 
 
-def _y(alan, bolme):
-    """Alan + bolme -> vault icindeki goreli yol (proje adi betikte gecmez)."""
-    return f"{alan}/{_AL[alan]['onek']}-{bolme}.md"
+def _y(alan, bolme, sonek=None):
+    """Alan + bolme -> vault icindeki goreli yol (proje adi betikte gecmez).
+
+    Tercih edilen alanda o bolme YOKSA, bolmeye sahip ilk alana duser.
+
+    Sebep, tasima sirasinda olculdu (2026-09-10, mentorluk vault'u): tercih
+    edilen alanda `dotnet-araclar.md` gibi bir bolme bilerek acilmamisti —
+    "tetikleyicisi olmayan bolme acilmaz" kuralina uyularak. Sonuc: 32
+    senaryonun 7'si "bozma hatasi: No such file" dedi ve **calisan bir kontrol
+    olculemedi diye raporlandi** (kontrol 6 gercekten calisiyordu, mutasyon
+    var olmayan bir dosyayi hedefledigi icin dogrulanamadi).
+    Yani kendi kuralina uyan bir vault, olcum aracinin %22'sini korlestiriyordu.
+    """
+    ek = sonek or f"-{bolme}.md"
+    aday = f"{alan}/{_AL[alan]['onek']}{ek}"
+    if (VAULT / aday).exists():
+        return aday
+    for a, v in _AL.items():
+        alt = f"{a}/{v['onek']}{ek}"
+        if (VAULT / alt).exists():
+            return alt
+    return aday          # hicbiri yoksa tercih edileni dondur: senaryo
+                         # "bozma hatasi" der, sessizce yesil kalmaz
 
 
 D_DESENLER = _y(GENEL, "desenler")
 D_GOREVLER = _y(GENEL, "gorevler")
 D_ARACLAR = _y(GENEL, "araclar")
 D_NOTLAR = _y(GENEL, "notlar")
-D_KOD_MIMARI = f"{KOD}/{_AL[KOD]['onek']}{AYAR['ozel']['mimari_soneki']}"
+D_KOD_MIMARI = _y(KOD, "mimari", AYAR["ozel"]["mimari_soneki"])
 D_KOD_KARARLAR = _y(KOD, "kararlar")
 D_KOD_GOREVLER = _y(KOD, "gorevler")
 D_KOD_ARACLAR = _y(KOD, "araclar")

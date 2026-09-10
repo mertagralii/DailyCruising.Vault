@@ -160,6 +160,44 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟢 Tamamlandı
 
+- [x] **A-156** Platform personeli işletme adına takvim yönetiyor · bitti: 2026-09-10
+
+      Mert sıradaki iş olarak müsaitlik yönetimini verdi. Takvim uçları
+      yalnız işletme kapsamında vardı.
+
+      `GET · POST · DELETE`
+      `/api/platform/partners/{partnerId}/boats/{boatId}/calendar`
+
+      Gövde ve yanıt işletme ucuyla **birebir aynı** (`PartnerCalendarDay`,
+      `BlockDaysRequest`): web aynı takvim bileşenini iki panelde basıyor.
+
+      ⚠️ **Yetki eylem başına, sınıf düzeyinde değil — ölçüm kararı verdi.**
+      Diğer platform aynaları (galeri, belge, fiyat) tek anahtar
+      `partner.boat.manage` kullanıyor. Burada kullanılsaydı **Destek
+      Personeli takvimi göremezdi**: o rol `calendar.read` taşıyor ama
+      `partner.boat.manage` ve `voyage.block` taşımıyor. Deseni körü körüne
+      izlemek bir rolü sessizce yetkisiz bırakacaktı.
+      → [[api-kararlar]] 2026-09-10
+
+      ⚠️ **`onBehalfOf` deseninin İLK testi bu.** Desen dört yerde kullanılıyor
+      (galeri, belge, fiyat, takvim) ve **hiçbirinin testi yoktu** — yani
+      "işletme çalışanı başka bir işletmenin teknesine ulaşamaz" kuralı
+      yazılıydı, sınanmıyordu. Galeri, belge ve fiyat hâlâ sınanmıyor.
+
+      ⚠️ **Bir mutasyon YEŞİL kaldı ve sebebi kusur değil:** kapsam
+      önceliğinin (`onBehalfOf ?? PartnerId`) ters çevrilmesi hiçbir testi
+      kırmadı. Sebep `trg_user_role_is_platform` — bir işletme çalışanı
+      platform rolü alamıyor, yani iki alan hiç birlikte dolu olmuyor. Sıra
+      ölçülemez; gerekçe koda yazıldı.
+
+      Kanıt: `dotnet test` **737/737**, commit `560d837`. İki mutasyon doğru
+      testi kırdı: platform personeli kapısının kaldırılması · teknenin
+      gerçek sahibi kontrolünün kaldırılması.
+      Canlıda uçtan uca: takvim okundu → gün kapatıldı → takvimde
+      `isBlocked: true` + sebep göründü → aynı gün tekrar kapatılamadı
+      (`DayNotFree`, tarihiyle) → blokaj kaldırıldı → takvim temizlendi.
+      Yanlış `partnerId` ile `BoatNotFound`.
+
 - [x] **A-155** Panel tur türü adlarını Türkçe gösteriyor · bitti: 2026-09-10
 
       ⚠️ **Kusur `A-154`'ü CANLIDA doğrularken çıktı, testte değil.** Süzgeci

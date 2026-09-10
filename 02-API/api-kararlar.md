@@ -5781,3 +5781,48 @@ seçili dile bağlanmalı. Biri eksikse ekran sessizce iki dilli olur.
 ⚠️ Ders: bir sınır yazarken *"ne zaman patlar"* sorusunun cevabı da
 ölçülmeli. Ben kendi tarafımdan bakıp tahmin ettim; doğru cevap **karşı
 tarafın kodundaydı**.
+
+## 2026-09-10 · Platform aynası deseni körü körüne izlenmez — yetki ölçülür
+
+Platform takvim uçları yetkiyi **eylem başına** istiyor (`calendar.read` /
+`voyage.block`), diğer platform aynalarındaki gibi sınıf düzeyinde tek
+anahtarla (`partner.boat.manage`) değil.
+
+**Neden:** ölçüldü. `Destek Personeli` rolü `calendar.read` taşıyor ama
+`partner.boat.manage` ve `voyage.block` taşımıyor. Deseni izleseydim o rol
+takvimi **hiç göremezdi** — oysa "bu gün neden satılamıyor" sorusunu
+cevaplamak destek personelinin işi. Tekneyi satışa kapatmak ayrı bir
+sorumluluk ve işletme ucu bu ayrımı zaten yapıyor.
+
+⚠️ **Ders: "mevcut desene uy" bir gerekçe değil, bir başlangıç noktası.**
+Desenin kurulduğu yerde (galeri, belge, fiyat) o üç kaynağa dokunan tek bir
+rol vardı; takvimde iki rol var. Desen aynı kaldığında davranış aynı kalmaz.
+
+⚠️ **İzin özniteliği tek başına savunma DEĞİL.** `calendar.read`
+`IsPartnerAssignable`, yani bir işletme çalışanına da verilebiliyor. Yalnız
+öznitelikle korunsaydı, bir işletme çalışanı başka bir işletmenin
+`partnerId`'sini yola yazarak onun takvimini okuyabilir ve teknesini satışa
+kapatabilirdi. Asıl kapı serviste: kapsam istekten geldiğinde çağıranın
+platform personeli olması zorunlu.
+
+## 2026-09-10 · `onBehalfOf` kapsam önceliğinin sırası ÖLÇÜLEMİYOR
+
+`onBehalfOf ?? currentUser.PartnerId` ifadesindeki iki terimin yeri
+değiştirildiğinde hiçbir test kırmızıya dönmüyor. Mutasyon denendi, yeşil
+kaldı.
+
+**Neden bu bir kusur değil:** `trg_user_role_is_platform` bir işletme
+çalışanının platform rolü almasını reddediyor. Yani üretimde hiç kimsede
+`PartnerId` ile platform personelliği **aynı anda** bulunamıyor ve iki sıra
+da aynı sonucu veriyor. Ölçülemeyen şey davranış değil, **var olmayan bir
+durum**.
+
+Sıra yine de `onBehalfOf` önde bırakıldı: o değişmez bir gün kalkarsa,
+açıkça istenen kapsamın oturumdan gelen kapsamı ezmesi doğru davranış.
+Gerekçe koda yazıldı, çünkü sonraki okuyan "bu sıra neden böyle, testi nerede"
+diye soracak.
+
+⚠️ Bu, 2026-09-09'daki "ateşlenemeyen kapı hiç yazılmaz" kararının
+tamamlayıcısı: orada dal silinmişti çünkü **hiç çalışamazdı**; burada kod
+duruyor çünkü çalışıyor, yalnız iki hâli **ayırt edilemiyor**. Ayrım şu:
+ölçülemeyen bir dal silinir, ölçülemeyen bir *fark* yazıyla açıklanır.

@@ -1891,3 +1891,77 @@ demekti. Back-end oturumuna (`src-56`) `rentalTypeId` parametresi istendi;
 gelene kadar **kutu basılmıyor** — çalışmayan süzgeç, olmayan süzgeçten kötü.
 
 İlgili: [[web-desenler]] · [[web-durum]] · [[web-gorevler]]
+
+---
+
+## 2026-09-10 — Müsaitlik yönetimi: liste değil, seçim + takvim
+
+**Karar:** modül düz bir blokaj listesi olmaktan çıktı; işletme→tekne seçimi ve
+o teknenin **gömülü takvimi** oldu.
+
+**Neden:** platform geneli "bütün blokajlar" diye bir uç **yok** ve istenmedi.
+Takvim ucu tek tekneye, `from`/`to` aralığıyla bakıyor (tavan 92 gün). Bir liste
+kurmak için ya olmayan bir uç icat etmek ya da tekne tekne dolaşıp birleştirmek
+gerekirdi — ikincisi 8 teknede çalışır, 80'de çökerdi. Önceki hâlin verisi
+**örnekti**; uydurma satırın gerçek sanılması bu panelde bir kez yaşandı.
+
+### Takvim iki kalıp kazandı, ikinci takvim yazılmadı
+
+`boat-calendar.tsx` (478 satır) artık hem modal hem gömülü basıyor
+(`kalip: "modal" | "gomulu"`, ayrıştırıcı birlik). İşletme paneli takvimi bir
+tekne satırından açıyor — orada modal doğru; platform panelinde takvim
+**modülün asıl içeriği** ve onu açılır pencereye koymak her girişte bir tıklama
+daha isterdi.
+
+⚠️ `open`/`onClose` isteğe bağlı **yapılmadı**, ayrıştırıcı birlik kullanıldı:
+isteğe bağlı olsalardı modal kalıpta unutulabilir, modal hiç açılmaz ve sebebi
+görünmezdi.
+
+### Yazma yetkisi `voyage.block` — `calendar.write` **değil**
+
+Ölçüm back-end'den: `calendar.write` var ama **başka bir şey** demek ("takvim
+modunu düzenle"). Gün kapatmanın anahtarı `voyage.block`.
+
+| Rol | Taşıdığı |
+|---|---|
+| Destek Personeli | `calendar.read` |
+| Platform Yönetimi | `calendar.read` · `voyage.block` · `partner.boat.manage` |
+
+⚠️ Yani **takvimi görüp blokaj koyamayan bir rol gerçekten var**; `yazabilir`
+prop'u zorunlu bırakıldı, varsayılanı yok. Varsayılan `true` olsaydı yeni bir
+çağıran yetkisi olmayana düğme basar ve kusur ancak `403` geldiğinde görünürdü.
+
+⚠️ Bu ayrım `AdminPanelView`'de duran `izinler` listesinin modüle **hiç
+geçmediğini** ortaya çıkardı: menüyü süzmek yetmiyor, bir modülü açan izinle o
+modülde yazma izni ayrı olabiliyor.
+
+### Açık politika sorusu — Mert'e soruldu
+
+⚠️ **Platform personelinin koyduğu blokajı işletme kendi panelinden
+kaldırabiliyor.** Blokaj bir sefer satırı olarak yazılıyor ve satırda "kim
+kapattı" alanı **yok** (back-end ölçümü); işletme tarafındaki silme yalnız tekne
+ve tür süzgeci uyguluyor. Olay günlüğü "kim kapattı"yı yazıyor ama **hangi
+blokaj** olduğunu yazmıyor, yani ekranda gösterilebilecek bir bağ da yok.
+
+Bugünkü gerçek ekranda yazıyor (*"işletme kendi panelinden kaldırabilir ve kimin
+koyduğunu göremez"*). Korunması isteniyorsa **şema değişikliği** gerekiyor;
+politika kararı olduğu için kimse kendi başına karar vermedi.
+
+### Satılmış gün kapatılamıyor, aşma yetkisi yok
+
+`400 DayNotFree`, mesaj dolu olan **ilk günü tarihiyle** söylüyor. Kapatma da
+sefer olarak yazıldığı için "satılmış günü kapat" demek müşterinin turuyla aynı
+yeri iki kez doldurmak olurdu; yapılması gereken şey rezervasyonu iptal etmek ve
+o ayrı bir akış (müşteriye haber gidiyor). Takvim `saleCount`/`soldSeats`
+taşıdığı için uyarı **denemeden önce** basılıyor — kullanıcı 400 yemeden görüyor.
+
+### Ortak çıkan parça
+
+`boat-picker.tsx` (yeni): kademeli işletme→tekne seçici, rezervasyon süzgeci ile
+paylaşılıyor. Tekneyle **birlikte sahibinin kimliğini ve adını** bildiriyor —
+platform takvim yolu `partnerId` istiyor ve personel işletme kutusuna dokunmadan
+doğrudan tekne seçebiliyor, o durumda kutu boş kalır. `hepsi={false}` seçeneği
+"Hepsi" yerine "Seçin…" basıyor: süzgeçte boş değer *"hepsi"*, seçimde *"henüz
+seçilmedi"* demek.
+
+İlgili: [[web-desenler]] · [[web-durum]] · [[yayin-oncesi]]

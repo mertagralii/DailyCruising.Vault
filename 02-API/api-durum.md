@@ -14,7 +14,7 @@ durum: guncel
 ## Nerede duruyoruz
 
 **2026-09-10 — rezervasyon listesi tur türüne göre süzülüyor.**
-`dotnet test` **733/733**. Son commit `440648e`.
+`dotnet test` **737/737**. Son commit `560d837`.
 
 ⚠️ **Günün dersi: canlı doğrulama testin görmediğini gördü.** Süzgeci
 canlıda denerken tur türü adlarının İngilizce döndüğü ortaya çıktı —
