@@ -1,7 +1,7 @@
 ---
 rol: gate
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -48,6 +48,28 @@ Bir koşulun **sağlanmadığında nasıl belli olduğu**, ne olduğundan daha �
   "tamamlandı" görünür ve bu **yanıltıcıdır** — panoya güvenen biri doğrulanmış
   sanır.
 
+## "Ne zaman patlar" da ölçülür — tahmin edilmez
+
+Bir koşulu yazarken iki soru var ve **ikisinin de cevabı ölçülmeli**: *sağlanmazsa
+ne olur* ve **ne zaman patlar**. İkincisi atlanırsa kayıt durur ama yanlış kişiyi
+ve yanlış anı işaret eder — bu, sınırı hiç yazmamaya yakın bir sonuç verir.
+
+**Ölçülen örnek (2026-09-10, `Y-15`).** Backend panelin tur adı sorgularının
+dile sabitlendiğini gördü ve tetikleyiciyi *"panel bir gün İngilizce
+desteklerse"* diye yazdı. Büyük ve uzak bir iş gibi duruyordu. Ön yüz tarafı
+ölçüldüğünde gerçek tetikleyici çıktı: **ön yüzün `lang` göndermeye
+başlaması** — tek satır, yarın olabilir.
+
+⚠️ Ölçüm ikinci bir şeyi daha değiştirdi: hüküm *"bugün doğru davranıyor"*
+değil, **"bugün yanlış davranmasının bir yolu yok"** oldu. İki taraf da uca dil
+sormuyor, yani ikisi de aynı sunucu varsayılanında buluşuyor. Bu ikisi farklı
+güçte cümleler ve hangisinin doğru olduğu ancak **iki tarafa birden** bakınca
+görülüyor.
+
+**Ders:** tetikleyiciyi yazan taraf, çoğu zaman onu göremeyen taraftır. Kendi
+alanından bakıp tahmin etmek yerine **diğer alanın kodunu ölç** ya da o alandaki
+oturuma sor → [[genel-esszamanli-oturumlar]]
+
 ## Koşullar
 
 ### 🔊 Gürültülü — sağlanmazsa uygulama açılmaz
@@ -71,6 +93,8 @@ Bir koşulun **sağlanmadığında nasıl belli olduğu**, ne olduğundan daha �
 | Y-10 | `W-40` aydınlatma metni + saklama süresi | Mert | *"onu ben yazıcam en son"* — KVKK, blocker 7 |
 | Y-11 | Veri göçü | ertelendi | önce site ayağa kalksın |
 | Y-12 | **Ters vekil `X-Forwarded-For` eklemeli VE adresi `ForwardedHeaders:KnownProxies` listesinde olmalı** — iki parçalı, `S-19` | Mert + Backend | kayıtlara kullanıcının IP'si değil **vekilin IP'si** yazılır ve uygulama **hiçbir hata üretmez**. Etkilenen alanlar: `Contracts.ApprovedIp` (sözleşme onayının delili), `RefreshTokens.CreatedIp` (oturum geçmişi). ⚠️ Sözleşme onay ekranında *"IP adresin kaydedilir"* yazacaksak bu koşul sağlanmadan **yazılamaz** — yazılırsa beyan yalan olur ve uyuşmazlıkta kaydımız `::1` der. **Kabul ölçütü:** dağıtımdan sonra bir kez giriş yap, `RefreshTokens` son satırındaki `CreatedIp`'ye bak; vekilin adresi çıkıyorsa koşul **sağlanmamıştır**. Aynı ölçüm iki parçayı birden yakalar · **2026-09-05 ölçümü:** yerelde `CreatedIp = ::1`, `UserAgent` **gerçek tarayıcı** (o taraf kapandı) |
+
+| Y-15 | **Panel tek dilli kalmalı — ya da dört sorgu ve iki çağrı birden değişmeli** | Web + Backend | Bugün ekranlarda Türkçe çıkan her tur/bölge adı, uca **dil sorulmadığı** için çıkıyor: sunucu varsayılanı Türkçe. ⚠️ Ölçüldü (2026-09-10): uçta **9 işlem** dil parametresi kabul ediyor (`/api/lookups` dahil, adı `lang`), ön yüz bunu **yalnız iki yerde** kullanıyor ve ikisi de sabit `"tr"` — `boat-detail.ts:304` (yorumlar) ve `review/page.tsx:57` (davet). `lookups` **parametresiz** çağrılıyor (`reservations.tsx`, `staff.tsx`). Panelin tur türü/bölge adını basan dört sorgusu ise uçta `ContentLanguage.Default`'a **sabitlenmiş**, dil parametresi kabul etmiyor (back-end ölçümü, `440648e`). Sonuç: bugün ikisi aynı şeyi söylüyor ama **aynı sebepten değil** — biri soramadığı için, biri sormadığımız için. Panele dil seçimi eklenirse `lookups` seçilen dile geçer, o dört ekran Türkçe kalır ve kutuda "Day cruise" · tabloda "Günlük tekne turu" yazar. **Kabul ölçütü:** panele dil seçimi eklenmeden önce (a) o dört sorgu `lookups` gibi parametreli hâle gelmeli, (b) ön yüzdeki iki sabit `"tr"` seçili dile bağlanmalı. Biri eksikse ekran **sessizce iki dilli** olur |
 
 ### 🔬 Doğrulanmamış — yazıldı, gerçek hesap olmadan sınanamadı
 

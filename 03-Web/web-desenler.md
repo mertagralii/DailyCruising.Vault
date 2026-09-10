@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-09
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -317,3 +317,42 @@ yazan kişi `satisfies` yazmıyor, çünkü tipi import etmek zorunda kalsa
 zaten mevcut sözlüğü görürdü.
 
 İlgili: [[web-notlar]] · [[web-mimari]] · [[web-kararlar]] · [[web-gorevler]] · [[web-araclar]]
+
+---
+
+## İkinci ekran aynı satırı basacaksa tablo **ayrı dosyaya** çıkar
+
+Bir liste tablosu ikinci bir ekranda görünecekse (aynı uç, aynı satır şekli),
+satır **kopyalanmaz**; tablo kendi dosyasına çıkarılıp ikisi de onu basar.
+
+**Ölçülen gerekçe — 2026-09-09'da beş kopya sözlük çıktı** ve üçü tam olarak
+bu şekilde ayrışmıştı: `TEKNE_DURUMU`'nun bir kopyasında `Inactive` yoktu ve
+pasif tekne ekranda ham `Inactive` yazıyordu. Satır için aynı mekanizma
+geçerli: personel satırının bir kopyası "Parola değiştirilmedi" işaretini
+kaçırır, biri `roleNames`'i `join(", ")` ile kırpar, biri askıdaki personeli
+hiç göstermez. Üçü de ayrı ayrı yaşandı.
+
+⚠️ **Kopya yazan kişi farkında olmuyor** ve mekanizması şu: ikinci ekranı
+yazarken ilk ekranın dosyası açık değildir, bu yüzden `roleNames`'in çoğul
+olduğu ya da `mustChangePassword`'ün kullanılamaz hesabı işaret ettiği
+görülmez. Eksiklik *karar* değil, *görmeme*dir — bu yüzden gözden geçirmeyle
+yakalanmıyor.
+
+⚠️ **Ortak dosya, "birini diğerinden import et" değil.** `staff.tsx` rol
+oluşturma modalını `roles.tsx`'ten alıyordu; tabloyu ters yönde import etmek
+dairesel bağımlılık olurdu. Ölçüt: **iki çağıran varsa üçüncü dosya** —
+hangisinin "asıl" olduğunu tartışmak, bir sonraki çağıranda yine tartışılır.
+Karşılığı `staff-table.tsx`, iki çağıranı `staff.tsx` ve `roles.tsx`.
+
+⚠️ **Paylaşılan tabloda `onSec` zorunlu değil, ve verilmediğinde "İşlem"
+sütunu hiç basılmıyor.** Rol ayrıntısından personel ayrıntısına giden bir yol
+yok; tıklanıp hiçbir şey yapmayan "Detay", ölü düğmeyle aynı şeydir →
+[[web-kararlar]] (2026-09-06, *rotası olmayan giriş basılmaz*).
+
+⚠️ **Dışarıya sayaç veren prop `ref`'te tutulur, bağımlılık dizisinde
+tutulmaz.** `sayacYaz` effect bağımlılığı olsaydı, satır içi kapanış veren bir
+çağıran (`sayacYaz={(n) => setToplam(n)}`) her renderda yeni kimlik üretir,
+effect koşar, sayaç yazılır, render tetiklenir — sonsuz döngü. Bileşen
+çağıranın yazım şekline bağlı olmamalı.
+
+İlgili: [[web-kararlar]] · [[web-durum]]

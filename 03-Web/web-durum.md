@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: web
-guncelleme: 2026-09-09
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -528,3 +528,50 @@ Daha önce buraya *"`contract.send` platform-destek rolünde de var"* diye
 yazılmıştı. Backend ölçümünü düzeltti: o ölçüm **demo verisindenmiş**, temiz
 kurulumda `platform-destek` diye bir rol yok. Yetki ayrımının kendisi doğru,
 gerekçesi yanlıştı.
+
+---
+
+## 2026-09-10 — Roller modülü, personel tablosu, rezervasyon süzgeci
+
+Yönetim panelinde bugün yazılanlar (commit sırası):
+
+| Commit | Ne |
+|---|---|
+| `75f2c2f` · `d63d733` | Rol ayrıntısı ekranı + o rolü taşıyan personel |
+| `f7f49bb` · `7e257b3` | Enum sözlüklerini `satisfies` ile koruma + `araclar/sozluk-denetle.py` |
+| `f795068` | Rol ayrıntısı modal yerine **sayfa**, sistem rollerinde kırmızı "Zorunlu" |
+| `5ddc75a` | Personel tablosu `staff-table.tsx`'e çıktı; iki ekran aynı tabloyu basıyor |
+| `9364f81` | Rol satırında **kalem ve çöp kutusu** — rolleri değiştir / bu rolü kaldır |
+| `2e52d8b` | Rezervasyon süzgeç şeridi tek ızgara + yedi duruma ayrı renk |
+
+### Dosya bölünmeleri
+
+`role-form.tsx` (yeni) ← `YetkiSecici` · `RolOlustur` · `personelHatasi`;
+`staff-table.tsx` (yeni) ← `PersonelTablosu` · `RolDuzenle` · satır işlemleri.
+Graf tek yönlü: `role-form ← staff-table ← {staff, roles}`. Sebep ve ölçüt
+→ [[web-desenler]], [[web-kararlar]]
+
+### Ölçülen ve kapatılan borç
+
+- Aynı hata çevirisinin **üç kopyası** tek kapıya indi (`personelHatasi`).
+- `kit.tsx`'in sekiz sabit hex satırı belirtece çevrildi: *"bileşende sabit
+  renk kodu"* borcu **87 → 79**, `vault.json` tavanı indirildi.
+- `AdminIslem` birliğinde varsayılan düşüş kapatıldı (`admin-panel-view.tsx`):
+  yeni bir çeşit sessizce *"İşletmeyi onayla"* düğmesi basıyor olurdu.
+
+### Back-end'den bu turda gelenler
+
+- `rentalTypeId` süzgeci (`GET /api/platform/reservations`) — bağlandı.
+  `PlatformReservationItem` artık `rentalTypeId` de taşıyor.
+- ⚠️ **Tur türü adları İngilizce dönüyordu** ("Day cruise"); dört sorgu çeviri
+  tablosunu dil süzgeci olmadan okuyordu. Uçta düzeltildi (back-end `440648e`).
+  Dört ekranı birden etkiliyordu: genel bakış tur dağılımı · müşteri kartı
+  rezervasyonları · rezervasyon ayrıntısı · rezervasyon listesi. Ön yüzde
+  kiralama tipi sözlüğü **yok** (ölçüldü), adlar uçtan geliyor; `GET /api/lookups`
+  canlıda Türkçe dönüyor (8 kayıt, ölçüldü) — yani dördü de düzeldi.
+
+### ⚠️ Kapanmayan boşluk
+
+**Bugün yazılan yazma yollarının hiçbiri tarayıcıda denenmedi**: personel
+ekleme, rol oluşturma/düzenleme/silme, rol kaldırma, askıya alma, ilk girişte
+parola değiştirme. Parolayı Claude girmiyor; tur Mert'te.

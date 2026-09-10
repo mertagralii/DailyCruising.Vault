@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: api
-guncelleme: 2026-09-09
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -12,6 +12,17 @@ durum: guncel
 > Genel dosya bu dosyayı özetler → [[durum]]
 
 ## Nerede duruyoruz
+
+**2026-09-10 — rezervasyon listesi tur türüne göre süzülüyor.**
+`dotnet test` **733/733**. Son commit `440648e`.
+
+⚠️ **Günün dersi: canlı doğrulama testin görmediğini gördü.** Süzgeci
+canlıda denerken tur türü adlarının İngilizce döndüğü ortaya çıktı —
+dört sorguda dil süzgeci hiç yoktu ve çeviriler iki haftadır yazılıp
+okunmuyordu. Hiçbir test bunu yakalamamıştı çünkü test verisinde
+yalnız tek dil vardı.
+
+---
 
 **2026-09-09 — personel ve rol yönetimi bitti, sekiz commit.**
 `dotnet test` **730/730**. Son commit `ba6306b`.

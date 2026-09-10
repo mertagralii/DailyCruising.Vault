@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: api
-guncelleme: 2026-09-09
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -159,6 +159,63 @@ Biçim ve gerekçe -> [[genel-desenler]]
       🔴 **MERT'TE**
 
 ## 🟢 Tamamlandı
+
+- [x] **A-155** Panel tur türü adlarını Türkçe gösteriyor · bitti: 2026-09-10
+
+      ⚠️ **Kusur `A-154`'ü CANLIDA doğrularken çıktı, testte değil.** Süzgeci
+      denerken dönen adlar İngilizceydi: `Day cruise`, `Private charter`.
+
+      Sebep: dört sorgu `RentalTypeTranslations`'ı **dil süzgeci olmadan**
+      okuyordu ve `FirstOrDefault` hangi satır önce gelirse onu alıyordu.
+      `en` alfabetik olarak `tr`'den önce geliyor → panel Türkçe, ad
+      İngilizce. Çeviriler zaten VARDI (8 `tr`, 8 `en`); yazılmış ama
+      okunmamıştı.
+
+      Etkilenen dört ekran: genel bakış tür dağılımı · müşterinin
+      rezervasyonları · rezervasyon ayrıntısı · platform rezervasyon listesi.
+
+      ⚠️ İkinci kusur aynı satırdaydı: sırasız `FirstOrDefault` **kararlı
+      da değil** — aynı sorgu başka bir planla başka dili döndürebilirdi.
+      Süzgeç ikisini birden kapattı.
+
+      ⚠️ **Testin kurulumu iki dili de yazmak zorunda.** Yalnız Türkçe
+      yazsaydım süzgeci tamamen kaldıran kod da geçerdi: seçilecek tek satır
+      zaten Türkçe olurdu. Kusuru ancak üretimdeki gibi **iki dilli** veri
+      gösteriyor — bu, "veri kusuru gizler" dersinin bugünkü hâli.
+
+      Kanıt: `dotnet test` **733/733**, commit `440648e`. Mutasyon: dil
+      süzgeci kaldırıldı → `The_rental_type_name_comes_back_in_Turkish`
+      kırmızı. Canlıda 53 rezervasyonun tamamı artık Türkçe
+      (`Günlük tekne turu`, `Dalış turu`, `Konaklamalı tur`).
+
+- [x] **A-154** Rezervasyon listesi tur türüne göre süzülüyor · bitti: 2026-09-10
+
+      Mert admin panelinde rezervasyonları tur türüne göre süzmek istedi.
+
+      `GET /api/platform/reservations?rentalTypeId=…`
+
+      ⚠️ **Süzgeç KATALOG türüne bakıyor (`RentalTypeId`), teknenin o türü
+      satan kaydına (`BoatRentalTypeId`) değil.** İkincisi tekne başına ayrı
+      bir satır; onunla süzülseydi "Günlük tekne turu" seçildiğinde yalnız
+      **tek** teknenin turları gelirdi ve yönetici eksik listeyi tam sanırdı.
+
+      ⚠️ **Bu kusuru ancak paylaşılan tür gösteriyor.** `CreateBoatAsync`
+      her çağrıda yeni bir katalog türü üretiyor; o veriyle iki yanlış kod da
+      aynı sonucu verir. Test bu yüzden **aynı türü satan ikinci bir tekne**
+      kuruyor. Canlı veri de öyle çıktı: `Günlük tekne turu` üç teknede ve
+      iki işletmede.
+
+      Süzgeç UÇTA — istemci sayfalı listeyi süzseydi `totalCount` süzülmemiş
+      sayıyı vermeye devam ederdi. Tanınmayan `rentalTypeId` hata veriyor
+      (`UnknownRentalType`), boş sayfa değil.
+
+      Satır artık `rentalTypeId` de taşıyor: `rentalTypeName` çeviri
+      tablosundan geliyor ve tekil olmak zorunda değil.
+
+      Kanıt: `dotnet test` 733/733, commit `94b06c7`. Üç mutasyon, üçü de
+      doğru testi kırdı: katalog türü yerine satış kaydına bakma · süzgecin
+      hiç uygulanmaması · tanınmayan türün sessizce boş dönmesi.
+      Canlıda: süzgeçsiz 53, `Günlük tekne turu` 27 (üç tekne, iki işletme).
 
 - [x] **A-153** Arama servisi bugünü saat kaynağından okuyor · bitti: 2026-09-09
 

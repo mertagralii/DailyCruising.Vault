@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: api
-guncelleme: 2026-09-09
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -5694,3 +5694,90 @@ tarafındaki hâli olurdu.
 ⚠️ Tanınmayan `roleId` **hata veriyor** (`UnknownRole`), boş liste değil —
 tanınmayan `status` ile aynı gerekçe: boş liste "bu rolde kimse yok" diye
 okunur, oysa rol hiç yok.
+
+## 2026-09-10 · Çeviri okunan her sorguda dil süzgeci ZORUNLU
+
+`*Translations` tablolarından okuyan her sorgu
+`LanguageCode == ContentLanguage.Default` süzgecini taşır.
+
+**Neden:** süzgeçsiz `FirstOrDefault` iki ayrı şeyi birden bozuyor.
+
+- **Yanlış dil:** `en` alfabetik olarak `tr`'den önce geliyor, yani Türkçe
+  panelde İngilizce ad görünüyordu (`Day cruise`). Çeviriler vardı — 8 `tr`,
+  8 `en` — yazılmış ama okunmamıştı.
+- **Kararsızlık:** sırasız bir `FirstOrDefault`'ın hangi satırı döndüreceği
+  garanti değil; aynı sorgu başka bir planla başka dili döndürebilir.
+
+Dört platform sorgusu bu hâldeydi: genel bakış tür dağılımı, müşterinin
+rezervasyonları, rezervasyon ayrıntısı, platform rezervasyon listesi.
+Katalog tarafındaki sorgular (`BoatCatalogRepository`, `FavoriteRepository`)
+süzgeci zaten taşıyordu — yani desen vardı, platform tarafı ondan kopmuştu.
+
+⚠️ **Testi iki dilli veri ister.** Tek dilli veriyle süzgeci tamamen kaldıran
+kod da geçer: seçilecek tek satır zaten doğru dildedir. Üretimde iki dil var,
+testte de olmalı → [[api-desenler]]
+
+## 2026-09-10 · Tur türü süzgeci katalog türüne bakar, teknenin satış kaydına değil
+
+`?rentalTypeId=` süzgeci `Reservations.BoatRentalType.RentalTypeId`
+üzerinden çalışır, `Reservations.BoatRentalTypeId` üzerinden değil.
+
+**Neden:** `BoatRentalType` tekne **başına** bir satır — "şu tekne bu türü
+şu para biriminden satıyor" demek. Süzgeç ona baksaydı "Günlük tekne turu"
+seçildiğinde yalnız tek teknenin turları gelirdi ve yönetici eksik listeyi
+tam sanırdı; hiçbir yerde hata görünmezdi.
+
+⚠️ Kusur **ancak paylaşılan türle** ölçülebiliyor. `TestData.CreateBoatAsync`
+her çağrıda yeni bir katalog türü üretiyor; o veriyle iki yanlış kod da aynı
+sonucu verir. Test bu yüzden aynı türü satan ikinci bir tekne kuruyor.
+Üretim verisi de öyle: `Günlük tekne turu` üç teknede, iki işletmede.
+
+Aynı aile: "her kişinin tek rolü olduğu veri, çoklu rol dalını hiç
+sınamıyordu" (2026-09-08).
+
+## 2026-09-10 · Platform panelinin çeviri sorguları dil parametresi ALMIYOR — bilinen sınır
+
+Bugün düzeltilen dört sorgu `ContentLanguage.Default`'a **sabit**. İstek
+dilini kabul eden `LookupRepository` deseni (istenen dil → bulunamazsa
+varsayılan) buraya uygulanmadı.
+
+**Neden:** platform paneli için dil parametresi bugün **hiçbir uçta yok**.
+Sabitlemek, olmayan bir kavramı dört sorguda icat etmekten temiz; parametre
+eklenseydi hiçbir çağıran onu göndermez ve varsayılana düşerdi — yani aynı
+davranış, üstüne kullanılmayan bir parametre.
+
+⚠️ **Ne pahasına:** panel bir gün İngilizce desteklerse bu dört ekran Türkçe
+kalır, `GET /api/lookups` İngilizceye geçer ve **kutu ile tablo ayrışır**.
+Kusur o gün ekranda görünür; bugün görünmez.
+
+Sınır yazılı olsun diye burada: panelde dil seçimi gündeme geldiğinde
+yapılacak iş, dördünü `LookupRepository` desenine çevirmek.
+→ [[api-kararlar]] 2026-09-10 (dil süzgeci zorunlu)
+
+## 2026-09-10 · Yukarıdaki sınırın tetikleyicisi düzeltildi — ölçüm web oturumundan
+
+Az önceki girişte tetikleyiciyi *"panel bir gün İngilizce desteklerse"* diye
+yazmıştım. Web oturumu ön yüzü ölçtü ve tetikleyici bundan **bir adım
+öncesi** çıktı: **ön yüzün `lang` göndermeye başlaması.**
+
+Ölçüm (2026-09-10): uçta 9 işlem dil parametresi kabul ediyor; ön yüz bunu
+yalnız iki yerde ve **sabit `"tr"`** olarak kullanıyor. `lookups` iki yerden
+çağrılıyor ve **hiçbirinde `lang` gönderilmiyor**; `dcFetch` de
+`Accept-Language` eklemiyor.
+
+**Sonucu, benim yazdığımdan daha güçlü:** bugün ayrışma "olası değil" değil,
+**mümkün değil**. İki taraf da soruyu sormadığı için ikisi de aynı sunucu
+varsayılanında buluşuyor. Ayrışma ancak bir taraf sormaya başlayınca doğar.
+
+**Neden önemli:** yanlış tetikleyici, sınırı yanlış kişiye havale ediyordu.
+"Panel İngilizce desteklesin" büyük ve uzak bir iş gibi duruyor; "ön yüz
+`lang` göndersin" ise **tek satır** ve yarın olabilir. Sınırın ne zaman
+patlayacağını yanlış tahmin etmek, sınırı yazmamakla neredeyse aynı.
+
+Yayın koşulu olarak `Y-15` (web oturumu yazdı), kabul ölçütü iki parçalı:
+dört sorgu parametreli hâle gelmeli **ve** ön yüzdeki iki sabit `"tr"`
+seçili dile bağlanmalı. Biri eksikse ekran sessizce iki dilli olur.
+
+⚠️ Ders: bir sınır yazarken *"ne zaman patlar"* sorusunun cevabı da
+ölçülmeli. Ben kendi tarafımdan bakıp tahmin ettim; doğru cevap **karşı
+tarafın kodundaydı**.

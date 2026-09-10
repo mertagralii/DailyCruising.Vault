@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: web
-guncelleme: 2026-09-08
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -1778,3 +1778,116 @@ kullanıcıya yalan söyler** — ve bu ayrışma hiçbir testte kırmızı yanm
 çünkü iki taraf da kendi içinde tutarlı.
 
 İlgili: [[web-desenler]] · [[web-gorevler]] · [[web-durum]]
+
+---
+
+## 2026-09-10 — Rol ayrıntısındaki personel satırında kalem ve çöp kutusu
+
+**Karar (Mert):** *"tablodaki personellerin yanında Durumun yanında İşlem diye
+bir alan olur bir kutu içinde kalem iconu bir tane de kutu içinde çöp kutusu
+butonu olur. kalem'e basarsam bir modal açılır o kişinin rolümü vs
+değiştirebiliyor olayım. Diğer çöp kutusunu seçtiğimde bir uyarı ekranı çıkar
+işte bu kişinin rolünü kaldırmak istediğinize emin misiniz diye evet dediğimde
+de o kişinin rolünü çıkartmış olurum."*
+
+**Neden:** rol ayrıntısı bugüne kadar yalnız *okunuyordu*. Bir kişiye yanlış rol
+verildiğinde düzeltmenin tek yolu personel listesine gidip o kişiyi aramaktı —
+yani rolün kendi sayfası, o rolle ilgili en sık yapılacak işi yapamıyordu.
+
+### Ölçülen kısıt: satır rol **kimliği** taşımıyor
+
+`GET /api/platform/staff` satırında `roleNames` var, `roleIds` **yok**. Rol
+değiştirme ucu (`PUT /api/platform/staff/{userId}/roles`) ise **tam kümeyi**
+kimlikle alıyor. Yani "şu rolü kaldır" isteği, "kalan kimlikleri gönder" diye
+kurulmak zorunda.
+
+⚠️ **Adı kimliğe çevirmek denenmedi ve denenmemeli:** rol adı tekil olmak
+zorunda değil (`platform/staff/roles` adı kısıtlamıyor) ve yanlış eşleşme,
+kişinin bambaşka bir rolünü silerdi. Bunun yerine kimlikler **tıklanınca**
+`GET platform/staff/{userId}` ile okunuyor. Tablo kurulurken okumak, yirmi beş
+satır için yirmi beş istek demekti.
+
+### Tek rolü o olan kişide kaldırma **yapılmıyor**
+
+Uç boş rol kümesini `RoleRequired` ile reddediyor ve rolsüz personel panelde
+hiçbir şey göremez. Onay kutusunu gösterip "Evet"te hata bastırmak, yöneticiye
+önce olacakmış gibi söyleyip sonra geri almaktı. Kutu bunun yerine **ne
+yapılması gerektiğini** söylüyor (*"önce başka bir rol verilmeli"*) ve tek
+düğmesi rol değiştirme modalını açıyor.
+
+### Onay metni kalan rolleri **yazıyor**
+
+*"Rolü kaldır"* tek başına kişinin panelde ne yapabilir kalacağını söylemiyor.
+Kalan roller yazılmazsa yönetici birini farkında olmadan işsiz bırakabilir.
+
+### Yan sonuç: üç dosyaya bölünme
+
+`RolDuzenle` kalem düğmesinin arkasındaki modal ve `RolOlustur`'a muhtaç; o da
+`roles.tsx`'te duruyordu. `roles.tsx → staff-table.tsx → roles.tsx` dairesel
+import olacaktı. `YetkiSecici` + `RolOlustur` + `personelHatasi` yeni
+`role-form.tsx`'e çıktı; `RolDuzenle` `staff-table.tsx`'e taşındı. Graf artık
+tek yönlü: `role-form ← staff-table ← {staff, roles}`.
+
+⚠️ Taşırken aynı hata çevirisinin **üç kopyası** ölçüldü (`staff.tsx`'te adlı
+bir yardımcı, `roles.tsx`'te iki satır içi kopya). Tek kapıya indirildi →
+[[web-desenler]]
+
+⚠️ `AdminIslem` birliğine dördüncü çeşit (`personel-rol`) eklenirken
+`admin-panel-view.tsx`'in son `return`'ü koşulsuzdu, yani `isletme`
+varsayılandı: bir personel satırı oraya düşse *"İşletmeyi onayla"* düğmesi
+basardı. Açık koşula çevrildi; tanımadığı çeşitte `null`.
+
+İlgili: [[web-desenler]] · [[web-durum]] · [[web-gorevler]]
+
+---
+
+## 2026-09-10 — Rezervasyon durumlarının yedisi ayrı renk, süzgeç şeridi tek ızgara
+
+**Karar (Mert):** *"Tekneye binildi farklı bir renk olsun Süresi doldu farklı
+renk olsun … Ödeme bekliyor / Ödeme alındı / Tekneye binildi / Tamamlandı /
+Süresi doldu / İptal edildi / İade edildi farklı renklerde gözüksün tabloda"*
+ve *"buradaki ilk filtrelemenin tasarımını düzgün yap"*.
+
+**Ölçülen durum:** `kit.tsx: tonlar` sözlüğünde yedi rezervasyon durumundan
+**dördü yoktu** (`Tekneye binildi`, `Tamamlandı`, `Süresi doldu`,
+`İptal edildi`) ve nötr gri varsayılana düşüyordu; `İade edildi` de iptalle
+aynı kırmızıydı. Yani yedi durum tabloda **üç renkle** anlatılıyordu ve
+"tur şu an sürüyor" ile "süresi doldu, kimse gelmedi" ayırt edilemiyordu.
+
+**Neden belirteç, neden hex değil:** yazılı desen *"bileşende sabit renk kodu
+yazılmaz"* ve tavanı çırnıkla denetleniyor (`vault.json` kontrol 24). Dört yeni
+renk hex olarak yazılsa çırnık kırmızı yanardı. `globals.css`'e
+`--state-board/done/stale/refund` çiftleri eklendi; aynı geçişte `kit.tsx`'in
+var olan sekiz hex satırı da belirtece çevrildi → borç **87'den 79'a** indi ve
+tavan indirildi.
+
+⚠️ **Çip üzerine renkli nokta konmadı ve sebebi Tailwind.** Rozet tonundan nokta
+rengini türetmek (`text-board` → `bg-board`) çalışmazdı: Tailwind sınıf adlarını
+**kaynakta metin olarak** arıyor, çalışma anında kurulan ad üretilmiyor ve
+sonuç görünmez bir nokta olurdu — `rounded-circle`'ın `border-radius: 0`
+üretmesiyle **aynı sınıf**. Literal yazmak ise rengi ikinci bir yerde
+tanımlamak, yani sapacak bir kopya demekti. Renk tek yerde kaldı: `tonlar`.
+
+### Süzgeç şeridi
+
+Etiketler kutuların **soluna** yazılıydı ve alanlar üç ayrı satıra dağılmıştı:
+etiket genişliği her alanda farklı olduğu için kutular birbirine göre kayıyor,
+iki tarih kutusu arasındaki `–` hangisinin başlangıç olduğunu söylemiyor, arama
+kutusu tek başına `rounded-pill` iken diğerleri köşeliydi. Şerit etiketi
+**üstte** duran tek ızgaraya alındı, kutu ölçüsü tek sabite (`alanKutusu`)
+indirildi, iki tarih kutusu `min`/`max` ile birbirini kısıtlıyor (ters aralık
+uçtan boş liste döndürürdü ve boş liste kusur gibi okunur).
+
+### Tur türü süzgeci — **uçta parametre yok**
+
+`GET /api/platform/reservations` parametreleri ölçüldü: `q · status · from · to
+· partnerId · boatId · sort · page · pageSize`. Tur türü yok ve
+`PlatformReservationItem` yalnız `rentalTypeName` taşıyor, `rentalTypeId`
+taşımıyor.
+
+⚠️ **İstemcide süzülmedi.** Liste sunucu tarafında sayfalı; istemcide süzmek
+"47 kayıt" yazarken üç satır göstermek ve ikinci sayfada bambaşka sonuç vermek
+demekti. Back-end oturumuna (`src-56`) `rentalTypeId` parametresi istendi;
+gelene kadar **kutu basılmıyor** — çalışmayan süzgeç, olmayan süzgeçten kötü.
+
+İlgili: [[web-desenler]] · [[web-durum]] · [[web-gorevler]]

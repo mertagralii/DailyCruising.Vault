@@ -216,7 +216,7 @@
           "global-error"
         ],
         "ara": "#[0-9a-fA-F]{6}\\b",
-        "tavan": 87,
+        "tavan": 79,
         "kaynak": "web-desenler: 'Bilesende sabit renk kodu yazilmaz' — istisnasi src/emails/*.html (e-posta istemcileri) ve global-error (kok duzeni degistirir, Tailwind yok)"
       },
       {
