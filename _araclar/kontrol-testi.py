@@ -44,8 +44,13 @@ import json
 
 VAULT = Path(__file__).resolve().parent.parent
 KOPYA = VAULT.parent / ".vault-kontrol-testi"
-AYAR = json.loads((Path(__file__).resolve().parent / "vault.json")
-                  .read_text(encoding="utf-8"))
+_yol = Path(__file__).resolve().parent / "vault.json"
+try:
+    AYAR = json.loads(_yol.read_text(encoding="utf-8"))
+except json.JSONDecodeError as _hata:
+    sys.exit(f"HATA: {_yol} gecerli JSON degil.\n"
+             f"  Satir {_hata.lineno}, kolon {_hata.colno}: {_hata.msg}\n"
+             f"  Duzeltip tekrar calistir; makine yapilandirmasiz calismaz.")
 KOD_REPOLARI = tuple(v["kod_repo"] for v in AYAR["alanlar"].values() if v.get("kod_repo"))
 
 _KT = AYAR["kontrol_testi"]

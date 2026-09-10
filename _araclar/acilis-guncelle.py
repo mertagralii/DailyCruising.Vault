@@ -34,7 +34,15 @@ from datetime import date
 from pathlib import Path
 
 VAULT = Path(__file__).resolve().parent.parent
-AYAR = json.loads((VAULT / "_araclar" / "vault.json").read_text(encoding="utf-8"))
+_ayar_yolu = (VAULT / "_araclar" / "vault.json")
+try:
+    AYAR = json.loads(_ayar_yolu.read_text(encoding="utf-8"))
+except FileNotFoundError:
+    sys.exit(f"HATA: yapilandirma dosyasi yok: {_ayar_yolu}")
+except json.JSONDecodeError as _hata:
+    sys.exit(f"HATA: {_ayar_yolu} gecerli JSON degil.\n"
+             f"  Satir {_hata.lineno}, kolon {_hata.colno}: {_hata.msg}\n"
+             f"  Duzeltip tekrar calistir; betik yapilandirmasiz calismaz.")
 A = AYAR.get("acilis_sayilari") or {}
 PANO = AYAR["pano"]
 ACILIS = VAULT / AYAR["ozel"]["acilis"]

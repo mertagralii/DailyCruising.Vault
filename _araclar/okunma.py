@@ -50,8 +50,13 @@ import json
 
 VAULT = Path(__file__).resolve().parent.parent
 KAYITLAR = Path.home() / ".claude" / "projects"
-AYAR = json.loads((Path(__file__).resolve().parent / "vault.json")
-                  .read_text(encoding="utf-8"))
+_yol = Path(__file__).resolve().parent / "vault.json"
+try:
+    AYAR = json.loads(_yol.read_text(encoding="utf-8"))
+except json.JSONDecodeError as _hata:
+    sys.exit(f"HATA: {_yol} gecerli JSON degil.\n"
+             f"  Satir {_hata.lineno}, kolon {_hata.colno}: {_hata.msg}\n"
+             f"  Duzeltip tekrar calistir; makine yapilandirmasiz calismaz.")
 KAYIT_DESENI = AYAR["oturum_kayit_deseni"]
 OTOMATIK = set(AYAR["otomatik_yuklenen"])   # hook yukluyor, secilerek acilmiyor
 # 2026-09-05, backend'in itirazi — dogru cikti: iki ayri dosya turu ayni olcute

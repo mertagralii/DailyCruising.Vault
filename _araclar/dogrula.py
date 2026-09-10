@@ -48,7 +48,13 @@ import json
 _AYAR_YOLU = Path(__file__).resolve().parent / "vault.json"
 if not _AYAR_YOLU.exists():
     sys.exit(f"vault.json yok ({_AYAR_YOLU}) — makine yapilandirmasiz calismaz")
-AYAR = json.loads(_AYAR_YOLU.read_text(encoding="utf-8"))
+_yol = _AYAR_YOLU
+try:
+    AYAR = json.loads(_AYAR_YOLU.read_text(encoding="utf-8"))
+except json.JSONDecodeError as _hata:
+    sys.exit(f"HATA: {_yol} gecerli JSON degil.\n"
+             f"  Satir {_hata.lineno}, kolon {_hata.colno}: {_hata.msg}\n"
+             f"  Duzeltip tekrar calistir; makine yapilandirmasiz calismaz.")
 ESIK = AYAR["esikler"]
 PANO = AYAR["pano"]
 OZEL = AYAR["ozel"]
