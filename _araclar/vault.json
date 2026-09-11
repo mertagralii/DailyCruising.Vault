@@ -115,7 +115,10 @@
       "birimler: '<sayi> <birim>' bicimindeki iddia, o alanin dosyalarinda",
       "ayni sayiyla geciyor mu.",
       "uretim: acilis-guncelle.py bu ayarla sayilari YENIDEN URETIR;",
-      "elle yazilmaz. cikar: her birimin otoritesi hangi dosyada, hangi desenle."
+      "elle yazilmaz. cikar: her birimin otoritesi hangi dosyada, hangi desenle.",
+      "2026-09-12: rota birimi ELLE yazilan mimariden URETILEN envantere cevrildi.",
+      "Uretilen dosya var olduktan sonra otorite odur; anlatinin eski sayilari",
+      "tarihce olarak kaliyor ve 'son gecis' olcutu onlari okuyordu."
     ],
     "pano_desenleri": [
       "pano\\s+\\*{0,2}(\\d+)\\s*/\\s*(\\d+)",
@@ -139,13 +142,12 @@
         "desen": "(\\d+)\\s*rota",
         "kelime": "rota",
         "kaynaklar": [
-          "03-Web/web-durum.md",
-          "03-Web/web-mimari.md"
+          "03-Web/web-mimari-guncel.md"
         ],
         "cikar": {
-          "dosya": "03-Web/web-mimari.md",
-          "desen": "(\\d+)\\s*rota sayfası",
-          "sec": "son"
+          "dosya": "03-Web/web-mimari-guncel.md",
+          "desen": "Rota \\(`page\\.tsx`\\) \\| (\\d+)",
+          "sec": "ilk"
         }
       },
       {

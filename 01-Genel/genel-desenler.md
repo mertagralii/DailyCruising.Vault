@@ -1439,7 +1439,6 @@ belirsizleşiyordu. O gün dosya ayrılarak çözüldü; bugün anlaşıldı ki 
 ölçüm (2026-09-11): `api` %15 · `genel` %36 · `mobil` %28 · `web` %8. Oran
 düşükken zorunlu satır eklemek, `Sonucu`'nun başına geleni tekrarlamak olurdu.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Denetim ölçtüğü ANI bildirir — ve kaç satıra baktığını
 
@@ -1480,3 +1479,39 @@ olduğunu değil. **Varlık ölçülebiliyor, doğruluk ölçülemiyor** — ve 
 ölçütün yanına yazılmadıkça ölçüt olduğundan güçlü sanılıyor.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Üretilen dosya doğunca otorite el değiştirir — yapılandırma da taşınmalı
+
+2026-09-12: üretici *"zaten güncel"* dedi, kontrol 22 *"41 rota yanlış"* dedi.
+İki ölçüm **birbiriyle çelişti** ve çelişkinin kendisi kusuru buldu.
+
+Sebep: rota sayısının otoritesi yapılandırmada hâlâ **elle yazılan**
+`web-mimari.md`'ydi. O dosya append-only bir anlatı; içinde `33 rota sayfası`
+ve `41 rota sayfası` yan yana duruyor ve *"son geçiş"* ölçütü 41'i okuyordu.
+Gerçek sayı **44** ve üretilen envanterde (`web-mimari-guncel.md`) yazılı.
+
+⚠️ Kusur ne üreticide ne kontroldeydi: **envanter üretilmeye başlandığı gün,
+o birimin otoritesi değişti ve yapılandırma taşınmadı.** Yani "envanter üretilir"
+kuralını uygularken kuralın kendi yan etkisi atlandı.
+
+**Kural:** bir envanter üretilmeye başlandığında, o sayıyı okuyan **her**
+yapılandırma yeni dosyaya taşınır. Eski anlatı yanlış olmuyor — **tarihçe**
+oluyor, ve tarihçeden bugünkü sayıyı okumak bayat sayı üretiyor.
+
+**Bunu yakalayan şey iki bağımsız ölçümün çelişmesiydi.** Tek ölçüm olsaydı
+sessizce 41 yazmaya devam ederdi → [[genel-kararlar]]
+
+## Envanter var olanı sayar, anlatı olmayanı açıklar
+
+Web oturumunun 2026-09-11 tespiti, mimari dosyasının üretilen envanterden
+farkının en saf hâli: `lib/data/admin-ornek.ts` **silindi**, ama anlatı onu hâlâ
+bir düzen olarak anlatıyordu.
+
+**Silinen bir dosyanın neden silindiği koddan okunamaz.** Altı ay sonra *"örnek
+veri nereye gitti"* sorusunun cevabı "kayboldu" değil **"artık gerekmiyor"**
+olmalı — ve bunu yalnız anlatı taşıyabilir.
+
+Envanter bugünü sayar; **yokluğun gerekçesi** elle yazılır. Bu, *"envanter
+üretilir, gerekçe yazılır"* kuralının ikinci yarısının en somut örneği.
+
+İlgili: [[genel-esszamanli-oturumlar]]
