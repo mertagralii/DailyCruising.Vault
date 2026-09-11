@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -16,6 +16,17 @@ Karar bekleyenlerde "kimde" satırı vardır; **Mert'te olan işler Claude taraf
 tamamlanamaz.**
 
 ## 🔵 Yapılacak
+
+- [ ] **G-21** `araclar` bölmesinin yeni tetikleyicisi ölçülecek · öncelik: orta
+      Tetikleyici 2026-09-11'de *"alana ilk dokunuş"*tan **"bir araç seçeceğim"**e
+      çevrildi → [[genel-desenler]]. Değişiklik davranışı değiştirdi mi, bilinmiyor.
+      **Taban (2026-09-11, `okunma.py`):** yazıldığı oturum dışında okunma —
+      `web-araclar` 2 · `api-araclar` 0 · `genel-araclar` 0 · `mobil-araclar` 0
+      **Tetikleyici:** bir sonraki `okunma.py` koşumu (vault oturumunun takip turu)
+      Kabul: dört dosyadan **en az ikisi** dışarıdan okunmuş çıkarsa tetikleyici
+      işe yaradı, görev kanıtla kapanır. Taban aynı kalırsa bölme **kapatılır** ve
+      yaşayan içeriği `*-desenler`'e taşınır — üçüncü bir tetikleyici denenmez
+
 
 - [ ] **G-16** SaaS / abonelik ürününe dönüştürme · öncelik: **EN SON**
       Mert: *"bu sistemi bir abonelik üzerinden satacağım"* — rezervasyon sistemi +

@@ -982,7 +982,6 @@ azalırsa betik *"tavanı indir"* der. Kural kendi kendini sıkar.
 girer; her kuralın `kaynak` alanı onu gösterir. Uydurulmuş kural, ölçülse bile
 kuraldır sayılmaz — kimsenin bedelini ödemediği kural ilk yoğun günde delinir.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Ölçümü ölçen bir şey yok — üç kontrol sorusu
 
@@ -1030,3 +1029,21 @@ hangi betik biçimi. İzlenmeye devam ediyor; bu tetikleyiciyle de okunmazsa
 bölme kapatılır. **İzlenimle budama yapılmadı, ölçümle tetikleyici değişti.**
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Sözleşmeyi tanımlayan, varsayımını da yazmak zorunda
+
+2026-09-11: web oturumundan bir üretici için üç şey istedim — betik yolu, komut,
+**"bayatlatan yollar"**. Cevabı doğruydu ama yollardan biri **başka bir repodaydı**
+(`openapi.json`), ve benim sözleşmem sessizce **tek repo** varsayıyordu. Kontrol 25
+o hâlde yazılsaydı bayatlığın yarısını hiç görmezdi.
+
+Kusur cevapta değil **istekte**: "bayatlatan yollar" tek liste istiyor gibi
+duruyordu. Web'in kendi ifadesi: *"sözleşmenin tek repo varsaydığını fark
+etmemişim."* Fark etmesi beklenemezdi — varsayım yazılı değildi.
+
+**Kural:** bir sözleşme tanımlarken istenen **biçim** de yazılır, yalnız alan adı
+değil. Karşı taraf varsayımını okuyamaz; okuyamadığı varsayım, ilk gerçek vakada
+kırılır. Bu vault'ta üreticiler artık `[{alan, yollar}]` alıyor — çünkü ilk gerçek
+vaka bunu gerektirdi ve sözleşme onu söylemiyordu.
+
+İlgili: [[genel-esszamanli-oturumlar]]
