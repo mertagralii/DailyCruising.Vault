@@ -29,6 +29,7 @@ Tarar:
  24. Yazili desen kodda cignenmis mi (cirnik: borc buyuyemez)
  25. Uretilen dosya, uretildigi kaynagin gerisinde mi
  26. Yayin kosulu kabul olcutu tasiyor mu, kimlikleri benzersiz mi
+ 27. Notlarin erisilebilirligi (tetikleyici alani, birebir hata metni)
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -1215,6 +1216,47 @@ if _G26 and (VAULT / _G26).exists():
         f"{len(_kabulsuz)} · bilerek bos {_yazilmadi}")
 elif _G26:
     olcumler.append(f"kontrol 26 · gate dosyasi yok ({_G26}) — OLCULEMEDI")
+
+
+
+# ---------------------------------------------------------------------------
+# 27: notlarin erisilebilirligi — OLCUM, dayatma degil
+#
+# 2026-09-11 olcumu: okuma-degerli 82 dosyanin 41'i hicbir oturumda acilmamis.
+# Web oturumunun teshisi olcumle uyumlu cikti: sorun ICERIK degil ERISIM.
+# Kendi ornegi: vekil izin listesi tuzagina DORDUNCU kez dustugu gun,
+# `web-vekil-multipart-boundary.md` diye komsu konulu bir not zaten VARDI ve
+# acmadi. Notun hub'dan linkli olmasi onu aramaya sebep olmuyor.
+#
+# Iki sey olculuyor, ikisi de zorunlu DEGIL:
+#   (a) not "ne zaman okunmali" diyor mu (frontmatter'da tetikleyici alani)
+#   (b) hata notu, hata metnini BIREBIR tasiyor mu — tetikleyici hatirlamak
+#       degil ARAMAK oldugu icin sart budur
+#
+# Neden dayatma degil: 2026-09-09'da olculdu, %0'da duran zorunlu satir
+# yanindaki `**Neden:**`i de %61'e dusurmustu. Once oran gorunur olsun.
+_N27 = AYAR.get("not_olcumleri") or {}
+if _N27:
+    _t_alan = _N27.get("tetikleyici_alani", "tetikleyici")
+    _h_desen = re.compile(_N27.get("hata_metni_deseni", "```"), re.M)
+    _n_top = _n_tet = _n_hata = 0
+    for _alan27, _v27 in AYAR["alanlar"].items():
+        _klasor = VAULT / _alan27 / NOTLAR_KLASORU
+        if not _klasor.exists():
+            continue
+        for _nf in sorted(_klasor.glob("*.md")):
+            _n_top += 1
+            _ic27 = _nf.read_text(encoding="utf-8")
+            _fm27 = frontmatter(_ic27) or {}
+            if _fm27.get(_t_alan):
+                _n_tet += 1
+            if _h_desen.search(_ic27):
+                _n_hata += 1
+    if _n_top:
+        olcumler.append(
+            f"kontrol 27 · {_n_top} not · tetikleyici yazili {_n_tet} "
+            f"({_n_tet * 100 // _n_top}%) · hata metnini birebir tasiyan "
+            f"{_n_hata} ({_n_hata * 100 // _n_top}%) — OLCUM, dayatma degil")
 
 
 print(f"Vault: {VAULT}")

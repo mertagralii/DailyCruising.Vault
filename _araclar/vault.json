@@ -301,5 +301,17 @@
         "tetikleyici": "rota/bilesen/istemci eklendi veya openapi.json degisti"
       }
     ]
+  },
+  "not_olcumleri": {
+    "_aciklama": [
+      "Kontrol 27: notlarin ERISILEBILIRLIGI olculur, dayatilmaz.",
+      "tetikleyici_alani: notun frontmatter'inda 'ne zaman okunmali' yaziyor mu.",
+      "hata_metni_deseni: hata notu, hata metnini BIREBIR tasiyor mu — tetikleyici",
+      "hatirlamak degil ARAMAK oldugu icin bu sart. Ikisi de ORAN olarak basilir.",
+      "UYARI: desen JSON'a yazilirken kacis sayisi iki kez bozuldu (2026-09-11);",
+      "ilk olcum 8 dedi, elle sayim 32'ydi. Desen degistirildiginde ORANI dogrula."
+    ],
+    "tetikleyici_alani": "tetikleyici",
+    "hata_metni_deseni": "^\\s*```|`[A-Za-z0-9_.]+(Exception|Error|error|failed|FAILED|ERR_)"
   }
 }

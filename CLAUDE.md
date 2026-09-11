@@ -38,7 +38,7 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | **Şema neden böyle tasarlandı** sorusu | `02-API/api-sema.md` — `rol: tasarim-kaydi`, 24 Ağustos onayı ve gerekçesi. **Envanter değildir** |
 | **26 Ağu – 4 Eyl arasında Claude'un kendi yetkisiyle aldığı bir karar** soruluyor | `02-API/api-benim-kararlarim.md` — **arşiv**; işlevi 4 Eylül'de bitti (29 soru cevaplandı), yeni giriş eklenmez |
 | **"Yayına çıkalım" / "hazır mı"** sorusu · deploy konuşulacak | `01-Genel/yayin-oncesi.md` — üretim koşullarının tek listesi |
-| "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
+| "Neden böyle yapmışız" sorusu | `python3 _araclar/karar-ara.py <kelime>` — 308 karar var, en büyük dosya 355 KB; **dosyayı açma, ara**. Gerekçe yalnız kararlarda, git log'da yok |
 | **Yapıya dokunacağım** — yeni proje, katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — "ne var" sorusunun tek cevabı |
 | **Bir hata mesajı aldım** | Mesajın metnini `<alan>/notlar/` içinde **ara** — hatırlamaya güvenme. Notlar hata metnini birebir taşır, tetikleyici budur |
 | Domain / iş kuralı konuşulacak | `01-Genel/domain-gereksinimler.md` + `01-Genel/durum.md` |

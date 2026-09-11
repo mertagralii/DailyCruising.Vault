@@ -529,6 +529,8 @@ def main():
     print()
     kapsanan = sorted({no for no, *_ in SENARYOLAR})
     print(f"{len(SENARYOLAR)} senaryo · {len(kapsanan)} kontrol kapsandi: {kapsanan}")
+    print("    NOT: kontrol 6 ve 27 yalniz OLCUM basar (kirmizi hali yok);"
+          "\n         senaryolari bu yuzden yok, kapsanmamis gorunmeleri eksiklik DEGIL.")
     if sessiz:
         print(f"\n{sessiz} kontrol KIRMIZIYA DONMEDI — yazili ama olcmuyor.")
         sys.exit(1)
