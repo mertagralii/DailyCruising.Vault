@@ -1478,7 +1478,6 @@ olduğunu** ölçüyor doğruluğunu değil; kontrol 21 atıf hedefinin **var ol
 olduğunu değil. **Varlık ölçülebiliyor, doğruluk ölçülemiyor** — ve bu sınır her
 ölçütün yanına yazılmadıkça ölçüt olduğundan güçlü sanılıyor.
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Üretilen dosya doğunca otorite el değiştirir — yapılandırma da taşınmalı
 
@@ -1515,3 +1514,35 @@ Envanter bugünü sayar; **yokluğun gerekçesi** elle yazılır. Bu, *"envanter
 üretilir, gerekçe yazılır"* kuralının ikinci yarısının en somut örneği.
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Aynı kontrol farklı sebeplerden ateşlenir — sebebi etiketlemek çözümü belirler
+
+2026-09-12, web oturumunun uyarısı. Kontrol 19 (`beyan geride`) bir günde beş
+kez yandı ve *"unutkanlık"* diye etiketlendi. Ama web'in vakası farklıydı:
+**dosyayı doğru günde yazmıştı, yanlış günü yazmıştı** — gece yarısını geçmiş,
+beyan bir önceki güne düşmüştü. Aynı kontrol, aynı çıktı, **farklı sebep**.
+
+⚠️ Etiket yanlışsa çözüm de yanlış olur: unutkanlığın çözümü hatırlatıcı, gün
+sınırının çözümü ise damgayı **makineye** bırakmak. `tarih-damgala.py` ikisini
+de kapatıyor ama bu tesadüf; bir sonraki sefer kapatmayabilir.
+
+**Kural:** bir kontrol tekrar tekrar yanıyorsa, kaç kez yandığı değil **kaç
+farklı sebeple** yandığı sorulur. Tek sayı, tek sebep sanılıyor.
+
+## Mekanik olan tek komuta iner, olmayan inmez
+
+Aynı konuşmanın ikinci yarısı, web'in ayrımı:
+
+- **Kontrol 19** *"beyan diskle tutarlı mı"* diye sorar — **mekanik**, cevabı
+  diskte, tek komuta indirilebilir (`tarih-damgala.py`).
+- **Kontrol 23** *"koda ne olduğu yazıldı mı"* diye sorar — **mekanik değil**,
+  cevabı yalnız o işi yapan oturumda.
+
+⚠️ Damgalayıcının kontrol 23'ü susturamaması bu yüzden **kusur değil tasarım**:
+susturabilseydi kontrol kendi kendini aklardı ve ölçtüğü şey kaybolurdu.
+
+**Kural:** bir kontrolün sürtünmesini otomatikleştirmeden önce sorulacak soru
+*"bunu betik yapabilir mi"* değil, **"cevabı diskte mi, yoksa yalnız insanda/
+oturumda mı"**dır. İkincisiyse otomatikleştirmek ölçümü öldürür.
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
