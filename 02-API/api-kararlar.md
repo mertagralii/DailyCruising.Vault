@@ -7,6 +7,10 @@ durum: guncel
 
 # API Kararları
 
+📌 26 Ağustos – 4 Eylül arası Claude'un kendi yetkisiyle aldığı kararların
+arşivi ayrı dosyada, **kapalı**: [[api-benim-kararlarim]] — yeni giriş eklenmez,
+`00-Index`'in canlı listesinden 2026-09-11'de çıkarıldı.
+
 **Append-only.** Karar değişirse eskisi silinmez; yeni giriş eskisini iptal eder.
 
 ---
@@ -6732,3 +6736,49 @@ sınayan bir kod tabanı, ya müşteriyi duvara çarptıran ya da iki kez tahsil
 eden bir kodu geçirir.
 
 Aynı desen taşıma farkında da kullanılıyor (`reschedule-payment:{talep}:{n}`).
+
+## 2026-09-11 · Taşımada seferden türeyen İKİ pencere var, ikisi de yenilenir
+
+`Reservations.BoardingTokenExpiresAt` (turun bitişi) ve
+`BoardingTickets.ExpiresAt` (kalkış + 12 saat) **aynı olgunun kopyası değil** —
+biri rezervasyonun kendi jetonunun, diğeri "belgemi kaybettim" yolundan üretilen
+biletin penceresi. Ama **ikisi de seferden türüyor** ve taşımada ikisi de
+yenilenmeli. Sabah yalnız birincisi düzeltilmişti.
+
+**Neden ikisi ayrı pencere:** rezervasyonun kendi jetonu turun sonuna kadar
+geçerli; bilet ise kalkıştan 12 saat sonrasına kadar, çünkü turun gecikmesini
+ve akşam dönüşünü kapsaması gerekiyor. Tek pencereye indirilemezler, o yüzden
+tek kaynak da yapılamıyor — yapılabilecek olan, ikisini **birlikte yazan tek
+bir yol** ve taşıma artık o yol.
+
+⚠️ **Yenilenmediğinde sonucu iskelede görülüyor ve yönü kötü:**
+`FindByTokenHashAsync` bilet jetonunu `ExpiresAt > now` şartıyla arıyor. İleri
+taşımada bilet eski turda ölmüş oluyor, sorgu **hiçbir şey bulamıyor** ve
+okutma *"süresi dolmuş"* bile demiyor — rezervasyon yokmuş gibi davranıyor.
+Panel bu arada biniş belgesini başka bir alandan okuduğu için **"Geçerli"**
+gösterebiliyor.
+
+⚠️ `ReservationService.TicketGrace` `internal` iken taşıma yolu pencereyi
+**göremiyordu** ve kusur oradan doğdu. `public` yapıldı; sabit tek kopya
+kalıyor.
+
+⚠️ **Test neden kaçırdı:** yalnız rezervasyonun alanına bakıyordu. Kusuru web
+tarayıcıda buldu. Ders, sabahki defter kusurunun ikizi: *aynı olguyu iki yerde
+tutan bir sistemde, testin yalnız birine bakması onu ölçmüş saymaz.*
+
+## 2026-09-11 · Ödeme dönüşü ödemenin AMACINI da söylüyor
+
+`POST /api/payments/callback` artık `purpose` döndürüyor:
+`Reservation` | `RescheduleDifference`.
+
+**Neden:** dönüş sayfası farkını ödeyen müşteriye *"Rezervasyonun onaylandı —
+yerin ayrıldı, kodunu not al, biniş belgeni yanına al"* yazıyordu. Müşteri yeni
+rezervasyon yapmamıştı; ekranda **tarihinin değiştiği hiç yazmıyordu**, oysa
+ödemenin tek sebebi oydu.
+
+⚠️ Amaç ödemenin **kendi anahtarından** okunuyor, taşımanın olup olmadığından
+değil. Taşımayı emniyet ağı işi yapmışsa kanca `false` döner ama ödeme yine bir
+taşıma farkıdır; **davranıştan çıkarım** orada yanlış cevap verirdi.
+
+Ayrı kolon açılmadı: anahtar zaten yazılıyor, benzersiz ve geçmişe dönük
+değişmiyor — ikinci bir gerçek kaynağı olurdu.

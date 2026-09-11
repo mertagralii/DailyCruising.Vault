@@ -13,6 +13,30 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (7) — taşıma zinciri web'de uçtan uca doğrulandı; iki kusur daha
+kapandı.** `dotnet test` **775/775**, son commit `cabfbb0`.
+
+Web'in `Collect` koşusu (`P8HCY2Q9` 12.04 → 10.04, +₺3.300) beş senaryonun
+beşini de geçti; farkın defteri `Customer −3.300 · Partner +2.805 ·
+Platform +495` net, toplam yine `Partner 5.100 · Platform 900`.
+
+Kapanan iki kusur — **ikisini de tarayıcı buldu, test değil**:
+- `BoardingTickets.ExpiresAt` taşımada eski turda kalıyordu (`effbfcd`).
+  İleri taşımada müşterinin karekodu **hiç çözülmüyordu**, panel ise
+  "Geçerli" gösteriyordu.
+- Ödeme dönüşü ödemenin amacını söylemiyordu (`cabfbb0`); farkını ödeyen
+  müşteri "Rezervasyonun onaylandı, yerin ayrıldı" ekranına düşüyordu.
+
+⚠️ **Günün deseni:** bugün kapanan beş kusurun **üçünü** canlı/tarayıcı koşusu
+buldu, testler yeşilken. Üçünde de sebep aynı sınıftı — test, sınanan
+davranışın bir parçasını kurulumda varsayıyordu ya da aynı olgunun yalnız bir
+kopyasına bakıyordu → [[api-kararlar]].
+
+⚠️ Yeni araç: `araclar/karar-sembol-denetle.py` — kararlarda anılan
+sembollerin kodda hâlâ var olduğunu denetliyor, taban **26**.
+
+---
+
 **2026-09-11 (6) — `A-164` de kapandı: ödeme tekrar denenebiliyor.**
 `dotnet test` **775/775**, son commit `3c7e470`.
 

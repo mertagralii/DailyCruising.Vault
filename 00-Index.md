@@ -58,7 +58,6 @@ Bu vault, ECC `living-docs-governance` skill'inin dört rolüne göre düzenlenm
 - [[api-kararlar]] — .NET ve mimari kararları
 - [[api-desenler]] — katman, isimlendirme, HTTP, veritabanı kuralları
 - [[api-gorevler]] — API görev panosu (`A-`)
-- [[api-benim-kararlarim]] — 📌 **`/goal` koşusunda aldığım geçici kararlar; Mert'in toplu cevabını bekliyor**
 - [[api-araclar]] — API tarafında hangi araç ne zaman
 - [[api-durum]] — API'nin güncel durumu — **backend oturumu yazar**
 - [[api-notlar]] — Claude'un API gözlemleri (hub) → `02-API/notlar/`

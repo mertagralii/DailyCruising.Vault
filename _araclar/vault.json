@@ -236,6 +236,13 @@
         "betik": "araclar/sozluk-denetle.py",
         "tavan": 0,
         "kaynak": "web-desenler: anahtarlari openapi.json'daki bir enum'un TAM kumesine esit olan ceviri sozlugu `satisfies Record<Enum, string>` ile yazilir. SINIR: eksik anahtar tasiyan sozluk bu olcutten gecer — IHLAL=0, 'butun sozlukler korumali' demek DEGIL"
+      },
+      {
+        "ad": "karar, kodda olmayan sembol aniyor",
+        "alan": "02-API",
+        "betik": "araclar/karar-sembol-denetle.py",
+        "tavan": 26,
+        "kaynak": "CLAUDE.md: karar append-only ve 'karar degisirse yeni giris ekle'. Hicbir sey bir kararin HALA gecerli oldugunu denetlemiyordu; kodla celisen karar, kararsizliktan kotudur cunku okuyan ona guvenir. SINIR: adi duran ama DAVRANISI degismis karari gormez (2026-09-11 ProcessRefundsJob ornegi)"
       }
     ]
   },

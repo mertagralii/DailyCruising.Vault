@@ -1080,7 +1080,6 @@ adı değişirse derleyici konuşur.
 **Bilinen boşluk olarak kayıtlı:** ölçülemeyeni ölçülüyor gibi göstermemek için
 yazıldı → [[genel-kararlar]]
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Açılma sayısı, açılma sebebini söylemez
 
@@ -1135,3 +1134,44 @@ sebebini ve yazan oturumun okumasını saymıyor. **Her ölçütün yanında öl
 yazılmazsa, o ölçüt bir süre sonra kanıt sanılır.**
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Bitirmeden önce — beş madde, hepsi ölçülmüş
+
+Zincirin her adımında bir şey vardı: yazarken `*-desenler`, testte `*-araclar`,
+commit'te [[tercihler]]. **Gözden geçirmede hiçbir şey yoktu** — ve 2026-09-11'in
+en pahalı kusuru tam oradan geçti: fark tahsilatının defteri birim testi yeşilken
+**canlıda yanlıştı.**
+
+1. **Yazdığın korumayı kır, doğru testin kırmızıya döndüğünü gör.** O gün 8
+   mutasyon koşuldu, **2'si hiçbir testi kırmadı.**
+2. **Para ya da durum değiştiren bir yol yazdıysan canlıda bir kez koş.** Birim
+   testi sırayı varsayabiliyor; canlı varsayamıyor.
+3. **Tam süiti koş, dar filtreyi değil.** O gün iki kusur yalnız tam süitte çıktı.
+4. **Mutasyonu geri aldığını ÖLÇ** (`grep`), hatırlama. Bir mutasyon geri
+   alınmayı unutuldu, tam süit yakaladı.
+5. **Mutasyon hiçbir testi kırmıyorsa, önce testin KURGUSUNA bak — korumanın
+   gereksizliğine değil.** İki vakada da ilk refleks *"demek koruma gereksiz"*
+   oldu ve **ikisinde de yanlıştı**, eksik olan kurguydu:
+   - `ResolveRequestAsync` yarış koruması: `etkilenen == 1` → `true` yapıldı, 10
+     testin 10'u yeşil kaldı. Koruma yalnız **eşzamanlı** iki çağıranda anlam
+     taşıyor; servisi sıralı çağırmak yarışı üretmiyor. Ölçüm depo seviyesine,
+     **iki ayrı veritabanı bağlamına** indirilince mutasyon kırmızıya döndü.
+   - `willRetry` durum kontrolü: `== Failed` → `!= Completed` yapıldı, yeşil
+     kaldı. Kurguda `Requested`/`Sent` bir iade **yoktu** — mutasyonun davranışı
+     değiştirdiği tek sınıf kurguda temsil edilmiyordu. Bir `Requested` satır
+     eklenince kırmızıya döndü.
+
+## Ölçüt kendini ölçüyorsa kirlenir
+
+2026-09-11, karar-sembol denetimi: betik `*-kararlar.md`'deki sembol adlarını
+toplayıp kodda arıyor. Bulgularını **açıklamak için** adlarını kendi docstring'ine
+yazdığı anda o adlar "kodda var" sayıldı ve sayı **26'dan 23'e düştü.**
+
+Yani ölçüt, kendi çıktısını kendi girdisine katarak sonucu **kendi lehine**
+değiştirdi. Backend fark etti ve betiği kendi kendini taramaktan çıkardı.
+
+**Kural:** bir ölçüt, ölçtüğü kümenin içinde yer alıyorsa kümeden çıkarılır.
+Bu, *"her ölçütün yanında ölçmediği yazılmalı"* kuralının kardeşi — orada ölçüt
+eksik ölçüyordu, burada **kendini** ölçüyor.
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
