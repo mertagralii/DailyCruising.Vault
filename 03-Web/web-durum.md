@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: web
-guncelleme: 2026-09-11
+guncelleme: 2026-09-12
 durum: guncel
 ---
 
@@ -1361,3 +1361,24 @@ olmayan bir hata duyurulmuş olacaktı.
 ⚠️ Yukarıdaki *"`NotificationOutbox` boş → outbox artık kullanılmıyor"*
 cümlesi **yanlıştı**. Outbox bir **kuyruk**: gönderdiği satırı siliyor,
 yani boş olması başarı demek. Ölçüm yerine çıkarım yapılmıştı.
+
+## 2026-09-12 — iki sayaç üreticiye taşındı (`8bfc630`)
+
+`mimari-cikar.py` iki satır daha basıyor: **yanıt tipi dosyası**
+(`src/lib/api/types`) ve **ölçüm betiği** (`araclar/*.py`).
+
+**Neden kod reposunda bir değişiklik:** ikisi de gece `web-mimari.md`'ye
+**elle** yazılmıştı ve orası append-only anlatı — altı ay sonra *"19 modül
+dosyası"* ile *"30 modül dosyası"* yan yana duracak ve okuyan hangisinin
+güncel olduğunu bilemeyecekti. Üstelik "30" **zaten** üretilen tabloda
+vardı; elle yazmam düpedüz kopyaydı.
+
+⚠️ Bu, aynı gün vault oturumunun bulduğu `41 rota` kusurunun birebir
+aynısı: rota sayısının otoritesi de elle yazılan anlatıda kalmıştı.
+İkimiz de aynı tuzağa aynı gün düştük ve **ikimiz de kuralı biliyorduk**.
+Kuralın kolay atlanan yarısı şu: *bir envanter üretilmeye başlandığı gün,
+o sayıyı okuyan **her yer** yeni dosyaya taşınmalı.*
+
+Anlatıda artık sayı yok, **ne olduğu** var: hangi ekranlar eklendi, hangi
+tip dosyaları, hangi betikler.
+
