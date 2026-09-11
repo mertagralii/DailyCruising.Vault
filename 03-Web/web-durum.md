@@ -1548,3 +1548,47 @@ Gerekçe ikna ediciydi, ölçülmemişti.
 
 tarayıcıda doğrulandı: blog yönetimi ve onay ekranı · 2026-09-12 · src/components/panel/blog-moderation.tsx · 11324d6
 tarayıcıda doğrulandı: yasal metin görüntüleyici · 2026-09-12 · src/components/panel/admin/legal-documents.tsx · 11324d6
+
+## 2026-09-12 · destek talebi kapatılamıyormuş (`54a1e04`)
+
+⚠️ `PATCH /api/support/tickets/{id}` **vardı ve hiçbir yerden
+çağrılmıyordu.** Talep listeleniyor, okunuyor, yanıtlanıyordu ama durumu
+değiştirilemiyordu: personel bir talebi çözdükten sonra listede sonsuza
+kadar *"Açık"* görüyordu.
+
+Durum ve öncelik bağlandı. Tarayıcıda uçtan uca denendi:
+`Open → Answered` (rozet, arkadaki liste satırı ve uç yanıtı üçü birden
+güncellendi) → `Open`'a geri alındı.
+
+⚠️ **Bileşen iki panelde birden kullanılıyor** (yönetim + işletme) ve
+yetenek `yonetim` bayrağının arkasında; işletme paneli bayrağı geçmiyor.
+**Talebi açan taraf, onu kapatan taraf olmamalı.** Bayrak olmasaydı
+yetenek sessizce ikisine de açılırdı.
+
+⚠️ Gövdede yalnız **değişen alan** gidiyor. Üçünü birden göndermek,
+başkasının aynı anda yaptığı atamayı sessizce silebilirdi.
+
+### Temsilci ataması: uç var, liste yok
+
+`assignedToUserId` bilerek bağlanmadı. Atama için *"kime atanabilir"*
+listesi gerekiyor ve `GET /api/platform/staff` **bütün personeli**
+döndürüyor. Doğru küme, `support.assign` yetkisi olanlar — yani cevabı
+**sunucunun yetki kuralı** veriyor, istemcide kurulacak bir liste değil.
+Back-end'den istendi.
+
+Panelde *"Temsilci: Atanmadı"* yazmaya devam ediyor ve bu **doğru**:
+atanmamış olduğu için, ekran eksik olduğu için değil.
+
+### Doğrulanamayan bir ekran ve sebebi
+
+⚠️ `review-moderate.tsx` **açılamadı ve uydurma veri üretilmedi.**
+Ölçüldü: 22 yorumun **22'si de `Approved`**, yani denetim bekleyen yorum
+yok ve bileşen bugünkü veriyle hiç render edilmiyor. Ekran doğru
+davranıyor (onaylanmış yorumda işlem sütunu *"—"*), ama denetim yolu
+görülmedi. Bunu "doğrulandı" saymak, görmediğim bir şeyi görmüş gibi
+yazmak olurdu.
+
+tarayıcıda doğrulandı: destek talebi ekranı · 2026-09-12 · src/components/panel/support-ticket.tsx · 54a1e04
+tarayıcıda doğrulandı: rol oluşturma formu · 2026-09-12 · src/components/panel/admin/role-form.tsx · 54a1e04
+tarayıcıda doğrulandı: personel detayı · 2026-09-12 · src/components/panel/admin/staff-table.tsx · 54a1e04
+tarayıcıda doğrulandı: personel rol ve yetkileri · 2026-09-12 · src/components/panel/staff-roles.tsx · 54a1e04
