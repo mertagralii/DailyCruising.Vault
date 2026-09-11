@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: api
-guncelleme: 2026-09-10
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -13,8 +13,18 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 — rezervasyon taşıma sözleşmesi kararlaştırıldı, taşımanın
+kendisi Mert'te.** `dotnet test` **758/758**, son commit `63f40cd`.
+
+⚠️ **Ölçüm işin boyutunu değiştirdi:** Mert farkın ödeme bağlantısıyla
+kapanmasını seçti, ama o akış sistemde **hiç yok** — `PaymentService` yalnız
+`Pending` rezervasyonda ve tutarın tamamı için çalışıyor. Taşımanın kendisi
+bir günlük iş; farkın kapanması ayrı ve daha büyük → `A-163`.
+
+---
+
 **2026-09-10 — rezervasyon listesi tur türüne göre süzülüyor.**
-`dotnet test` **737/737**. Son commit `560d837`.
+`dotnet test` **751/751**. Son commit `d540fc2`.
 
 ⚠️ **Günün dersi: canlı doğrulama testin görmediğini gördü.** Süzgeci
 canlıda denerken tur türü adlarının İngilizce döndüğü ortaya çıktı —

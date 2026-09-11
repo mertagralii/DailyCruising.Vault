@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: mobil
-guncelleme: 2026-09-09
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -43,6 +43,12 @@ diğerleri anlamlı sırayla yapılamaz.
 - [ ] **M-05** API istemcisi ve oturum akışı · öncelik: orta
       Bağımlı: M-02, M-04 · Uçlar ve şemalar backend'de hazır (`openapi.json`).
       Tipler **üretilecek**, elle yazılmayacak → [[mobil-desenler]]
+      ⚠️ **Üretilen tip sözleşmeyi tam anlatmıyor:** iptal ucunda `reason`
+      zorunlu ama `openapi.json` opsiyonel gösteriyor; derleyici uyarmaz.
+      İstemci yazılmadan önce oku → [[mobil-iptal-ucu-reason-zorunlu]]
+      Aynı not ikinci bir gerekçe taşıyor: elle yazılan enum sözlüğünde eksik
+      anahtarı yakalayacak kapı **yok** (web'de `satisfies` var). Tip üretimi
+      burada tercih değil gereklilik.
       Kabul: bir uç noktadan gerçek veri ekrana düşer; token saklama yeri
       [[mobil-kararlar]]'a yazılır
 

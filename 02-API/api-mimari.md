@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-09
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -75,8 +75,8 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 |---|---|---|
 | `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **84 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
-| `DailyCruising.Infrastructure` | Application | EF Core, **22 yapılandırma**, **68 migration**, **12 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
-| `DailyCruising.Api` | Application + Infrastructure | **45 controller, 154 yol / 200 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Infrastructure` | Application | EF Core, **21 yapılandırma dosyası** (84 entity eşlemesi), **72 migration**, **10 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
+| `DailyCruising.Api` | Application + Infrastructure | **47 controller, 159 yol / 205 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 

@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: api
-guncelleme: 2026-09-10
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -5826,3 +5826,637 @@ diye soracak.
 tamamlayıcısı: orada dal silinmişti çünkü **hiç çalışamazdı**; burada kod
 duruyor çünkü çalışıyor, yalnız iki hâli **ayırt edilemiyor**. Ayrım şu:
 ölçülemeyen bir dal silinir, ölçülemeyen bir *fark* yazıyla açıklanır.
+
+## 2026-09-10 · Kapatma sahibi göçte `Partner` varsayılır — sessiz yetki kaybı olmasın
+
+`A114` mevcut 14 kapatmayı `BlockOwner = 'Partner'` olarak dolduruyor.
+
+**Neden:** `Platform` verilseydi işletmeler bugüne kadar **kendi** koydukları
+kapatmaları bir anda kaldıramaz hâle gelirdi ve bu **hiçbir yerde hata
+üretmezdi** — yalnız ekrandaki düğme kaybolurdu. Sessiz bir yetki kaybı,
+gürültülü bir hatadan çok daha kötü: kimse bildirmez, kimse aramaz.
+
+`Partner` ayrıca **doğru** olan: bu uç açılana kadar kapatma yazabilen tek
+yol işletme paneliydi.
+
+⚠️ Uyarıyı web oturumu yaptı ("varsayılan Partner olmalı, yoksa işletmeler
+kendi blokajlarını kaldıramaz"). Ben migration'ı yazarken **geri doldurmayı
+hiç düşünmemiştim**; `dotnet ef migrations add` de üretmemişti. İki taraf da
+kaçırsaydı migration üretimde mevcut satırlarda kısıtı ihlal edip düşerdi.
+
+## 2026-09-10 · Enum kolonunda "dolu olmalı" kısıtı ile "tanınan değer" kısıtı AYRI
+
+`BlockOwner` iki kısıt taşıyor: `CK_Voyages_BlockOwnerRequired` (kapatmalarda
+dolu, diğerlerinde boş) ve `CK_Voyages_BlockOwner_Enum` (yalnız `Partner` ya
+da `Platform`).
+
+**Neden:** ilkini yazıp ikincisini atlamıştım ve `EnumConstraintTests`
+yakaladı. Kolon `varchar(16)`; değer kısıtı olmadan `'Platfrom'` yazımı da
+kabul edilirdi. O satır ne `Partner` ne `Platform` sayılır, yani işletme
+silme kapısından **geçer** — koruma sessizce çalışmaz.
+
+⚠️ Ders: "alan dolu" ile "alan anlamlı" iki ayrı iddiadır. Enum'u metin olarak
+saklayan her kolonda ikisi de yazılmalı; biri diğerini ima etmiyor.
+
+## 2026-09-10 · Ardışık kapatmalar SUNUCUDA birleştirilir, ölçüt yalnız tarih değildir
+
+`GET /api/platform/calendar/blocks` gün gün duran kapatmaları aralığa
+çeviriyor; ölçüt **tekne + sahip + sebep + ardışık tarih**.
+
+**Neden sunucuda:** kapatma veritabanında gün gün duruyor. Her istemcinin
+kendi birleştirmesi gerekseydi iki istemci er geç farklı birleştirirdi — biri
+sebebi ölçüt sayar, diğeri saymaz. Sayfalama da ancak birleştirmeden sonra
+anlamlı: sayfa başına 25 **gün** değil 25 **aralık** dönüyor, `totalCount` da
+aralık sayıyor.
+
+**Neden ölçüt yalnız tarih değil:** aynı teknede komşu iki gün farklı sebeple
+kapatılmışsa bunlar iki ayrı olaydır; tek satırda gösterilirse sebeplerden
+biri sessizce kaybolur. Sahip de ölçütte: işletmenin kapattığı günle
+platformun kapattığı gün birleşseydi ekran hem "kim koydu" sorusunu
+cevaplayamaz hem de **silinemeyen bir kaydı silinebilir gibi** gösterirdi.
+
+⚠️ `blockIds` çoğul ve öyle olmak zorunda: ekran aralığı tek satır gösteriyor
+ama "satışa aç" dediğinde o aralığın **bütün günlerini** silecek. Tek kimlik
+dönseydi geriye kalan günler ancak takvime bakınca fark edilirdi.
+
+⚠️ **92 gün tavanı buraya KOPYALANMADI.** Takvim ucundaki tavan, o ucun
+aralıktaki her gün için satır üretmesinden geliyor — sınırsız aralık sınırsız
+iş demekti. Burada satır yalnız kapatma olan günlerde var ve sonuç sayfalı;
+sınırı `pageSize` koyuyor. Tavanı "desene uy" diye kopyalamak anlamsız bir
+kısıt eklemek olurdu.
+
+## 2026-09-10 · Durum yazıldıktan sonraki bildirim isteği DÜŞÜREMEZ — kuyruğa alınır
+
+`AccountService`'in altı e-postası `INotificationSender` ile satır içinde
+gönderiliyordu; hepsi `INotificationQueue`'ya taşındı.
+
+**Neden:** gönderim başarısız olduğunda isteğin tamamı 500 dönüyordu ve
+**durum değişikliği geri alınmıyordu**. Parola değiştirmede sonuç şu: parola
+veritabanında değişmiş, kullanıcı hata görmüş. Kullanıcı eski parolayla
+tekrar dener, giremez ve sebebini hiçbir yerden öğrenemez.
+
+⚠️ **Sebep ortam değil sıra.** Kusur yerelde SMTP yakalayıcı kapalıyken
+göründü ve "ortam sorunu" diye kapatılabilirdi. Ama üretimde posta
+sağlayıcısının bir dakikalık kesintisi aynı şeyi yapar — ortam yalnızca
+kusuru **görünür** kıldı.
+
+**Kural:** bir durum değişikliği yazıldıktan sonra yapılan hiçbir yan etki
+(e-posta, SMS, dış çağrı) isteğin sonucunu belirlememeli. Ya kuyruğa alınır
+ya da yutulur; ikisi de yapılmıyorsa iş yarım kalmış gibi görünür, oysa
+tamamlanmıştır.
+
+⚠️ Ölçüm kusurun **tek uçta olmadığını** gösterdi: dokuz çağrının ikisi
+kuyruğu kullanıyordu, yedisi satır içindeydi. Tek ucu düzeltip geçmek
+kusurun kendisini değil örneğini kapatmak olurdu.
+
+## 2026-09-10 · Ortamı ölçüte çevirmek — "yakalayıcı kapalıyken de çalışmalı"
+
+Bu düzeltmenin kanıtı, testi **SMTP yakalayıcı kapalıyken** koşturarak
+alındı; ayrıca satır içi gönderime dönen bir mutasyon aynı koşulda kırmızı
+yandı.
+
+**Neden bu önemli:** yakalayıcı ayaktayken "500 dönmedi" iddiası hiçbir şey
+ölçmüyor — kusurlu kod da o koşulda yeşil kalıyor. Kusuru üreten koşulu
+testin **ölçütü** hâline getirmeden, düzeltmenin çalıştığı iddia edilemez.
+
+Kalıcı test ise yakalayıcıya bağlı değil: giden kutusunda satırın **varlığını**
+arıyor. Satırın varlığı, gönderimin isteğin dışına alındığının doğrudan
+kanıtı ve her ortamda aynı şeyi ölçüyor.
+
+⚠️ Aynı ailenin bir önceki örneği: "test adı ölçtüğünün kanıtı değildir"
+(2026-09-10, `SearchService`). Orada sınır oynatılamadığı için ölçülemiyordu;
+burada koşul kurulamadığı için.
+
+## 2026-09-10 · Ekran metni bir iddiadır ve ölçülebilir
+
+Web oturumu bir toast'un doğruluğunu sordu (*"davet e-postası gönderildi"*)
+ve ölçüm cevabı verdi: e-posta hiç yok, üstelik cümlenin diğer yarısı da
+yanlış — hesabı olmayan kişi zaten eklenemiyor.
+
+**Neden karar olarak yazılıyor:** metin, ucun davranışı hakkında bir iddia.
+Uç değiştiğinde ya da hiç yazılmadığında metin sessizce yalan hâline geliyor
+ve **hiçbir denetim bunu yakalamıyor** — ne test, ne `dogrula.py`, ne tip
+üretimi. Bugün aynı sınıf iki kez çıktı:
+
+1. `A114` blokaj korumasını yazdım, web'deki *"işletme kaldırabilir"* cümlesi
+   yalan oldu. **Web fark etti, ben etmedim.**
+2. `A-158` e-postaları kuyruğa aldı, *"gönderildi"* geçmiş zamanı yanlış oldu.
+   Bunu ben söyledim, web düzeltti.
+
+**Kural:** kural değiştiren bir uç gönderirken *"bu değişiklik hangi ekran
+cümlesini yalanlıyor"* sorusu da cevaplanır ve karşı tarafa yazılır. Uç
+yazarken bu soru kendiliğinden akla gelmiyor — tetikleyicisi mesajın kendisi
+olmalı.
+
+⚠️ Tersi de geçerli ve web'den geldi: yanlış metin yalnız kafa karıştırmıyor,
+**gereksiz iş doğuruyor**. "Gönderildi" deyip gelmeyen e-posta, kullanıcıyı
+sıfırlamayı tekrar tetiklemeye itiyor; her tetikleme uçta eski jetonu
+geçersizleştiriyor. Yani ekran metni doğrudan uç davranışını tetikliyor.
+
+## 2026-09-10 · İptal gerekçesi ZORUNLU, isteğe bağlı değil
+
+`POST /api/reservations/{code}/cancel` artık `reason` istiyor; yoksa
+reddediyor. Bozucu bir değişiklik ve bilerek öyle.
+
+**Neden:** isteğe bağlı olsaydı çoğu istemci göndermezdi ve iade kararını
+veren personel yine gerekçesiz kalırdı — alanın var olma sebebi tam olarak o
+körlüktü. "Alan var ama çoğu kayıtta boş" hâli, alanın hiç olmadığı hâlden
+daha kötü: ekran bir alan gösterir, personel ona güvenir, çoğu zaman boş
+çıkar.
+
+⚠️ **`RefundReason` ile karıştırılmamalı ve karışıklık gerçekti.** Ekranda
+zaten bir "gerekçe" görünüyordu; o platformun muhasebe gerekçesiydi
+("bu para neden iade ediliyor"), müşterinin kararı değil. **Eksik alandan
+daha sinsi bir hâl:** personel kendi tarafının yazdığı gerekçeyi müşterininki
+sanıyordu.
+
+⚠️ `Other` seçilirse açıklama zorunlu — kuralın en kolay kaçış yolu buydu.
+Kural iki yerde: serviste (anlaşılır mesaj) ve veritabanında
+(`CK_Reservations_CancellationOtherNote`, doğrudan yazılan satırı da tutar).
+
+**Enum + serbest metin birlikte:** enum raporlanabilirlik için ("iptallerin
+yarısı hava durumu" ancak sayılabilir alandan çıkar), metin "başka" hâli
+için. Yalnız metin olsaydı sayamazdık, yalnız enum olsaydı gerçek sebebi
+kaçırırdık.
+
+## 2026-09-10 · Geri doldurma, doğru bir varsayılan VARSA yapılır
+
+`A114` mevcut kapatmaları `Partner` diye doldurdu; `A115` mevcut iptalleri
+**boş bıraktı**.
+
+**Neden fark var:** `A114`'te varsayılan **doğruydu** — o uç açılana kadar
+kapatma yazabilen tek yol işletme paneliydi, yani `Partner` ölçülebilir bir
+gerçek. `A115`'te böyle bir gerçek yok: eski iptallerin gerekçesi hiç
+sorulmadı ve hiçbir değer diğerlerinden daha doğru değil.
+
+**Kural:** geri doldurma bir *bilgi* varsa yapılır, alanı doldurmuş olmak
+için değil. Uydurma varsayılan, olmayan bilgiyi varmış gibi gösterir ve
+sonraki okuyan onu veri sanar — üstelik raporda sayılır.
+
+⚠️ Bunun ekran karşılığı da yazıldı: eski iptallerde alan boş geliyor ve
+ekran bunu "gerekçe yok" diye göstermeli, boş bir etiket olarak değil.
+
+## 2026-09-10 · Kolon sınırı uygulamada denetlenir — veritabanına bırakılmaz
+
+İptal açıklamasının 500 karakter sınırı serviste denetleniyor; kolonun
+`varchar(500)` olması yeterli sayılmıyor.
+
+**Neden:** sınır yalnız veritabanındayken Postgres `22001` fırlatıyor,
+controller onu tanımıyor ve istek **500** dönüyor. Kullanıcı *"Beklenmeyen
+bir hata oluştu"* görüyor; doğru eylem — açıklamayı kısaltmak — hiç
+söylenmiyor. Aynı formdaki diğer iki kural anlaşılır `400` veriyordu, yani
+kullanıcı aynı ekranda iki farklı kalitede hata görüyordu.
+
+Desen zaten vardı: altı serviste uzunluk denetimi yazılı. Yeni alan ona
+uymamıştı — **eksik olan kural değil, kuralın uygulanmasıydı.**
+
+⚠️ Sınır sayısı kolonla **aynı** olmalı. Uygulamada daha büyük bir sayı
+yazılsaydı denetim geçer, veritabanı yine düşerdi: iki sınır arasındaki
+boşluk tam olarak hatanın kaçtığı yer.
+
+## 2026-09-10 · Türetilmiş metin kısaltılabilir, kaynak veri kısaltılamaz
+
+Durum geçmişine yazılan cümle (`"Müşteri iptal etti — diğer: …"`) 500
+karakteri aşarsa **kısaltılıyor**; müşterinin açıklaması ise hiç
+kısaltılmıyor.
+
+**Neden:** iki kolon da `varchar(500)`. Açıklama sınıra kadar dolduğunda
+başına eklenen etiket cümleyi taşırıyor ve **geçerli** bir istek `22001` ile
+düşüyordu. Yani uzunluk denetimini eklemek yetmedi — sınırı geçen hiçbir şey
+olmadan taşma üretiliyordu.
+
+Kısaltmanın hangi tarafta güvenli olduğu, hangisinin **yetkili** olduğuna
+bağlı: `Reservations.CancellationNote` veri, `ReservationStatusHistories.Reason`
+onun okunur kopyası. Kopyayı kısaltmak bilgi kaybetmez, kaynağı kısaltmak
+kaybederdi.
+
+⚠️ **Genel kural:** bir alanın uzunluk sınırı, o alandan TÜRETİLEN her metnin
+sınırını da belirler. Türetilen metin kaynaktan uzunsa (etiket, ön ek, birleşim)
+sınır iki yerde birden hesaplanmalı — biri geçse diğeri düşer.
+
+## 2026-09-10 · Bayatlık kapısı, kaynağın kendisini ölçmüyorsa ölçmüyordur
+
+Belge bayatlığını denetleyen yedi test eylem düzeyindeydi; **sorgu
+parametrelerine bakan yoktu**. Sekizincisi eklendi.
+
+**Neden bu bir boşluktu:** var olan bir uca yeni bir süzgeç eklemek hiçbir
+eylem-düzeyi ölçütü değiştirmiyor — yol sayısı aynı, eylem hâlâ belgede,
+cevap tipi hâlâ doğru. Yani belge bayatlıyor ve **her kapı yeşil kalıyor**.
+
+⚠️ **Asıl öğretici olan ön yüzdeki kapı:** üretilen tiple diskteki tipi
+karşılaştırıyor ve ikisi de aynı `openapi.json`'dan geliyor. Bayat kaynak,
+kendisiyle tutarlı bir çıktı üretir; karşılaştırma her zaman geçer. Bir kapı
+**kaynağı** değil kaynağın iki kopyasını karşılaştırıyorsa hiçbir şey
+ölçmüyordur.
+
+**Kural:** bayatlık denetimi, üretilen belgeyi **kodun kendisiyle**
+karşılaştırmalı. İki türevi birbiriyle karşılaştırmak tautolojidir.
+
+⚠️ İlk hâli üç yanlış alarm verdi: karmaşık `[FromQuery]` nesneleri belgede
+kendi alanlarına açılıyor (`SearchRequest` → `regionId`, `adults`…), yani
+koddaki `request` adı belgede hiç geçmiyor. Denetim basit parametrelerle
+sınırlandı — **yanlış alarm veren kapı, kapatılan kapıdır.**
+
+⚠️ Boşluğun gerçekliği **kör testle** ölçüldü: belge bir önceki commit'e
+çekildi, yeni denetim eksik iki parametreyi adıyla söyledi, diğer yedisi
+yeşil kaldı. Yeni bir kapı yazarken onu kırdıracak durumu kurmadan
+"çalışıyor" denemez.
+
+## 2026-09-11 · Rezervasyon taşımanın kuralları — ölçülen ve karara bağlanan
+
+Web, taşıma için altı soru sordu ve varsayım yapmayı reddetti — doğrusu da
+buydu; altısının da cevabı ekranı değiştiriyor.
+
+**Neden:** taşıma, bugüne kadar **salt okunur** olan platform tarafına ilk
+yazma müdahalesi ve bir müşterinin ödediği kayda dokunuyor. Kuralların
+hepsi tek tek yazılmazsa her biri sessizce bir varsayıma dönüşür; para
+söz konusu olduğunda o varsayımın bedelini müşteri öder.
+
+Cevaplar ve gerekçeleri:
+
+**Kupon taşınır, yeniden doğrulanmaz** (öneri; para olduğu için Mert teyit
+etmeli). Ölçüldü: kupon `now`'a göre doğrulanıyor (`PricingService`), kalkış
+tarihine göre değil. Yeniden fiyatlansaydı süresi geçmiş kupon **düşer** ve
+indirim müşteriye **borç** olarak çıkardı. Taşımayı isteyen platform;
+müşterinin yaptığı bir şey yok. Bir nezaketi sessizce borca çevirmek yanlış.
+
+**Ek hizmetler aynen taşınır.** Ölçüldü: `ReservationExtra` **sefere değil
+rezervasyona** bağlı ve fiyatı anlık görüntü (`NameSnapshot`, `UnitPrice`,
+`LineTotalTry`). Aynı tekne, aynı tür → geçerli. Yeniden fiyatlamak,
+sorulmamış bir soruyu cevaplamak olurdu.
+
+**Hedef gün kapalıysa taşıma reddedilir**, ayrı bir kodla. Kapatma tam
+olarak o günü satışa kapatmak için var; üstüne rezervasyon taşımak
+platformun kendi kuralını sessizce delmesi olurdu → [[api-kararlar]]
+2026-09-10 (blokaj sahibi).
+
+**Eski sefer boşalırsa serbest bırakılır**, iptaldeki `VoyageRelease` ile
+aynı yerden — yoksa eski tarih boş bir seferle tutulu kalır ve satılamaz.
+
+**Yeni yetki `platform.reservation.write`.** Ölçüldü: bugün yalnız
+`platform.reservation.read` var ve yalnız Platform Yönetimi'nde. Okuma ile
+"tarihi değiştir + para hareketi başlat" aynı sorumluluk değil; okuma
+ileride Destek Personeli'ne verildiğinde yazma beraberinde gitmemeli.
+
+**`canReschedule` sunucuda ve `canCancel`'dan dar** — yalnız `Paid`.
+`Pending`'de para yok; taşımak bir şey çözmez.
+
+⚠️ **Önizleme ucu, tahsilat kurulmadan yazılmayacak.** `action: "Collect"`
+dönen bir önizleme, arkasında tahsilat yokken **yalan söyler** — personel
+müşteriye telefonda "500 TL fark var" der ve o farkın gideceği bir yol
+olmaz. Sözleşmede `action` ile `available` çakışmasın diye `"Blocked"`
+değeri de eklenmedi: `available: false` + `blockedReason` o işi yapıyor,
+ikisi birden olursa hangisinin otorite olduğu belirsizleşir.
+
+## 2026-09-11 · Taşımada fark ÖNCE tahsil edilir, taşıma sonra yapılır
+
+Mert'in kararı: fark ödeme bağlantısıyla kapanacak ve taşıma ödeme
+altyapısıyla birlikte çıkacak. Sıra sorusunu web sordu: taşıma fark
+ödenmeden mi olacak, ödendikten sonra mı?
+
+**Neden ödeme önce:** iki seçeneğin **başarısızlık hâlleri** karşılaştırıldı,
+mutlu yolları değil.
+
+- **Önce taşı:** ya eski sefer serbest bırakılır — müşteri farkı ödemezse
+  geri alacak yer kalmaz, çünkü eski tarih satılmış olabilir; ya da eski
+  sefer tutulmaya devam eder — bu **ifade bile edilemiyor**, çünkü
+  `Reservations.VoyageId` tek bir alan ve bir rezervasyon iki tarihi birden
+  tutamaz. Başarısızlık hâli **kurtarılamaz**.
+- **Önce tahsil et:** hedef koltuk ödeme sürerken dolabilir; o hâlde fark
+  iade edilir ve taşıma yapılmaz. Başarısızlık hâli **kurtarılabilir** ve
+  iade altyapısı (`Refunds`, `ProcessRefundsJob`) zaten var.
+
+⚠️ **Bedel kabul edildi ve ekranda yazılacak:** ödeme tamamlanana kadar hedef
+tarih ayrılmıyor. Web bu uyarıyı basacak.
+
+⚠️ **Yeni bir `ReservationStatus` GEREKMİYOR** ve bu kararın en değerli yan
+sonucu. Ödeme önce alınınca rezervasyon fark ödenene kadar **hiç
+değişmiyor**: `Paid`, eski tarihinde. "Fark bekleniyor" bilgisi bekleyen
+ödeme kaydından okunuyor. Web bunu en riskli madde olarak işaretlemişti —
+enum'a değer eklemek `REZERVASYON_DURUMU` sözlüğünü, rozet rengini ve
+süzgeci de değiştirecekti.
+
+**Ölçüm kararı verdi, tercih değil:** `SoldSeats` bir tetikleyiciyle
+türetiliyor ve tetikleyici `UPDATE OF "VoyageId"` üzerinde. Yani taşıma tek
+alan değişimi ve kapasite aşımı `CK_Voyages_SoldSeats` ile **veritabanı
+düzeyinde imkânsız** — kod kusuru bile aşamıyor. Taşımanın ucuz ve atomik
+olması, pahalı olanın (para) önce çözülmesini mümkün kılıyor.
+
+Fark azaldığında tahsilat yok: taşıma **anında** yapılıyor, iade arkadan
+başlıyor. `action` üç değer: `Collect` (bekle), `Refund` (hemen taşı),
+`None` (hemen taşı).
+
+## 2026-09-11 · Yetki sabiti eklemek TEK BAŞINA hiçbir şey yapmaz
+
+`Permissions` sınıfına yeni bir sabit eklemek, o yetkiyi var etmiyor. Yetki
+veritabanı katalogunda yoksa `[HasPermission]` onu **hiç kimsede** bulamıyor
+ve uç herkese kapalı kalıyor.
+
+**Neden yazılıyor:** belirti yanıltıcı. `403` dönen bir uç *"benim yetkim
+yok"* diye okunur, *"bu yetki hiç tanımlanmamış"* diye değil — personel kendi
+rolünü suçlar, kimse katalogdan şüphelenmez. Derleme geçer, bütün testler
+geçer.
+
+**Kural:** yeni bir yetki sabiti **her zaman** bir migration ister — biri
+katalog satırı, biri onu bir role bağlayan satır. `PermissionTests` bunu
+artık ölçüyor.
+
+⚠️ **Test ilk koşuşunda başka bir sessiz kusuru yakaladı:** migration'ı elle
+yazmıştım ve `[Migration]` özniteliği **`.Designer.cs` içinde üretiliyor**.
+Öznitelik olmadan EF migration'ı hiç görmüyor: derleme geçiyor,
+`database update` "yapacak bir şey yok" diyor, yetki hiç oluşmuyor. Migration
+dosyası **elle yazılmaz, üretilir**; gövdesi sonradan değiştirilir.
+
+⚠️ Bu, bugünkü ikinci "kapı ölçüyor görünüp ölçmüyor" örneği (birincisi
+OpenAPI sorgu parametreleri). İkisinin de ortak şekli: **yeni bir şey
+eklendiğinde hiçbir sayının değişmemesi.** Uç sayısı aynı, test sayısı aynı,
+derleme temiz — ve eklenen şey çalışmıyor.
+
+## 2026-09-11 · Ölçüm AYIRT EDİCİ değilse kanıt değildir
+
+Web dün "çöken betiğin çıktısı olgu değildir" diye yazmıştı. Bugün daha
+sinsi hâlini buldu: **betik çökmüyor, sessizce başka bir şey ölçüyor.**
+
+Örneği: `set -- $degisken` ile kurulan bir URL'de zsh sözcük bölmesi
+yapmadığı için sorgu parametresi hiç gitmemiş; iki farklı kimlikle yapılan
+iki çağrı aslında **aynı parametresiz çağrıymış** ve ikisi de `200` dönmüş.
+Çıktı makul, sonuç yanlış.
+
+**Neden karar olarak yazılıyor:** aynı kalıbı bu oturumda ben de kullandım
+ve aynı tuzağa düştüm; çıktıdaki bozukluk gözüme çarptığı için fark ettim,
+disiplinle değil. Yani kusur kişisel değil, kalıbın kendisinde.
+
+**Kural:** bir ölçümün kanıt sayılması için sonucunun **ayırt edici** olması
+gerekir. Kontrol sorusu: *"iki farklı girdi aynı sonucu veriyorsa, gerçekten
+iki farklı istek mi attım?"*
+
+Uygulaması: `boatRentalTypeId` doğrulaması katalog kimliğiyle `400`, satış
+kaydı kimliğiyle `200` verdiği için kanıt sayıldı — ikisi de `200` verseydi
+ölçüm hiçbir şey söylemezdi.
+
+⚠️ Aynı ilke **teste** de uygulandı: "doğru değeri döndürüyor" iddiası tek
+başına yetmiyor, iki alanın **birbirinden farklı** olduğu da iddia ediliyor.
+Yoksa iki alanı aynı kaynaktan dolduran bir kod testten geçer ve ekran yine
+`400` alır.
+
+## 2026-09-11 · Para hareketleri rezervasyonun özelliği olarak modellenmiş — sınırı burada görüldü
+
+`POST /reschedule`'ün iade yolu yazılırken ölçüldü ve **verilmiş bir söz
+eksik çıktı:** *"fark azaldığında taşıma anında olur, iade arkadan başlar"*
+denmişti. İade arkadan başlamazdı — **hiç başlamazdı.**
+
+`ProcessRefundsJob` iadeleri **rezervasyondan** sürüyor:
+
+```csharp
+.Where(r => r.Status == ReservationStatus.Cancelled
+         && r.RefundDueTry > 0
+         && !db.Refunds.Any(i => i.ReservationId == r.Id && i.Status != RefundStatus.Failed))
+```
+
+İki sessiz engel:
+
+1. **Yalnız `Cancelled`.** Taşınan rezervasyon `Paid` kalıyor; iş o satırı
+   hiç görmez, para iade edilmez ve **hiçbir yerde hata görünmez**.
+2. **Rezervasyon başına ömür boyu tek iade.** Taşıma iadesi almış bir müşteri
+   sonradan turu iptal ederse iptal iadesi **bloke olur**. Bu, taşımadan
+   bağımsız olarak bugün de var olan gizli bir kısıt: kısmi iade yapılamıyor.
+
+**Neden karar olarak yazılıyor:** ikisi de aynı kök sebebin belirtisi —
+**para hareketleri rezervasyonun bir ÖZELLİĞİ olarak modellenmiş, kendi
+başlarına kayıtlar olarak değil.** `Reservation.RefundDueTry` tek bir sayı,
+`Payment` rezervasyonun tamamını varsayıyor. Bir rezervasyonda birden çok
+para hareketi olabileceği hiç düşünülmemiş.
+
+**Doğru çözüm yama değil sürücüyü değiştirmek:** iade işi iade
+**kayıtlarını** sürmeli. O zaman bir rezervasyonda birden çok iade olur, her
+birinin kendi durumu ve yeniden deneme sayacı olur, "rezervasyon hangi
+durumda" sorusu iadeyi ilgilendirmez.
+
+⚠️ **Yazılmadı ve bilerek yazılmadı.** `None` yolunu yazıp `Refund`'ı
+çalışmıyorken bırakmak, aynı gün iki kez konuşulan kusurun kendisi olurdu:
+**çalışıyor görünüp çalışmayan bir kapı.** Karar Mert'te.
+
+Faydası taşımayla sınırlı değil: kısmi iade, çoklu iade ve fark tahsilatı
+aynı düzeltmeyle mümkün hâle geliyor.
+
+## 2026-09-11 · Benzersizlik kısıtı, engellemek İSTEDİĞİN şeyin üzerinde olmalı
+
+`UX_Refunds_ReservationId_Aktif` rezervasyon başına tek aktif iadeye izin
+veriyordu. Kısıt `Refund.IdempotencyKey` üzerine taşındı.
+
+**Neden:** kısıt "aynı iptali iki kez iade etme" derdiyle konmuştu ama
+**"bu rezervasyona ikinci bir iade hiç yapma"** diyordu. İkisi aynı şey
+değil ve fark iki yeteneği birden imkânsız kılıyordu: kısmi iade ve taşıma
+farkının iadesi.
+
+Anahtar **amacı** adlandırıyor (`cancel:{rez}`,
+`reschedule:{rez}:{sefer}`), yani korunan şey değişmedi — aynı olay hâlâ iki
+kez iade edilemiyor — ama farklı olaylar edilebiliyor.
+
+⚠️ **Genel kural:** bir benzersizlik kısıtı yazarken sorulacak soru "neyi
+tekrar etmesin" değil, **"hangi OLAYIN tekrarını engelliyorum"**. Olayı
+adlandıran bir anahtar yoksa kısıt en yakın kimliğe konur ve o kimlik
+genelde fazlasını yasaklar.
+
+## 2026-09-11 · Erken genelleme, ölçülmeyen bir regresyon üretti
+
+İade tamamlandığında rezervasyon ve ödeme koşulsuz `Refunded` işaretleniyor.
+Kısmi iadeye hazırlık diye buraya `amount >= payment.AmountTry` koşulu
+eklendi — **ve yanlıştı.**
+
+**Neden yanlış:** bu metot yalnız İPTAL iadesini yürütüyor. Kalkışa 24-48
+saat kala yapılan iptalde oran **%50**; tutara bakan koşul o iptalleri
+sessizce `Cancelled` bırakırdı — müşterinin parası iade edilmiş, kayıt iade
+edilmemiş görünürdü.
+
+⚠️ **Kusuru mutasyon buldu, ben değil.** Koşulu kaldıran mutasyon çalıştırıldı
+ve **hiçbir test kırmızıya dönmedi** — yani hem koruma hem kusur
+ölçülmüyordu. Var olan test tam iadeyi ölçüyordu ve %50 hâlini hiç
+görmüyordu.
+
+**Ders:** gelecekteki bir ihtiyaç için bugünkü doğru davranışı koşula
+bağlamak, ölçülmeyen bir regresyon üretir. Kısmi iade **başka bir yoldan**
+geçecek; hazırlık o yolu yazarken yapılır, bu yolu bozarak değil. Koşul
+kaldırıldı, gerekçesi koda yazıldı ve %50 hâlini ölçen test eklendi.
+
+## 2026-09-11 · Deneme sayacı SATIRDA, satır sayarak değil
+
+İade denemeleri her seferinde yeni bir `Failed` satırı açarak sayılıyordu.
+Sayaç `Refund.Attempts` kolonuna taşındı (`A118`).
+
+**Neden:** benzersizlik amaç anahtarına taşınınca aynı olay **tek satır**
+oldu ve satır sayan mantık sessizce hep `1` döndürmeye başladı — iş beş
+yerine **bir kez** denerdi ve kimse fark etmezdi. Kusuru var olan test
+yakaladı ("beklenen 5, görülen 1"), yani şans değil ölçüm.
+
+⚠️ Ders: bir sayımı **kayıt sayısına** dayamak, kayıt modelinin değişmeyeceği
+varsayımıdır. Model değiştiğinde sayım bozulur ve bozulduğu yerde hata
+vermez — yalnız daha küçük bir sayı döndürür.
+
+`LastAttemptAt` de eklendi: tek satırda `CreatedAt` ilerlemiyor, geri çekilme
+süresi ondan ölçülemezdi.
+
+## 2026-09-11 · Küresel tarayan bir iş, testlerin küresel iddialarını bozar
+
+İade işi iki aşamalı hâle gelince birinci aşama **bütün** iptal edilmiş
+rezervasyonları taramaya başladı. Paylaşılan test veritabanında bu, başka
+testlerin kayıtlarının bu işin günlüğüne düşmesi demek.
+
+Bir test `Assert.Empty(entry.Warnings)` diyordu — yani **küresel sessizlik**.
+İzole koştuğunda geçiyor, takımda düşüyordu.
+
+**Neden karar olarak yazılıyor:** aynı sınıf bugün **üçüncü kez** çıktı
+(`LastAdmin` testi, `OverviewTests` yıl penceresi, şimdi bu). Ortak şekli:
+**küresel bir iddia, paylaşılan veritabanında başka testleri ölçer.**
+
+İki taraflı düzeltildi: iş, beklenen hâlleri (iade zaten başlatılmış gibi)
+uyarı değil **ayrıntı** seviyesinde yazıyor — küresel tarayan bir aşamada
+"beklenen sonuç" gürültü üretmemeli; test ise sessizlik yerine **kendi
+rezervasyonu için kayıt açılmamış olmasını** ölçüyor.
+
+## 2026-09-11 · Bekleyen taşımada iptal kazanır, talep düşer
+
+Mert'in kararı: bekleyen bir taşıma talebi varken rezervasyon iptal
+edilirse **iptal geçerli olur**, talep düşer, bağlantı o anda geçersizleşir
+ve fark ödenmişse **otomatik** iade edilir.
+
+**Neden:** müşteri telefonda "iptal edin" derken sistemin personeli
+durdurması kötü bir deneyim; üstelik yarışın bedeli artık
+**kurtarılabilir** — çoklu iade mümkün olduğu için ödenen fark iade
+edilebiliyor. Alternatif (bekleyen talep varken iptali reddetmek) personeli
+iki adımlı bir törene zorlardı ve acil durumda engel olurdu.
+
+⚠️ Aynı ayrım dün taşımanın sırasını da belirlemişti: **kurtarılabilir
+başarısızlık, kurtarılamaz olana tercih edilir.** Burada üçüncü kez
+uygulandı.
+
+⚠️ Düşen talep **silinmiyor**, `Cancelled` olarak duruyor. Silinseydi iptal
+edilmiş bir rezervasyonda "neden iade var" sorusunun cevabı kaybolurdu:
+personel `reschedule:` anahtarlı bir iadeyi hata sanardı.
+
+## 2026-09-11 · Bağlantı yeniden gönderildiğinde süre YENİLENİR
+
+**Neden:** eski `expiresAt` korunsaydı, süresi dolduğu için yeniden
+gönderilen bağlantı **doğduğu anda ölü** olurdu — personel gönderir, müşteri
+tıklar, "süresi dolmuş" görür. Yeniden göndermenin tek anlamı süreyi
+tazelemek.
+
+Süre **24 saat** ve alan olarak dönüyor. Kodda sabit tutulup ekranda tekrar
+yazılsaydı iki yerde iki gerçek olurdu; ekran "X'e kadar geçerli" derken o
+saat uçtan gelmeli.
+
+## 2026-09-11 · Taşıma fiyat anlık görüntüsünün TAMAMINI yeniler
+
+Taşıma yalnız `TotalTry`'ı güncelliyordu. `CK_Reservations_TotalTry` isteği
+reddetti: tutar ile `ListTotal × ExchangeRate` birbirini tutmak zorunda.
+
+**Neden önemli:** kısıt olmasaydı kayıt sessizce tutarsız kalırdı ve
+rezervasyonun cevaplamak zorunda olduğu *"hangi fiyattan alındı"* sorusu
+yıllar sonra **yanlış** cevaplanırdı — hiçbir yerde hata görünmeden.
+
+Artık liste tutarı, para birimi, kur, kur tarihi, birim fiyatlar **ve KDV /
+komisyon oranı** hedef günden yenileniyor. Sonuncusu ayrıca önemli: oran
+değişmişse hakediş yeni orandan hesaplanmalı, yoksa işletmeye eski orandan
+ödenir.
+
+⚠️ Ders: bir kaydın **türetilmiş** alanı güncellenirken, o türetmenin
+girdileri de güncellenmeli. Kısıt burada bir kusuru değil, **eksik bir
+düşünceyi** yakaladı — tutarın nereden geldiğini hiç sormamıştım.
+
+## 2026-09-11 · Taşımada fark varsa rezervasyona DOKUNULMUYOR
+
+`POST /reschedule` fark artıysa taşımayı yapmıyor; bekleyen talep açıp
+`moved: false` dönüyor.
+
+**Neden:** önce taşıyıp sonra tahsil etmek, müşteri ödemediğinde geri
+dönülemez bir hâl bırakır — eski tarih o arada satılmış olabilir ve
+rezervasyonun döneceği yer kalmaz. Talep açmak ise hiçbir şeyi bozmuyor:
+süresi dolarsa kayıt `Expired` olur ve rezervasyon hiç değişmemiş olarak
+durur.
+
+⚠️ Bedeli kabul edildi ve ekranda yazılıyor: **hedef koltuk bu sırada
+ayrılmıyor.** Dolarsa fark iade edilir — yani başarısızlık kurtarılabilir
+kalıyor. Aynı ayrım bu modülde üçüncü kez karar verdi.
+
+⚠️ `moved: false` bir hata değil. Uç `200` dönüyor ve ekran "tarihiniz
+değişti" cümlesini yalnız `moved: true` iken kuruyor.
+
+## 2026-09-11 · Taşıma, seferden TÜRETİLEN her şeyi yeniler — jeton dahil
+
+Web tarayıcıda buldu: taşınan rezervasyonda `BoardingTokenExpiresAt` **eski
+turun bitişinde** kalıyordu. Ekranda biniş kartı "24 Mart" yazarken altında
+"Geçerlilik 25 Mart" yazıyordu.
+
+**Neden ciddi:** geriye taşımada zararsız (jeton fazladan izin verir), ama
+**ileri** taşımada jeton yeni tarihten önce ölüyor — müşteri iskeleye gelir,
+karekodu okutulmaz, kimse sebebini anlamaz ve ekran "Belge: Geçerli" bile
+gösterebilir.
+
+⚠️ **Aynı ailenin ikinci örneği:** aynı gün `CK_Reservations_TotalTry` fiyat
+anlık görüntüsünün yenilenmediğini yakalamıştı. İkisinin ortak dersi:
+**bir kaydı başka bir kayda bağlarken, o bağdan TÜRETİLMİŞ ve SAKLANMIŞ her
+alan da yenilenmeli.** Hesaplananlar kendiliğinden izler; saklananlar
+izlemez ve sessizce yalan söyler.
+
+Ölçüldü: seferden türetilip saklanan tek alan buydu. `canCancel` ve iade
+oranı **hesaplanıyor** (`RefundPolicy.For(Voyage.StartsAt, …)`), yolcu
+listesinde tarih yok, hatırlatmalar zamanlanmış işten gidiyor.
+
+## 2026-09-11 · "Ateşlenemeyen kapı" hükmü ÖLÇÜLMEDEN verilmez
+
+"Jeton yoksa geçerlilik yazma" koruması yazıldı, testi düştü ve ilk refleks
+şu oldu: *"bu hâl hiç oluşmuyor, kapıyı silmeliyim"* — 2026-09-09'da
+yazılan kendi kuralıma dayanarak.
+
+**Neden:** bir dalın "hiç çalışamayacağı" hükmü, kodun okunuşundan değil
+**verinin ölçümünden** çıkar. Burada okuma yanıltıcıydı — rezervasyon üretim
+yolundan geçerken alan hep doldurulduğu için dal ölü görünüyordu.
+
+**Ölçüm tersini söyledi:** geliştirme veritabanındaki 53 rezervasyonun
+**3'ünde** o alan boş. Hâl gerçek, kapı ölü değil; yanlış olan **testti** —
+üretim yolundan geçen rezervasyonun jetonu hep dolu geliyor ve testin boş
+hâli açıkça kurması gerekiyordu.
+
+⚠️ **Ders:** "bu dal hiç çalışamaz" bir hüküm, sezgi değil. 09-09'da o hüküm
+doğruydu ve ölçülmüştü (çağıranın yetkisi zaten var). Burada ölçülmeden
+verilseydi **canlı bir koruma silinecekti**. Kuralın kendisi değil,
+uygulanma biçimi tehlikeli: kuralı hatırlamak onu ölçmenin yerine geçmez.
+
+## 2026-09-11 · Taşıma iadesi deftere HİÇ yazmıyor — üçüncü kez aynı kök sebep
+
+Web'in `Refund` koşusundan sonra ölçüldü: iade `Completed`, sağlayıcı kimliği
+alınmış — yani para hareket etmiş — ama `LedgerEntries` içinde **tek iade
+satırı yok**.
+
+**Neden:** `LedgerService.PostRefundAsync` tutarı rezervasyonun **iptal
+alanlarından** okuyor (`CancellationRefundRate`, `RefundDueTry`). Taşıma
+iadesinde rezervasyon iptal edilmiyor, iki alan da boş, metot
+`LedgerException` fırlatıyor ve defter yazılmıyor. İade kaydı yine de
+tamamlanmış görünüyor: **para çıkıyor, kayıt yok.**
+
+⚠️ **Üçüncü kez aynı kök sebep.** Sırasıyla: iade işi rezervasyondan
+sürülüyordu · `Refund` benzersizliği rezervasyon başınaydı · şimdi defter
+rezervasyonun iptal alanlarından okuyor. Hepsi tek varsayımın yüzleri:
+**para hareketleri rezervasyonun bir ÖZELLİĞİ olarak modellenmiş.**
+
+⚠️ **Yazılmadı ve bilerek yazılmadı — bu bir muhasebe kararı.** Kısmi iadede
+komisyon ile hakediş hangi orandan geri alınacak ve taban hangisi: **ödenen
+tutar** mı, rezervasyonun **güncel** toplamı mı? Taşımadan sonra ikisi
+farklı. Yanlış bölüştürme işletmeye eksik ya da fazla ödeme demek ve ancak
+ay sonu mutabakatında görülür. Karar Mert'te.
+
+## 2026-09-11 · Kendi ölçümümü yanlış okudum — ders ölçümün kendisinde değil
+
+Defterde `Collection -4350` ve `PartnerEarning -3697.50` satırlarını görüp
+"iade tamamı ters kaydetmiş" hükmü vermek üzereydim. Yanlıştı: o satırlar
+**6 Eylül'deki ödemenin** normal çift kayıtlarıydı (müşteri −, platform +).
+
+**Neden yazılıyor:** ölçüm doğruydu, **okuma** yanlıştı. `EntryType`'a göre
+gruplayıp işaretlere bakmak, çift kayıtlı bir defterde ters kayıt izlenimi
+veriyor. Satırları **zamana göre** sıralamak gerçeği hemen gösterdi.
+
+⚠️ Ders: bir ölçümün çıktısı yorum gerektiriyorsa, yorumu da doğrulayan
+ikinci bir kesit alınmalı — burada o kesit `CreatedAt`'ti. Bugün üç kez
+"ölçüm doğru görünüyor ama başka şeyi ölçüyor" yaşandı (zsh sözcük bölmesi,
+çöken betik, bayat süreç); bu dördüncüsü ve farkı şu: **araç değil okuma
+hatalıydı.**

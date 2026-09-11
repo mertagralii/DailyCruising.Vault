@@ -355,4 +355,78 @@ tutulmaz.** `sayacYaz` effect bağımlılığı olsaydı, satır içi kapanış 
 effect koşar, sayaç yazılır, render tetiklenir — sonsuz döngü. Bileşen
 çağıranın yazım şekline bağlı olmamalı.
 
+## Aynı ekranda iki aktörün gerekçesi varsa, etiket **kimin konuştuğunu** söyler
+
+İade ekranında "Gerekçe" etiketli tek bir kutu vardı; içindeki değer
+platformun muhasebe gerekçesiydi (`RefundReason`), müşterinin beyanı değildi.
+Kutu **doluydu**, yani kusur boşluk olarak görünmedi — personel gördüğünü
+doğru sandı.
+
+Kural: bir ekranda aynı kavramın iki aktöre ait sürümü varsa (müşterinin
+gerekçesi / platformun gerekçesi, müşterinin notu / personelin notu) etiket
+aktörü **yazmak zorunda**, ve ikisi **yan yana aynı blokta basılmaz**.
+
+⚠️ Nötr etiket en tehlikeli hâl: "Gerekçe", "Not", "Durum" gibi sözcükler iki
+anlamı da taşıyabildiği için okuyan kişi eksik bilgiyi fark etmiyor, gördüğünü
+aradığı şey sanıyor.
+
+## Boş bir alanın **üç sebebi** vardır; üçü ayrı cümle ile basılır
+
+*Okunuyor* · *okunamadı* · *kayıtta yok*. Aynı boşlukla gösterilirse hata veri
+yokluğu gibi okunur.
+
+⚠️ Ölçülmüş bedeli: müsaitlik ekranı sekiz takvim isteğinin 400 dönmesini
+per-tekne `catch { return [] }` ile yutup ekrana *"0 kapatma"* yazdırdı
+(2026-09-10). Ekran doğru görünüyordu ve yanlıştı.
+
+⚠️ "Kayıtta yok" hâli de **sebebini** söyler: alan sonradan eklendiyse eski
+kayıtlarda boştur ve bu bir kusur değil. Boş etiket basmak yerine *"Gerekçe
+yok."* + tek cümle gerekçe.
+
+## Zorunluluk üretilen tipten okunamıyorsa, çağıranlar **elle** bulunur
+
+`CancelReservationRequest.reason` şemada nullable ve `required` dizisi yok;
+zorunluluk yalnız sunucu kodunda. Üretilen tip alanı opsiyonel gösterdiği için
+`tsc` · `lint` · `build` üçü de temiz geçti ve müşterinin iptal ekranı **kırık
+olarak** durdu — uç her isteği reddediyordu.
+
+⚠️ Böyle bir alan değiştiğinde tek güvenilir adım `grep` ile **bütün
+çağıranları saymak**. Tip sistemi bu sınıfta sessizdir.
+
+## Ölçüm betiği de bir veri yoludur — çöken betiğin çıktısı olgu değildir
+
+Tek kullanımlık bir Python betiğiyle uç parametrelerini listeledim; betik
+`format` çağrısında `TypeError` ile çöktü ve çökmeden önce **ilk yedi**
+parametreyi bastı. Çöktüğü parametre tam olarak aradığım olandı
+(`minTotal`'in şema tipi `["null","number"]`, yani bir liste). Yarım çıktıyı
+tam liste sandım ve back-end'e *"alan belgede yok"* diye bildirdim — oysa
+üreteç onu görmüş ve **aynı turda benim commit'ime yazmıştı**
+(`uretilen.ts:11665`).
+
+⚠️ Bu, projenin en sık kusurunun üçüncü yüzü: **hata, veri yokluğu gibi
+okunur.** İlk ikisi üretim kodundaydı (müsaitlik ekranı sekiz takvim hatasını
+*"0 kapatma"* yazdı; iade ekranı okunamayan gerekçeyi boş gösterecekti).
+Üçüncüsü **ölçüm aracındaydı** ve bu yüzden daha tehlikeli: üretim kodunu
+ölçümle yakalıyoruz, ölçümü yakalayan bir şey yok.
+
+Kural: tek kullanımlık betikte bile çıktı **sayıyla doğrulanır**
+(`"12 parametre bekleniyordu, 7 basıldı"`) ya da çökme açıkça *"ölçüm
+başarısız"* diye basılır. "Traceback ekranda görünürdü" yetmiyor — makul
+görünen yarım çıktı, görünmeyen bir traceback'ten daha çok ikna ediyor.
+
+## Kaynağın iki kopyasını karşılaştıran kapı hiçbir şey ölçmez
+
+`npm run build` içindeki `tip-uret --kontrol`, ürettiği tipi diskteki tiple
+karşılaştırıyor. İkisi de aynı `openapi.json`'dan geliyor: kaynak bayatsa
+**bayat kaynak kendisiyle tutarlı bir çıktı üretir** ve karşılaştırma her
+zaman geçer.
+
+⚠️ Bu kapı tipin **üretilmiş olduğunu** ölçüyor, **güncel olduğunu** değil.
+Ön yüzde belgeyi üreten taraf olmadığı için burada kapatılacak bir yer de yok;
+bayatlığın ölçüleceği yer belgeyi üreten taraf, yani API reposu. Orada sekizinci
+denetim olarak duruyor (back-end `fe81262`) ve **kör testle** doğrulandı:
+belge bir önceki commit'e çekildi, denetim eksik iki parametreyi adıyla söyledi,
+diğer yedisi yeşil kaldı. Bir kapıya güvenmenin gerekçesi yazılı olması değil,
+**kırdırılmış olmasıdır**.
+
 İlgili: [[web-kararlar]] · [[web-durum]]

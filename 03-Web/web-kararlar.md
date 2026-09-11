@@ -1965,3 +1965,170 @@ doğrudan tekne seçebiliyor, o durumda kutu boş kalır. `hepsi={false}` seçen
 seçilmedi"* demek.
 
 İlgili: [[web-desenler]] · [[web-durum]] · [[yayin-oncesi]]
+
+---
+
+## 2026-09-10 — Tarayıcı testi: beş kusur, hepsi ölçümle bulundu
+
+**Karar:** panelde yazılan her ekran, uçtan uca çalıştığı doğrulandıktan
+sonra bir de **tarayıcıda gezilerek** denenir; derleme/lint/tip temizliği
+"denendi" saymaz.
+
+**Neden:** bu turda çıkan beş kusurun **beşi de** derlemeden, lint'ten ve tip
+denetiminden geçiyordu. Hiçbiri "çalışıyor mu" sorusuyla görünmüyor; hepsi
+"ekranda ne yazıyor, ne kadar yer kaplıyor, kime söylüyor" sorusuyla çıktı.
+
+**Bağlam:** Mert giriş yaptı, ben onun oturumundan paneli gezerek test ettim
+(parolaya dokunmadım). Bugüne kadar yazılan hiçbir şey tarayıcıda
+denenmemişti; bir turda **beş kusur** çıktı ve **hiçbiri** derleme, lint ya da
+tip denetiminden geçmiyordu — beşi de yalnız ekranda görünüyor.
+
+### 1. Aynı adlı seçenekler ayırt edilemiyordu
+
+`GET platform/partners` ölçüldü: altı işletme, ticari adı **iki** farklı değer
+("Mavi Yolculuk" üç kez), `legalName` **de** aynı. Kutuda hangisini seçtiğini
+anlamanın yolu yoktu.
+
+⚠️ Asıl bulgu ayırt etme değildi: **altı işletmenin dördünde hiç tekne yok.**
+Onu seçen kişi altta boş bir ekran görüyordu. Adın yanına tekne sayısı kondu —
+hem ayırt ediyor hem "burada tekne var mı" sorusunu seçmeden önce cevaplıyor.
+
+⚠️ Teknesi olmayan işletmede kutu **basılmıyordu** (boş liste = kutu yok
+kuralı, doğru) ama yerine **hiçbir şey** de basılmıyordu. Kutu basmamak doğru,
+**sessiz kalmak** değildi: artık "Bu işletmenin yayında teknesi yok." yazıyor.
+
+### 2. `aspect-square`'in tavanı yoktu
+
+Takvim hücresinin yüksekliği genişlikten türüyordu. Aynı takvim iki farklı
+genişlikte basılıyor: modalda ~100px, platform panelinin geniş kartında
+**~150px**. Gömülü takvim ekranın yarısını boş kutuyla dolduruyor, bir ay iki
+ekrana yayılıyordu.
+
+⚠️ **Bileşeni ikinci bir yüzeye taşımak, ölçüsünü de taşımaz.** Kalıp prop'u
+eklerken (`kalip: "modal" | "gomulu"`) davranışı düşündüm, **ölçüyü
+düşünmedim** — ve ölçü, bileşenin çalıştığı genişliğe bağlıydı.
+
+### 3. Pasif düğme sebebini söylemiyordu
+
+"Satışa kapat"ı pasifleştiren **iki** koşul var (seçimde satılmış/teklifli gün
+var · seçilenlerin hepsi zaten kapalı). Metin yalnız birincisini yazıyordu;
+ikincisinde düğme sessizce pasifleşiyor ve altında hâlâ "ikinci bir güne tıkla"
+yazıyordu.
+
+⚠️ Kural: **bir kontrolü kapatan her koşulun ekranda karşılığı olmalı.** Biri
+yazılıp diğeri atlanınca kusur daha da gizli oluyor — kullanıcı metnin var
+olduğunu biliyor, o yüzden okuduğuna güveniyor.
+
+### 4. Metin kime söylendiğini bilmiyordu
+
+*"Yalnız sen ve platform görür"* işletme paneli için yazılmıştı; aynı takvim
+platform panelinde de basılıyor ve orada cümle kendine "sen ve platform"
+diyordu. Söylenmesi gereken tek şey sabit: **müşteri görmüyor.**
+
+⚠️ Paylaşılan bileşendeki metin, **iki yüzeyde de doğru olan** cümleyi
+kurmalı. Yol prop'u eklerken metinler gözden geçirilmedi.
+
+### 5. Etkin modülün adresi yoktu
+
+Panel her yenilemede "Genel bakış"a dönüyordu: modül yalnız istemci
+durumuydu. `PanelShell` artık `?m=<slug>` yazıyor, `/admin` sunucu tarafında
+onu okuyor.
+
+⚠️ `history.replaceState` kullanıldı, `router.push`/`replace` **değil**:
+yönlendirici çağrısı sunucu bileşenini yeniden çalıştırır ve panelin bütün
+verisini yeniden çeker — modül değiştirmek her seferinde ağ isteği olurdu.
+`replaceState`, `pushState` de değil: her tıklama geçmişe kayıt eklerse geri
+tuşu panelde gezinir, kullanıcı siteye dönemez.
+
+⚠️ Kendi rotası olan modüle (`/admin/tekneler`) dokunulmuyor — orada `?m=`
+yazmak aramanın ve sayfalamanın bağlandığı yolu bozardı.
+
+### Ders
+
+**Beş kusurun beşi de "çalışıyor mu" sorusundan değil, "ekranda ne görünüyor"
+sorusundan çıktı.** Uçtan uca yazma yolu (kapat → uçtan geri oku → aç) ilk
+denemede doğru çalıştı; kusurların hepsi çevresindeydi: seçenek adı, hücre
+ölçüsü, pasif düğmenin sebebi, cümlenin muhatabı, adres. Bunların hiçbirini
+tip sistemi, lint ya da build yakalayamaz.
+
+Yan kazanç: `boat-calendar.tsx`'in iki sabit hex rengi belirtece çevrildi,
+sabit renk borcu **79 → 78**.
+
+İlgili: [[web-desenler]] · [[web-durum]]
+
+
+## 2026-09-10 · İki gerekçe karıştırıldı: `RefundReason` müşterinin sözü sanıldı
+
+Mert iade ekranına bakıp sordu: *"iyide müşteri iptal etmiş de bir iptal
+sebebi yok mu? İade et'e bastığımda bu müşterinin neden iade başlattığını da
+görmem gerekiyor benim yoksa ben ne bileceğim"*.
+
+Ekranda **"Gerekçe"** etiketli bir kutu vardı ve dolu görünüyordu. İçindeki
+değer `RefundReason` — **platformun muhasebe gerekçesi** ("Müşteri iptali",
+"Hava muhalefeti"). Müşterinin kendi beyanı ise hiçbir yerde yoktu: alan
+şemada da yoktu.
+
+**Neden kusur ekranda görünmedi:** kutu boş değildi. Tek kayıtlık dev
+verisinde `RefundReason = CustomerCancellation` yazıyordu, ekran *"Müşteri
+iptali"* basıyordu ve bu cümle müşterinin gerekçesi gibi **okunabiliyordu**.
+Yani ekran yalan söylemiyordu, **başka bir şeyin cevabını veriyordu** — boş
+bir alan fark edilirdi, dolu ve yanlış olan edilmedi.
+
+**Ne yapıldı:** back-end (`b07da48`) `CancellationReason` + `CancellationNote`
+alanlarını ekledi ve `reason`'ı iptal ucunda **zorunlu** yaptı. Ön yüzde:
+
+1. `IPTAL_SEBEBI` sözlüğü `src/lib/api/types/reservation.ts`'e kondu —
+   **iki** çağıran var (müşterinin iptal ekranı kutuyu basıyor, personelin
+   iade ekranı ham değeri çeviriyor), yani ikinci kopya yazılmadan üçüncü
+   dosyaya çıkarıldı.
+2. İade modalında müşterinin gerekçesi **ayrı bir kutuda, en üstte**; platform
+   kutusunun etiketi *"İade gerekçesi · platform kaydı"* oldu ve altına
+   *"Bu bizim muhasebe kaydımız; yukarıdaki müşterinin kendi beyanı"* yazıldı.
+   İkisini aynı etiketle yan yana basmak bugünkü karışıklığı sürdürürdü.
+3. Rezervasyon ayrıntısına `IptalKarti` eklendi — yalnız `cancelledAt` dolu
+   kayıtta basılıyor.
+
+**Neden:** aynı ekranda iki farklı aktörün gerekçesi varsa, **etiket
+kimin konuştuğunu söylemek zorunda**. "Gerekçe" kelimesi tek başına bunu
+söylemiyor ve okuyan kişi eksik olanı değil, gördüğünü doğru sanıyor.
+
+### Üç hâl, üç cümle
+
+`MusteriGerekcesi` dört durum ayırıyor: *okunuyor* · *okunamadı* · *kayıtta
+yok* · *var*. "Okunamadı" ile "gerekçe yok" aynı boşlukla gösterilmiyor.
+
+⚠️ **Neden bu kadar titiz:** aynı oturumda müsaitlik ekranı sekiz takvim
+hatasını per-tekne `catch { return [] }` ile yutup ekrana *"0 kapatma"*
+yazdırdı. Yutulan hata **veri yokluğu gibi okunur** ve personel kör karar
+verdiğini bilmez. Burada yanlış karar **gerçek parayı** geri ödemek.
+
+⚠️ Eski iptallerde alan **bilerek boş** — geçmiş kayıtlara uydurma gerekçe
+yazılmadı. Ekran bunu *"Gerekçe yok."* diye yazıp sebebini de söylüyor
+(alan 10 Eylül'de eklendi · iptali işletme/platform yaptıysa da boş kalır).
+
+### Şemaya bakan yanılır
+
+`openapi.json`'da `reason` **nullable** ve `CancelReservationRequest.required`
+dizisi **`None`**. Zorunluluk C# tarafında (`ReservationService.CancelAsync`).
+Yani üretilen tipler alanı opsiyonel gösteriyor, `tsc` temiz geçiyor ve uç
+çalışma zamanında reddediyor — müşterinin iptal ekranı bu yüzden **kırık
+olarak** duruyordu ve hiçbir araç söylemedi.
+
+⚠️ Ders: **bir alanın zorunluluğu üretilen tipten okunamıyorsa, onu çağıran
+her yeri elle bulmak gerekir.** `grep` ile tek çağıran bulundu
+(`account/cancel-reservation.tsx`); mobil oturuma da haber verildi, çünkü
+back-end o oturuma ulaşamıyor.
+
+### Onay penceresi forma dönüştü
+
+`ConfirmDialog` yerine `Modal`: zorunlu sebep kutusu + açıklama alanı.
+
+⚠️ Hata hâlinde modal artık **kapanmıyor**. Önceki hâli hatada da kapanıyordu
+ve o zaman kaybedilecek bir şey yoktu; şimdi kullanıcının yazdığı açıklama
+var ve kapanmak onu siliyor.
+
+⚠️ Açıklama kutusu **her sebepte** açık, yalnız "Diğer"de zorunlu. Yalnız
+"Diğer"de görünseydi planı değişen müşterinin yeni tarih önerisini yazacağı
+yer olmazdı.
+
+İlgili: [[web-desenler]] · [[web-durum]]

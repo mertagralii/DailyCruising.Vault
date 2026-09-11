@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -1817,3 +1817,67 @@ düşüyor, platformun payına dokunmuyor. Yani platformun elindeki kaldıraç
 açamamalı ve **platform kuponu** üretememeli. Kapsam ve finansman
 alanlarının işletme isteğinde zorlanması gerekiyor — yetkiyi açmak tek
 başına yetmez.
+
+---
+
+## Takvim blokajı — 2026-09-10
+
+**Mert'in kararı:** *"Korunsun, back-end'e söyle şema değişikliğini yapsın"*
+→ **platform personelinin koyduğu blokaj, işletme tarafından kaldırılamaz.**
+
+**Soruyu doğuran ölçüm:** blokaj bir sefer satırı olarak yazılıyor ve satırda
+"kim kapattı" alanı **yok**. İşletme ucundaki silme yalnız tekne ve tür süzgeci
+uyguluyor, yani platform personelinin koyduğu bakım blokajını işletme kendi
+panelinden kaldırabiliyordu — üstelik kimin koyduğunu göremeden. Olay günlüğü
+"kim kapattı"yı yazıyor ama **hangi blokaj** olduğunu yazmıyor, dolayısıyla
+ekranda gösterilebilecek bir bağ da yoktu.
+
+**İş kuralı:** platform blokajı bir *yaptırım* aracı. Bakım, belge eksiği ya da
+şikâyet sebebiyle konan kapatmayı işletmenin tek tıkla kaldırabilmesi, kapatmayı
+tavsiyeye çeviriyordu.
+
+⚠️ **Bunun iki yan sonucu var ve ikisi de ayrı iş:**
+
+1. **Gün satırı blokajın sahibini taşımalı.** Yalnız `DELETE` reddedilirse
+   işletme panelinde "Satışa aç" düğmesi basılmaya devam eder ve tıklayan 403
+   yer — *rotası olmayan düğme basılmaz* desenini çiğner. Sahip alanı gelince
+   işletme panelinde düğme hiç basılmayacak, yerine "platform tarafından
+   kapatıldı" yazacak.
+2. **Var olan satırların varsayılanı `Partner` olmalı.** `Platform` verilirse
+   işletmeler bugüne kadar kendi koydukları blokajları bir anda kaldıramaz hâle
+   gelir ve **hiçbir yerde hata görünmez** — yalnız düğme kaybolur. Sessiz kusur
+   sınıfı.
+
+**Bugünkü ekran hâlâ eski gerçeği söylüyor** (*"işletme kendi panelinden
+kaldırabilir"*) ve koruma canlıya çıkana kadar o metin **değişmeyecek**: metni
+önce düzeltip kuralı beklemek ekranı yalancı yapardı → [[web-kararlar]]
+
+
+---
+
+## İşletme çalışanı daveti — 2026-09-10 · **Mert'e sorulacak**
+
+⚠️ **Bugün "çalışan davet et" diye bir akış yok** ve bu bir metin borcu değil,
+**ürün boşluğu**.
+
+**Ölçüm (back-end):** `PartnerStaffService` bildirim servisini hiç almıyor;
+kurucusunda `repository`, `currentUser`, `clock` var, bildirimle ilgili hiçbir
+şey yok. `PartnerMemberInvited` diye bir olay türü de tanımlı değil. Uç yalnız
+`PartnerMemberAdded` günlüğü yazıyor.
+
+**Bugünkü gerçek:** işletme sahibi çalışanını ancak **sistemde zaten kayıtlı
+ise** ekleyebiliyor; değilse uç `400 UserNotAddable` döndürüyor. Yani sahibin
+yapması gereken şey: çalışanına "önce siteye kaydol" demek, o kaydolduktan
+sonra e-postasıyla eklemek. **Hiçbir ekran bunu söylemiyordu**; ekran tam
+tersini vaat ediyordu (*"hesabı yoksa davet gönderilir"*). Metin düzeltildi
+(ön yüz `f0a9c0d` civarı), akış düzeltilmedi.
+
+⚠️ **Platform tarafında bu boşluk kapalı**, işletme tarafında değil:
+`POST /api/platform/staff` hesabı **açıyor** ve parolayı yönetici koyuyor
+(ilk girişte değiştirme zorunlu). İşletme tarafında karşılığı yok.
+
+**Karar Mert'te.** Davet akışı yazılacaksa yeni parçalar gerekiyor: davet
+jetonu, süre, kabul ucu ve parola belirleme ekranı. Back-end kendi başına
+yazmadı, doğru yaptı.
+
+İlgili: [[web-kararlar]] · [[api-kararlar]]

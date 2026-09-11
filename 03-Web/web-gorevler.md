@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: web
-guncelleme: 2026-09-07
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -66,6 +66,45 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
       bitmesi. `src/lib/api/types/` altındaki elle yazılan tipler kademeli
       değiştirilir; her biri değiştirilirken **canlı gövdeyle** karşılaştırılmalı,
       çünkü şemanın doğru olduğu bugün ölçüldü ama alan alan doğrulanmadı.
+
+- [ ] **W-93** İki sekmede panel açıkken oturum kendini kapatıyor
+      **Mert'in kararı (2026-09-10): "Bir yere not al en son yaparız bunu."**
+      Yani biliniyor ve **şimdilik yapılmıyor**; test turunu durdurmasın diye
+      buraya yazıldı.
+
+      **Ölçülen olay:** panelde iki sekme açıkken (birinde personel ekleme
+      modalı, diğerinde müşteri listesi) müşteri detayına girildi ve uç `401`
+      döndü; vekil jetonu yenilemeye çalıştı, başarısız oldu, çerezleri sildi
+      ve oturum komple kapandı. Dev sunucu kaydındaki tek satır:
+      `GET /api/dc/platform/customers/… 401 in 54ms`
+
+      **Sebep — kodun kendi belgelediği senaryo.** Erişim jetonu **15 dakika**
+      ömürlü (`auth/api.ts` `logout` yorumu), yenileme jetonu **tek
+      kullanımlık**: *"`refresh(A)` → B verir, `refresh(A)` ikinci kez → 401"*
+      (`auth/api.ts:173`). Sekme 1 jetonu yeniledi (A→B), sekme 2'nin isteği
+      **A ile başlamıştı**; A ikinci kez kullanılınca back-end zincir ihlali
+      sayıp oturumu kapattı.
+
+      ⚠️ `refreshOnce` bu deliği **kapatmıyor**: tekilleştirme jeton dizesine
+      göre ve yalnız **aynı anda uçuşta** olan çağrıları birleştiriyor
+      (`auth/api.ts:286`). Saniyeler arayla gelen ikinci istek eski çerezi
+      okuyup zinciri kırıyor.
+
+      ⚠️ **Kanıt dolaylı.** 401 kaydı + kodun kendi yorumuyla birebir örtüşme
+      var; iki sekmeyle **yeniden üretilerek** doğrulanmadı. İş sıraya
+      girdiğinde ilk adım o.
+
+      ⚠️ Tetikleyen Claude'du (ikinci sekmeyi o açtı) ama kusur bizde:
+      **gerçek kullanıcı da panelde iki sekme açar** ve kaybettiği şey yarım
+      doldurulmuş bir form oluyor.
+
+      **İki çözüm yolu var, ikisi de küçük iş değil:**
+      1. Uçta yenileme jetonu rotasyonuna **kısa tolerans penceresi** (aynı
+         jetonla birkaç saniye içinde gelen ikinci yenileme aynı çifti döner).
+      2. Bizde yenilemeyi **tek yere kilitlemek** — süreç içi kilit yetmiyor,
+         çerez okuma ile yenileme arasındaki yarışı kapatmak gerekiyor.
+      ⚠️ `auth/api.ts:179` "başarısız yenileme asla tekrar denenmez" diyor ve
+      o kural **korunmalı**: yeniden deneme zinciri büsbütün kapatıyor.
 
 ## 🟡 Yapılıyor
 

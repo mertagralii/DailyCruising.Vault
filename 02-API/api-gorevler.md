@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: api
-guncelleme: 2026-09-10
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -22,6 +22,31 @@ Biçim ve gerekçe -> [[genel-desenler]]
 > Koşu bitince o dosya baştan sona okunup düzenlemeler yapılacak.
 
 ## 🔵 Yapılacak
+
+
+- [ ] **A-159** İşletme çalışanı davet akışı · 🔴 **MERT'TE** · ölçüldü: 2026-09-10
+
+      ⚠️ **Ekran olmayan bir şeyi vaat ediyor.** İşletme panelinde çalışan
+      eklerken *"Personel eklendi. Hesabı yoksa davet e-postası gönderildi"*
+      yazıyor. Ölçtüm: **davet e-postası hiç yok** — `PartnerStaffService`
+      bildirim servisini kurucusunda almıyor bile, kodda `PartnerMemberInvited`
+      diye bir olay türü de yok.
+
+      Cümlenin ikinci yarısı da yanlış: **hesabı yoksa çalışan hiç
+      eklenmiyor.** Uç kişiyi e-postasından arıyor, bulamazsa
+      `400 UserNotAddable` dönüyor.
+
+      Bugünkü gerçek: işletme sahibi çalışanına önce *"siteye kaydol"*
+      demek, o kaydolunca eklemek zorunda — ve bunu hiçbir ekran söylemiyor.
+
+      ⚠️ **Platform tarafında bu boşluk KAPALI**, işletme tarafında değil:
+      `POST /api/platform/staff` hesabı açıyor ve parolayı yönetici koyuyor
+      (`A-145`, `A-149`). Aynı ihtiyacın işletme karşılığı yazılmadı.
+
+      Yeni akış demek: davet jetonu, geçerlilik süresi, kabul ucu, parola
+      belirleme. **Yazılmadı çünkü Mert istemedi** — karar onun. Web oturumu
+      metni bugünkü gerçeğe çekiyor.
+
 
 ### Yazılmamış uç grupları — ürün bunlarsız uçtan uca çalışmıyor
 
@@ -122,6 +147,25 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟡 Yapılıyor
 
+- [ ] **A-163** Rezervasyon taşıma · başlandı: 2026-09-11
+
+      ✅ Önizleme ucu (`f2262bd`) · ayrıntıdaki üç alan (`d540fc2`) ·
+      `platform.reservation.write` yetkisi (`A116`)
+      ✅ `POST /reschedule` (`3f77c0a`) — `None` ve `Refund` yolları canlıda
+      ✅ Talebin düşme sebebi ayrı (`3e1157d`, `A120`)
+      ✅ İade benzersizliği amaç anahtarına taşındı (`8d62f5f`, `A117`) —
+      kısmi ve çoklu iade artık mümkün
+      ✅ İade işi iade kayıtlarını sürüyor (`50db88a`, `A118`) — iki aşama:
+      eksik kaydı aç, sırası geleni yürüt; denemeler satırdaki sayaçta
+      ✅ Bekleyen taşıma talebi kendi kaydı (`1ba44e2`, `A119`) — veritabanı
+      rezervasyon başına tek bekleyen talebe izin veriyor
+      ⬜ Ayrıntıda iade listesi + bekleyen talep + enum'ların şemaya çıkması
+      ⬜ Fark tahsilatı: kısmi `Payment` → jetonlu bağlantı → dönüşün farkı
+      işlemesi
+
+      Sözleşme ve kurallar → [[api-kararlar]] 2026-09-11.
+
+
 - [ ] **A-133** Biniş red sebepleri enum'a çevrilsin, belgeye girsin
 
       `NotPaid`, `Cancelled`, `TokenExpired`, `TokenNotFound`, `Refunded`,
@@ -159,6 +203,169 @@ Biçim ve gerekçe -> [[genel-desenler]]
       🔴 **MERT'TE**
 
 ## 🟢 Tamamlandı
+
+- [x] **A-162** Sorgu parametreleri belge bayatlığına karşı denetleniyor · bitti: 2026-09-10
+
+      Web oturumu `openapi.json`'ın bayat kaldığını bildirdi. **Bildirdiği
+      örnek yanlıştı** — parametreler `547c014`'te vardı, onlar bir önceki
+      commit'i (`b07da48`) ölçmüştü — ama **yanındaki tespit doğruydu ve
+      gerçek bir boşluğa işaret ediyordu.**
+
+      ⚠️ **Yedi OpenAPI denetimi de EYLEM düzeyinde çalışıyordu:** uç belgede
+      var mı, cevap tipi bildirilmiş mi, enum'lar tutuyor mu. Hiçbiri
+      **sorgu parametrelerine** bakmıyordu. Var olan bir uca yeni süzgeç
+      eklenip belge yeniden üretilmezse bütün kapılar yeşil kalıyordu — yol
+      sayısı değişmiyor, eylem hâlâ belgede, cevap tipi hâlâ doğru.
+
+      ⚠️ Ön yüzdeki bayatlık kapısı da yeşil kalıyor ve sebebi öğretici:
+      ürettiği tiple diskteki tipi karşılaştırıyor, **ikisi de aynı bayat
+      kaynaktan** geliyor. Kapı ölçüyor görünüp ölçmüyor — bu, "yazılı olması
+      çalıştığının kanıtı değil" deseninin bir örneği.
+
+      İlk hâli üç **yanlış alarm** verdi: karmaşık `[FromQuery]` nesneleri
+      belgede kendi alanlarına açılıyor, koddaki parametre adı hiç geçmiyor.
+      Denetim basit parametrelerle sınırlandı.
+
+      Kanıt: `dotnet test` **750/750**, commit `fe81262`. **Kör test:** belge
+      bir önceki commit'e çekildiğinde yeni denetim eksik iki parametreyi
+      adıyla söylüyor (`minTotal`, `maxTotal`), diğer yedi denetim yeşil
+      kalıyor — boşluğun gerçekliği böyle ölçüldü.
+
+- [x] **A-161** Tutar süzgeci · iptal açıklamasının sınırı · bitti: 2026-09-10
+
+      İki iş: Mert'in istediği tutar süzgeci ve web'in ölçtüğü 500 hatası.
+
+      `GET /api/platform/reservations?minTotal&maxTotal`
+
+      ⚠️ **Süzgeç `grandTotalTry` üzerinde, `totalTry` üzerinde değil.**
+      Ekranda görünen sayı o. Tur bedeline bakılsaydı ek hizmetli bir
+      rezervasyon **kendi tutarıyla aranınca bulunamazdı** — testin can alıcı
+      kurulumu bu yüzden ek hizmetli bir kayıt; ek hizmetsiz veriyle iki
+      yanlış kod da aynı sonucu verir.
+
+      ⚠️ **Web'in ölçtüğü kusur: 500 karakteri aşan açıklama `400` değil
+      `500` dönüyordu.** Kolon `varchar(500)`, denetim hiçbir katmanda yoktu;
+      Postgres `22001` fırlatıyor, controller yalnız `ReservationException`
+      yakaladığı için genel işleyiciye düşüyordu. Yanındaki iki kural
+      **ne yapılacağını** söylüyordu, bu üçüncüsü söylemiyordu — aynı formda
+      iki farklı kalitede hata. Desen zaten vardı: altı serviste uzunluk
+      denetimi yazılı, benim alanım ona uymamıştı.
+
+      ⚠️ **Düzeltirken İKİNCİ bir taşma çıktı ve ikisi de kimsenin
+      görmediği yerdeydi:** sınıra kadar dolu **geçerli** bir açıklama, durum
+      geçmişi cümlesine etiketle birlikte eklenince o kolonu (`varchar(500)`)
+      taşırıyordu. Yani denetimi eklemek yetmedi; geçerli girdi de patlıyordu.
+      Cümle kısaltılıyor — kısaltmanın güvenli olmasının sebebi o satırın bir
+      **kopya** olması; yetkili değer rezervasyonda tam duruyor.
+
+      Kanıt: `dotnet test` **749/749**, commit `547c014`. İki mutasyon doğru
+      testi kırdı: uzunluk denetiminin kaldırılması · süzgecin tur bedeline
+      bakması. Canlıda: süzgeçsiz 53 (950–126.770 TL), `minTotal=3000` → 41
+      ve hepsi sınırın üstünde, ters aralık `InvalidRange`.
+
+- [x] **A-160** Müşteri iptal gerekçesi · bitti: 2026-09-10
+
+      Mert iade ekranına bakıp sordu: *"İade et'e bastığımda bu müşterinin
+      neden iade başlattığını da görmem gerekiyor, yoksa ben ne bileceğim."*
+
+      ⚠️ **Ekranda gerekçe VARDI ama yanlış gerekçeydi.** `RefundReason`
+      platformun muhasebe gerekçesi ("bu para neden iade ediliyor"),
+      müşterinin kararı değil. İkisi karıştığı için personel kendi yazdığı
+      gerekçeyi müşterininki sanıyordu — eksik alandan daha sinsi bir hâl.
+
+      ⚠️ **Web'in geçici çözüm umudu ölçümle kapandı:** durum geçmişindeki
+      `Reason` iptal satırında *"Müşteri iptal etti."* yazıyor — yani yalnız
+      KİMİN iptal ettiğini, NİÇİN'ini değil. Gösterilecek bir şey yoktu.
+
+      `A115`: `Reservations.CancellationReason` (enum) + `CancellationNote`.
+      Enum, çünkü *"iptallerin yarısı hava durumu"* cümlesi ancak sayılabilir
+      bir alandan çıkar; serbest metin enum'un **yanında**, yerine değil.
+
+      ⚠️ **BOZUCU DEĞİŞİKLİK:** gerekçesiz iptal reddediliyor. İsteğe bağlı
+      olsaydı çoğu istemci göndermez ve personel yine kör kalırdı — alanın
+      var olma sebebi tam olarak o körlüktü. Mobil istemci de güncellenmeli.
+
+      ⚠️ **Geri doldurma YOK ve bu `A114`'ten farkı:** orada mevcut satırların
+      doğru bir varsayılanı vardı (`Partner`), burada yok. Geçmiş iptallere
+      uydurma gerekçe yazmak, olmayan bilgiyi varmış gibi göstermek olurdu.
+
+      `A114`'ün dersi uygulandı: enum **değer** kısıtı bu sefer ilk seferde
+      yazıldı (`CK_Reservations_CancellationReason_Enum`).
+
+      Kanıt: `dotnet test` **746/746**, commit `b07da48`. Üç mutasyon doğru
+      testi kırdı: gerekçe zorunluluğunun kaldırılması · "Diğer"de açıklama
+      zorunluluğunun kaldırılması · zaman tüneline gerekçenin yazılmaması.
+      Canlıda sözleşme doğrulandı: `reason` + `note` alanları, altı değerli
+      enum, panel ayrıntısında `cancellationReason` + `cancellationNote`.
+
+- [x] **A-158** Hesap e-postaları isteği düşürmüyor · bitti: 2026-09-10
+
+      ⚠️ **Kusur test takımının kendisinden çıktı.** Docker yeniden açıldıktan
+      sonra `MustChangePasswordTests` düşmeye başladı: parola değiştirme ucu
+      **500** dönüyordu. Sebep ortam sanılabilirdi — yerel SMTP yakalayıcı
+      (`dc-mail`) kapalıydı — ama asıl sebep **sıra**: durum değişikliği
+      yazıldıktan SONRA yapılan bir yan etki, isteği düşürebilecek yerde
+      duruyordu.
+
+      Sonucu kullanıcı açısından: **parola değişmiş, kullanıcı hata görmüş.**
+      Eski parolayla tekrar deniyor ve giremiyor; ne olduğunu anlamasının
+      hiçbir yolu yok. Web oturumu ekran karşılığını doğruladı: `/account/password`
+      o 500'ü "Bir şeyler ters gitti" diye basıyordu.
+
+      Ölçüm kusurun tek uçta olmadığını gösterdi: dokuz çağrının **ikisi**
+      dayanıklı kuyruğu kullanıyordu, **yedisi** satır içinde gönderiyordu —
+      ve yedisi de kimlik/hesap akışıydı, yani tam olarak durum
+      değişikliğinin geri alınamadığı yerler.
+
+      `AccountService`'teki altısı `INotificationQueue`'ya taşındı.
+      (`AuthService`'teki yedinci zaten `try/catch` içindeydi, isteği
+      düşürmüyordu.)
+
+      Kanıt: `dotnet test` **744/744**, commit `554fa63`. Kanıt iki yönlü ve
+      ortamı ölçüte çevirerek alındı: **SMTP yakalayıcı KAPALIYKEN** parola
+      değiştirme `204` dönüyor; satır içi gönderime dönen mutasyonda aynı
+      koşulda `500` dönüyor ve iki test birden kırmızı yanıyor.
+
+- [x] **A-157** Blokaj sahibi korunuyor · platform geneli blokaj listesi · bitti: 2026-09-10
+
+      Mert: *"Korunsun, back-end'e söyle şema değişikliğini yapsın"* ve
+      *"sayfaya ilk girdiğimde bir tablo olacak, burada kapatılan tekneleri
+      göreceğim."* İki iş tek migration'da birleşti.
+
+      `A114_BlokajSahibi` · `GET /api/platform/calendar/blocks`
+
+      ⚠️ **Göçte varsayılan `Partner` ve bu bir yön kararı.** `Platform`
+      verilseydi işletmeler bugüne kadar KENDİ koydukları 14 kapatmayı bir
+      anda kaldıramaz hâle gelirdi ve **hiçbir yerde hata görünmezdi** —
+      yalnız düğme kaybolurdu. Uyarıyı web oturumu yaptı, ölçüm doğruladı.
+
+      ⚠️ **Scaffold geri doldurmayı YAZMADI.** `dotnet ef migrations add`
+      kolonu ve kısıtı üretti, aradaki `UPDATE`'i üretmedi — o hâliyle
+      migration mevcut 14 kapatmada kısıtı ihlal edip kendisi düşerdi.
+      Üretilen migration okunmadan uygulanmaz.
+
+      ⚠️ **`EnumConstraintTests` gerçek bir eksik yakaladı.** "Gerekli"
+      kısıtını yazmıştım ama enum **değer** kısıtını yazmamıştım; kolon
+      `varchar(16)` olduğu için `'Platfrom'` yazımı da kabul edilirdi ve o
+      satır ne `Partner` ne `Platform` sayılırdı — koruma sessizce
+      çalışmazdı. Test tam işini yaptı.
+
+      Sahip **kapsamdan** türetiliyor, istekten değil: gövdede alan olsaydı
+      işletme kendi kapatmasını `Platform` diye işaretleyip korumayı ters
+      yöne çevirebilirdi.
+
+      Liste ardışık günleri **sunucuda** birleştiriyor; ölçüt tekne + sahip +
+      sebep. Yalnız tarihe bakan bir birleştirme farklı sebeple kapatılmış
+      komşu günleri tek satırda gösterip sebeplerden birini yutardı.
+      → [[api-kararlar]] 2026-09-10
+
+      Kanıt: `dotnet test` **743/743**, commit `6208de5`. Üç mutasyon doğru
+      testi kırdı: korumanın kaldırılması · sahibin hep `Partner` yazılması ·
+      birleştirmenin yalnız tarihe bakması.
+      Canlıda: 3 günlük platform kapatması → listede **tek aralık**,
+      `owner=Platform`, `ids=3`; takvim satırında `blockOwner: "Platform"`.
+      Göç sonrası 14 kapatmanın 14'ü `Partner`, kapatma dışı satırlarda alan
+      boş.
 
 - [x] **A-156** Platform personeli işletme adına takvim yönetiyor · bitti: 2026-09-10
 

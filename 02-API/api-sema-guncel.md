@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-08
+guncelleme: 2026-09-11
 durum: uretilen
 ---
 
@@ -1051,6 +1051,9 @@ Kısıtlar:
 | `RawResponse` | jsonb | evet |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
 | `CompletedAt` | timestamp with time zone | evet |  |
+| `IdempotencyKey` | character varying | hayır | `''::character varying` |
+| `Attempts` | integer | hayır | `0` |
+| `LastAttemptAt` | timestamp with time zone | evet |  |
 
 Kısıtlar:
 
@@ -1209,10 +1212,14 @@ Kısıtlar:
 | `RefundReason` | character varying | evet |  |
 | `VatRate` | numeric | hayır |  |
 | `DiverCount` | integer | hayır | `0` |
+| `CancellationNote` | character varying | evet |  |
+| `CancellationReason` | character varying | evet |  |
 
 Kısıtlar:
 
 - `CK_Reservations_AgeLimits` — `CHECK ((("InfantMaxAge" >= 0) AND ("ChildMaxAge" > "InfantMaxAge")))`
+- `CK_Reservations_CancellationOtherNote` — `CHECK (((("CancellationReason")::text IS DISTINCT FROM 'Other'::text) OR (("CancellationNote" IS NOT NULL) AND (length(btrim(("CancellationNote")::text)) > 0))))`
+- `CK_Reservations_CancellationReason_Enum` — `CHECK ((("CancellationReason" IS NULL) OR (("CancellationReason")::text = ANY ((ARRAY['PlansChanged'::character varying, 'Weather'::character varying, 'Health'::character varying, 'WrongBooking'::character varying, 'FoundAlternative'::character varying, 'Other'::character varying])::text[]))))`
 - `CK_Reservations_CommissionRate` — `CHECK ((("CommissionRate" >= (0)::numeric) AND ("CommissionRate" <= (100)::numeric)))`
 - `CK_Reservations_Counts` — `CHECK ((("AdultCount" >= 0) AND ("ChildCount" >= 0) AND ("InfantCount" >= 0) AND ((("AdultCount" + "ChildCount") + "InfantCount") > 0)))`
 - `CK_Reservations_CouponFundedBy` — `CHECK ((("CouponId" IS NULL) = ("CouponFundedBy" IS NULL)))`
@@ -1454,6 +1461,7 @@ Kısıtlar:
 | `UpdatedAt` | timestamp with time zone | hayır |  |
 | `AnonymizedAt` | timestamp with time zone | evet |  |
 | `SecurityStamp` | uuid | hayır | `uuidv7()` |
+| `MustChangePassword` | boolean | hayır | `false` |
 
 Kısıtlar:
 
@@ -1499,9 +1507,11 @@ Kısıtlar:
 | `UpdatedAt` | timestamp with time zone | hayır |  |
 | `DiverCapacity` | integer | evet |  |
 | `SoldDivers` | integer | hayır | `0` |
+| `BlockOwner` | character varying | evet |  |
 
 Kısıtlar:
 
+- `CK_Voyages_BlockOwnerRequired` — `CHECK ((((("VoyageType")::text = 'Block'::text) AND ("BlockOwner" IS NOT NULL)) OR ((("VoyageType")::text <> 'Block'::text) AND ("BlockOwner" IS NULL))))`
 - `CK_Voyages_CancellationReason_Enum` — `CHECK ((("CancellationReason" IS NULL) OR (("CancellationReason")::text = ANY ((ARRAY['Weather'::character varying, 'MinPassengersNotMet'::character varying, 'OwnerCancelled'::character varying, 'CustomerCancelled'::character varying, 'OfferExpired'::character varying, 'Other'::character varying])::text[]))))`
 - `CK_Voyages_DiverCapacity` — `CHECK ((("DiverCapacity" IS NULL) OR ("DiverCapacity" >= 0)))`
 - `CK_Voyages_RentalTypeRequired` — `CHECK ((((("VoyageType")::text = 'Block'::text) AND ("BoatRentalTypeId" IS NULL)) OR ((("VoyageType")::text <> 'Block'::text) AND ("BoatRentalTypeId" IS NOT NULL))))`

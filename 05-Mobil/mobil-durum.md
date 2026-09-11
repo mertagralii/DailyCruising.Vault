@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: mobil
-guncelleme: 2026-09-09
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -17,6 +17,12 @@ durum: guncel
 açılıp push'landı. **Uygulama kodu yok** — `App.tsx` hâlâ şablonun varsayılan
 ekranı. Bu satır, mobil tarafta iş
 yapan ilk oturumun yazacağı ilk şeyle değişmeli.
+
+**10 Eylül 2026 — dışarıdan gelen kısıt, mobil etkilenmedi.** Backend iptal
+sözleşmesini değiştirdi (`reason` zorunlu). Mobilde iptal ekranı olmadığı için
+kırılan bir şey yok; kısıt kaybolmasın diye
+[[mobil-iptal-ucu-reason-zorunlu]]'ya yazıldı ve `M-05`'e okuma tetikleyicisi
+bağlandı. **Kod değişmedi.**
 
 | Ne | Durum |
 |---|---|

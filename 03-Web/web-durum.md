@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: web
-guncelleme: 2026-09-10
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -575,3 +575,256 @@ Graf tek yönlü: `role-form ← staff-table ← {staff, roles}`. Sebep ve ölç
 **Bugün yazılan yazma yollarının hiçbiri tarayıcıda denenmedi**: personel
 ekleme, rol oluşturma/düzenleme/silme, rol kaldırma, askıya alma, ilk girişte
 parola değiştirme. Parolayı Claude girmiyor; tur Mert'te.
+
+## 2026-09-10 — İptal ve iadeler: müşterinin gerekçesi (commit `91f14ae`)
+
+Mert iade ekranındaki "Gerekçe" kutusunu müşterinin beyanı sanıyordu; içindeki
+değer `RefundReason` — **platformun muhasebe gerekçesi**. Müşterinin kendi
+sebebi hiçbir ekranda yoktu, şemada da yoktu → [[web-kararlar]]
+
+Back-end aynı gün ekledi (`b07da48`): `CancellationReason` +
+`CancellationNote`, `reason` iptal ucunda **zorunlu**, `Other` için `note`
+zorunlu; ikisi de hem serviste hem veritabanı kısıtında.
+
+| Ekran | Ne oldu |
+|---|---|
+| İade modalı | Müşterinin gerekçesi **en üstte ayrı kutuda**; ayrıntı ucundan okunuyor (liste satırı taşımıyor) |
+| İade modalı | Platform kutusu *"İade gerekçesi · platform kaydı"* etiketini aldı |
+| Rezervasyon ayrıntısı | `IptalKarti` — yalnız `cancelledAt` dolu kayıtta |
+| Müşterinin iptal ekranı | Onay penceresi forma dönüştü: zorunlu sebep + açıklama |
+
+### 🔴 Ekran **kırıktı** ve hiçbir araç söylemedi
+
+`openapi.json`'da `reason` nullable, `CancelReservationRequest.required` dizisi
+`None` — zorunluluk yalnız C# kodunda. Üretilen tip alanı opsiyonel gösterdiği
+için `tsc` · `lint` · `build` üçü de temiz geçiyordu ve
+`account/cancel-reservation.tsx` gerekçesiz istek atıyordu; uç hepsini
+reddediyordu. Tek çağıran `grep` ile bulundu.
+
+⚠️ Mobil oturuma (`dailycruising-mobil-fb`) haber verildi — back-end o oturuma
+ulaşamıyor.
+
+### Ölçülen veri durumu (dev veritabanı)
+
+53 rezervasyon · **1 iptal** (`BYQSN37K`) · **0 gerekçeli**. Yani ekranın bugün
+göstereceği şey *"Gerekçe yok."* dalı — alan bir günlük ve geçmiş kayıtlara
+uydurma gerekçe yazılmadı.
+
+### 🟡 Uzun açıklama 400 değil **500** döndürüyor (back-end'e bildirildi)
+
+`CancellationNote` kolonu `varchar(500)` ama sınır denetimi **hiçbir
+katmanda yok**: istekte `[MaxLength]` yok, serviste uzunluk kontrolü yok.
+501 karakter → Postgres 22001 → `DbUpdateException` → iptal ucunun `catch`'i
+yalnız `ReservationException` yakalıyor → genel işleyici → `500 "Beklenmeyen
+bir hata oluştu."`
+
+⚠️ Diğer iki kural (gerekçe zorunlu · Other'da açıklama zorunlu) kullanıcıya
+**ne yapacağını söyleyen** 400 veriyor; bu üçüncüsü vermiyor ve doğru eylem
+(kısaltmak) hiç önerilmiyor.
+
+Ön yüzde **iki katman** var: `maxLength={500}` yazmayı/yapıştırmayı
+engelliyor, gönderirken `trim().slice(0, 500)` kesiyor. İkincisi tek başına
+`maxLength`'e güvenilmediği için değil, **hata hâlinin 400 olmaması** için
+var.
+
+### Gerekçe listesi sessizce büyümüyor
+
+Değer veritabanında Postgres enum değil, `varchar(32)` metin — **ama**
+`CK_Reservations_CancellationReason_Enum` altı değeri tek tek listeliyor
+(migration `20260910175534_A115_IptalGerekcesi`). Yeni değer = C# enum üyesi
+**+ migration**, yani kazara eklenmiyor.
+
+⚠️ Buna rağmen `IPTAL_SEBEBI[ham] ?? ham` kuralı duruyor: sözlük `satisfies`
+ile üretilen enum'a bağlı olduğu için web derleme zamanında uyarılır, ama
+ayrı dağıtılan bir istemci (mobil) eski sürümde kalıp yeni değeri bilmeyebilir.
+
+## 2026-09-10 — Tutar süzgeci (commit `9e4c0f9`)
+
+Uç geldi (back-end `547c014`: `minTotal`/`maxTotal`) ve **iki listeye birden**
+bağlandı — rezervasyonlar ve iptal/iadeler aynı ucu okuyor; birinde olup
+diğerinde olmayan süzgeç kusur gibi okunur.
+
+`TutarAraligi` + `tersMi` + `tutarSorgusu` **kit'e** kondu: iki çağıran var,
+ikinci kopya yazılmadan ortaklaştırıldı.
+
+⚠️ Süzgeç **`grandTotalTry`** üzerinde, `totalTry` üzerinde değil — tabloda
+basılan sayı o. Tur bedeline bakılsaydı ek hizmetli bir rezervasyon kendi
+tutarıyla aranınca bulunamazdı (satırda 1.100 TL yazarken "1.000 üstü"
+süzgecinde görünmezdi). Back-end testi de ek hizmetli kayıtla kurulmuş; ek
+hizmetsiz veride iki yanlış kod aynı sonucu verir.
+
+⚠️ **Ters aralıkta istek hiç atılmıyor.** Uç `400 InvalidRange` döndürüyor ama
+kullanıcı alt sınırı yazıp üst sınıra geçerken aralık bir an ters kalıyor; o
+anın hatası ekrana kırmızı kutu basardı. İki alan birden düşüyor (birini
+göndermek, görünmeyen bir süzgeç uygulamak olurdu) ve sebebi ekranda yazıyor.
+
+⚠️ Kutular **400ms geciktirilmiş**: "3000" dört tuş, her tuşta istek atılsaydı
+üçü boşa giderdi ve ara değerlerin sonucu ekranda parlayıp geçerdi.
+
+### 🔴 Kendi ölçümüm yanlıştı: çöken betiğin çıktısını "alan yok" diye okudum
+
+Back-end'e *"`openapi.json` bayat, `minTotal`/`maxTotal` dosyada yok"* diye
+bildirdim. **Yanlıştı.** Parametreler dosyada vardı, üreteç onları görmüştü ve
+üretilmiş tipe yazmıştı — kanıt benim kendi commit'imin içinde duruyordu
+(`9e4c0f9`, `uretilen.ts:11665` `minTotal?: null | number`).
+
+Sebep: parametreleri listelemek için yazdığım tek kullanımlık Python betiği
+`format` çağrısında **`TypeError` ile çöktü** ve çökmeden önce yalnız ilk yedi
+parametreyi bastı. Çöktüğü parametre tam olarak aradığım olandı: `minTotal`'in
+şema tipi `['null','number']`, yani bir **liste**, ve biçimlendirici listeyi
+kabul etmiyordu.
+
+⚠️ **Yarım çıktıyı tam liste sandım.** Traceback ekrandaydı; "yedi parametre
+göründü, sonrakiler yok" diye okudum. Bu, aynı gün iki kez yazdığım kusurun
+üçüncü örneği ve bu kez kurbanı bendim:
+
+| Nerede | Ne oldu |
+|---|---|
+| Müsaitlik ekranı | Sekiz takvim hatası `catch → []` ile yutuldu, ekran *"0 kapatma"* yazdı |
+| İade ekranı | Gerekçe okunamazsa boş görünürdü → üç hâl üç cümleye ayrıldı |
+| **Bu ölçüm** | Betik çöktü, yarım liste **tam liste** sayıldı |
+
+**Kural:** *ölçüm betiği de bir veri yoludur ve hata hâli tasarlanmalıdır.*
+Çöken bir betiğin çıktısı olgu değildir. Tek kullanımlık betikte bile ya
+`try/except` ile "ölçüm başarısız" yazılmalı, ya da çıktı **sayıyla**
+doğrulanmalı ("12 parametre bekleniyordu, 7 basıldı").
+
+### Yanındaki tespit yine de doğruydu ve gerçek bir boşluk kapattı
+
+Örnek yanlıştı ama yapısal iddia doğru: **`tip-uret --kontrol` bayat bir
+kaynağı yakalayamaz.** Ürettiği tipi diskteki tiple karşılaştırıyor, ikisi de
+aynı `openapi.json`'dan geliyor; bayat kaynak kendisiyle tutarlı bir çıktı
+üretir ve karşılaştırma her zaman geçer. **Bir kapı kaynağı değil, kaynağın
+iki kopyasını karşılaştırıyorsa hiçbir şey ölçmüyordur.**
+
+Back-end bunu kendi tarafında ölçtü: yedi OpenAPI denetiminin **hiçbiri sorgu
+parametrelerine bakmıyordu**. Sekizinci denetimi yazdı (`fe81262`) ve **kör
+testle** doğruladı — belgeyi bir önceki commit'e çekti, yeni denetim eksik iki
+parametreyi adıyla söyledi, diğer yedisi yeşil kaldı.
+
+⚠️ Bizim tarafta bu boşluk **hâlâ açık**: ön yüzde belgeyi üreten taraf yok,
+o yüzden kapı eklenecek yer de yok. Koruma artık back-end'in sekizinci
+denetiminde — yani ön yüz, belgeyi back-end'in üretmesine **güveniyor** ve bu
+bilinçli.
+
+### Back-end'in ikinci bulgusu: türetilen metin de sınıra tabi
+
+500 karakter hatası düzeltildi (artık `400` + *"Açıklama en çok 500 karakter
+olabilir."*). Düzeltirken **ikinci** bir taşma çıktı: tam 500 karakterlik
+geçerli bir açıklama, durum geçmişi cümlesine etiketle birlikte yazılınca o
+`varchar(500)` kolonu taşırıyordu — yani sınırı geçen hiçbir şey olmadan taşma
+üretiliyordu ve ön yüzdeki `slice(0, 500)` bile bu isteği patlatırdı.
+
+⚠️ Kural (back-end'in çıkardığı, bizde de geçerli): **bir alanın uzunluk
+sınırı, o alandan türetilen her metnin de sınırını belirler.** Kısaltma
+**kopyada** yapılır, kaynakta değil — hangisinin veri hangisinin gösterim
+olduğu ayrımı.
+
+## 2026-09-10 — Tarayıcı testi: bir kusur çıktı (`e9a4b54`)
+
+Mert giriş yaptı, dört ekran denendi. Üçü doğru çalıştı, biri kusurluydu.
+
+| Ne | Sonuç |
+|---|---|
+| İade modalı — müşterinin gerekçesi | ✅ *"Gerekçe yok."* + sebebini açıklayan cümle; platform kutusu ayrı etiketle |
+| Rezervasyon ayrıntısı — İptal kartı | 🔴 **"UYGULANAN İADE ORANI: %10000"** |
+| Tutar süzgeci (rezervasyonlar) | ✅ 53 kayıt → `en az 3000` → **41 kayıt**; back-end ölçümüyle birebir |
+| Ters aralık | ✅ Uyarı basıldı, liste 53'e döndü, hata kutusu yok, istek atılmadı |
+
+### 🔴 Oran ölçeği: `%10000`
+
+Oranı **kesirli** sanıp `× 100` yapmıştım. Ölçüldü: `RefundPolicy.For`
+doğrudan `100m · 50m · 0m` döndürüyor ve `RefundService.cs:79` aynı kaydı
+(`CancellationRefundRate`) iade yanıtının `rate` alanına koyuyor — yani
+**ikisi de 0–100 ölçeğinde**, kesirli değil.
+
+⚠️ Hata **iki** yerdeydi ve ikincisi ekrandan görülemezdi: iade **başarıyla
+bittikten sonra** basılan bildirimde (`"${tutar} · oran %${rate * 100}"`).
+Gerçek bir para hareketi olmadan tetiklenmiyor, yani ancak canlı bir iadede
+ortaya çıkardı — ve o an personel ekranda **%5000** görürdü.
+
+Biçim `format.ts → iadeOrani`'ye alındı: ölçek bir bilgidir ve iki çağıran
+varken üçüncü dosyaya çıkarılmazsa biri sessizce ayrışır.
+
+### Ders: tip kontrolü ölçek hatasını göremez
+
+`number` her iki ölçekte de `number`. `tsc` · `lint` · `build` üçü de temizdi
+ve ekran **bir sayı** basıyordu — boş değil, yanlış. Bu kusuru yakalayan tek
+şey gerçek veriyle **ekrana bakmak** oldu; `%100` beklenen yerde `%10000`
+görmek.
+
+⚠️ Aynı sınıf 2026-09-07'de de ölçülmüştü: *"sekiz kusurun hiçbiri gözle
+değil ölçümle çıktı"*. Bunun tersi: **ölçümle değil gözle çıktı.** İkisi
+birbirinin yerine geçmiyor.
+
+## 2026-09-11 — Tarih değiştirme: ekran hazır, para modeli bekliyor
+
+Mert: *"müşteri bir rezervasyon yapmıştır ama sonrasında bir değişikliğe
+ihtiyaç duyduğunda buradan da müdahale edebilmemiz gerekiyor."* Seçenekleri
+maliyetiyle sorup **tarih/sefer değiştirme** ve **fark için ödeme bağlantısı**
+kararlarını aldı → [[web-kararlar]]
+
+Ekran **rezervasyon ayrıntısında**, "Rezervasyon ayarları"nda değil: ayarlar
+platform geneli kurallar, müdahale tek kaydın kendisine ait ve ayrıntı ekranı
+üç listeden birden açılıyor.
+
+### Tarayıcıda doğrulananlar (`a88da8e`)
+
+| Ne | Sonuç |
+|---|---|
+| Pencere | `11 Mart – 8 Haziran 2027 · 89 uygun gün` — rezervasyonun etrafına oturuyor, mevcut gün düşüyor |
+| Önizleme (`action: None`) | `₺4.350 → ₺4.350 · Tutar değişmiyor · Boş koltuk 12` |
+| Kapalı onay | Düğmenin yerinde *"Taşıma ucu henüz hazır değil"* satırı |
+
+### 🔴 İki kimlik karıştırıldı: `rentalTypeId` ≠ `boatRentalTypeId`
+
+Gün seçici ilk denemede `400 BoatNotFound` aldı. Ayrıntı **katalog** tur
+türünün kimliğini (`RentalTypes.Id`) döndürüyordu; müsaitlik ucu teknenin o
+türü **satan kaydının** kimliğini (`BoatRentalTypes.Id`) istiyor
+(`AvailabilityRepository:65`). Back-end ayrıntıya ikincisini de ekledi
+(`02cbaeb`); ilki kalıyor, çünkü rezervasyon listesi süzgeci onu kullanıyor.
+
+⚠️ Parametreyi hiç göndermemek de çalışıyordu — uç boşta teknenin tek türüne
+düşüyor ve bugün **sekiz teknenin hiçbirinin ikinci türü yok**. Reddedildi:
+bir tekne ikinci tür sattığı gün **yanlış ürünün** takvimi gösterilir ve kimse
+fark etmez. *Veri bugün tek çeşit diye kod varsayım yapmaz.*
+
+### 🔴 Sabit pencere, uzak rezervasyonda işe yaramıyordu
+
+Seçici "yarından itibaren 90 gün" gösteriyordu. Test verisi hazırlanırken
+ölçüldü: taşımaya uygun **altı kaydın hepsi 2027 Mart–Nisan'da**, yani
+pencerenin altı ay ötesinde — personel müşterinin istediği tarihleri
+**hiç göremezdi** ve seçici çalışıyor görünüp işe yaramazdı. Artık mevcut
+kalkış pencerenin dışındaysa pencere onun iki hafta öncesinden başlıyor,
+ayrıca ileri/geri geziliyor (uç bir seferde en çok 92 gün veriyor).
+
+### 🟡 Bekleyen: para modeli (back-end'de, Mert onayladı)
+
+Back-end `POST /reschedule`'ü yazarken durdu ve sebebi haklı:
+
+1. İade işi yalnız **`Cancelled`** rezervasyonlara bakıyor. Taşınan kayıt
+   `Paid` kalıyor, yani iade kaydı yazılsa bile iş onu **hiç görmezdi** —
+   para hiç iade edilmez, hiçbir yerde hata da görünmezdi.
+2. **Rezervasyon başına ömür boyu tek iade** (`!Refunds.Any(… != Failed)`).
+   Taşıma iadesi alan müşteri sonradan iptal ederse iptal iadesi **bloke**.
+
+⚠️ İkincisi **taşımadan bağımsız, bugün de var olan** bir kısıt: kısmi iade
+yapılamıyor. Taşıma rafa kalksa bile bu kusur duruyor.
+
+Kök sebep: **para hareketleri rezervasyonun bir özelliği olarak modellenmiş,
+kendi başına kayıtlar olarak değil.** Tahsilattaki "ödeme hep tam tutardır"
+varsayımı aynı şeyin öbür yüzü. Düzeltme taşımanın parçası değil, altındaki
+katman — ve kısmi iade · çoklu iade · fark tahsilatını birlikte açıyor.
+
+Mert üç seçenek arasından **"düzeltilsin, beklerim"** dedi; ta­şıma ekranı
+`TASIMA_HAZIR = false` ile hazır bekliyor, uç gelince tek satır.
+
+### ⚠️ Kapanmayan boşluk
+
+- ✅ **Tarayıcıda denendi** (Mert giriş yaptı): iade modalı · İptal kartı ·
+  tutar süzgeci · ters aralık. Bir kusur çıktı ve düzeltildi (`e9a4b54`).
+- **Gerekçesi dolu dal hiç görülemez**: dev veritabanında gerekçeli tek kayıt
+  yok ve ilki ancak bir müşteri iptal edince doğacak.
+- **Misafir rezervasyonu arayüzden iptal edilemiyor**: `CancelReservation`
+  yalnız `/account/reservations/[code]`'da basılıyor, misafir kaydı o listede
+  yok. Dev veritabanındaki iptal edilebilir 28 kaydın **tamamı misafir**.

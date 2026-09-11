@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: mobil
-guncelleme: 2026-09-08
+guncelleme: 2026-09-10
 durum: guncel
 ---
 
@@ -24,7 +24,10 @@ veya yalıtılmış not `dogrula.py`'de hata verir.
 
 ## Notlar
 
-_Henüz not yok._ Klasör boş; ilk mobil tuzağı buraya yazılacak.
+- [[mobil-iptal-ucu-reason-zorunlu]] — `POST /api/reservations/{code}/cancel`
+  `reason` zorunlu istiyor ama `openapi.json` alanı opsiyonel gösteriyor;
+  üretilen tip yeşil geçer, uç çalışma zamanında reddeder. **İptal ekranı
+  yazılmadan önce okunur.**
 
 İlgili: [[mobil-kararlar]] · [[mobil-mimari]] · [[mobil-durum]] · [[00-Index]]
 
