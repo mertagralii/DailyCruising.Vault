@@ -159,6 +159,12 @@ Biçim ve gerekçe -> [[genel-desenler]]
       eksik kaydı aç, sırası geleni yürüt; denemeler satırdaki sayaçta
       ✅ Bekleyen taşıma talebi kendi kaydı (`1ba44e2`, `A119`) — veritabanı
       rezervasyon başına tek bekleyen talebe izin veriyor
+      ✅ Defter iade kaydından sürülüyor (`0cf18f2`, `A121`) — taşıma iadesi
+      artık deftere yazılıyor; kısmi iade iki taraftan orantılı, tabanı
+      defterin kendisi; toplam iade tahsilatı geçemiyor.
+      **Kanıt:** `LedgerTests.Second_refund_rides_on_what_is_left` ·
+      `LedgerTests.Total_refunds_cannot_exceed_what_was_collected` ·
+      `RescheduleTests.A_reschedule_refund_reaches_the_ledger` · 763/763
       ⬜ Ayrıntıda iade listesi + bekleyen talep + enum'ların şemaya çıkması
       ⬜ Fark tahsilatı: kısmi `Payment` → jetonlu bağlantı → dönüşün farkı
       işlemesi

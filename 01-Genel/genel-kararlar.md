@@ -12,6 +12,32 @@ karar değişirse yeni giriş eklenir ve eskisini iptal ettiği yazılır.
 
 ---
 
+## 2026-09-11 — `ECC_MEMORY_PROJECT_ROOT` de küresel ayardan proje ayarına taşındı
+
+**Karar:** Küresel `~/.claude/settings.json` içindeki `env` bloğu kaldırıldı,
+aynı blok `DailyCruising/.claude/settings.json` içine alındı. Küresel ayarda
+artık ne hook ne env var; yalnız makine geneli tercihler (model, tema, bildirim,
+eklentiler) duruyor.
+
+**Neden:** Değişken küreseldi ve **bu projenin** klasörünü gösteriyordu
+(`DailyCruising/.ecc/memory`). Başka bir projede ECC memory kullanıldığında o
+projenin belleği bu projenin klasörüne yazılırdı — aynı gün kaldırılan
+`PreCompact` kancasıyla **aynı sızıntı sınıfı**: küresel ayara konmuş,
+proje-özel bir yol.
+
+**Davranış değişmiyor, koddan doğrulandı:** `ecc/scripts/lib/memory-vault.js:66`
+— değişken yoksa ECC `findNearestProjectRoot(cwd)/.ecc/memory` kullanıyor, yani
+en yakın `.git` klasörünün yanına yazıyor. Bu projede değişken proje ayarında
+kaldığı için yol aynı; başka projede artık o projenin kendi klasörü kullanılır.
+
+⚠️ **Değişkenin bu projede gerekli olma sebebi ayrı ve önemli:** proje kökü git
+reposu **değil**. Yani değişken tamamen silinse, vault içinden çalışan bir
+oturumda "en yakın `.git`" **vault'un kendisi** olur ve bellek
+`DailyCruising.Vault/.ecc/memory` altına düşerdi. Bu yüzden silinmedi, taşındı.
+
+**Sonucu:** ECC eklentisi küreselde kurulu ve etkin kalmaya devam ediyor —
+taşınan şey eklenti değil, yalnız "belleği nereye yaz" ipucu.
+
 ## 2026-09-11 — `PreCompact` hook'u küresel ayardan proje ayarına taşındı
 
 **Karar:** `~/.claude/settings.json` içindeki `PreCompact` kancası kaldırıldı ve

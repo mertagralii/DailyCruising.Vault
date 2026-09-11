@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-09
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -57,3 +57,4 @@ ararken önce [[api-kararlar]]'a, orada yoksa buraya bak.
 - [[api-uc-envanteri-2026-08-30]] — web panosundaki 12 iş için ölçülmüş uç envanteri ve eksikler
 - [[api-eski-panel-tekne-ekranlari]] — canlı yönetim panelinin tekne ekranları, ölçülmüş yapı ve API boşlukları
 - [[api-gelistirme-verisindeki-artiklar]] — "test artığı" sanılan kaydın gerçek kaynağı ve ayırt eden üç soru
+- [[api-mutasyon-geri-alma]] — mutasyon geri alınmazsa geriye kapalı koruma ve yeşil süit kalır

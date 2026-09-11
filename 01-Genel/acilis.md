@@ -28,14 +28,14 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 
 ## Şu an ne oluyor
 
-- **API:** pano 7/163 · **758 test yeşil** (9 Eylül, backend ölçümü). Ödeme uçtan uca
+- **API:** pano 7/163 · **763 test yeşil** (9 Eylül, backend ölçümü). Ödeme uçtan uca
   çalışıyor (gerçek İyzico sandbox). Panoda **Mert'e bağlı olmayan iş kalmadı**
 - **Web:** 41 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
   Pano **4 yapılacak / 78 tamamlandı** — kalanlar **Mert'in kararında**
 - **Mobil:** iskelet + private repo var, **ekran yok** · kapsam (`M-02`) **API ve
   web bitene kadar ertelendi** — o zamana kadar mobil kod yazılmaz
-- **Genel:** 101 not · `dogrula.py` 24 kontrol, hepsi mutasyonla kırmızıya döndürüldü ·
+- **Genel:** 102 not · `dogrula.py` 24 kontrol, hepsi mutasyonla kırmızıya döndürüldü ·
   makine `_araclar/vault.json` ile taşınabilir
 
 Aktif engel tek (-> [[durum]]): **KVKK yolcu listesi dayanağı** — Mert'te.

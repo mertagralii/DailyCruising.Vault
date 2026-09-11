@@ -13,6 +13,32 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (2) — taşıma iadesi artık deftere yazılıyor; kayıtsız para
+hareketi kapandı.** `dotnet test` **763/763**, son commit `0cf18f2`,
+migration **A121**.
+
+⚠️ **Bulunan kusur ciddiydi:** taşıma farkının iadesi tamamlanıyor,
+sağlayıcıdan kimlik dönüyor — ve `LedgerEntries` içine **tek satır
+yazılmıyordu**. Defter tutarı rezervasyonun iptal alanlarından okuyordu;
+taşımada rezervasyon iptal edilmediği için ikisi de boş, yazma sessizce
+düşüyordu. Ölçüm: tabloda 70 tahsilat, 70 hakediş, **0 iade** satırı vardı.
+
+Ne değişti:
+- `LedgerEntry.RefundId` + `CK_LedgerEntries_Refund_Bagi` — mükerrer koruma
+  iade başına, invaryant veritabanında.
+- Kısmi iade iki taraftan **orantılı** düşülüyor (Mert'in kararı), tabanı
+  defterin kendisi → [[api-kararlar]].
+- Toplam iade tahsilatı geçemiyor; kontrol hem sağlayıcı öncesi hem defterde.
+
+⚠️ **Sırada `A-163` farkın tahsilatı var** — `Collect` yolu hâlâ kapalı, ön
+yüzde de kapalı tutuluyor. `Refund` yolu açılabilir.
+
+⚠️ **Commit `0cf18f2` AI atıf satırları taşıyor** ve `--amend` yerel bir
+kancaya takıldı; temiz mesaj oturumun scratchpad'inde. Mert'in düzeltmesi
+gerekiyor → [[tercihler]]
+
+---
+
 **2026-09-11 — rezervasyon taşıma sözleşmesi kararlaştırıldı, taşımanın
 kendisi Mert'te.** `dotnet test` **758/758**, son commit `63f40cd`.
 

@@ -17,7 +17,7 @@ yalnız *bugün veritabanında ne var* yazıyor.
 **Ne zaman okunur:** hangi tablo/kolon/kısıt var sorusu.
 **Ne zaman yazılır:** her migration uygulandıktan sonra betiği çalıştır.
 
-**84 tablo** (olay günlüğü parçaları hariç).
+**85 tablo** (olay günlüğü parçaları hariç).
 
 ## `Amenities`
 
@@ -686,11 +686,13 @@ Kısıtlar:
 | `Note` | character varying | evet |  |
 | `OccurredAt` | timestamp with time zone | hayır |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
+| `RefundId` | uuid | evet |  |
 
 Kısıtlar:
 
 - `CK_LedgerEntries_AccountType_Enum` — `CHECK ((("AccountType")::text = ANY ((ARRAY['Customer'::character varying, 'Platform'::character varying, 'Partner'::character varying])::text[])))`
 - `CK_LedgerEntries_EntryType_Enum` — `CHECK ((("EntryType")::text = ANY ((ARRAY['Collection'::character varying, 'Commission'::character varying, 'PartnerEarning'::character varying, 'Refund'::character varying, 'CouponCost'::character varying, 'Correction'::character varying])::text[])))`
+- `CK_LedgerEntries_Refund_Bagi` — `CHECK (((("EntryType")::text = 'Refund'::text) = ("RefundId" IS NOT NULL)))`
 
 ## `Messages`
 
@@ -1125,6 +1127,27 @@ Kısıtlar:
 - `CK_RentalTypes_ExtraDayCount` — `CHECK (("ExtraDayCount" >= 0))`
 - `CK_RentalTypes_OccupancyMode_Enum` — `CHECK ((("OccupancyMode")::text = ANY ((ARRAY['Shared'::character varying, 'Exclusive'::character varying])::text[])))`
 - `CK_RentalTypes_PricingStrategy_Enum` — `CHECK ((("PricingStrategy")::text = ANY ((ARRAY['PerPerson'::character varying, 'PerBoat'::character varying])::text[])))`
+
+## `RescheduleRequests`
+
+| kolon | tip | boş | varsayılan |
+|---|---|---|---|
+| `Id` | uuid | hayır | `uuidv7()` |
+| `ReservationId` | uuid | hayır |  |
+| `TargetDate` | date | hayır |  |
+| `NewTotalTry` | numeric | hayır |  |
+| `DifferenceTry` | numeric | hayır |  |
+| `Status` | character varying | hayır |  |
+| `ExpiresAt` | timestamp with time zone | hayır |  |
+| `PaymentId` | uuid | evet |  |
+| `CreatedByUserId` | uuid | evet |  |
+| `CreatedAt` | timestamp with time zone | hayır |  |
+| `ResolvedAt` | timestamp with time zone | evet |  |
+
+Kısıtlar:
+
+- `CK_RescheduleRequests_Difference` — `CHECK (("DifferenceTry" > (0)::numeric))`
+- `CK_RescheduleRequests_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['AwaitingPayment'::character varying, 'PaymentFailed'::character varying, 'Completed'::character varying, 'Expired'::character varying, 'Cancelled'::character varying, 'DroppedOnCancellation'::character varying])::text[])))`
 
 ## `ReservationExtras`
 

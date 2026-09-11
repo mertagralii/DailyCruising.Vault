@@ -6460,3 +6460,53 @@ ikinci bir kesit alınmalı — burada o kesit `CreatedAt`'ti. Bugün üç kez
 "ölçüm doğru görünüyor ama başka şeyi ölçüyor" yaşandı (zsh sözcük bölmesi,
 çöken betik, bayat süreç); bu dördüncüsü ve farkı şu: **araç değil okuma
 hatalıydı.**
+
+## 2026-09-11 · Kısmi iade orantılı bölüştürülüyor, tabanı defter — Mert'in kararı
+
+Kısmi iade **iki taraftan orantılı** düşülüyor: işletme hakedişinin, platform
+komisyonunun **aynı oranını** geri veriyor. 1.000 ₺'lik, %15 komisyonlu bir
+rezervasyonda 400 ₺'lik iade işletmeden 340 ₺, platformdan 60 ₺ götürüyor;
+iade sonrası komisyon kalan 600 ₺'nin yine %15'i oluyor.
+
+**Neden:** Mert'e üç seçenek sunuldu (tamamı işletmeden · tamamı platformdan ·
+orantılı). Kararı getiren cümle: *"işletme de platform da yapmadığı işin
+parasını tutmamış olur."* Diğer ikisi bir tarafı cezalandırır ve hangi tarafın
+cezalandırılacağı iş kuralından değil kolaylıktan gelirdi.
+
+**Taban: müşterinin ödediği tutar** — rezervasyonun güncel toplamı değil.
+Gerekçe: iptal politikası zaten ödenen tutardan hesaplıyor (`RefundPolicy`
+yorumu: *"iade ÖDENEN tutardan hesaplanıyor, liste fiyatından değil"*). Farklı
+taban seçilseydi taşınmış bir rezervasyonda iptal ile taşıma iki ayrı sonuç
+üretir ve hangisinin doğru olduğu tartışılırdı.
+
+**Kodda taban defterin kendisi.** `LedgerService` oranı
+`iade / (tahsil edilen − daha önce iade edilen)` olarak buluyor. Web'in
+sorduğu ince durum böylece kendiliğinden kapandı: ucuza taşınmış bir
+rezervasyon sonradan iptal edilirse ikinci hareket birincinin **üstüne**
+biniyor, hakediş 850 → 425 → 212,50 gidiyor.
+
+⚠️ **Toplam iade tahsilatı geçemiyor.** Kontrol iki yerde: `RefundService`
+sağlayıcıya gitmeden durduruyor (kayıt `Requested` kalıyor, para çıkmıyor),
+`LedgerService` son güvence olarak `LedgerException` fırlatıyor. Tek yerde
+olsaydı ya para çıkmadan korunamaz ya da defter kendi başına ayakta duramazdı.
+
+## 2026-09-11 · Defter satırının sürücüsü iade kaydı oldu — kök sebep kapatıldı
+
+`LedgerEntry.RefundId` eklendi (`A121_DefterIadeBagi`). Mükerrer koruma artık
+"bu REZERVASYONUN iade satırı var mı" değil **"bu İADE deftere işlendi mi"**
+sorusunu soruyor.
+
+**Neden:** eski soru kısmi iadeyi ve taşıma farkını sessizce yutuyordu; ikinci
+para hareketi deftere hiç yazılamıyordu. Üç kez aynı kök sebebin yüzüydü ve
+üçünde de `Refund.IdempotencyKey` ile aynı çözüm işe yaradı: **benzersizliği
+olaya bağla, varlığa değil.**
+
+`CK_LedgerEntries_Refund_Bagi` kısıtı invaryantı veritabanında tutuyor:
+`("EntryType" = 'Refund') = ("RefundId" IS NOT NULL)`. Bedeli sıfır oldu —
+tabloda hiç iade satırı yoktu (70 tahsilat, 70 hakediş, **0 iade**), hâlbuki
+iadeler yapılmıştı. Boşluğun kendisi kısıtın kapattığı kusurun kanıtı.
+
+⚠️ Sıfır tutar dalı **kaldırıldı**: `CK_Refunds_Amount` sıfır tutarlı bir iade
+kaydının açılmasına zaten izin vermiyor. Kopya bir kontrol, bozulduğunda hiçbir
+testi kırmayan ölçülmeyen bir dal bırakırdı. Eski test de buna göre yeniden
+yazıldı — artık *"sıfır iade kaydı hiç açılamıyor"* diyor.
