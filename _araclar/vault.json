@@ -327,5 +327,17 @@
     ],
     "tetikleyici_alani": "tetikleyici",
     "hata_metni_deseni": "^\\s*```|`[A-Za-z0-9_.]+(Exception|Error|error|failed|FAILED|ERR_)"
+  },
+  "tarayici_defteri": {
+    "_aciklama": [
+      "Kontrol 28: bir ekranin tarayicida gorulduğu tarih ile o ekranin DOSYASININ",
+      "son degistigi tarih karsilastirilir. Kod dogrulamadan SONRA degistiyse,",
+      "dogrulama o hali gormemis demektir — kontrol 23'un ekran duzeyindeki esi.",
+      "Dosya yolu yazilmayan kayit OLCULEMEZ; sayilir ve bildirilir, hata degil."
+    ],
+    "dosya": "03-Web/web-durum.md",
+    "alan": "03-Web",
+    "dogrulandi_deseni": "^tarayıcıda doğrulandı: (.+?) · (\\d{4}-\\d{2}-\\d{2})\\s*(?:·\\s*(\\S+))?\\s*$",
+    "dogrulanmadi_deseni": "^tarayıcıda doğrulanmadı: (.+?) · (.+?)\\s*$"
   }
 }

@@ -30,6 +30,7 @@ Tarar:
  25. Uretilen dosya, uretildigi kaynagin gerisinde mi
  26. Yayin kosulu kabul olcutu tasiyor mu, kimlikleri benzersiz mi
  27. Notlarin erisilebilirligi (tetikleyici alani, birebir hata metni)
+ 28. Tarayici dogrulamasi koddan geride mi
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -1257,6 +1258,53 @@ if _N27:
             f"kontrol 27 · {_n_top} not · tetikleyici yazili {_n_tet} "
             f"({_n_tet * 100 // _n_top}%) · hata metnini birebir tasiyan "
             f"{_n_hata} ({_n_hata * 100 // _n_top}%) — OLCUM, dayatma degil")
+
+
+
+# ---------------------------------------------------------------------------
+# 28: tarayici dogrulamasi koddan geride mi
+#
+# `build`, `lint`, `tsc` ve olcum betikleri bir ekranin DERLENDIGINI soyler,
+# GORUNDUGUNU soylemez. 2026-09-11'de derlemesi temiz olup ekranda hicbir sey
+# yapmayan uc kusur cikti: uydurma fatura, gonderilmeyen iptal gerekcesi,
+# basilmayan rozet kenarligi. Ucunu de tarayici yakaladi.
+#
+# Bu kontrol kontrol 23'un EKRAN duzeyindeki esi: "dogrulandi" yazip ertesi gun
+# ekrani degistirmek defteri SESSIZCE yalan yapar. Olcut yine gun.
+#
+# ⚠️ SINIRI: kaydin dosya yolu yoksa olculemez. Ekran adindan dosya tahmin
+# etmek yanlis kirmizi uretirdi; tahmin etmek yerine SAYIYOR ve bildiriyor.
+# "Dogrulandi" kaydi zaten beyandir — yalan soylemek kasit ister, unutmak
+# yetmez; olculemeyen kismi gizlemek ise unutmayi kolaylastirirdi.
+_D28 = AYAR.get("tarayici_defteri") or {}
+if _D28 and (VAULT / _D28["dosya"]).exists():
+    _dmetin = (VAULT / _D28["dosya"]).read_text(encoding="utf-8")
+    _drepo = VAULT.parent / (AYAR["alanlar"].get(_D28["alan"], {}).get("kod_repo") or "")
+    _dvar = re.compile(_D28["dogrulandi_deseni"], re.M)
+    _dyok = re.compile(_D28["dogrulanmadi_deseni"], re.M)
+    _onayli = list(_dvar.finditer(_dmetin))
+    _bekleyen = len(_dyok.findall(_dmetin))
+    _yolsuz = _geride = 0
+    for _m28 in _onayli:
+        _ekran, _tarih28, _yol28 = _m28.group(1), _m28.group(2), _m28.group(3)
+        if not _yol28:
+            _yolsuz += 1
+            continue
+        if not _drepo.exists():
+            continue
+        _son28 = (_git_repo(_drepo, ["log", "-1", "--format=%cs", "--", _yol28]) or "").strip()
+        if _son28 and _son28 > _tarih28:
+            _geride += 1
+            sorunlar.append(
+                f"[tarayici dogrulamasi geride] {_D28['dosya']}: '{_ekran}' "
+                f"{_tarih28}'de goruldu ama {_yol28} {_son28}'de degisti — "
+                f"dogrulama o hali gormemis, defter sessizce yalan soyluyor")
+    olcumler.append(
+        f"kontrol 28 · {_D28['dosya']}: {len(_onayli)} dogrulanmis "
+        f"({_yolsuz} tanesi dosya yolu YAZMADIGI icin olculemedi) · "
+        f"{_bekleyen} dogrulanmamis · koddan geride {_geride}")
+elif _D28:
+    olcumler.append(f"kontrol 28 · defter dosyasi yok ({_D28['dosya']}) — OLCULEMEDI")
 
 
 print(f"Vault: {VAULT}")

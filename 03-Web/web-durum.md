@@ -1006,3 +1006,114 @@ yazmıyorum. Sabah doğrulanacaklar: tahsilat formu (`VZZC9JG8` bekliyor,
 `3S2G3T3K` form için duruyor) · telefon listesi süzgeci · bölge tablosu ·
 aktivite seçicisi · finans sayaçları.
 
+## 2026-09-11 gecesi — Telefonla rezervasyon **uçtan uca** bitti
+
+Ödeme bağlantısı geldi (`aae6ba4`) ve bağlandı (`4cf7550`). Modül artık tam:
+
+1. Personel formu doldurur → kayıt `AwaitingCollection` açılır.
+2. Parayı elden alırsa **tahsilatı işaretler** → kayıt `Paid` olur.
+3. Almazsa **ödeme bağlantısı gönderir** (e-posta · SMS · ikisi) →
+   müşteri `/odeme?jeton=…` sayfasından öder.
+4. Süre dolarsa kayıt **`Expired`** olur (`ExpireReservationHoldsJob`).
+
+⚠️ **`Confirmed` diye bir durum yok** ve eklenmedi (back-end kararı):
+para geldiyse rezervasyon ödenmiştir, elden mi sağlayıcıdan mı geldiği
+`Payment` kaydının bilgisi. Ayrı bir durum *"ödenmiş mi"* sorusunu iki
+değere bölüp onu okuyan her yeri ikisini birden saymak zorunda bırakırdı.
+Ekranda "elden tahsil edildi" bilgisi `collection` alanından basılıyor.
+
+⚠️ **Bağlantının ömrü `holdExpiresAt` ile birebir aynı.** Uzun olsaydı
+müşteri ödeyip koltuk bulamazdı. Tekrar gönderim serbest ve **aynı
+jetonu** taşıyor: yeni jeton ilk mesajı açmış müşteriyi kilitlerdi.
+
+⚠️ Ayrıntı ucu `paymentLinkSentAt` **döndürmüyor**, yani gönderim bilgisi
+sayfa yenilenince kayboluyor. Eksik olarak yazıldı.
+
+## Yokluk iddiası artık denetleniyor
+
+`ModulKaynagi`'ye **`istenen: {yol, ne}[]`** eklendi ve on iki modülde
+dolu. `araclar/durum-denetle.py` üç şey ölçüyor:
+
+1. `uc:` içindeki her yol şemada **var mı**,
+2. `istenen` içindeki her yol şemada **yok mu** — uç geldiği gün kırmızı,
+3. `statik` modülde `uc:` dolu **olmasın**.
+
+⚠️ **İlk sürüm `eksik:` düzyazısını tarıyordu ve atıldı:** dört bulgunun
+üçü yanlış pozitifti, çünkü düzyazı var olan bir ucun **sınırını**
+anlatmak için de ondan söz ediyor (*"/api/lookups yalnız aktif bölgeleri
+döndürüyor"* bir yokluk iddiası değil). İddia makine-okunur olmadan
+denetlenemiyor → [[genel-desenler]]
+
+⚠️ Aynı liste **ekranda** da basılıyor: `BeklenenUclar` artık `slug`
+alıyor ve `MODUL_DURUMU`'dan okuyor. Personelin *"bu modül neden boş"*
+sorusuna verilen cevap, denetlenen cevabın kendisi.
+
+Bozma senaryoları koşturuldu: var olan ucu `istenen`'e yazmak ve olmayan
+yolu `uc:`'a yazmak, ikisi de `IHLAL=1` üretti; geri alınca `IHLAL=0`.
+
+## `belirtec-denetle.py` yazıldı, dört ihlal kapandı
+
+`border-success-line` ve `text-success-deep` tanımlı değildi; dört üretim
+dosyasında yeşil rozetlerin kenarlığı ve yazı rengi **basılmıyordu**
+(`5242ab3`). Tanımlı belirteç sayısı 40, ihlal 0.
+
+⚠️ Ölçüt bir kez daraltıldı: geniş tarama 175 satır üretti ve 171'i
+yanlış pozitifti (`border-b`, `divide-y`, `shadow-e3`). Gerçek dördünün
+içinde kaybolduğu bir liste, listesizlikten kötü.
+
+## Sabah yapılacak — tarayıcı doğrulaması
+
+Mert giriş yapınca, sırayla:
+
+| Ne | Nasıl |
+|---|---|
+| Tahsilat formu | `VZZC9JG8` → "tahsil edildi işaretle" → kayıt görünümü + `Paid` |
+| Ödeme bağlantısı | `3S2G3T3K` → e-posta + SMS gönder → Mailpit ve `NotificationOutbox` |
+| `/odeme` sayfası | Bağlantıdaki jetonla aç, tutarı ve süreyi doğrula |
+| Telefon listesi | `?channel=phone` iki kaydı getiriyor mu |
+| Bölge tablosu | On bölge, tekne sayıları 1/1/1/1/1/1/1/1/0/0 |
+| Aktivite | Personel seçici + tür süzgeci + olay ayrıntısı |
+| Finans | Sayaçlar ve aylık eğri, dönem değişince |
+
+⚠️ Para hareketi doğuran adım yalnız **tahsilat işaretleme**; gözetimsiz
+yapılmadı ve Mert başındayken yapılacak.
+
+## Tarayıcı doğrulama defteri
+
+> **Bu bölüm makine-okunur.** Her satır `tarayıcıda doğrulandı: <ekran> · <tarih>`
+> ya da `tarayıcıda doğrulanmadı: <ekran> · <sebep>` biçiminde.
+>
+> ⚠️ **Neden gerekli:** `build`, `lint`, `tsc` ve ölçüm betikleri bir ekranın
+> **derlendiğini** söylüyor, **göründüğünü** söylemiyor. Bu oturumda derlemesi
+> temiz olup ekranda hiçbir şey yapmayan üç kusur çıktı: uydurma fatura,
+> gönderilmeyen iptal gerekçesi ve basılmayan rozet kenarlığı. Üçünü de
+> yakalayan şey tarayıcıydı.
+>
+> ⚠️ *"Yazıldı"* ile *"görüldü"* arasındaki farkı yalnız bu defter taşıyor.
+> Ayrı tutulmazsa ikisi aynı kelimeye çöküyor ve panoda tamamlanmış görünen
+> bir görev, hiç açılmamış bir ekran oluyor.
+
+tarayıcıda doğrulandı: iade modalı · 2026-09-11
+tarayıcıda doğrulandı: iptal kartı · 2026-09-11
+tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11
+tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11
+
+tarayıcıda doğrulanmadı: yolcu gönder (form · liste · tahsilat · ödeme bağlantısı) · personel girişi Mert'te
+tarayıcıda doğrulanmadı: /odeme müşteri ödeme sayfası · jeton yalnız gönderimle üretiliyor
+tarayıcıda doğrulanmadı: bölge yönetimi · personel girişi Mert'te
+tarayıcıda doğrulanmadı: reklam yönetimi · personel girişi Mert'te
+tarayıcıda doğrulanmadı: aktivite kayıtları · personel girişi Mert'te
+tarayıcıda doğrulanmadı: log kayıtları · personel girişi Mert'te
+tarayıcıda doğrulanmadı: e-posta yönetimi · personel girişi Mert'te
+tarayıcıda doğrulanmadı: sms yönetimi · personel girişi Mert'te
+tarayıcıda doğrulanmadı: sms gönderimleri · personel girişi Mert'te
+tarayıcıda doğrulanmadı: finans · personel girişi Mert'te
+tarayıcıda doğrulanmadı: sözleşme listesi · personel girişi Mert'te
+tarayıcıda doğrulanmadı: rezervasyon ayarları · personel girişi Mert'te
+tarayıcıda doğrulanmadı: belge talepleri · personel girişi Mert'te
+tarayıcıda doğrulanmadı: yeşil rozetler (kupon · blog · hesap kuponları) · personel girişi Mert'te
+
+⚠️ **Parolayı ben yazmıyorum** — Mert bilgiyi verdiğinde bile. Giriş onun
+elinden yapılıyor, doğrulama ondan sonra başlıyor. Bu bir araç kısıtı değil,
+oturum boyunca tutulan bir kural.
+

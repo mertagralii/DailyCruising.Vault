@@ -329,6 +329,17 @@ def m_gate_kabul_silindi(k):
     yaz(k, rel, "\n".join(satirlar))
 
 
+def m_tarayici_geride(k):
+    # Deftere, kod o tarihten SONRA degismis bir dogrulama kaydi ekle.
+    # Gercek kusur: "dogrulandi" yazip ertesi gun ekrani degistirmek defteri
+    # sessizce yalan yapiyor; derleme temiz kaldigi icin hicbir sey konusmuyor.
+    d28 = AYAR.get("tarayici_defteri") or {}
+    rel = d28.get("dosya")
+    if not rel or not (k / rel).exists():
+        return
+    ekle(k, rel, "\ntarayıcıda doğrulandı: deneme ekrani · 2020-01-01 · src/app/page.tsx\n")
+
+
 def m_durum_bayat(k):
     r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
@@ -444,6 +455,7 @@ SENARYOLAR = [
     (24, "betik tipi kuralin cirnigi indi",    "desen ihlali",    m_betik_kurali),
     (25, "uretilen dosya kaynagin gerisinde", "uretilen dosya bayat", m_uretilen_bayat),
     (26, "yayin kosulunun kabul olcutu silindi", "gate kabul yok",  m_gate_kabul_silindi),
+    (28, "dogrulanan ekran sonradan degisti",  "tarayici dogrulamasi geride", m_tarayici_geride),
 ]
 
 
