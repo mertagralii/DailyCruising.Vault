@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-11
+guncelleme: 2026-09-12
 uretici: DailyCruising.Front-End/araclar/mimari-cikar.py
 durum: uretilen
 ---
@@ -22,6 +22,8 @@ durum: uretilen
 | Bileşen (`src/components/**/*.tsx`) | 145 |
 | Yönetim paneli ekranı | 30 |
 | API istemci modülü | 12 |
+| Yanıt tipi dosyası (`src/lib/api/types`) | 21 |
+| Ölçüm betiği (`araclar/*.py`) | 4 |
 | Uçtaki yol · işlem | 195 · 248 |
 
 ## Rotalar

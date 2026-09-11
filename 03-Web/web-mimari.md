@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-11
+guncelleme: 2026-09-12
 durum: guncel
 ---
 
@@ -308,21 +308,31 @@ oraya konmazsa tarayıcı tarafı kendi kopyasını yazıyor → [[web-desenler]
 ## Yönetim paneli tamamlandı (2026-09-10/11)
 
 Yukarıdaki *"19 modül dosyası"* listesi **eskidi**; bu bölüm onu geçersiz
-kılar. Modül dosyası sayısı **30**, `lib/api/types/` **21** dosya.
+kılar.
+
+⚠️ **Sayıları buraya yazmıyorum** — üçü de ([[web-mimari-guncel]]) üretilen
+tabloda: yönetim paneli ekranı · yanıt tipi dosyası · ölçüm betiği. İlk
+yazımda sayıları buraya yazmıştım ve bu, aynı gün `41 rota` kusurunu
+doğuran hatanın birebir aynısıydı: **append-only anlatıda bugünkü sayı ile
+dünkü sayı yan yana durur** ve okuyan hangisinin güncel olduğunu bilemez.
+Sayı üretilebiliyorsa üretilir; anlatıya **ne olduğu** yazılır.
+
+Son iki sayaç (`types` ve `araclar`) bu yüzden `mimari-cikar.py`'ye eklendi.
+Bir envanter üretilmeye başlandığı gün, o sayıyı okuyan **her yer** yeni
+dosyaya taşınmalı — kuralın kolay atlanan yarısı bu.
 
 ```
-components/panel/admin/               30 dosya. 2026-09-06 listesine eklenenler:
+components/panel/admin/               2026-09-06 listesine eklenen ekranlar:
                                       contracts · legal-documents ·
                                       document-queue · notification-templates ·
                                       notification-log · activity-log ·
                                       staff-table · staff-roles · reschedule ·
                                       blog/yorum ekranları
-lib/api/types/                        21 dosya. Eklenenler: notifications ·
-                                      documents · finance · adverts · activity ·
-                                      logs · settings · legal · lookup-catalog
-araclar/                              4 ölçüm betiği: sozluk-denetle ·
-                                      belirtec-denetle · durum-denetle ·
-                                      mimari-cikar
+lib/api/types/                        eklenenler: notifications · documents ·
+                                      finance · adverts · activity · logs ·
+                                      settings · legal · lookup-catalog
+araclar/                              sozluk-denetle · belirtec-denetle ·
+                                      durum-denetle · mimari-cikar
 ```
 
 ⚠️ **`lib/data/admin-ornek.ts` **silindi** ve yeniden açılmayacak.** Yukarıdaki
