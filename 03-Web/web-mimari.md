@@ -305,6 +305,66 @@ app/admin/tekneler/                   tekne alt ekranları (liste · yeni · det
 istemci bileşenleri oradan okuyamıyor. Uç anahtarı → Türkçe etiket sözlükleri
 oraya konmazsa tarayıcı tarafı kendi kopyasını yazıyor → [[web-desenler]]
 
+## Yönetim paneli tamamlandı (2026-09-10/11)
+
+Yukarıdaki *"19 modül dosyası"* listesi **eskidi**; bu bölüm onu geçersiz
+kılar. Modül dosyası sayısı **30**, `lib/api/types/` **21** dosya.
+
+```
+components/panel/admin/               30 dosya. 2026-09-06 listesine eklenenler:
+                                      contracts · legal-documents ·
+                                      document-queue · notification-templates ·
+                                      notification-log · activity-log ·
+                                      staff-table · staff-roles · reschedule ·
+                                      blog/yorum ekranları
+lib/api/types/                        21 dosya. Eklenenler: notifications ·
+                                      documents · finance · adverts · activity ·
+                                      logs · settings · legal · lookup-catalog
+araclar/                              4 ölçüm betiği: sozluk-denetle ·
+                                      belirtec-denetle · durum-denetle ·
+                                      mimari-cikar
+```
+
+⚠️ **`lib/data/admin-ornek.ts` **silindi** ve yeniden açılmayacak.** Yukarıdaki
+Faz E bölümü onu *"örnek veri tek dosyada, uç gelince export siliniyor"* diye
+anlatıyor — o düzen işini gördü ve **bitti**: panelde uydurma veri kalmadı.
+Dosyanın kendisi son export'u da silinince kaldırıldı.
+
+**Neden anlatıyorum:** silinen bir dosyanın **neden** silindiği koddan
+okunamaz. Biri altı ay sonra *"örnek veri nereye gitti"* diye sorduğunda,
+cevabın "kayboldu" değil "artık gerekmiyor" olması gerekiyor.
+
+### Üç ölçüm betiği kod reposunda, vault'ta değil
+
+`araclar/*.py` betikleri **iki repoya birden** bakıyor: `durum-denetle.py`
+front-end'in `admin-durum.ts`'ini back-end'in `openapi.json`'ıyla
+karşılaştırıyor, `sozluk-denetle.py` TypeScript sözlüklerini C# enum'larıyla.
+
+**Neden vault'ta değil:** vault yalnız kendine bakabiliyor; iki repoyu
+karşılaştıran bir ölçüm oraya sığmaz. Vault'un `desen_ihlalleri` kaydı
+betiği **çağırıyor**, içeriğini taşımıyor.
+
+⚠️ Her betiğin son satırı `IHLAL=<sayı>` ve **stdout'a** basılıyor.
+`durum-denetle.py` bir gün `raise SystemExit` ile yazıyordu: satır
+stderr'e gidiyordu ve stdout okuyan bir tüketici **hiç `IHLAL` satırı
+görmüyordu** — yani denetim sessizce yeşil sayılıyordu.
+
+### `MODUL_DURUMU.istenen` — yokluk iddiasının yeri
+
+`admin-durum.ts` artık üç şey söylüyor: hangi uç bağlı (`uc`), ne eksik
+(`eksik`, düzyazı) ve **hangi uç istendi ama yok** (`istenen`, makine
+okunur).
+
+**Neden ayrı alan:** *"şu uç yok"* iddiası, *"şu uç var"* iddiasından
+farklı bayatlıyor. Varlık iddiası ad silinince göze çarpar; yokluk
+iddiası **dünya zenginleştikçe** bozulur — back-end uç ekler, kimse bir
+şey silmez, not sessizce yalan olur. Bir gecede yedi modülün eksik notu
+yanlış çıktı ve ikisi **var olan veriyi ekrandan gizliyordu**.
+
+`istenen` listesi hem `durum-denetle.py` tarafından denetleniyor (yol
+şemada gerçekten yok mu) hem de `BeklenenUclar` ile **ekranda** basılıyor
+— kayıt ile arayüz ayrışamıyor çünkü tek kaynak.
+
 ## İmza öğe (2026-08-22)
 
 `components/ui/wave-stitch.tsx` — "dalga dikişi", markanın imza öğesi.

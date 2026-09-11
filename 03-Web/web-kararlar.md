@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: web
-guncelleme: 2026-09-10
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -2135,8 +2135,14 @@ yer olmazdı.
 
 Gece boyunca aldığım kararlar `SORULAR.md` adlı geçici bir dosyada
 toplanmıştı; Mert hepsini cevapladıktan sonra dosya silindi ve kararlar
-buraya taşındı. **Geçici dosya kalıcı kayıt değildir** — silinecek bir
-yerde biriken karar, silindiği gün kaybolur.
+buraya taşındı.
+
+**Neden:** on karar da **Mert'in**, benim değil — ve ikisi benim önerimin
+tersi çıktı. Sahibiyle birlikte yazılmazlarsa, altı ay sonra hangisinin
+sorulmuş hangisinin varsayılmış olduğu ayırt edilemez; tam bu ayrım
+bugün üç ekranda bedel ödetti. İkinci sebep taşımanın kendisi: kararlar
+silinecek bir dosyada birikmişti ve **geçici dosya kalıcı kayıt
+değildir** — orada bırakılsalardı, dosyanın silindiği gün kaybolurlardı.
 
 | # | Konu | Karar |
 |---|---|---|
