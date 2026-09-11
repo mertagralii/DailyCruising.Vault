@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: genel
-guncelleme: 2026-09-09
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -69,13 +69,14 @@ doğru göründüğünü göstermez → [[mobil-desenler]] · `M-03`
 
 **2026-08-28: aktif blocker sayısı 1'e indi — kalan tek engel Mert'te.**
 
-Panolar (28 Ağustos, alan oturumlarının kendi ölçümü):
+⚠️ **Pano sayıları buraya YAZILMAZ** (2026-09-11). Burada 28 Ağustos'tan kalma
+bir tablo duruyordu: "API 3/93 · Web 4/64" derken gerçek 6/158 ve 3/78'di. İki
+hafta kimse fark etmedi, çünkü tabloyu güncelleyen bir tetikleyici yoktu.
 
-| Alan | Yapılacak | Tamamlandı |
-|---|---|---|
-| API | 3 | 93 |
-| Web | 4 | 64 |
-| Genel | 6 | 11 |
+Güncel sayı **üretilen** yerde yaşıyor: [[acilis]] — `_araclar/acilis-guncelle.py`
+panolardan sayıp yazıyor, `dogrula.py` kontrol 22 sapmayı yakalıyor. Panonun
+kendisi zaten tek otorite; buradaki kopya yalnız bayatlayabilirdi →
+[[genel-desenler]] *"envanter üretilir, gerekçe yazılır"*
 
 ⚠️ **Bu sayılar panodan okunamıyordu, sayılarak bulundu.** Üç panoda birden
 **bitmiş görevler Yapılacak bölümünde duruyordu**; web "5 kaldı" derken pano 9

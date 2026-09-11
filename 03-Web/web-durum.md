@@ -757,7 +757,7 @@ görmek.
 değil ölçümle çıktı"*. Bunun tersi: **ölçümle değil gözle çıktı.** İkisi
 birbirinin yerine geçmiyor.
 
-## 2026-09-11 — Tarih değiştirme: ekran hazır, para modeli bekliyor
+## 2026-09-11 — Tarih değiştirme: üç yolun ikisi doğrulandı
 
 Mert: *"müşteri bir rezervasyon yapmıştır ama sonrasında bir değişikliğe
 ihtiyaç duyduğunda buradan da müdahale edebilmemiz gerekiyor."* Seçenekleri
@@ -798,26 +798,81 @@ pencerenin altı ay ötesinde — personel müşterinin istediği tarihleri
 kalkış pencerenin dışındaysa pencere onun iki hafta öncesinden başlıyor,
 ayrıca ileri/geri geziliyor (uç bir seferde en çok 92 gün veriyor).
 
-### 🟡 Bekleyen: para modeli (back-end'de, Mert onayladı)
+### Uçtan uca doğrulananlar (tarayıcı + veritabanı)
 
-Back-end `POST /reschedule`'ü yazarken durdu ve sebebi haklı:
+| Yol | Sonuç |
+|---|---|
+| `None` (tutar aynı) | ✅ Taşındı, bildirim ve zaman tüneli doğru, geri alındı |
+| `Refund` (tutar düşüyor) | ✅ Taşındı `₺4.350 → ₺2.700`, iade kaydı açıldı, **iş koştu**, defter yazdı |
+| `Collect` (tutar artıyor) | ⏳ Önizleme doğrulandı; onay **kapalı** (tahsilat altyapısı yok) |
+| Biniş jetonu | ✅ İleri taşımada `BoardingTokenExpiresAt` yeni turla birlikte gitti |
 
-1. İade işi yalnız **`Cancelled`** rezervasyonlara bakıyor. Taşınan kayıt
-   `Paid` kalıyor, yani iade kaydı yazılsa bile iş onu **hiç görmezdi** —
-   para hiç iade edilmez, hiçbir yerde hata da görünmezdi.
-2. **Rezervasyon başına ömür boyu tek iade** (`!Refunds.Any(… != Failed)`).
-   Taşıma iadesi alan müşteri sonradan iptal ederse iptal iadesi **bloke**.
+**Defter — kararın kanıtı burada**, ekranda değil:
 
-⚠️ İkincisi **taşımadan bağımsız, bugün de var olan** bir kısıt: kısmi iade
-yapılamıyor. Taşıma rafa kalksa bile bu kusur duruyor.
+```
+Customer | Refund |  1650.00      net:  Customer  -2700.00
+Partner  | Refund | -1402.50            Partner    2295.00
+Platform | Refund |  -247.50            Platform    405.00
+TOPLAM   |            0.00              TOPLAM        0.00
+```
 
-Kök sebep: **para hareketleri rezervasyonun bir özelliği olarak modellenmiş,
-kendi başına kayıtlar olarak değil.** Tahsilattaki "ödeme hep tam tutardır"
-varsayımı aynı şeyin öbür yüzü. Düzeltme taşımanın parçası değil, altındaki
-katman — ve kısmi iade · çoklu iade · fark tahsilatını birlikte açıyor.
+⚠️ `Platform = 405` tek başına Mert'in **orantılı bölüştürme** kararının
+kanıtı: komisyon eski tutarın değil **yeni tutarın** %15'i. "Tamamı
+işletmeden düşsün" seçilseydi platform 652,50'de kalırdı.
 
-Mert üç seçenek arasından **"düzeltilsin, beklerim"** dedi; ta­şıma ekranı
-`TASIMA_HAZIR = false` ile hazır bekliyor, uç gelince tek satır.
+### Bu turda yakalanan beş kusur — hiçbirini derleyici görmedi
+
+| # | Kusur | Nasıl çıktı |
+|---|---|---|
+| 1 | `rentalTypeId` ≠ `boatRentalTypeId` → `400 BoatNotFound` | Ekranda "Tekne bulunamadı" |
+| 2 | Sabit 90 günlük pencere, 6 ay sonraki rezervasyonda işe yaramıyor | Test verisi hazırlanırken |
+| 3 | Biniş jetonunun geçerliliği taşınmıyor (back-end) | Kartta iki çelişen tarih |
+| 4 | İade işi iade kayıtlarını görmüyor (back-end) | Back-end ölçümü |
+| 5 | İade oluyor, **defter yazmıyor** (back-end) | Back-end ölçümü |
+
+Bende olan iki tanesi (1 ve 2) ve bir de bildirimde **eksi işaretli iade
+tutarı** (`−₺1.650 iade kaydı açıldı`) — üçü de `tsc` · `lint` · `build`
+üçlüsünden temiz geçiyordu.
+
+### 🟡 Para hareketi doğuran yollar bayrakla yönetiliyor
+
+`IADE_YOLU_HAZIR = true` · `TAHSILAT_HAZIR = false`. Bayrak **ikiye
+bölündü**, çünkü kapalı olma sebepleri farklıydı ve tek bayrak ikisini
+birden açardı.
+
+⚠️ İade yolu bir süre kapatıldı: defter yazmıyordu. Back-end bana *"tekrar
+koşma"* demişti ama **Mert paneli kendi kurcalıyor** — *"basılmamalı"* ile
+*"basılamıyor"* aynı şey değil. Düğmeyi kodda kapatmak, sözlü uyarıdan
+farklı bir korumadır.
+
+### Geliştirmede iş tetikleme (`bb2dfb3`)
+
+İade işi 15 dakikada bir koşuyor; para yolunu doğrulamak her turda o kadar
+bekleme demekti. Back-end `POST /api/dev/jobs/{ad}/run` açtı.
+
+⚠️ **Vekilin izin listesi yine engel oldu** — `dev` listede yoktu, istek
+backend'e hiç ulaşmıyordu. Bu tuzağa bu projede **dördüncü** düşüş; bu sefer
+"neden 404" diye aranmadan önce ölçüldü.
+
+Önek **kalıcı listeye konmadı**: üretimde boş kalan ayrı bir liste
+(`NODE_ENV === "production" ? [] : ["dev"]`). Kalıcı listeye koymak,
+unutmanın tersi bir hata üretirdi — üretimde niyet edilmemiş bir yol. Backend
+de aynı uçları üretimde `404` veriyor; iki taraf bağımsız kapatıyor.
+
+### Bekleyen
+
+- **Fark tahsilatı** (back-end): kısmi `Payment` · jetonlu bağlantı · dönüşün
+  farkı işlemesi · taşımanın tamamlanması. Gelince `TAHSILAT_HAZIR` açılıp
+  `Collect` koşulacak.
+- **Ayrıntı yükü**: bekleyen talep şeridi · iade listesi · `RefundStatus` ve
+  talep durumu enum'ları. Ölçüldü (2026-09-11): üçü de şemada **henüz yok**,
+  yani o ekranlar bugün yazılamıyor.
+
+⚠️ **Bekleyen taşıma hiçbir yerde görünmüyor** ve şerit gelene kadar öyle
+kalacak: fark ödenene kadar rezervasyon `Paid` ve eski tarihinde duruyor.
+İkinci bir personel aynı kaydı başka tarihe taşımaya kalkabilir ya da iptal
+edebilirken müşteri farkı ödüyor olabilir. Mert kararı verdi: **iptal
+kazanır**, bağlantı iptal anında geçersiz olur, ödenmişse fark iade edilir.
 
 ### ⚠️ Kapanmayan boşluk
 

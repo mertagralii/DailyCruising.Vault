@@ -28,7 +28,7 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 
 ## Şu an ne oluyor
 
-- **API:** pano 7/163 · **763 test yeşil** (9 Eylül, backend ölçümü). Ödeme uçtan uca
+- **API:** pano 7/163 · **770 test yeşil** (9 Eylül, backend ölçümü). Ödeme uçtan uca
   çalışıyor (gerçek İyzico sandbox). Panoda **Mert'e bağlı olmayan iş kalmadı**
 - **Web:** 41 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).

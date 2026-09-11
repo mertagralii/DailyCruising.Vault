@@ -6510,3 +6510,136 @@ iadeler yapılmıştı. Boşluğun kendisi kısıtın kapattığı kusurun kanı
 kaydının açılmasına zaten izin vermiyor. Kopya bir kontrol, bozulduğunda hiçbir
 testi kırmayan ölçülmeyen bir dal bırakırdı. Eski test de buna göre yeniden
 yazıldı — artık *"sıfır iade kaydı hiç açılamıyor"* diyor.
+
+## 2026-09-11 · Zamanlanmış iş geliştirmede elle tetiklenebiliyor
+
+`POST /api/dev/jobs/{name}/run` — yalnız geliştirme ortamında; başka ortamda
+**404**, "yetkin yok" değil "böyle bir uç yok". Yetki (`platform.settings`)
+ayrıca aranıyor; ortam kontrolüyle birbirinin **yedeği**, alternatifi değil.
+
+**Neden:** para yolunu uçtan uca doğrulayan her tur iade işinin 15 dakikalık
+aralığını bekliyordu. Tek alternatif API'yi yeniden başlatmaktı — açılışta her
+iş bir kez koşuyor — ve bu, ölçülmek istenen davranışı **ölçümün kendisine**
+bağlıyordu: web'in ilk koşusunda iadenin hızla `Completed` olması tam da bundan
+kaynaklandı ve "iş 15 dakikada bir koşuyor" gerçeğini gizledi.
+
+⚠️ **Çalıştırma kodu kopyalanmadı**, `ScheduledJobExecutor`'a çıkarıldı;
+zamanlanmış çalıştırıcı da onu kullanıyor. Kopya olsaydı biri `JobRun` kaydını
+yazmayı unutur ve `GET /api/health/jobs` elle tetiklenen çalışmaları hiç
+görmezdi.
+
+⚠️ Uç arayüz belgesine çıkmıyor (`IgnoreApi`) — ön yüzün tip üreticisi bir
+geliştirme aracını sözleşmenin parçası sanmasın. **Muafiyetin kendisi de
+denetleniyor:** `OpenApiDocumentTests.Endpoints_hidden_from_the_document_are_development_only`
+gizlenen denetleyicinin `api/dev/` altında olmasını şart koşuyor. Denetlenmese
+herhangi bir uç tek öznitelikle sözleşmenin dışına çıkarılabilir ve iki yönlü
+belge kapısı sessizce delinebilirdi.
+
+## 2026-09-11 · Kirlenen test rezervasyonu temizlenmedi — defter değişmez
+
+`P8HCY2Q9` taşınmış hâlinde bırakıldı (12.04.2027 · ₺2.700 · `Paid`, bir
+`Completed` iade, üç defter satırı). Web "silelim mi, ters kayıt mı atalım"
+diye sordu; cevap **üçüncü şık: hiçbiri.**
+
+**Neden:** `trg_ledger_entries_immutable` DELETE ve UPDATE'i satır satır
+reddediyor. Silmek için tetikleyiciyi kapatmak gerekirdi — tetikleyicinin tam
+olarak engellemek için var olduğu şey bu. Ters kayıt ise defteri 10 satıra
+çıkarır ve bir sonraki ölçümün **tabanını kirletir**.
+
+Üstelik kayıt bozuk değil: bir taşımanın ve kısmi iadesinin eksiksiz, denk
+(toplam 0) ve doğru bölüştürülmüş kaydı — `Platform = 405`, yani komisyon yeni
+tutarın %15'i. Kanıt olarak duruyor.
+
+⚠️ **Kural:** kirlenen test verisi geçmişi düzelterek değil, **yeni kayıt
+açarak** temizlenir. Değişmez bir defterde "temizlik" diye yapılan her şey
+geçmişi yeniden yazmaktır.
+
+## 2026-09-11 · Tahsilat defteri de ödeme kaydından sürülüyor — kusur doğmadan kapatıldı
+
+`LedgerEntry.PaymentId` + `CK_LedgerEntries_Odeme_Bagi` (`A122`). Mükerrer
+koruma artık ödeme başına.
+
+**Neden:** `PostPaymentAsync` tahsilat satırını rezervasyondan sürüyor ve
+"bu REZERVASYONUN tahsilat satırı var mı" diye soruyordu. Fark tahsilatı
+yazıldığı anda ikinci ödeme bu sorudan `false` alacak ve **para girip deftere
+hiçbir şey yazılmayacaktı** — iade tarafında 11 Eylül'de ölçülen kusurun
+birebir eşi.
+
+⚠️ **Bu kez kusur ÜRETİLMEDİ, öngörüldü.** Farkın tahsilatını yazmaya
+başlamadan önce aynı desenin dördüncü yüzü arandı ve bulundu. Ders şu: bir kök
+sebep kapatıldığında *"aynı varsayım başka nerede duruyor"* sorusu, kusuru
+beklemekten ucuz.
+
+**Hakediş FARK olarak yazılıyor.** İşletmenin deftere yazılı toplam hakedişi,
+rezervasyonun **güncel** hâlinden hesaplanan hakedişe eşitleniyor; satır
+aradaki fark. İlk ödemede önceki toplam sıfır, davranış değişmiyor. İkinci
+tahsilatta komisyon kendiliğinden **yeni tutardan** hesaplanıyor — iadedeki
+orantılı bölüştürmenin tam simetriği. 1.000 → 1.400 taşımada: hakediş
+850 → 1.190, fark satırı 340, platformun elinde 210 (1.400'ün %15'i).
+
+⚠️ **Değişmezlik tetikleyicisinde delik vardı ve kapatıldı.** İzin verilen tek
+güncelleme "`PayoutId` bir kez damgalanır" ve fonksiyon geri kalan her kolonun
+aynı kaldığını **tek tek karşılaştırarak** doğruluyor. `RefundId` (`A121`) ve
+`PaymentId` (`A122`) o listede yoktu: bir hakediş damgası sırasında ikisi de
+sessizce değiştirilebilir, yani geçmiş yeniden etiketlenebilirdi.
+
+⚠️ Ders: **kolon eklemek tetikleyiciyi de ilgilendirir.** Değişmezliği kolon
+kolon sayan bir tetikleyici, tabloya eklenen her yeni kolonda sessizce
+zayıflar; kontrol listesi otomatik büyümüyor.
+
+**Geri doldurma:** 140 satır (70 tahsilat + 70 hakediş). Eşleme belirsiz
+değildi — ölçüldü: rezervasyon başına tam bir başarılı ödeme, defter satırı
+olup ödemesi olmayan rezervasyon yok. Tetikleyici yalnız o tek `UPDATE`
+boyunca kapatıldı; istisna göç dosyasında, görünür ve sınırlı.
+
+⚠️ Finans testlerinin kurgusu da düzeltildi: bağsız hakediş satırı
+üretiyorlardı ve öyle bir satır üretimde **hiç yazılmıyor**. Kısıtı gevşetmek
+yerine kurgu gerçeğe yaklaştırıldı — bugün üçüncü kez "test yanlıştı, koruma
+değil" çıktı.
+
+## 2026-09-11 · Ayrıntı iade LİSTESİ taşıyor, tek alan değil
+
+`GET /api/platform/reservations/{kod}` artık `refunds[]` ve
+`pendingReschedule` döndürüyor; `RefundStatus` ile `RescheduleStatus`
+`components.schemas`'a çıktı.
+
+**Neden liste:** bir rezervasyonda birden fazla para hareketi olabiliyor —
+iptal iadesi ve taşıma farkının iadesi ayrı kayıtlar. Tek bir "iade edildi mi"
+alanı ikincisini görünmez kılardı ve personel parayı arardı.
+
+⚠️ **`willRetry` sunucuda hesaplanıyor.** Deneme sınırı sunucunun kuralı;
+ekran `Failed` ile deneme sayısından kendi çıkarsaydı sınır değiştiği gün
+"yeniden denenecek" derken iş o kaydı çoktan bırakmış olurdu. Sınır tek kopya
+oldu: `RefundRetryPolicy.MaxAttempts`, hem iş hem ayrıntı oradan okuyor.
+
+⚠️ **`canReschedule` bekleyen talep varken kapalı** ve kararı aynı sorgudan
+alıyor, yani şeritle düğme ayrışamaz.
+
+## 2026-09-11 · Kuyruk kilidi: yerini aktif kayıt almış düşmüş iade tekrar deneniyordu
+
+`DueRefundIdsAsync` ve `RefundService.ExecuteAsync` artık, aynı
+`IdempotencyKey` altında `Failed` OLMAYAN bir kayıt varsa düşmüş satırı
+yürütmüyor.
+
+**Neden:** anahtar bir OLAYI adlandırıyor. O olayı karşılayan yaşayan bir iade
+varken eskisini göndermek parayı ikinci kez göndermekti.
+
+⚠️ **İkinci ve daha sinsi bedeli kuyruğun kilitlenmesiydi.**
+`UX_Refunds_IdempotencyKey_Aktif` yalnız `Failed` olmayan satırları kapsıyor;
+eski satır `Failed` → `Sent` olurken indekse girip aktif kayda çarpıyor.
+Çarpma `PaymentException` değil **`DbUpdateException`** olarak çıkıyor, iş
+bunu yakalamıyor ve **tur komple düşüyor** — o turdaki bütün iadeler
+işlenmeden kalıyordu. Tek sıkışmış satır bütün kuyruğu durduruyordu.
+
+Üretimde sıradan bir dizilim: iade düşer, personel elle tekrar başlatır ve
+yenisi tutar; sonra iş eski `Failed` satırı dener.
+
+⚠️ **Kusuru yalnız TAM SÜİT gösterdi.** Tek başına koşan hiçbir test, hatta
+ikili kombinasyonlar bile kırmızıya dönmedi; paylaşılan veritabanında yeterince
+kayıt biriktiğinde çıktı. Bugüne kadar bu sınıf hep "test kirliliği" diye
+okundu — bu kez **gerçek kusur** çıktı.
+
+⚠️ Ders: paylaşılan veritabanında tam süitin kırmızıya dönmesi otomatik olarak
+"testler birbirine karışıyor" demek DEĞİL. Önce *"bu dizilim üretimde olur mu"*
+diye sorulmalı; burada cevap **evet**ti ve yalıtım eklenseydi gerçek kusur
+gizlenecekti.

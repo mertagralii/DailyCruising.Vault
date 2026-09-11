@@ -13,6 +13,47 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (4) — ayrıntı yükü web'e teslim edildi; bir kuyruk kilidi
+giderildi.** `dotnet test` **770/770**, son commit `b6752a6`, `openapi.json`
+yeniden üretildi.
+
+Web'in beklediği üç şey **tek turda** gitti: `refunds[]`,
+`pendingReschedule`, ve iki enum (`RefundStatus`, `RescheduleStatus`)
+`components.schemas`'ta. `canReschedule` bekleyen talep varken kapalı.
+Sıralama bilerek değiştirildi: web bekliyordu, tahsilat ondan bağımsızdı.
+
+⚠️ **Yolda gerçek bir kusur çıktı** → [[api-kararlar]]: yerini aktif bir kayıt
+almış düşmüş iade yeniden deneniyor, `Failed → Sent` geçişi benzersizlik
+indeksine çarpıyor ve **iş turunun tamamını** düşürüyordu. Yalnız tam süit
+gösterdi — tekli ve ikili koşular yeşildi.
+
+⚠️ **Sırada tek parça kaldı:** farkın tahsilatı — kısmi `Payment`, jetonlu
+bağlantı, dönüşün farkı işlemesi, taşımanın tamamlanması. Zemin hazır:
+`A121`/`A122` ile defter hem iade hem tahsilat tarafında para hareketinden
+sürülüyor.
+
+---
+
+**2026-09-11 (3) — defter canlı veriyle doğrulandı; zamanlanmış iş elle
+tetiklenebiliyor.** `dotnet test` **767/767**, son commit `3f86462`.
+
+Web `P8HCY2Q9`'u 12.04.2027'ye taşıdı ve defteri ölçtü:
+`Customer −2.700 · Partner 2.295 · Platform 405`, toplam sıfır. **`Platform =
+405` kararın kanıtı** — komisyon eski tutarın değil yeni tutarın %15'i. İade
+satırları `1.650 / −1.402,50 / −247,50`, kuruşu kuruşuna.
+
+`POST /api/dev/jobs/{name}/run` eklendi (yalnız geliştirme; başka ortamda 404)
+→ [[api-kararlar]]. 15 dakikalık iş aralığı artık ölçümü bekletmiyor.
+
+⚠️ **`P8HCY2Q9` bilerek temizlenmedi** — defter değişmez, geçmiş düzeltilmez.
+`Collect` doğrulaması için yeni bir test rezervasyonu açılacak.
+
+⚠️ **Sırada `A-163`'ün son parçası:** farkın tahsilatı — kısmi `Payment`,
+jetonlu bağlantı, dönüşün farkı işlemesi, taşımanın tamamlanması. Ön yüzde
+`IADE_YOLU_HAZIR` açık, `TAHSILAT_HAZIR` kapalı.
+
+---
+
 **2026-09-11 (2) — taşıma iadesi artık deftere yazılıyor; kayıtsız para
 hareketi kapandı.** `dotnet test` **763/763**, son commit `0cf18f2`,
 migration **A121**.

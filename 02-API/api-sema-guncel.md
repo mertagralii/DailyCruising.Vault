@@ -687,11 +687,13 @@ Kısıtlar:
 | `OccurredAt` | timestamp with time zone | hayır |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
 | `RefundId` | uuid | evet |  |
+| `PaymentId` | uuid | evet |  |
 
 Kısıtlar:
 
 - `CK_LedgerEntries_AccountType_Enum` — `CHECK ((("AccountType")::text = ANY ((ARRAY['Customer'::character varying, 'Platform'::character varying, 'Partner'::character varying])::text[])))`
 - `CK_LedgerEntries_EntryType_Enum` — `CHECK ((("EntryType")::text = ANY ((ARRAY['Collection'::character varying, 'Commission'::character varying, 'PartnerEarning'::character varying, 'Refund'::character varying, 'CouponCost'::character varying, 'Correction'::character varying])::text[])))`
+- `CK_LedgerEntries_Odeme_Bagi` — `CHECK (((("EntryType")::text = ANY ((ARRAY['Collection'::character varying, 'PartnerEarning'::character varying])::text[])) = ("PaymentId" IS NOT NULL)))`
 - `CK_LedgerEntries_Refund_Bagi` — `CHECK (((("EntryType")::text = 'Refund'::text) = ("RefundId" IS NOT NULL)))`
 
 ## `Messages`

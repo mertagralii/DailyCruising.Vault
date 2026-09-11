@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-10
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -428,5 +428,62 @@ denetim olarak duruyor (back-end `fe81262`) ve **kör testle** doğrulandı:
 belge bir önceki commit'e çekildi, denetim eksik iki parametreyi adıyla söyledi,
 diğer yedisi yeşil kaldı. Bir kapıya güvenmenin gerekçesi yazılı olması değil,
 **kırdırılmış olmasıdır**.
+
+## "Basılmamalı" ile "basılamıyor" aynı şey değil
+
+İade yolu bir süre **kayıtsız para hareketi** üretiyordu: iade gerçekleşiyor,
+muhasebe defterine satır yazılmıyordu. Back-end *"tekrar koşma"* dedi — ve bu
+yeterli görünüyordu, çünkü o düğmeye basacak kişi bendim.
+
+Değildi: **Mert paneli kendi kurcalıyor.** Sözlü uyarı, panele giren bir
+kullanıcıyı bağlamaz. Düğme bayrakla kapatıldı ve yerinde sebebi yazıldı.
+
+Kural: bir eylem "şu an yapılmamalı" durumundaysa, **kodda kapatılır**; bir
+kişinin hatırlamasına bırakılmaz. Geçici kapatma bir bayrak + ekranda görünen
+bir cümle demektir — sessiz eksik, görünen eksikten uzun yaşar.
+
+⚠️ Bayrak **her kapalı yol için ayrı**: `IADE_YOLU_HAZIR` ile
+`TAHSILAT_HAZIR` tek bayrakken, defter düzelince ikisi birden açılacaktı —
+oysa tahsilat hâlâ yoktu. **Farklı sebeple kapalı olan iki şey aynı anahtarı
+paylaşmaz.**
+
+## Geliştirme aracı, üretim yüzeyine kalıcı olarak eklenmez
+
+Zamanlanmış işleri elle tetikleyen uç (`/api/dev/jobs/…`) vekilin izin
+listesinde yoktu. Kalıcı listeye eklemek en kolayıydı ve yanlıştı: üretimde
+niyet edilmemiş bir yol açardı.
+
+Doğrusu **üretimde boş kalan ayrı bir liste**:
+`NODE_ENV === "production" ? [] : ["dev"]`. Backend de aynı uçları üretimde
+`404` veriyor — iki taraf bağımsız kapatıyor ve **biri unutulursa diğeri
+tutuyor**.
+
+⚠️ Vekil izin listesi bu projede **dördüncü** kez unutuldu. Belirti her
+seferinde aynı ve yanıltıcı: ekran `404` alıyor, kimse backend'e bakmıyor,
+"uç yok" sanılıyor. Yeni bir önek çağıracak her ekranda önce buraya bakılır
+→ [[web-mimari]]
+
+## Aynı gün dördüncü kez: ölçüm doğru görünüp başka şeyi ölçüyor
+
+2026-09-11'de dört ayrı biçimde yaşandı ve dördü de **makul çıktı** üretti:
+
+| Ne | Gerçekte ne oluyordu |
+|---|---|
+| `set -- $degisken` (zsh) | Sözcük bölmesi yok; parametre URL'e hiç girmedi, iki çağrı da aynıydı |
+| Çöken Python betiği | `TypeError` öncesi yarım liste basıldı, tam liste sanıldı |
+| Bayat süreç | API düzeltmeden 10 dakika eski ikiliyi çalıştırıyordu |
+| Zamanlanmış iş | Defter boştu çünkü iş 15 dakikada bir koşuyor, henüz koşmamıştı |
+
+Ortak kural: **bir ölçüm "sonuç yok" diyorsa, önce ölçümün kendisini
+doğrula.** Üç kontrol sorusu işe yarıyor:
+
+1. Beklediğim kadar satır/alan geldi mi? (sayıyla doğrula)
+2. İki farklı girdi aynı sonucu veriyorsa, gerçekten iki farklı istek mi
+   attım?
+3. Ölçtüğüm süreç, ölçmek istediğim kodu mu çalıştırıyor? (uptime, commit
+   zamanı, işin periyodu)
+
+İlk üçünde de hata bendeydi ve ikisinde yanlış rapor vermekten son anda
+döndüm.
 
 İlgili: [[web-kararlar]] · [[web-durum]]
