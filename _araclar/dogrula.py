@@ -27,6 +27,7 @@ Tarar:
  22. acilis.md'deki sayilar kaynagiyla celisiyor mu
  23. Alan durumu kod reposundaki commit'lerin gerisinde mi
  24. Yazili desen kodda cignenmis mi (cirnik: borc buyuyemez)
+ 25. Uretilen dosya, uretildigi kaynagin gerisinde mi
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -1095,6 +1096,56 @@ for _k in _D24:
     else:
         olcumler.append(
             f"kontrol 24 · {_k['ad']}: {_sayi24} yer, tavanda — buyumesi kirmizi yanar")
+
+
+
+# ---------------------------------------------------------------------------
+# 25: vault'a yazan uretici, urettigi dosya kodun gerisinde mi
+#
+# "Envanter uretilir" kurali 2026-09-05'te kondu ve ise yaradi: `api-sema.md`
+# 84 tablonun 16'sini hic anmiyordu, uretilen `api-sema-guncel.md` bunu bitirdi.
+# Ama URETILEN dosyanin kendisi de bayatlar — betik calistirilmadiysa.
+# Kontrol 15 ELLE yazilan mimariyi olcuyor; bu, URETILEN dosyayi olcer.
+#
+# Olcut kontrol 23 ile ayni ilke: beyan edilen gun ile kaynagin son degistigi
+# gun. Betigi KOSMUYOR — sema cikarici canli veritabani istiyor, denetim
+# yan etkisiz kalmali. Bayatligi soyler, komutu yazar, kullanici calistirir.
+_U25 = (AYAR.get("uretilen_dosyalar") or {}).get("kaynaklar", [])
+for _k25 in _U25:
+    _hyol = VAULT / _k25["hedef"]
+    _alan25 = AYAR["alanlar"].get(_k25.get("alan"), {})
+    _repo25 = VAULT.parent / (_alan25.get("kod_repo") or "")
+    if not _hyol.exists():
+        sorunlar.append(
+            f"[uretilen dosya yok] {_k25['hedef']}: yapilandirmada uretici "
+            f"tanimli ({_k25['betik']}) ama dosya yok — `{_k25['komut']}`")
+        continue
+    _fm25 = frontmatter(_hyol.read_text(encoding="utf-8")) or {}
+    _t25 = _fm25.get("guncelleme")
+    if not _t25 or not re.match(r"^\d{4}-\d{2}-\d{2}$", _t25):
+        sorunlar.append(f"[uretilen dosya tarihsiz] {_k25['hedef']}: beyan yok")
+        continue
+    if not _alan25.get("kod_repo") or not _repo25.exists():
+        olcumler.append(
+            f"kontrol 25 · {_k25['hedef']}: kod reposu yok ({_repo25}) — OLCULEMEDI")
+        continue
+    _arg25 = ["log", "-1", "--format=%cs", "--"] + list(_k25.get("izlenen") or ["."])
+    _son25 = (_git_repo(_repo25, _arg25) or "").strip()
+    if not _son25:
+        olcumler.append(
+            f"kontrol 25 · {_k25['hedef']}: izlenen yollarda "
+            f"({', '.join(_k25.get('izlenen') or ['.'])}) hic commit yok — OLCULEMEDI")
+        continue
+    if _son25 > _t25:
+        sorunlar.append(
+            f"[uretilen dosya bayat] {_k25['hedef']}: beyan {_t25}, kaynak "
+            f"({', '.join(_k25.get('izlenen') or ['.'])}) {_son25}'de degisti. "
+            f"Tetikleyici: {_k25['tetikleyici']} -> `{_k25['komut']}` calistirilmali. "
+            f"Uretilen dosya elle duzeltilmez")
+    else:
+        olcumler.append(
+            f"kontrol 25 · {_k25['hedef']}: beyan {_t25} · kaynak son degisim "
+            f"{_son25} — uretim guncel")
 
 
 print(f"Vault: {VAULT}")

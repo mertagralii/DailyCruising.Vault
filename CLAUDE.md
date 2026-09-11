@@ -1,7 +1,7 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-09-09
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -175,6 +175,21 @@ olmadığı için geri alınamaz. Bu yüzden yazma hakkı bölünmüştür. Öl�
 | Frontend kodu | `03-Web/*` (durum → `web-durum.md`) |
 | Mobil kodu | `05-Mobil/*` (durum → `mobil-durum.md`) |
 | Vault / genel | `00-Index.md` · `04-Oturumlar/` · `01-Genel/durum.md` |
+
+### Vault oturumunun işi nedir — 2026-09-11 Mert talimatı
+
+**Vault oturumu ürün kodu yazmaz.** İşi iki şey:
+
+1. **Makineyi kurmak ve onarmak** — `_araclar/` altındaki denetim, üretici ve
+   ölçüm araçları; tetikleyici tabloları; bölme yapısı. Geliştirme gerekiyorsa
+   yapar, kırık varsa onarır.
+2. **API ve Web oturumlarını takip etmek** — vault'a göre çalışıyorlar mı, sistem
+   onlara yarıyor mu, bağlamdan kopuyorlar mı. Ölçerek: `okunma.py`,
+   `dogrula.py`, panolar, ve doğrudan `SendMessage` ile sormak.
+
+⚠️ **Bu yüzden "sırada hangi ürün görevini yapayım" diye sormaz.** Ürün işi alan
+oturumlarının; vault oturumunun sırasındaki iş **vault'un kendi kusurlarıdır.**
+
 
 **Vault artık bir git reposudur** (`mertagralii/DailyCruising.Vault`, private).
 Alan oturumları vault'a **yazar ama commit atmaz** — commit'i vault oturumu atar.

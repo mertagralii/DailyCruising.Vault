@@ -300,6 +300,18 @@ def m_betik_kurali(k):
             return
 
 
+def m_uretilen_bayat(k):
+    # Uretilen dosyanin beyanini geriye cek: kaynak (migration klasoru) o
+    # tarihten sonra degismistir, yani uretici calistirilmamis demektir.
+    for kaynak in (AYAR.get("uretilen_dosyalar") or {}).get("kaynaklar", []):
+        rel = kaynak["hedef"]
+        if not (k / rel).exists():
+            continue
+        yaz(k, rel, re.sub(r"^guncelleme: .*$", "guncelleme: 2020-01-01",
+                           oku(k, rel), count=1, flags=re.M))
+        return
+
+
 def m_durum_bayat(k):
     r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
@@ -413,6 +425,7 @@ SENARYOLAR = [
     (24, "kodda yazili desen cignenmis",         "desen ihlali",    m_desen_ihlali),
     (22, "acilis sayisi elle yazilmis",         "acilis uretilmemis", m_acilis_uretilmemis),
     (24, "betik tipi kuralin cirnigi indi",    "desen ihlali",    m_betik_kurali),
+    (25, "uretilen dosya kaynagin gerisinde", "uretilen dosya bayat", m_uretilen_bayat),
 ]
 
 
