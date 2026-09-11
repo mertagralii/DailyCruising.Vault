@@ -6643,3 +6643,70 @@ okundu — bu kez **gerçek kusur** çıktı.
 "testler birbirine karışıyor" demek DEĞİL. Önce *"bu dizilim üretimde olur mu"*
 diye sorulmalı; burada cevap **evet**ti ve yalıtım eklenseydi gerçek kusur
 gizlenecekti.
+
+## 2026-09-11 · Taşıma farkı jetonlu bağlantıyla tahsil ediliyor
+
+Talep açıldığında rastgele bir jeton üretiliyor, **yalnız SHA-256 özeti**
+saklanıyor ve düz jeton müşteriye e-postayla giden bağlantıya konuyor
+(`/tarih-degisikligi?jeton=…`). İki açık uç: `GET /api/reschedule-requests/{jeton}`
+ve `POST …/pay`.
+
+**Neden kimlik doğrulaması yok:** rezervasyon yapan müşterinin hesabı olmak
+zorunda değil. Yetki yerine geçen şey jeton; jeton **yalnız** bu talebin ödeme
+sayfasını açıyor, rezervasyonu değiştiren hiçbir yol onunla açılmıyor. Biniş
+jetonu ve yorum daveti ile aynı desen.
+
+⚠️ **Süre dolumu ödemesi BAŞLAMIŞ talebi kapatmıyor.** Müşteri sağlayıcının
+sayfasında olabilir ve dönüşü dakikalar sürebilir; kapatılsaydı para girer,
+taşıma yapılmaz ve kimse fark etmezdi.
+
+⚠️ **Anahtar denemeyi de adlandırıyor** (`reschedule-payment:{talep}:{n}`).
+Müşteri ödeme sayfasını kapatıp tekrar tıklarsa yeni bir sağlayıcı işlemi
+doğuyor ve kendi kaydını istiyor. Sabit anahtar ikinci denemede benzersizlik
+kısıtına çarpar, müşteri **parasını ödemeye çalışırken 500** görürdü.
+
+⚠️ **Aynı kusur rezervasyonun İLK ödemesinde DURUYOR** — `payment:{rezervasyon}`
+sabit ve `POST /api/payments/start` ikinci kez çağrıldığında 500 dönüyor.
+Canlıda ölçüldü, bu turda düzeltilmedi → [[api-gorevler]].
+
+## 2026-09-11 · Taşıma tamamlanmasının iki yolu var ve yarışı veritabanı çözüyor
+
+Taşıma normalde **ödeme dönüşünde** yapılıyor (`PaymentService`, bekleyen iş
+varsa haber veren bir kanca çağırıyor); ayrıca `ProcessRescheduleRequestsJob`
+beş dakikada bir ödenmiş ama taşınmamış talepleri tamamlıyor.
+
+**Neden ikisi:** müşteri dönüş sayfasına hiç ulaşamayabilir — tarayıcı kapanır,
+ağ düşer — ve **parası alınmış bir taşımanın yapılmadan kalması kabul
+edilemez.** Kanca hızı, iş güvenliği sağlıyor.
+
+⚠️ **Yarışı veritabanı çözüyor:** talep tek `UPDATE` ifadesiyle,
+`Status = AwaitingPayment` şartıyla kapanıyor ve yalnız `1` satır etkileyen
+çağıran taşımayı yapıyor. Önce oku-sonra-yaz olsaydı ikisi de talebi bekliyor
+görür ve rezervasyon **iki kez** taşınırdı.
+
+⚠️ Bu korumayı **sıralı bir test ölçemiyor**: ilk çağrı talebi `Completed`
+yapıyor ve ikincisi daha kapıda dönüyor. Mutasyon testi bunu gösterdi — koruma
+kaldırıldığında servis üzerinden koşan testler yeşil kaldı. Ölçüm depo
+seviyesine, iki ayrı bağlamla indirildi.
+
+## 2026-09-11 · Defter sırası: tahsilat taşımadan SONRA yazılır
+
+`PaymentService` taşıma kancasını **defterden önce** çağırıyor; taşımayı
+tamamlayan servis de kendi defterini yazıyor.
+
+**Neden:** hakediş satırı rezervasyonun **güncel** toplamından hesaplanıyor.
+Tahsilat taşımadan önce işlenince hesap eski tutardan yapılıyor ve farkın
+tamamı platformda kalıyor. Canlıda ölçüldü: 4.350 → 6.000 taşımada işletmenin
+payı **0,00** yazıldı, 1.402,50 olmalıydı. Defter değişmez olduğu için
+düzeltmesi ters kayıt gerektirirdi.
+
+⚠️ **Birim testi bu kusuru KAÇIRDI ve sebebi öğretici:** test, rezervasyonun
+toplamını elle yükseltip öyle ölçüyordu — yani doğru sırayı **varsayıp** onu
+sınıyordu. Sıra yanlış olduğunda test yine yeşildi. Kusuru canlı koşu gösterdi.
+
+⚠️ Ders: bir testin kurulumu, sınanan kodun yapması gereken işi **önceden
+yapıyorsa** o test sırayı ölçmez. Kurulum ile sınanan davranış arasındaki sınır,
+testin ne ölçtüğünü belirliyor.
+
+Test artık işletmenin payını da ölçüyor; eski hâli defter eski tutardan
+hesaplandığında da geçiyordu.

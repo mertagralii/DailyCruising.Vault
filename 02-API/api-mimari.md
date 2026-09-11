@@ -18,6 +18,30 @@ durum: guncel
 > **Buradaki her sayı ölçülerek yazıldı, hatırlanarak değil.**
 
 
+## Taşıma farkının tahsilatı — 2026-09-11
+
+Müşteriye giden jetonlu bağlantı ve onun iki açık ucu:
+
+| Yöntem | Yol | Not |
+|---|---|---|
+| GET | `/api/reschedule-requests/{jeton}` | **Kimliksiz.** Yetki yerine jeton; jeton yalnız bu talebin ödeme sayfasını açıyor. Süresi dolmuş talep de 200 döner, durumuyla |
+| POST | `/api/reschedule-requests/{jeton}/pay` | Fark ödemesini başlatır. **Tutar istekten değil talepten** okunuyor |
+
+`RescheduleRequests.TokenSha256` (`A123`) — düz jeton saklanmıyor.
+`LedgerEntry.PaymentId` (`A122`) ve `LedgerEntry.RefundId` (`A121`) — defter
+satırı hangi para hareketinden doğduğunu söylemek zorunda.
+
+Yeni zamanlanmış iş: `ProcessRescheduleRequestsJob` (5 dk) — ödenmiş ama
+taşınmamış talepleri tamamlar, süresi dolmuş bağlantıları kapatır.
+
+Yeni geliştirme ucu: `POST /api/dev/jobs/{name}/run` — **yalnız Development**,
+başka ortamda 404; arayüz belgesine çıkmıyor.
+
+Yeni ortak sınıflar: `ScheduledJobExecutor` (işi çalıştırıp `JobRun` yazan tek
+kopya, hem çalıştırıcı hem elle tetikleme kullanıyor) · `RefundRetryPolicy`
+(deneme sınırı; hem iş hem panel ayrıntısı oradan okuyor) ·
+`IReschedulePaymentFollowUp` (ödeme akışını taşıma kurallarından ayıran kanca).
+
 ## Platform vekâlet uçları — 2026-09-06
 
 Platform personeli bir işletme ADINA tekne yönetiyor. Kapsam **adresten**
@@ -75,8 +99,8 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 |---|---|---|
 | `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **84 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
-| `DailyCruising.Infrastructure` | Application | EF Core, **21 yapılandırma dosyası** (84 entity eşlemesi), **72 migration**, **10 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
-| `DailyCruising.Api` | Application + Infrastructure | **47 controller, 159 yol / 205 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Infrastructure` | Application | EF Core, **21 yapılandırma dosyası** (84 entity eşlemesi), **79 migration**, **11 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
+| `DailyCruising.Api` | Application + Infrastructure | **49 controller, 162 yol / 208 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 

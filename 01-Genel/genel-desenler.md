@@ -996,6 +996,15 @@ Bu alan bağımsızdır — bu yüzden web'den buraya taşındı. Bir ölçüm a
 2. **İki farklı girdi aynı sonucu veriyorsa, gerçekten iki farklı istek mi attım?**
 3. **Ölçtüğüm süreç, ölçmek istediğim kodu mu çalıştırıyor?** (uptime, commit
    zamanı, işin periyodu)
+4. **Testin kurulumu, sınanan kodun yapması gereken bir işi önceden yapıyor mu?**
+   Yapıyorsa o test o davranışı **ölçmez, varsayar.**
+
+⚠️ Dördüncü soru 2026-09-11'de backend oturumundan geldi ve ilk üçünden **farklı
+bir sınıf**: ilk üçü aracı sorgular, bu **kurulumu** sorgular. Araç doğru, ölçüm
+doğru, ama cevap kurulumda gizli. Somut bedeli: fark tahsilatının defteri testte
+yeşil geçti, canlıda yanlış çıktı — çünkü testin kurulumu rezervasyonun toplamını
+**elle yükseltip** öyle ölçüyordu, yani sınanan kodun işini kurulum önceden
+yapmıştı. Sıra yanlış olduğunda test **yine yeşil kaldı.**
 
 Ve tek kullanımlık betikte bile: çıktı **sayıyla doğrulanır** ya da çökme açıkça
 *"ölçüm başarısız"* diye basılır. ⚠️ *"Traceback ekranda görünürdü"* yetmiyor —
@@ -1028,7 +1037,6 @@ Yeni tetikleyici bir kapı: **"bir araç seçeceğim"** — hangi MCP, hangi aja
 hangi betik biçimi. İzlenmeye devam ediyor; bu tetikleyiciyle de okunmazsa
 bölme kapatılır. **İzlenimle budama yapılmadı, ölçümle tetikleyici değişti.**
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Sözleşmeyi tanımlayan, varsayımını da yazmak zorunda
 
@@ -1047,3 +1055,30 @@ kırılır. Bu vault'ta üreticiler artık `[{alan, yollar}]` alıyor — çünk
 vaka bunu gerektirdi ve sözleşme onu söylemiyordu.
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Gerekçeyi koda yazmak bayatlamayı çözmez, yerini değiştirir
+
+Kuralımız şu: *"kod karşılığı olan hatanın evi vault değil, o satırdır"* →
+[[CLAUDE]]. Doğru kural ve işe yaradı. Ama 2026-09-11'de backend oturumu
+sınırını gösterdi: `ProcessRefundsJob`'ın sınıf açıklaması *"deneme sayacı ayrı
+bir kolon değildir, satır sayısı deneme sayısının kendisidir"* diyordu ve bu
+**artık doğru değildi** — `A-118` sayacı satıra taşımıştı.
+
+Kod yoruma değil koda bakan biri zarar görmez; **o cümleye güvenip satır sayan
+biri görür.**
+
+⚠️ **Bu boşluk ölçülmüyor ve bugün ölçülemiyor.** `dogrula.py` vault dosyalarının
+bayatlığını ölçüyor (kontrol 4, 15, 19, 23, 25); kod yorumlarının doğruluğunu
+ölçen hiçbir kontrol yok ve genel bir ölçüt de görünmüyor — bir yorumun iddiası
+makine tarafından doğrulanabilir değil.
+
+Bu yüzden kural şu hâle geliyor: gerekçe kodun yanına yazılır **ama sayıya veya
+yapıya dair bir iddia taşıyorsa, o iddia kodun kendisinden okunabilecek biçimde
+yazılır.** *"Satır sayısı deneme sayısıdır"* gibi bir cümle, kolon eklendiği an
+yalan olur; *"deneme sayısı `DenemeSayisi` kolonundadır"* olmaz — çünkü kolon
+adı değişirse derleyici konuşur.
+
+**Bilinen boşluk olarak kayıtlı:** ölçülemeyeni ölçülüyor gibi göstermemek için
+yazıldı → [[genel-kararlar]]
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

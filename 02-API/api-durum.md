@@ -13,6 +13,25 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (5) — `A-163` TAMAM: taşıma farkı uçtan uca tahsil ediliyor.**
+`dotnet test` **774/774**, son commit `c55e1dc`, migration **A123**.
+
+Canlı doğrulama (`8BWJCHQP`): 4.350 → 6.000 taşındı, biniş jetonu 10.04'e
+uzadı, defter `Customer −6.000 · Partner 5.100 · Platform 900 · toplam 0` —
+komisyon **yeni tutarın** %15'i.
+
+⚠️ **Canlı koşu, birim testinin kaçırdığı bir kusuru gösterdi:** tahsilat
+deftere taşımadan ÖNCE işleniyordu ve işletmenin payı **0,00** yazıldı. Test
+kaçırmıştı çünkü rezervasyonun toplamını elle yükseltip öyle ölçüyordu — doğru
+sırayı varsayıp onu sınıyordu → [[api-kararlar]].
+
+⚠️ **Web için hazır:** `8BWJCHQP` taşınmış hâlde; `TAHSILAT_HAZIR` açılabilir.
+
+⚠️ **Yeni açık iş `A-164`:** rezervasyonun İLK ödemesi tekrar denenemiyor,
+`payments/start` ikinci çağrıda 500 dönüyor. Canlıda ölçüldü, düzeltilmedi.
+
+---
+
 **2026-09-11 (4) — ayrıntı yükü web'e teslim edildi; bir kuyruk kilidi
 giderildi.** `dotnet test` **770/770**, son commit `b6752a6`, `openapi.json`
 yeniden üretildi.

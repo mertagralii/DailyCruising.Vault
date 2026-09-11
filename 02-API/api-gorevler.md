@@ -24,6 +24,19 @@ Biçim ve gerekçe -> [[genel-desenler]]
 ## 🔵 Yapılacak
 
 
+- [ ] **A-164** Rezervasyonun ilk ödemesi tekrar denenemiyor
+
+      `PaymentService.StartAsync` anahtarı `payment:{rezervasyon}` sabiti
+      kuruyor ve benzersiz. `POST /api/payments/start` ikinci kez
+      çağrıldığında `DbUpdateException` dışarı çıkıyor, müşteri **500**
+      görüyor. **Canlıda ölçüldü** (2026-09-11, `EMYC85QX`).
+
+      ⚠️ Sıradan bir dizilim: müşteri ödeme sayfasını kapatır, kartını bulur,
+      "Öde"ye tekrar basar. Kartı reddedilen müşteri de aynı duvara çarpıyor.
+
+      Taşıma farkında aynı kusur `reschedule-payment:{talep}:{n}` ile
+      kapatıldı; ilk ödeme aynı deseni almalı → [[api-kararlar]] 2026-09-11.
+
 - [ ] **A-159** İşletme çalışanı davet akışı · 🔴 **MERT'TE** · ölçüldü: 2026-09-10
 
       ⚠️ **Ekran olmayan bir şeyi vaat ediyor.** İşletme panelinde çalışan
@@ -147,31 +160,6 @@ Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟡 Yapılıyor
 
-- [ ] **A-163** Rezervasyon taşıma · başlandı: 2026-09-11
-
-      ✅ Önizleme ucu (`f2262bd`) · ayrıntıdaki üç alan (`d540fc2`) ·
-      `platform.reservation.write` yetkisi (`A116`)
-      ✅ `POST /reschedule` (`3f77c0a`) — `None` ve `Refund` yolları canlıda
-      ✅ Talebin düşme sebebi ayrı (`3e1157d`, `A120`)
-      ✅ İade benzersizliği amaç anahtarına taşındı (`8d62f5f`, `A117`) —
-      kısmi ve çoklu iade artık mümkün
-      ✅ İade işi iade kayıtlarını sürüyor (`50db88a`, `A118`) — iki aşama:
-      eksik kaydı aç, sırası geleni yürüt; denemeler satırdaki sayaçta
-      ✅ Bekleyen taşıma talebi kendi kaydı (`1ba44e2`, `A119`) — veritabanı
-      rezervasyon başına tek bekleyen talebe izin veriyor
-      ✅ Defter iade kaydından sürülüyor (`0cf18f2`, `A121`) — taşıma iadesi
-      artık deftere yazılıyor; kısmi iade iki taraftan orantılı, tabanı
-      defterin kendisi; toplam iade tahsilatı geçemiyor.
-      **Kanıt:** `LedgerTests.Second_refund_rides_on_what_is_left` ·
-      `LedgerTests.Total_refunds_cannot_exceed_what_was_collected` ·
-      `RescheduleTests.A_reschedule_refund_reaches_the_ledger` · 763/763
-      ⬜ Ayrıntıda iade listesi + bekleyen talep + enum'ların şemaya çıkması
-      ⬜ Fark tahsilatı: kısmi `Payment` → jetonlu bağlantı → dönüşün farkı
-      işlemesi
-
-      Sözleşme ve kurallar → [[api-kararlar]] 2026-09-11.
-
-
 - [ ] **A-133** Biniş red sebepleri enum'a çevrilsin, belgeye girsin
 
       `NotPaid`, `Cancelled`, `TokenExpired`, `TokenNotFound`, `Refunded`,
@@ -209,6 +197,35 @@ Biçim ve gerekçe -> [[genel-desenler]]
       🔴 **MERT'TE**
 
 ## 🟢 Tamamlandı
+
+- [x] **A-163** Rezervasyon taşıma · 2026-09-11
+
+      ✅ Önizleme ucu (`f2262bd`) · ayrıntıdaki üç alan (`d540fc2`) ·
+      `platform.reservation.write` yetkisi (`A116`)
+      ✅ `POST /reschedule` (`3f77c0a`) — `None` ve `Refund` yolları canlıda
+      ✅ Talebin düşme sebebi ayrı (`3e1157d`, `A120`)
+      ✅ İade benzersizliği amaç anahtarına taşındı (`8d62f5f`, `A117`) —
+      kısmi ve çoklu iade artık mümkün
+      ✅ İade işi iade kayıtlarını sürüyor (`50db88a`, `A118`) — iki aşama:
+      eksik kaydı aç, sırası geleni yürüt; denemeler satırdaki sayaçta
+      ✅ Bekleyen taşıma talebi kendi kaydı (`1ba44e2`, `A119`) — veritabanı
+      rezervasyon başına tek bekleyen talebe izin veriyor
+      ✅ Defter iade kaydından sürülüyor (`0cf18f2`, `A121`) — taşıma iadesi
+      artık deftere yazılıyor; kısmi iade iki taraftan orantılı, tabanı
+      defterin kendisi; toplam iade tahsilatı geçemiyor.
+      **Kanıt:** `LedgerTests.Second_refund_rides_on_what_is_left` ·
+      `LedgerTests.Total_refunds_cannot_exceed_what_was_collected` ·
+      `RescheduleTests.A_reschedule_refund_reaches_the_ledger` · 763/763
+      ✅ Ayrıntıda iade listesi + bekleyen talep + enum'lar (`b6752a6`)
+      ✅ Fark tahsilatı (`e942259`, `ea7e82a`, `c55e1dc`, `A123`) — jetonlu
+      bağlantı, e-posta, ödeme, taşımanın tamamlanması, emniyet ağı işi,
+      süre dolumu. **Kanıt:** `RescheduleTests.Paying_the_difference_moves_the_reservation`
+      · `…An_expired_link_cannot_be_paid` · `…Only_one_caller_completes_the_same_request`
+      · `…The_customer_can_retry_the_difference_payment` · canlı: `8BWJCHQP`
+      4.350 → 6.000, defter `Partner 5.100 · Platform 900 · toplam 0`
+
+      Sözleşme ve kurallar → [[api-kararlar]] 2026-09-11.
+
 
 - [x] **A-162** Sorgu parametreleri belge bayatlığına karşı denetleniyor · bitti: 2026-09-10
 
