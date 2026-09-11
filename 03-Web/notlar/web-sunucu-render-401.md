@@ -2,13 +2,14 @@
 rol: not
 kapsam: web
 guncelleme: 2026-09-12
-durum: dogrulanmali
+durum: guncel
 ---
 
 # Sunucu render'ında `401`: üç liste sessizce boşalıyor
 
-⚠️ **Bu not bir ölçüm + bir hipotez taşıyor ve hipotez doğrulanmadı.**
-Belirti ölçüldü, sebep ölçülmedi. `durum: dogrulanmali` tam bu yüzden.
+⚠️ **Hipotez yanlış çıktı.** Not, hipotezi ve onu çürüten ölçümü birlikte
+taşıyor — silinmedi, çünkü yanlış hipotezin nasıl çürütüldüğü, doğru
+cevaptan daha öğreticiydi. Sonuç en altta.
 
 ## Ölçülen
 
@@ -79,3 +80,60 @@ kalıbının aynısı → [[web-desenler]]
 doğrulanmadan yazılacak bir düzeltme, olmayan bir hatayı düzeltir.
 
 İlgili: [[web-notlar]] · [[web-durum]]
+
+---
+
+## 2026-09-12 · hipotez çürütüldü — sebep başkaymış
+
+Back-end (`e2104fe`) istek günlüğünde **kendi kusurunu** buldu:
+`UseRequestLog()` ara katmanı `UseAuthentication`'dan **sonraydı**, yani
+yetki katmanının kestiği istekler hiç kaydedilmiyordu. Günlük 258 satır
+taşıyor ve `401` sayısı **sıfır** görünüyordu — çünkü hiçbir `401`
+görünmüyordu. Sessizlik kanıt değil, kusurun kendisiydi.
+
+⚠️ Bu, aynı kalıbın üçüncü yüzü: *"görünmeyen satır, olmayan satır gibi
+okunur."* Dün gece ben aynı hatayı defterde yaptım, o gece kendileri
+kuyrukta, şimdi günlükte.
+
+### Ayırt edici sorgu ve sonucu
+
+Ara katman öne alındıktan sonra panelde dolaşıp `GET /api/platform/logs
+?minStatus=401&maxStatus=401` çalıştırıldı:
+
+```
+toplam: 2
+api/platform/settings  401  actorType: Anonymous  00:33
+api/platform/partners  401  actorType: Anonymous  00:32
+```
+
+İki şey birden söylüyor:
+
+1. **İstek API'ye ulaşıyor** — yani `401`'i vekil ya da rota kapısı
+   üretmiyor. Hipotezimin ilk yarısı burada düştü.
+2. **`actorType: Anonymous`** — jeton **hiç gönderilmemiş**. Yani jetonun
+   süresi dolmuş ya da imzası tutmuyor değil; ortada jeton yok.
+
+Üstelik ölçümden hemen sonra üç modül (`isletmeler` · `yorum` · `destek`)
+arka arkaya açıldı ve **yeni `401` satırı oluşmadı** — toplam 2'de kaldı.
+
+### Gerçek sebep
+
+İki satırın zamanı (00:32–00:33), API'nin yeniden başladığı dakikaya denk
+geliyor. Zincir şu:
+
+1. Erişim çerezi süresi dolmuş → rota kapısı yenilemeye çalışıyor.
+2. **Yenileme isteği de API'ye gidiyor ve API o an ayakta değil** →
+   `jetonuYenile()` `null` dönüyor.
+3. İstek jetonsuz devam ediyor → sunucu tarafı okumaları `Anonymous` →
+   `401`, ve sayfa **misafir gibi** render ediliyor.
+
+Yani "HMR yeniden derlemesi kapıyı atlıyor" tahminim gereksizdi: kapı
+çalışıyordu, **yenileyeceği sunucu yoktu.**
+
+⚠️ **Eski kümeler kanıtlanamıyor.** 23:18, 23:39 ve 00:17'deki `401`'ler
+günlük düzelmeden önceydi, yani kayıtları **yok**. Aynı sebepten olduklarını
+söyleyemem — yalnız aynı sebebin onları da açıkladığını söyleyebilirim.
+
+Görünen yüzü ayrı bir notta: ulaşılamayan API panelde *"çıkış yaptın"*
+gibi okunuyor → [[web-ulasilamayan-api-cikis-gibi]]
+

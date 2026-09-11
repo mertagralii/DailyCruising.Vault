@@ -39,7 +39,8 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[web-eksik-detay-ekranlari]] — liste var, detay ekranı yok; 106 bölüm eksikti
 - [[web-tasarimi-tarayicida-acmak]] — tasarımı localhost'ta açıp hesaplanmış stilleri karşılaştırma
 - [[web-olcum-yanlis-pozitifleri]] — tasarım/uygulama ölçümünde tekrar eden sahte farklar
-- [[web-sunucu-render-401]] — sunucu render'ında yenilenemeyen jeton; üç liste sessizce boşalıyor · **hipotez doğrulanmadı**
+- [[web-sunucu-render-401]] — üç listenin sessizce boşalması; **hipotezim yanlış çıktı**, sebep API yeniden başlarken yenilemenin de düşmesiymiş
+- [[web-ulasilamayan-api-cikis-gibi]] — ulaşılamayan API'nin panelde *"çıkış yaptın"* diye okunması; `null` üç durumu birden taşıyor
 
 İlgili: [[00-Index]] · [[web-kararlar]] · [[web-mimari]] · [[durum]]
 

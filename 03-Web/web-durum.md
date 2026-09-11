@@ -1133,7 +1133,7 @@ tarayıcıda doğrulandı: iptal kartı · 2026-09-11 · src/components/panel/ad
 tarayıcıda doğrulandı: /odeme müşteri ödeme sayfası · 2026-09-11 · src/app/odeme/page.tsx · 8586b59
 tarayıcıda doğrulandı: sözleşme listesi · 2026-09-11 · src/components/panel/admin/contracts.tsx · ccb8730
 tarayıcıda doğrulandı: bölge yönetimi · 2026-09-11 · src/components/panel/admin/regions.tsx · c1e22c6
-tarayıcıda doğrulandı: finans · 2026-09-11 · src/components/panel/admin/finance.tsx · c1e22c6
+tarayıcıda doğrulandı: finans · 2026-09-12 · src/components/panel/admin/finance.tsx · 0fd5356
 tarayıcıda doğrulandı: aktivite kayıtları · 2026-09-11 · src/components/panel/admin/activity.tsx · ccb8730
 tarayıcıda doğrulandı: etkinlik listesi · 2026-09-11 · src/components/panel/admin/activity-log.tsx · ccb8730
 tarayıcıda doğrulandı: reklam yönetimi · 2026-09-11 · src/components/panel/admin/adverts.tsx · c1e22c6
@@ -1144,7 +1144,7 @@ tarayıcıda doğrulandı: sms gönderimleri · 2026-09-11 · src/components/pan
 tarayıcıda doğrulandı: bildirim şablonları · 2026-09-11 · src/components/panel/admin/notification-templates.tsx · ccb8730
 tarayıcıda doğrulandı: bildirim günlüğü · 2026-09-11 · src/components/panel/admin/notification-log.tsx · c1e22c6
 tarayıcıda doğrulandı: belge kuyruğu · 2026-09-11 · src/components/panel/admin/document-queue.tsx · c1e22c6
-tarayıcıda doğrulandı: rezervasyon ayarları · 2026-09-12 · src/components/panel/admin/reservation-settings.tsx · 0342b5f
+tarayıcıda doğrulandı: rezervasyon ayarları · 2026-09-12 · src/components/panel/admin/reservation-settings.tsx · 0fd5356
 tarayıcıda doğrulandı: iade modalı · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 8586b59
 tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 8586b59
 tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11 · src/components/account/cancel-reservation.tsx · 1ac13a3
@@ -1177,12 +1177,12 @@ tarayıcıda doğrulanmadı: kupon rozetleri · personel girişi Mert'te · src/
 tarayıcıda doğrulanmadı: blog rozetleri · personel girişi Mert'te · src/components/panel/blog-moderation.tsx
 tarayıcıda doğrulanmadı: hesap kuponu rozetleri · personel girişi Mert'te · src/components/account/coupons.tsx
 
-tarayıcıda doğrulanmadı: genel bakış · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/overview.tsx
-tarayıcıda doğrulanmadı: müşteri listesi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/customers.tsx
-tarayıcıda doğrulanmadı: rezervasyonlar · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/reservations.tsx
-tarayıcıda doğrulanmadı: müsaitlik yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/availability.tsx
-tarayıcıda doğrulanmadı: personel listesi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/staff.tsx
-tarayıcıda doğrulanmadı: rol yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/roles.tsx
+tarayıcıda doğrulandı: genel bakış · 2026-09-12 · src/components/panel/admin/overview.tsx · 0fd5356
+tarayıcıda doğrulandı: müşteri listesi · 2026-09-12 · src/components/panel/admin/customers.tsx · 0fd5356
+tarayıcıda doğrulandı: rezervasyonlar · 2026-09-12 · src/components/panel/admin/reservations.tsx · 0fd5356
+tarayıcıda doğrulandı: müsaitlik yönetimi · 2026-09-12 · src/components/panel/admin/availability.tsx · 0fd5356
+tarayıcıda doğrulandı: personel listesi · 2026-09-12 · src/components/panel/admin/staff.tsx · 0fd5356
+tarayıcıda doğrulandı: rol yönetimi · 2026-09-12 · src/components/panel/admin/roles.tsx · 0fd5356
 tarayıcıda doğrulanmadı: kupon yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/coupons.tsx
 tarayıcıda doğrulanmadı: iş sağlığı · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/job-health.tsx
 tarayıcıda doğrulanmadı: yat işletmeleri · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin-panel-view.tsx
@@ -1419,4 +1419,42 @@ yeniden okuma personelin yazdığı değeri geri alırdı.
 **Bir kez "bayat kayıt" diye eleyip geçmiştim ve o eleme yanlıştı** —
 temiz bir yeniden yükleme tekrarlamayacağı anlamına gelmiyormuş.
 Belirti ölçüldü, sebep **ölçülmedi** → [[web-sunucu-render-401]]
+
+## 2026-09-12 gece — genel bakışta çubuklar hiç çizilmiyormuş (`0fd5356`)
+
+Defterde **on iki ana ekranın doğrulama kaydı yoktu** ("bu defter
+açılmadan önce görülmüş olabilir"). Altısını açtım ve ilki bir kusur
+çıkardı.
+
+⚠️ **Genel bakıştaki üç eğride ve finanstaki ciro eğrisinde çubuklar
+hiç görünmüyordu.** Sayılar ve ay adları basılıyordu, çubuk alanı
+bomboştu. Ekran "veri yok" gibi duruyordu; oysa veri oradaydı —
+`135 K`, `159 K`, `91 K` ekranda yazılıydı.
+
+Ölçüm: on iki çubuğun hepsi `height: 4%` taşıyor, hesaplanan yükseklik
+**0**. Sebep, yüzdelik yüksekliğin `auto` yükseklikli bir kaba karşı
+çözülememesi: sütun kutusu `items-end`'li bir flex satırının içindeydi ve
+yüksekliği içeriğinden geliyordu. Sütun **grid**'e çevrildi
+(`grid-rows-[auto_1fr_auto]`), orta satır kesin yükseklik kazandı.
+
+⚠️ Aynı yerde ikinci kusur: etiketlerde `truncate` vardı ama **genişlik
+yoktu**, o yüzden kırpmıyordu ve on iki sütunlu eğride komşu ay adları
+üst üste biniyordu — "AraOca 26Şub" tek kelime gibi okunuyordu.
+`w-full text-center` eklendi.
+
+**Bu ikisi neden bu kadar geç bulundu:** derleme, lint ve üç ölçüm betiği
+temizdi ve temiz kalmaya devam ediyor. Görünmeyen bir çubuğu hiçbir
+statik denetim yakalamıyor — yalnız ekrana bakmak yakalıyor. Defterin
+varlık sebebi tam buydu ve **ilk boş satırı açtığımda karşılığını verdi.**
+
+### Süre ayarlarında ikinci tur (`limits` · `updatedByName`)
+
+Back-end istediğim iki alanı aynı gece ekledi. Aralık artık ekranda
+yazıyor (`1 – 120 dakika`, `1 – 168 saat`) ve **tek bir sayı bile
+kopyalanmadı**; değiştirenin adı da kullanıcı satırından çözülüyor.
+
+⚠️ Dün *"aralığı gösterememenin bedeli kabul edildi"* diye yazmıştım.
+Yanlış değildi ama eksikti: **kopyalamamanın karşılığı eksikliğin kalıcı
+olması değil, doğru yerin cevap vermesi oldu.** Eksikliği yazmak, onu
+görünür kılıp çözdürdü.
 
