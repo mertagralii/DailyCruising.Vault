@@ -1592,3 +1592,47 @@ tarayıcıda doğrulandı: destek talebi ekranı · 2026-09-12 · src/components
 tarayıcıda doğrulandı: rol oluşturma formu · 2026-09-12 · src/components/panel/admin/role-form.tsx · 54a1e04
 tarayıcıda doğrulandı: personel detayı · 2026-09-12 · src/components/panel/admin/staff-table.tsx · 54a1e04
 tarayıcıda doğrulandı: personel rol ve yetkileri · 2026-09-12 · src/components/panel/staff-roles.tsx · 54a1e04
+
+## 2026-09-12 · oturum kapandı — panelin durumu
+
+Mert döngüyü ve hedefi kapattı. Yönetim paneli tarafındaki durum:
+
+| Ölçüt | Durum |
+|---|---|
+| Modül | **26 uç · 1 kısmi · 0 statik** |
+| Tarayıcı defteri | **0 sapma** |
+| Ölçüm betikleri | `sozluk` · `belirtec` · `durum` → `IHLAL=0` |
+| Vault | `dogrula.py` **TEMİZ** |
+| Son commit | `54a1e04` (pushlu) |
+
+### Bu oturumun kusurları: hepsi aynı cümleye iniyor
+
+**Bir iddianın yazılı olması, ölçüldüğü anlamına gelmiyor.**
+
+| Nerede | Yazılı olan | Gerçek |
+|---|---|---|
+| `overview` · `finance` | — | çubuklar **hiç çizilmiyordu**; yüzde, `auto` kaba karşı sıfır |
+| `blog-moderation` | *"onaylayan ne görüyorsa ziyaretçi de görecek"* | ziyaretçi **render edilmiş** görüyor; denetçi etiket okuyordu |
+| `support-ticket` | — | `PATCH` ucu vardı, **hiç çağrılmıyordu**; talep kapatılamıyordu |
+| `reservation-settings` | *"kademeler değiştirilmemeli"* | benim önerimdi, **Mert'in kararı tersi** |
+| `notification-templates` | *"eksiklik değil karar"* | aynı kalıp |
+| `admin-durum` (7 modül) | *"uç yok"* | ikisinde **uç vardı ve veri gizleniyordu** |
+
+⚠️ **İlk üçü, derleme ve lint ile üç ölçüm betiğinin tamamı yeşilken
+duruyordu.** Görünmeyen bir çubuğu, okunamayan bir makaleyi ve
+çağrılmayan bir ucu hiçbir statik denetim yakalamadı — üçünü de **ekrana
+bakmak** yakaladı. Tarayıcı doğrulama defterinin varlık sebebi buydu ve
+bu oturumda üç kez karşılığını verdi.
+
+### Açık kalanlar — hiçbiri bu oturumda çözülemez
+
+1. **Üç karar Mert'te:** iptal kademesi sürümleme · şablon değişken
+   doğrulaması · 24 ay log budama. Back-end doğrudan soracak.
+2. **Atanabilir personel listesi back-end'de:** `support.assign` yetkisi
+   olanların listesi gelince temsilci ataması bağlanacak. Bugün
+   *"Atanmadı"* yazıyor ve bu doğru.
+3. **Bir ürün kararı Mert'te:** API'ye ulaşılamayınca oturumlu kullanıcı
+   ne görsün → [[web-ulasilamayan-api-cikis-gibi]]
+4. **Bir ekran doğrulanamadı:** `review-moderate.tsx` — denetim bekleyen
+   yorum yok ve sırf ekranı açabilmek için yorum uydurulmadı.
+
