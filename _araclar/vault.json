@@ -343,5 +343,19 @@
     "alan": "03-Web",
     "dogrulandi_deseni": "^tarayıcıda doğrulandı: (.+?) · (\\d{4}-\\d{2}-\\d{2})(?: · (\\S+?))?(?: · ([0-9a-f]{7,40}))?\\s*$",
     "dogrulanmadi_deseni": "^tarayıcıda doğrulanmadı: (.+?) · (.+?)\\s*$"
+  },
+  "saglik_ucu": {
+    "_aciklama": [
+      "Kontrol 29: CALISAN surecin bildirdigi commit ile HEAD karsilastirilir.",
+      "Butun diger olcumler DISKTEKI kodu olcer; bellekteki sureci hicbir sey",
+      "olcmuyordu. 2026-09-11'de bunun bedeli olculdu: bolge tablosu on bolgeyi",
+      "de '0 tekne' gosterdi, sebep koddaki hata degil eski surecti; build, lint,",
+      "tsc ve uc olcum betigi hepsi temizdi.",
+      "UC SONUC: esit -> gecti · farkli -> HATA · bos/kapali -> OLCULEMEDI.",
+      "Ucuncusu GUNCEL sayilmaz — olculemeyeni olculuyor gostermek yasak."
+    ],
+    "alan": "02-API",
+    "adres": "http://localhost:5163/api/health",
+    "alan_adi": "commit"
   }
 }

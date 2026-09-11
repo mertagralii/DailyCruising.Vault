@@ -6912,3 +6912,72 @@ Sağlayıcıda ödeme açan gövde `StartForAsync`'e çıkarıldı: iki giriş
 (müşterinin kendi akışı, personelin bağlantısı) aynı gövdeyi kullanıyor. Ayrı
 yazılsaydı hakediş bölüştürmesi, tutar kaynağı ve anahtar biçimi bir gün
 ayrışırdı — ve ayrıştığı gün para yanlış yere giderdi.
+
+## 2026-09-11 · `NotificationOutbox` bir KUYRUK, gönderim günlüğü değil
+
+Ölçüldü: `DispatchNotificationsJob` başarıyla gönderdiği satırı **siliyor**
+(`db.NotificationOutbox.Remove(entry)`, satır 114). Tabloda yalnız **bekleyen
+ve başarısız** satırlar duruyor.
+
+**Neden yazılıyor:** web'e *"SMS'i `NotificationOutbox`'tan yakalarsın"*
+demiştim, tablo boş çıktı. Web de *"bildirimler `Notifications` /
+`NotificationDeliveries` üzerinden gidiyor"* dedi — **o ikisi de boş**, üstelik
+hiçbir kod onlara yazmıyor: eşlenmiş ama ölü şema.
+
+⚠️ İkimiz de **ölçmeden** bir kaynak iddia ettik ve ikimiz de yanıldık.
+Üçüncü kez aynı sınıf: benim `pkill` "ön koşulu", web'in *"aynı uçtan
+türediği için ayrışma riski yok"* yorumu, ve bu. Ortak kök: **yazılı olduğu
+için doğru sanılan şeyler.**
+
+⚠️ **Sonucu `A-165`'in 5. maddesini kilitliyor:** "bildirim gönderimleri
+listesi" modülü, **var olmayan** bir gönderim günlüğünü okumak üzere
+tasarlanmıştı. Önce karar gerekiyor: gönderilen satır silinmeyip `Sent`
+damgalanacak mı (o zaman kuyruk sorgusu daraltılmalı), yoksa ayrı bir tabloya
+mı yazılacak. Uç, o karardan sonra yazılabilir.
+
+Bekleyen bildirimi geliştirmede görmek isteyen, işi koşmadan **önce** bakmalı:
+`dev/jobs/bildirim-gonderimi/run` çağrıldıktan sonra satır kalmıyor.
+
+## 2026-09-11 · Sağlık ucu çalışan sürecin commit'ini bildiriyor
+
+`/api/health` artık `{"status":"healthy","commit":"a298a44"}` dönüyor.
+
+**Neden:** bütün araçlarımız **diskteki** kodu ölçüyor; **bellekteki** süreci
+hiçbir şey ölçmüyordu. Aynı gün iki kez bedeli ödendi — kod doğru, testler
+yeşil, `openapi.json` güncel, ama çalışan süreç eskiydi ve panel yanlış veri
+gösterdi. İkisini de tarayıcı buldu.
+
+⚠️ *"Ayakta mı"* ile *"hangi sürüm ayakta"* ayrı sorular; sağlık ucu eski bir
+sürüm için de `200` dönüyordu.
+
+⚠️ **Değer derleme sırasında gömülüyor, çalışma anında okunmuyor.** Çalışma
+anında `git rev-parse` çağırmak, çalışan sürecin **diskteki** kodu bildirmesi
+demek olurdu — ölçülmek istenenin tam tersi. En sinsi hâli: eski süreç güncel
+commit'i bildirir ve denetim yeşil yanar.
+
+⚠️ `git` yoksa değer boş kalıyor ve derleme durmuyor. Derlemeyi bir ölçüm
+kolaylığına bağlamak, kolaylığın bedelini üretime taşırdı. Boş değer
+`GUNCEL` değil **`OLCULEMEDI`** sayılıyor.
+
+## 2026-09-11 · Sıfır üç ayrı şeyin işareti olabiliyor
+
+`NotificationOutbox` boş çıkınca ikimiz de yanlış bir sebep uydurduk: ben
+*"oradan okuyabilirsin"* dedim, web *"başka tablodan geçiyor"* dedi. Gerçek
+sebep üçüncüydü — **kuyruk gönderdiğini siliyor**, yani boşluk **başarının**
+işaretiydi.
+
+**Neden karar olarak yazılıyor:** bu bir gözlem değil, bundan sonra sıfır
+okuyan her ölçümde uygulanacak bir kural. Bugün üç kez sıfıra bakıp yanlış
+sonuç çıkardık ve üçü de farklı sebepten kaynaklandı; ayırt edici soruyu
+yazmadan bırakmak, dördüncüsünü davet etmek olurdu.
+
+⚠️ Genelleşmiş hâli: bir sayaç sıfır okunduğunda üç ihtimal var ve üçü ayrı
+iş gerektiriyor:
+
+1. **Veri yok** — beklenen şey hiç üretilmedi
+2. **Araç göremiyor** — ölçüm yanlış yere bakıyor (`okunma.py`'nin kabuktan
+   yapılan okumaları görmemesi gibi)
+3. **İş tamamlandı** — kayıt bilerek silindi ya da taşındı
+
+Ayırmadan sıfıra bakmak, üçünden hangisiyse ona göre yanlış karar verdiriyor.
+Bugün bir kez her birine düşüldü.

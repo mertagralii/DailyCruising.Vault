@@ -35,7 +35,7 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
   Pano **4 yapılacak / 80 tamamlandı** — kalanlar **Mert'in kararında**
 - **Mobil:** iskelet + private repo var, **ekran yok** · kapsam (`M-02`) **API ve
   web bitene kadar ertelendi** — o zamana kadar mobil kod yazılmaz
-- **Genel:** 104 not · `dogrula.py` 28 kontrol, hepsi mutasyonla kırmızıya döndürüldü ·
+- **Genel:** 104 not · `dogrula.py` 29 kontrol, hepsi mutasyonla kırmızıya döndürüldü ·
   makine `_araclar/vault.json` ile taşınabilir
 
 Aktif engel tek (-> [[durum]]): **KVKK yolcu listesi dayanağı** — Mert'te.

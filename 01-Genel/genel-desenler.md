@@ -1329,7 +1329,6 @@ Bu yüzden bu madde [[acilis]]'teki *"her oturum yeniden keşfedilenler"*
 listesine girdi: tetikleyicisi olmayan ama bedeli yüksek bilgi, tetikleyici
 aranacak yere değil **her oturumun önüne** konur.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Kalkanın gerekçesi yönteme değil, ürettiği sessizliğe bağlanır
 
@@ -1366,3 +1365,32 @@ kodda doğruydu. `build`/`lint`/`tsc` ve bütün betikler **diskteki** kodu öl�
 **Bugün boşluk olarak kayıtlı** — ölçülemeyeni ölçülüyor göstermemek için.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Sıfır üç ayrı şeyin işareti olabilir
+
+2026-09-11, backend'in ölçümü. Web *"`NotificationOutbox` boş, bildirimler başka
+tablodan geçiyor"* diye bildirdi; backend ölçtü ve **ikisi de yanlıştı**:
+
+```
+NotificationOutbox 0 · Notifications 0 · NotificationDeliveries 0
+son ikisine yazan kod: YOK (ölü şema)
+DispatchNotificationsJob.cs:114 → db.NotificationOutbox.Remove(entry)
+```
+
+`NotificationOutbox` bir **kuyruk**, günlük değil: gönderilen satır siliniyor.
+**Boş tablo, kusurun değil başarının işaretiydi.**
+
+Yani sıfır en az üç şey anlatabiliyor:
+1. **Veri yok** — beklenen durum
+2. **Araç göremiyor** — ölçüt kırık (bu vault'ta bu gece altı kez)
+3. **İş başarıyla tamamlandı** — kuyruk boşaldı
+
+⚠️ Üçünü ayırmadan sıfıra bakmak yanıltıyor ve **her biri zıt eylem gerektiriyor**:
+birincisinde beklenir, ikincisinde ölçüt onarılır, üçüncüsünde hiçbir şey
+yapılmaz. `okunma.py` tartışmasında ilk ikisini yazmıştık; üçüncüsü eksikti.
+
+**Kural:** sıfır okuyan her ölçüm, sıfırın hangi anlama geldiğini **ayırt
+edebildiğini** göstermek zorunda — ayırt edemiyorsa sıfırı sonuç değil **soru**
+olarak bildirir.
+
+İlgili: [[genel-esszamanli-oturumlar]]

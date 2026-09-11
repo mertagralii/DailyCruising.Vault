@@ -31,6 +31,7 @@ Tarar:
  26. Yayin kosulu kabul olcutu tasiyor mu, kimlikleri benzersiz mi
  27. Notlarin erisilebilirligi (tetikleyici alani, birebir hata metni)
  28. Tarayici dogrulamasi koddan geride mi
+ 29. Calisan surec kodun bu halini mi tasiyor
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -1352,6 +1353,60 @@ if _D28 and (VAULT / _D28["dosya"]).exists():
         f"{_bekleyen} dogrulanmamis · koddan geride {_geride} · gun sinirini kaldiran SHA kayitli {sum(1 for _m in _onayli if _m.group(4))}")
 elif _D28:
     olcumler.append(f"kontrol 28 · defter dosyasi yok ({_D28['dosya']}) — OLCULEMEDI")
+
+
+
+# ---------------------------------------------------------------------------
+# 29: calisan surec, kodun bu halini mi tasiyor
+#
+# Butun olcumlerimiz DISKTEKI kodu olcer. 2026-09-11'de bellekteki surecin
+# olculmemesinin bedeli cikti: bolge tablosu on bolgeyi de "0 tekne" gosterdi,
+# cunku calisan API `regionId` alanini ekleyen commit'ten eskiydi. `build`,
+# `lint`, `tsc` ve uc olcum betigi HEPSI temizdi.
+#
+# Backend degeri DERLEME sirasinda gomuyor, calisma aninda `git` cagirmiyor —
+# cagirsaydi calisan surec DISKTEKI commit'i bildirirdi, yani olcmek istedigimiz
+# seyin tam tersini. En sinsi hali: eski surec guncel commit'i bildirir ve
+# kontrol yesil yanar.
+#
+# UC SONUC (backend'in uyarisi): alan bos olabilir (git'siz derleme ya da eski
+# surum). Bos degeri GUNCEL saymak, olculemeyeni olculuyor gostermek olurdu.
+_S29 = AYAR.get("saglik_ucu") or {}
+if _S29:
+    _s29_alan = AYAR["alanlar"].get(_S29.get("alan"), {})
+    _s29_repo = VAULT.parent / (_s29_alan.get("kod_repo") or "")
+    try:
+        import urllib.request
+        with urllib.request.urlopen(_S29["adres"], timeout=3) as _c29:
+            _yanit29 = json.loads(_c29.read().decode("utf-8"))
+    except Exception as _e29:
+        # Sunucu kapali olabilir; bu bir kusur DEGIL, olcum yoklugudur.
+        olcumler.append(
+            f"kontrol 29 · {_S29['adres']} yanit vermedi ({type(_e29).__name__}) "
+            f"— sunucu kapali, OLCULEMEDI")
+        _yanit29 = None
+    if _yanit29 is not None:
+        _calisan = (_yanit29.get(_S29.get("alan_adi", "commit")) or "").strip()
+        _head29 = (_git_repo(_s29_repo, ["rev-parse", "--short", "HEAD"]) or "").strip()
+        if not _calisan:
+            olcumler.append(
+                f"kontrol 29 · {_S29['adres']}: yanitta "
+                f"`{_S29.get('alan_adi')}` bos — git'siz derleme ya da eski "
+                f"surum. GUNCEL SAYILMAZ, OLCULEMEDI")
+        elif not _head29:
+            olcumler.append(f"kontrol 29 · {_s29_repo}: HEAD okunamadi — OLCULEMEDI")
+        elif _calisan != _head29:
+            _fark29 = (_git_repo(_s29_repo, ["log", "--format=%h",
+                                             f"{_calisan}..HEAD"]) or "").split()
+            sorunlar.append(
+                f"[calisan surec eski] {_S29['adres']}: surec {_calisan} "
+                f"tasiyor, HEAD {_head29} ({len(_fark29)} commit fark). "
+                f"Bu surece karsi alinan HER olcum kodun bu halini olcmuyor — "
+                f"yeniden baslat")
+        else:
+            olcumler.append(
+                f"kontrol 29 · calisan surec {_calisan} = HEAD — olcumler "
+                f"kodun bu halini olcuyor")
 
 
 print(f"Vault: {VAULT}")

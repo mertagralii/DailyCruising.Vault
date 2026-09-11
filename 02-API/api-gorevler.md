@@ -48,8 +48,18 @@ Biçim ve gerekçe -> [[genel-desenler]]
          ⚠️ Düzenleme **istenmiyor** (ilk sürüm): şablonlar `{{kod}}` gibi
          değişken taşıyor, bir değişkeni silen personel bildirimi **sessizce**
          bozar. Düzenleme istenirse önce değişken doğrulaması — ayrı iş.
-      5. **Bildirim gönderimleri listesi.** `?channel=Sms|Email`, `NotificationOutbox`
-         üzerinden. Gönderim tetikleyen uç istenmiyor.
+      5. **Bildirim gönderimleri listesi.** `?channel=Sms|Email`.
+         ⚠️ **`NotificationOutbox`'tan OKUNAMAZ ve bu ölçüldü:** o tablo bir
+         **kuyruk**, günlük değil — `DispatchNotificationsJob` gönderdiği
+         satırı `Remove` ediyor (satır 114). Geriye yalnız bekleyen ve
+         başarısız satırlar kalıyor; başarıyla gidenlerin **hiçbir izi yok.**
+         Dev'de üç tablo da boş çıktı (`NotificationOutbox` 0 ·
+         `Notifications` 0 · `NotificationDeliveries` 0) — son ikisi
+         eşlenmiş ama **hiçbir kod onlara yazmıyor**, yani ölü şema.
+         Yani bu modül önce bir **gönderim günlüğü** gerektiriyor: ya
+         gönderilen satır silinmeyip `Sent` damgalanacak (kuyruk sorgusu
+         buna göre daraltılmalı), ya da ayrı bir tabloya yazılacak.
+         Karar verilmeden uç yazılamaz.
       6. **Reklam — en dar kapsam.** `adverts` yazma + herkese açık okuma.
          ⚠️ Satış, teklif, faturalama, gösterim/tıklama sayımı **kapsam dışı**.
       7. **Referans kataloğu yazma** (bölge vb.) — en düşük öncelik.

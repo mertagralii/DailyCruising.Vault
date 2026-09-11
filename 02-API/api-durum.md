@@ -13,6 +13,26 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (11) — çalışan sürecin sürümü artık ölçülebiliyor.**
+`dotnet test` **785/785**, son commit `24d90ab`.
+
+`/api/health` commit bildiriyor; `araclar/api-guncel-mi.sh` onu `HEAD` ile
+karşılaştırıp `GUNCEL=1` · `GUNCEL=0` · `OLCULEMEDI=1` basıyor. Vault oturumu
+kontrol 29'u buna bağlayacak.
+
+⚠️ **Sebep bugün iki kez ödendi:** kod doğru, testler yeşil, belge güncel —
+ama bellekteki süreç eskiydi ve panel yanlış veri gösterdi. Bütün araçlar
+diskteki kodu ölçüyordu.
+
+⚠️ `NotificationOutbox` bir **kuyruk**, günlük değil: gönderilen satır
+siliniyor. Boş tablo **başarının** işaretiydi → [[api-kararlar]]. `A-165`'in
+5. maddesi bu yüzden **kilitli**: o modül var olmayan bir gönderim günlüğünü
+okumak üzere tasarlanmıştı.
+
+⚠️ **On üç commit pushlanmadı**; izin Mert'te. `A-165` sıralaması da onda.
+
+---
+
 **2026-09-11 (10) — iptal, bekleyen taşımayı düşürüyor: para kaçağı kapandı.**
 `dotnet test` **785/785**, son commit `2b0ece1`, migration **A127**.
 
