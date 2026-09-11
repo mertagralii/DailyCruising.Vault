@@ -1186,7 +1186,7 @@ tarayıcıda doğrulandı: rol yönetimi · 2026-09-12 · src/components/panel/a
 tarayıcıda doğrulandı: kupon yönetimi · 2026-09-12 · src/components/panel/admin/coupons.tsx · 0fd5356
 tarayıcıda doğrulandı: iş sağlığı · 2026-09-12 · src/components/panel/job-health.tsx · 0fd5356
 tarayıcıda doğrulandı: yat işletmeleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 54a1e04
-tarayıcıda doğrulandı: destek talepleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 54a1e04
+tarayıcıda doğrulandı: destek talepleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 4692057
 tarayıcıda doğrulandı: yorum yönetimi · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 54a1e04
 tarayıcıda doğrulandı: tekne yönetimi · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 54a1e04
 ⚠️ **Son sekizi "doğrulandı" diye yazmadım ve yazmamak bilinçli.** Bu
@@ -1588,7 +1588,7 @@ davranıyor (onaylanmış yorumda işlem sütunu *"—"*), ama denetim yolu
 görülmedi. Bunu "doğrulandı" saymak, görmediğim bir şeyi görmüş gibi
 yazmak olurdu.
 
-tarayıcıda doğrulandı: destek talebi ekranı · 2026-09-12 · src/components/panel/support-ticket.tsx · 54a1e04
+tarayıcıda doğrulandı: destek talebi ekranı · 2026-09-12 · src/components/panel/support-ticket.tsx · 4692057
 tarayıcıda doğrulandı: rol oluşturma formu · 2026-09-12 · src/components/panel/admin/role-form.tsx · 54a1e04
 tarayıcıda doğrulandı: personel detayı · 2026-09-12 · src/components/panel/admin/staff-table.tsx · 54a1e04
 tarayıcıda doğrulandı: personel rol ve yetkileri · 2026-09-12 · src/components/panel/staff-roles.tsx · 54a1e04
@@ -1635,4 +1635,39 @@ bu oturumda üç kez karşılığını verdi.
    ne görsün → [[web-ulasilamayan-api-cikis-gibi]]
 4. **Bir ekran doğrulanamadı:** `review-moderate.tsx` — denetim bekleyen
    yorum yok ve sırf ekranı açabilmek için yorum uydurulmadı.
+
+## 2026-09-12 · temsilci ataması bağlandı (`4692057`)
+
+Mert *"bağla onu da"* dedi; back-end ucu göndermişti.
+`GET /api/support/tickets/assignable-staff` → `[{userId, fullName}]`.
+
+Tarayıcıda uçtan uca denendi: atama yapıldı (liste `assignedToName:
+"Demo Yönetici"` gösterdi), sonra kaldırıldı (`null`'a döndü).
+
+⚠️ **Atamayı dün bağlamamakla iyi etmişim.** Back-end bu ucu yazarken
+bir kusur buldu: doğrulama yalnız *"böyle bir kimlikte kullanıcı var mı"*
+diye soruyordu, yani talep **müşteriye** atanabiliyordu. Atanan talep
+hiçbir destek kuyruğunda görünmüyor **ama atanmış olduğu için sahipsiz
+de sayılmıyor** — hiçbir hata üretmeden kayboluyordu. Dün gece gerekçem
+farklıydı (*"kime atanabilir sorusunun cevabı sunucunun yetki kuralı"*)
+ama aynı yere çıkmış.
+
+### Üç karar ve gerekçeleri
+
+⚠️ **Seçici kimliğe göre eşleşiyor, ada göre değil.** Ölçüm bunu hemen
+doğruladı: listede **üç ayrı "Demo Yönetici"** var. Adla eşleşseydi
+yanlış kişi seçili görünürdü.
+
+⚠️ **Atanan kişi liste satırından taşınıyor.** `TicketDetail` bu alanı
+döndürmüyor, yalnız `TicketListItem` biliyor. Taşınmasaydı seçici,
+atanmış bir talepte bile açılışta "Atanmadı" gösterirdi — kutu
+sunucudaki gerçeği değil kendi bilgisizliğini basardı.
+
+⚠️ **Atamayı kaldırmak boş `Guid` gönderiyor, `null` değil.** `PATCH`
+gövdesinde `null` *"dokunma"* demek; `null` gönderilseydi "Atanmadı"yı
+seçen personel hiçbir şey olmadığını görürdü.
+
+Ret kodu `AssigneeNotAllowed` olarak eşlendi — `AssigneeNotFound`
+değil. Fark önemli: kullanıcı var, atanamaz olan o; "bulunamadı"
+deseydi personel adı yanlış yazdığını sanırdı.
 
