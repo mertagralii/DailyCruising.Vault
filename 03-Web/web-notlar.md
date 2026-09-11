@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-07
+guncelleme: 2026-09-12
 durum: guncel
 ---
 
@@ -39,6 +39,7 @@ Her not buradan linklenmeli — bağlanmamış not `dogrula.py`'de hata verir.
 - [[web-eksik-detay-ekranlari]] — liste var, detay ekranı yok; 106 bölüm eksikti
 - [[web-tasarimi-tarayicida-acmak]] — tasarımı localhost'ta açıp hesaplanmış stilleri karşılaştırma
 - [[web-olcum-yanlis-pozitifleri]] — tasarım/uygulama ölçümünde tekrar eden sahte farklar
+- [[web-sunucu-render-401]] — sunucu render'ında yenilenemeyen jeton; üç liste sessizce boşalıyor · **hipotez doğrulanmadı**
 
 İlgili: [[00-Index]] · [[web-kararlar]] · [[web-mimari]] · [[durum]]
 

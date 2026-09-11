@@ -1144,7 +1144,7 @@ tarayıcıda doğrulandı: sms gönderimleri · 2026-09-11 · src/components/pan
 tarayıcıda doğrulandı: bildirim şablonları · 2026-09-11 · src/components/panel/admin/notification-templates.tsx · ccb8730
 tarayıcıda doğrulandı: bildirim günlüğü · 2026-09-11 · src/components/panel/admin/notification-log.tsx · c1e22c6
 tarayıcıda doğrulandı: belge kuyruğu · 2026-09-11 · src/components/panel/admin/document-queue.tsx · c1e22c6
-tarayıcıda doğrulandı: rezervasyon ayarları · 2026-09-11 · src/components/panel/admin/reservation-settings.tsx · ccb8730
+tarayıcıda doğrulandı: rezervasyon ayarları · 2026-09-12 · src/components/panel/admin/reservation-settings.tsx · 0342b5f
 tarayıcıda doğrulandı: iade modalı · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 8586b59
 tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 8586b59
 tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11 · src/components/account/cancel-reservation.tsx · 1ac13a3
@@ -1381,4 +1381,42 @@ o sayıyı okuyan **her yer** yeni dosyaya taşınmalı.*
 
 Anlatıda artık sayı yok, **ne olduğu** var: hangi ekranlar eklendi, hangi
 tip dosyaları, hangi betikler.
+
+## 2026-09-12 — süreler panelden yazılıyor (`0342b5f`)
+
+Back-end `PUT /api/platform/settings` gönderdi (`0eae276`); tutma süresi
+ve tahsilat penceresi artık **panelden değiştiriliyor**.
+
+⚠️ **Ekran kodunda tek satır değişmeden açıldı.** Form `editable` alanına
+bakıyordu, benim varsayımıma değil; uç `true` dönünce düğme kendiliğinden
+göründü. Alanın var olma sebebi buydu ve **karşılığını bugün verdi** —
+"bugün düzenlenemiyor" diye bir cümle yazsaydım, bugün birinin gelip onu
+kaldırması gerekirdi ve kimse hatırlamazdı.
+
+**Sınır sayıları ekrana yazılmadı.** Sunucu tutmayı 1–120 dakika,
+pencereyi 1–168 saat kabul ediyor; ikisini de kutuya `max` yazmak kolaydı
+ve sunucu tavanı değiştirdiği gün sessizce yalan olurdu. Bedeli kabul
+edildi: operatör aralığı **kaydetmeden önce** göremiyor. Dürüst yolu
+tavanları uçtan almak — istendi.
+
+**Tarayıcıda üç yol da denendi:**
+
+| Deneme | Sonuç |
+|---|---|
+| 500 dakika | `400` · *"kabul edilen aralığın dışında"* |
+| 20 dakika | `204` · liste yeniden okundu, `Son değişiklik` güncellendi |
+| 15'e geri | `204` · başlangıç değerine döndürüldü |
+
+⚠️ Kutuların başlangıç değeri **efektle senkronlanmıyor**, form
+`updatedAt` ile anahtarlanmış bir alt bileşende `useState` ile bir kez
+okunuyor. Efekt hem lint kuralına takılıyordu hem de araya giren bir
+yeniden okuma personelin yazdığı değeri geri alırdı.
+
+### Doğrulanmamış bir bulgu kaydedildi
+
+⚠️ Konsolda üç sunucu tarafı okuması (`platform/partners` ·
+`support/tickets` · `platform/reviews`) tekrar tekrar `401` veriyor.
+**Bir kez "bayat kayıt" diye eleyip geçmiştim ve o eleme yanlıştı** —
+temiz bir yeniden yükleme tekrarlamayacağı anlamına gelmiyormuş.
+Belirti ölçüldü, sebep **ölçülmedi** → [[web-sunucu-render-401]]
 
