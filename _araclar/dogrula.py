@@ -1391,8 +1391,10 @@ if _S29:
         if not _calisan:
             olcumler.append(
                 f"kontrol 29 · {_S29['adres']}: yanitta "
-                f"`{_S29.get('alan_adi')}` bos — git'siz derleme ya da eski "
-                f"surum. GUNCEL SAYILMAZ, OLCULEMEDI")
+                f"`{_S29.get('alan_adi')}` bos. En olasi sebep ESKI SURUM: "
+                f"alan 2026-09-11'de eklendi, oncesinde derlenmis her surec "
+                f"bos doner. Yani bu satir 'olcemedim'den cok 'muhtemelen cok "
+                f"eski' demektir — once yeniden baslat. GUNCEL SAYILMAZ")
         elif not _head29:
             olcumler.append(f"kontrol 29 · {_s29_repo}: HEAD okunamadi — OLCULEMEDI")
         elif _calisan != _head29:

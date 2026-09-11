@@ -658,3 +658,30 @@ kusur uç geldiği gün doğacaktı ve o gün kimse *"acaba eşleştirme doğru 
 diye bakmayacaktı, çünkü ekran yeni çalışmaya başlamış olacaktı.
 
 İlgili: [[api-kararlar]] · [[api-notlar]]
+
+## Kod değiştiren her turun son adımı: `api-guncel-mi.sh`
+
+`dotnet test` yeşil olması, **çalışan sürecin o kodu taşıdığını söylemiyor.**
+11 Eylül 2026'da bu üç kez yaşandı ve üçünde de ben fark etmedim:
+
+| # | Hâl | Nasıl bulundu |
+|---|---|---|
+| 1 | API kapalı bırakıldı | web, sabah panelde |
+| 2 | API ayakta ama **eski sürüm** — bölge tablosu on bölgeyi de "0 tekne" gösterdi | web, tarayıcıda |
+| 3 | Yine eski sürüm | **kontrol 29**, ilk koşumunda |
+
+Üçüncüsü ilk ikisinden farklı: **makine yakaladı**, insan değil. Sıra da
+öğretici — ölçüm eklenene kadar aynı kusur iki kez insan gözüne düştü.
+
+⚠️ **Neden hiçbir denetim göremiyordu:** `dotnet test` Testcontainers
+kullanıyor, `dogrula.py` dosyalara bakıyor, `sema-cikar.py` doğrudan
+veritabanına bağlanıyor, `openapi.json` diskten okunuyor. Hepsi **diskteki**
+kodu ölçüyor; **bellekteki** süreci ölçen hiçbir şey yoktu.
+
+**Kural:** kod değiştiren tur, `./araclar/api-guncel-mi.sh` `GUNCEL=1`
+basmadan bitmiş sayılmaz.
+
+⚠️ `openapi-uret.sh`'den **sonra da** koşulmalı: betik kendi örneğini
+kapatırken çalışan örneği etkilemiyor ama ben alışkanlıkla `pkill` atıyorum
+ve bu, listedeki 1 ve 3 numaralı vakaların ikisinin de sebebi oldu
+→ [[api-openapi-uret-apiyi-oldurur]]

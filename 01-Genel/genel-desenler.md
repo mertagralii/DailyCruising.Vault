@@ -1364,7 +1364,6 @@ kodda doğruydu. `build`/`lint`/`tsc` ve bütün betikler **diskteki** kodu öl�
 çalışan sürüm ile `HEAD` arasındaki fark, ölçümün geçerliliğini belirler.
 **Bugün boşluk olarak kayıtlı** — ölçülemeyeni ölçülüyor göstermemek için.
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Sıfır üç ayrı şeyin işareti olabilir
 
@@ -1394,3 +1393,30 @@ edebildiğini** göstermek zorunda — ayırt edemiyorsa sıfırı sonuç değil
 olarak bildirir.
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Kapı düşünmeyi gerektirir, ölçüm gerektirmez
+
+2026-09-11'de üç oturum aynı yapıyı üç ayrı yerde yaşadı:
+
+| Yazılı bilgi | Ne oldu |
+|---|---|
+| `*-araclar` tetikleyicisi | Backend üç araç kararı verdi, dosyayı açmadı: *"araç seçtiğimi fark etmiyorum"* |
+| Kabukta sözcük bölme | Web ikinci kez düştü, notu **kendisi** yazmıştı |
+| Gereksiz `pkill` | Backend o gün **ölçüp not ettiği** alışkanlığı iki kez daha tekrarladı |
+
+Üçünde de bilgi vardı, kapı vardı, ve **kapı ateşlenmedi.** Ortak sebep
+backend'in cümlesinde: *"kapı yalnız durup düşündüğüm anlarda çalışıyor."*
+
+Üçünün çözümü de aynı olmadı, ve fark önemli:
+- Sözcük bölme → **her oturumun önüne** kondu (`acilis`), tetikleyici aranmadı
+- `pkill` alışkanlığı → **ölçüme** çevrildi (kontrol 29), kapı bırakılmadı
+- `*-araclar` → hâlâ kapı, ve `G-21` ile **ölçülüyor**
+
+⚠️ **Ders:** yazılı bilgi yerleşmiş refleksi yenmiyor. Bir kuralın üçüncü kez
+delindiğini görüyorsan, kuralı daha iyi yazmak değil **kuralı ölçüme çevirmek**
+gerekiyor. Ölçüm, hatırlamayı da fark etmeyi de gerektirmiyor.
+
+Kontrol 29'un değeri bunun kanıtı: aynı kusur üç kez oldu; ilk ikisini **insan**
+tarayıcıda buldu, üçüncüsünü **makine** ilk koşumunda.
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
