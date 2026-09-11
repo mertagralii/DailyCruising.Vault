@@ -1,7 +1,7 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-09-11
+guncelleme: 2026-09-12
 durum: guncel
 ---
 
@@ -157,6 +157,7 @@ karardır (`*-kararlar.md`); **bir daha aynı tuzağa düşmemek için** yazıla
 python3 DailyCruising.Vault/_araclar/dogrula.py        # denetler
 python3 DailyCruising.Vault/_araclar/acilis-guncelle.py  # acilis sayilarini URETIR
 python3 DailyCruising.Vault/_araclar/karar-ara.py <kelime>   # 308 karar icinde ara
+python3 DailyCruising.Vault/_araclar/tarih-damgala.py     # degistirdiklerinin beyanini damgala
 ```
 
 23 kontrol çalıştırır. Kontrollerin kendisi `_araclar/kontrol-testi.py` ile
