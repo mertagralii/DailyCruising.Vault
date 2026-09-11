@@ -124,6 +124,25 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
 
 ## 🟢 Tamamlandı
 
+- [x] **W-95** Yönetim panelinden örnek veri tamamen kaldırıldı · 2026-09-11
+      Bölge · reklam · aktivite · log · e-posta · SMS · SMS gönderimleri ·
+      finans. Dördünde gerçek uç bağlandı, dördünde eksik açıkça yazıldı.
+      **Kanıt:** `a87b5d1` `5b2a82c` `8eaefa1` `233887f` `3d35620` `77a76e2`
+      `6a20f0e` · `src/lib/data/admin-ornek.ts` **silindi**, hiçbir yer
+      okumuyor · `build`/`lint`/`tsc` temiz · sözlük denetimi `IHLAL=0`.
+      ⚠️ Tarayıcı doğrulaması yapılmadı — personel girişi Mert'te.
+
+- [x] **W-94** Yolcu gönder — telefonla rezervasyon açma · 2026-09-11
+      Mert: *"Yolcu gönder kısmını yapalım"* + *"telefona anlaşılan müşteri
+      için rezervasyonu açarız."* Statik tablo kaldırıldı, form gerçek uca
+      bağlandı.
+      **Kanıt:** `b91c9d6` · `build`/`lint`/`tsc` temiz · sözlük denetimi
+      `IHLAL=0` · uçlar `openapi.json`'dan doğrulandı (POST gövdesi 13 alan,
+      8'i zorunlu; `?channel` süzgeci var; `BoatRentalTypeItem.id`
+      = `boatRentalTypeId`).
+      ⚠️ **Tarayıcı doğrulaması yapılmadı** — personel girişi Mert'te.
+      Tahsilat dilimi back-end'de bekliyor; modül `kismi`.
+
 - [x] **W-89** Tekne detayı tasarıma tamamlandı · 2026-09-05
       Mert tasarım ekranlarını gönderdi: *"detayına girdiğim zaman
       front-end tarafında eksiklikler var."* Ölçüm eksikleri **üçe**

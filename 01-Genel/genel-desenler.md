@@ -1133,7 +1133,6 @@ bakmıyordu; kontrol 24 yorumları sayıyordu; `okunma.py` açılmayı sayıyor 
 sebebini ve yazan oturumun okumasını saymıyor. **Her ölçütün yanında ölçmediği
 yazılmazsa, o ölçüt bir süre sonra kanıt sanılır.**
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Bitirmeden önce — beş madde, hepsi ölçülmüş
 
@@ -1175,3 +1174,27 @@ Bu, *"her ölçütün yanında ölçmediği yazılmalı"* kuralının kardeşi �
 eksik ölçüyordu, burada **kendini** ölçüyor.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Yokluk iddiası, varlık iddiasından farklı bayatlar
+
+2026-09-11 gecesi web oturumu kendi yazdığı iki notu ölçtü ve **ikisi de yalandı**:
+*"`activity.tsx` için uç yok — `openapi.json`'da `activity` kelimesi hiç geçmiyor"*
+(uç vardı ve başka ekranda kullanılıyordu) · *"finansta platform geneli uç yok"*
+(`platform/overview` ciroyu ve komisyonu zaten döndürüyordu). O oturumda **yedi**
+modülün eksik notu yanlış çıktı.
+
+**Neden ayrı bir sınıf:** varlık iddiası ("şu uç var") kod silinince bayatlar ve
+bunu kontrol 24 yakalıyor — ad kaybolur, ölçülür. Yokluk iddiası ("şu uç yok")
+ise **dünya zenginleştikçe** bayatlar: kimse bir şey silmez, tam tersine eklenir
+ve not sessizce yalan hâline gelir. Silinen bir ad göze çarpar; **eklenen bir uç
+hiçbir yerde alarm üretmez.**
+
+**Zararı iki yönlü:** olmayan bir işi bir alana duyurur (yapılacak listesi şişer)
+**ve** var olan veriyi ekrandan gizler (özellik yazılmaz).
+
+**Kural:** *"X yok"* yazan her not, X'in nerede aranacağını da yazar — ve o yer
+**makine tarafından okunabilir** olmalı (`openapi.json`, şema envanteri, dosya
+yolu). Yoklukla ilgili iddia, kaynağı gösterilmeden yazılmaz; gösterilirse
+denetlenebilir hâle gelir.
+
+İlgili: [[genel-esszamanli-oturumlar]]

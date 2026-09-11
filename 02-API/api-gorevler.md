@@ -24,6 +24,42 @@ Biçim ve gerekçe -> [[genel-desenler]]
 ## 🔵 Yapılacak
 
 
+- [ ] **A-165** Panel modüllerinin eksik uçları · 🔴 **SIRALAMA MERT'TE** · ölçüldü: 2026-09-11
+
+      Web yedi modülün ucunun olmadığını ölçtü ve öncelik sırasıyla iletti.
+      **Hepsi birden beklenmiyor**; sıralamayı Mert verecek.
+
+      1. **Olay günlüğü — iki ayrı ihtiyaç.**
+         `GET /api/platform/activity` (platform geneli denetim izi; bugün
+         yalnız `staff/{userId}/activity` var ve on kişinin ilk sayfasını
+         birleştirmek gerçek akışın ilk sayfası değil) ·
+         `GET /api/platform/logs` + `/{id}` (istek günlüğü, ayrı şey).
+         ⚠️ Ödeme yanıtlarında kart ve jeton **maskeli**. "Tekrar dene" ucu
+         **istenmiyor** — gerçek para hareketi üretir.
+      2. **Belge onay/red kuyruğu.** `GET /api/platform/documents?status=Pending`
+         (işletme + tekne belgesi bir arada) · `approve` · `reject`.
+         ⚠️ Redde sebep **zorunlu ve sözlükten**: `Unreadable` · `Expired` ·
+         `WrongDocument` · `MismatchedInfo`. Serbest metin raporlanamıyor ve
+         sebepsiz red işletmeyi kör bırakıyor.
+      3. **Platform finansı — okuma.** `summary` · `entries` · `payouts`.
+         ⚠️ Ödeme **başlatan** uç istenmiyor: para transferi tetikleyen düğme
+         panelde olmayacak.
+      4. **Bildirim şablonları.** Liste + kendine test gönderimi.
+         ⚠️ Düzenleme **istenmiyor** (ilk sürüm): şablonlar `{{kod}}` gibi
+         değişken taşıyor, bir değişkeni silen personel bildirimi **sessizce**
+         bozar. Düzenleme istenirse önce değişken doğrulaması — ayrı iş.
+      5. **Bildirim gönderimleri listesi.** `?channel=Sms|Email`, `NotificationOutbox`
+         üzerinden. Gönderim tetikleyen uç istenmiyor.
+      6. **Reklam — en dar kapsam.** `adverts` yazma + herkese açık okuma.
+         ⚠️ Satış, teklif, faturalama, gösterim/tıklama sayımı **kapsam dışı**.
+      7. **Referans kataloğu yazma** (bölge vb.) — en düşük öncelik.
+
+      ⚠️ **7'den ÖNCE bir görünürlük kusuru var:** `/api/lookups` yalnız
+      `IsActive` bölgeleri döndürüyor (`LookupRepository.cs:37`). Kapatma ucu
+      bu hâlde gelirse ilk kapatma **tek yönlü** olur — bölge panelden de
+      kaybolur, kimse geri açamaz. Bugün on bölgenin onu da açık olduğu için
+      kusur görünmüyor.
+
 - [ ] **A-159** İşletme çalışanı davet akışı · 🔴 **MERT'TE** · ölçüldü: 2026-09-10
 
       ⚠️ **Ekran olmayan bir şeyi vaat ediyor.** İşletme panelinde çalışan

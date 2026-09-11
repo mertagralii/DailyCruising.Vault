@@ -6818,3 +6818,97 @@ Kararlarda anılan sembol adlarını kodda arıyor ve `ExceedsCommission` üç a
 boyunca iki kayıtta yaşayıp kodda hiç var olmamıştı. Kardeşleri
 (`OtherPartner`, `LimitReached`) kodda olduğu için kayıt inandırıcı
 görünüyordu — bir ismin doğru komşular arasında durması onu doğru yapmıyor.
+
+## 2026-09-11 · Telefonla açılan rezervasyon: `AwaitingCollection`
+
+Personelin telefonda açtığı rezervasyon `Pending` DEĞİL, yeni bir durumda
+doğuyor: **`AwaitingCollection`** — *"personel onayladı, parası gelmedi"*.
+
+**Neden yeni değer:** `Pending` bugün **dört** yerde "müşteri ödeme sayfasında,
+15 dakikada düşecek" anlamında okunuyor — tutma süresi işi, `payments/start`
+kapısı, `canReschedule`, `canCancel`. Anlamı değiştirmek dördünü de sessizce
+yanlış yapardı ve **hiçbiri derlemede konuşmazdı**.
+
+**Tutma penceresi `min(24 saat, kalkışa kalan süre)`.** Sabit 24 saat, yarın
+sabahki bir tur için turun kendisinden uzun bir pencere demek: koltuk tur
+kalkana kadar satılamaz hâlde kalırdı.
+
+⚠️ **"Canlı durum" listesi ÜÇ yerde yaşıyor:** `ReservationStatuses.Live`,
+`sync_voyage_sold_seats` tetikleyicisi, `count_live_coupon_redemptions`.
+Üçü de güncellendi. Eklenmeseydi telefonla verilen söz koltuk tutmaz, aynı
+koltuk siteden satılırdı.
+
+⚠️ **Mutasyon testi C# listesinin ne sürdüğünü öğretti.** Listeden çıkardığımda
+koltuk sayısını ölçen test **yeşil kaldı** — koltuk sayacı veritabanı
+tetikleyicisinde. C# listesinin gerçekten sürdüğü şey **seferin serbest
+bırakılması**: kırıldığında telefonla verilen sözün seferi boş sayılır, tarih
+serbest bırakılır ve müşterinin turu ortadan kalkar. Testi ona göre yazdım.
+
+## 2026-09-11 · Fiyat katalogdan, personel tutara dokunamıyor — Mert'in kararı
+
+Üç seçenek sunuldu: (a) katalog fiyatı sabit, (b) indirim platformun
+komisyonundan, (c) indirim ikisinden orantılı. **Mert (a)'yı seçti.**
+
+**Neden:** indirim gerektiğinde **kupon sistemi zaten var** ve o yol işletmenin
+haberi olmadan hakedişini yemiyor. Ayrı bir "personel indirimi" kavramı, var
+olan bir aracın yanına ikinci bir yol koymak olurdu.
+
+## 2026-09-11 · Kanal saklanmıyor, `CreatedByStaffId`'den türetiliyor
+
+`?channel=web|phone` süzgeci `CreatedByStaffId` alanının dolu olup olmamasına
+bakıyor; ayrı bir kanal kolonu **açılmadı**.
+
+**Neden:** ikisini birden tutmak aynı olguyu iki yerde saklamak olurdu ve bu
+desen aynı gün iki kusur üretti (defter penceresi, biniş bileti). Alan ayrıca
+kanaldan fazlasını söylüyor: telefon satışında **kim açtı** sorusunun cevabı
+hesap sorulabilirlik demek.
+
+## 2026-09-11 · Kolon genişletmenin iki gizli bedeli
+
+`Status` 16 karakterdi, `AwaitingCollection` **19**. Kolon 32'ye çıkarıldı.
+
+**Neden 32, 19 değil:** bir sonraki durum adı yine sığmayabilir ve her
+genişletme, aşağıdaki tetikleyici dansını tekrar gerektiriyor. Genişliğin
+maliyeti `varchar`'da yok; dansın maliyeti var.
+
+İki şey öğretti:
+
+⚠️ **1. Hata mesajı yanıltıcıydı.** `ReservationRepository.Describe` tanımadığı
+Postgres hatasını *"Rezervasyon şu anda oluşturulamadı, lütfen tekrar
+deneyin"* diye çeviriyor — oysa `22001 value too long` için tekrar denemek
+**hiçbir zaman** işe yaramayacaktı. Genel bir kurtarma mesajı, kurtarılamayan
+bir hatayı kurtarılabilir gösteriyor.
+
+⚠️ **2. Postgres, tetikleyici tanımında geçen kolonun tipini değiştirmeyi
+reddediyor** (`0A000: cannot alter type of a column used in a trigger
+definition`). `trg_reservation_status_syncs_coupon` ve
+`trg_reservation_sync_seats` göç içinde düşürülüp birebir geri kuruluyor.
+
+## 2026-09-11 · Ödeme bağlantısı: özet doğrular, şifreli kopya yeniden gönderir
+
+Telefonla açılan rezervasyona `POST .../payment-link` ile e-posta ve/veya SMS
+gönderiliyor; müşteri tarafı kimliksiz iki uç.
+
+**Neden iki kopya saklanıyor:** jetonun **özeti** doğrulama için, **şifreli**
+hâli gösterim için — biniş biletindeki desenin aynısı. Yalnız özet saklansaydı
+bağlantı **ikinci kez gönderilemezdi**: müşteri *"mesaj gelmedi"* dediğinde
+elde jeton olmazdı.
+
+⚠️ **Tasarımda bu boşluk vardı ve testi yazarken çıktı.** İlk hâlinde yalnız
+özet saklanıyordu; "tekrar gönder" davranışını yazmaya çalışınca jetonun geri
+üretilemediği görüldü. Yeni jeton üretmek çözüm değil: ilk mesajı açmış olan
+müşteriyi kilitlerdi.
+
+⚠️ **Geçerlilik `HoldExpiresAt` ile AYNI**, daha uzun değil. Uzun olsaydı
+müşteri bağlantıyı açıp öder, bu arada koltuk düşmüş olurdu: parası alınmış ama
+yeri olmayan müşteri.
+
+⚠️ **Ödeme dönüşü artık `AwaitingCollection` kaydını da ödenmiş yapıyor.**
+Yalnız `Pending` denseydi para girer, rezervasyon tahsilat bekliyor kalır ve
+tutma süresi dolunca **ödenmiş bir rezervasyon `Expired`** olurdu — sessiz ve
+geri alınması pahalı.
+
+Sağlayıcıda ödeme açan gövde `StartForAsync`'e çıkarıldı: iki giriş
+(müşterinin kendi akışı, personelin bağlantısı) aynı gövdeyi kullanıyor. Ayrı
+yazılsaydı hakediş bölüştürmesi, tutar kaynağı ve anahtar biçimi bir gün
+ayrışırdı — ve ayrıştığı gün para yanlış yere giderdi.

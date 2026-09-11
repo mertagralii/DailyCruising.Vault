@@ -967,10 +967,15 @@ Kısıtlar:
 | `IdempotencyKey` | character varying | hayır |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
 | `CompletedAt` | timestamp with time zone | evet |  |
+| `CollectedByStaffId` | uuid | evet |  |
+| `ManualMethod` | character varying | evet |  |
+| `Note` | character varying | evet |  |
 
 Kısıtlar:
 
 - `CK_Payments_Amount` — `CHECK (("AmountTry" > (0)::numeric))`
+- `CK_Payments_ElleTahsilat` — `CHECK (((("ManualMethod" IS NULL) AND ("CollectedByStaffId" IS NULL)) OR ((("Provider")::text = 'manual'::text) AND ("ManualMethod" IS NOT NULL))))`
+- `CK_Payments_ManualMethod_Enum` — `CHECK ((("ManualMethod" IS NULL) OR (("ManualMethod")::text = ANY ((ARRAY['Cash'::character varying, 'BankTransfer'::character varying, 'PosAtOffice'::character varying, 'Other'::character varying])::text[]))))`
 - `CK_Payments_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['Initiated'::character varying, 'Succeeded'::character varying, 'Failed'::character varying, 'Refunded'::character varying])::text[])))`
 
 ## `Payouts`
@@ -1184,8 +1189,8 @@ Kısıtlar:
 
 Kısıtlar:
 
-- `CK_ReservationStatusHistories_FromStatus_Enum` — `CHECK ((("FromStatus")::text = ANY ((ARRAY['Pending'::character varying, 'Paid'::character varying, 'Boarded'::character varying, 'Completed'::character varying, 'Expired'::character varying, 'Cancelled'::character varying, 'Refunded'::character varying])::text[])))`
-- `CK_ReservationStatusHistories_ToStatus_Enum` — `CHECK ((("ToStatus")::text = ANY ((ARRAY['Pending'::character varying, 'Paid'::character varying, 'Boarded'::character varying, 'Completed'::character varying, 'Expired'::character varying, 'Cancelled'::character varying, 'Refunded'::character varying])::text[])))`
+- `CK_ReservationStatusHistories_FromStatus_Enum` — `CHECK ((("FromStatus")::text = ANY ((ARRAY['Pending'::character varying, 'AwaitingCollection'::character varying, 'Paid'::character varying, 'Boarded'::character varying, 'Completed'::character varying, 'Expired'::character varying, 'Cancelled'::character varying, 'Refunded'::character varying])::text[])))`
+- `CK_ReservationStatusHistories_ToStatus_Enum` — `CHECK ((("ToStatus")::text = ANY ((ARRAY['Pending'::character varying, 'AwaitingCollection'::character varying, 'Paid'::character varying, 'Boarded'::character varying, 'Completed'::character varying, 'Expired'::character varying, 'Cancelled'::character varying, 'Refunded'::character varying])::text[])))`
 
 ## `Reservations`
 
@@ -1240,6 +1245,11 @@ Kısıtlar:
 | `DiverCount` | integer | hayır | `0` |
 | `CancellationNote` | character varying | evet |  |
 | `CancellationReason` | character varying | evet |  |
+| `CreatedByStaffId` | uuid | evet |  |
+| `PaymentLinkSentAt` | timestamp with time zone | evet |  |
+| `PaymentLinkSentCount` | integer | hayır | `0` |
+| `PaymentLinkTokenEncrypted` | text | evet |  |
+| `PaymentLinkTokenSha256` | character varying | evet |  |
 
 Kısıtlar:
 
@@ -1255,14 +1265,14 @@ Kısıtlar:
 - `CK_Reservations_DiverCount` — `CHECK ((("DiverCount" >= 0) AND ("DiverCount" <= ("AdultCount" + "ChildCount"))))`
 - `CK_Reservations_ExchangeRate` — `CHECK (("ExchangeRate" > (0)::numeric))`
 - `CK_Reservations_GrandTotal` — `CHECK (("GrandTotalTry" = (("TotalTry" + "ExtrasTotalTry") - "DiscountAmountTry")))`
-- `CK_Reservations_HoldExpiry` — `CHECK (((("Status")::text <> 'Pending'::text) OR ("HoldExpiresAt" IS NOT NULL)))`
+- `CK_Reservations_HoldExpiry` — `CHECK (((("Status")::text <> ALL ((ARRAY['Pending'::character varying, 'AwaitingCollection'::character varying])::text[])) OR ("HoldExpiresAt" IS NOT NULL)))`
 - `CK_Reservations_ListCurrency_Enum` — `CHECK ((("ListCurrency")::text = ANY ((ARRAY['TRY'::character varying, 'USD'::character varying, 'EUR'::character varying, 'GBP'::character varying])::text[])))`
-- `CK_Reservations_PaidAt` — `CHECK (((("Status")::text <> ALL ((ARRAY['Paid'::character varying, 'Boarded'::character varying, 'Completed'::character varying])::text[])) OR ("PaidAt" IS NOT NULL)))`
+- `CK_Reservations_PaidAt` — `CHECK (((("Status")::text <> ALL (ARRAY[('Paid'::character varying)::text, ('Boarded'::character varying)::text, ('Completed'::character varying)::text])) OR ("PaidAt" IS NOT NULL)))`
 - `CK_Reservations_PlatformAbsorbed` — `CHECK ((("PlatformAbsorbedTry" >= (0)::numeric) AND ("PlatformAbsorbedTry" <= "DiscountAmountTry")))`
 - `CK_Reservations_RefundDue` — `CHECK (((("CancellationRefundRate" IS NULL) = ("RefundDueTry" IS NULL)) AND (("RefundDueTry" IS NULL) OR (("RefundDueTry" >= (0)::numeric) AND ("RefundDueTry" <= "GrandTotalTry")))))`
 - `CK_Reservations_RefundRate` — `CHECK ((("CancellationRefundRate" IS NULL) OR ("CancellationRefundRate" = ANY (ARRAY[(0)::numeric, (50)::numeric, (100)::numeric]))))`
 - `CK_Reservations_RefundReason_Enum` — `CHECK ((("RefundReason" IS NULL) OR (("RefundReason")::text = ANY ((ARRAY['CustomerCancellation'::character varying, 'WeatherCancellation'::character varying, 'NoShow'::character varying, 'PartnerCancellation'::character varying, 'PlatformDecision'::character varying])::text[]))))`
-- `CK_Reservations_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['Pending'::character varying, 'Paid'::character varying, 'Boarded'::character varying, 'Completed'::character varying, 'Expired'::character varying, 'Cancelled'::character varying, 'Refunded'::character varying])::text[])))`
+- `CK_Reservations_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['Pending'::character varying, 'AwaitingCollection'::character varying, 'Paid'::character varying, 'Boarded'::character varying, 'Completed'::character varying, 'Expired'::character varying, 'Cancelled'::character varying, 'Refunded'::character varying])::text[])))`
 - `CK_Reservations_TotalTry` — `CHECK ((abs(("TotalTry" - round(("ListTotal" * "ExchangeRate"), 2))) <= 0.01))`
 - `CK_Reservations_Totals` — `CHECK ((("GrandTotalTry" >= (0)::numeric) AND ("DiscountAmountTry" >= (0)::numeric) AND ("ExtrasTotalTry" >= (0)::numeric)))`
 - `CK_Reservations_VatRate` — `CHECK ((("VatRate" >= (0)::numeric) AND ("VatRate" <= (100)::numeric)))`

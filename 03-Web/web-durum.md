@@ -883,3 +883,126 @@ kazanır**, bağlantı iptal anında geçersiz olur, ödenmişse fark iade edili
 - **Misafir rezervasyonu arayüzden iptal edilemiyor**: `CancelReservation`
   yalnız `/account/reservations/[code]`'da basılıyor, misafir kaydı o listede
   yok. Dev veritabanındaki iptal edilebilir 28 kaydın **tamamı misafir**.
+
+## 2026-09-11 gecesi — Yolcu gönder: telefonla rezervasyon açma
+
+Menü girişi *"Yolcu gönder"* ama modülün işi başka: **telefonda anlaşılan
+müşteri için personelin kayıt açması**. Sahil Güvenlik yolcu listesi bu
+kaydın bir çıktısı, modülün kendisi değil — bu ayrım 2026-09-06'da bir kez
+yapılmıştı, ekran o gün yine de statik kalmıştı.
+
+**Bağlandı** (`b91c9d6`):
+
+| Uç | Ne için |
+|---|---|
+| `POST platform/reservations` | Kaydı `AwaitingCollection` ile açar |
+| `POST pricing/quote` | **Kayıt açılmadan önce** fiyat |
+| `GET platform/reservations?channel=phone` | Liste, sunucu tarafı sayfalama |
+| `GET platform/partners/{id}/boats/{id}/rental-types` | Tur tipi kutusu |
+
+⚠️ **Fiyat önce soruluyor ve teklif gelmeden düğme açılmıyor.** Telefondaki
+soru sırası bu: müşteri "ne kadar" diye soruyor, duyduktan sonra "tamam"
+diyor. Fiyatı ancak kayıt açarak öğrenen bir ekran personeli önce açıp
+sonra iptal etmeye zorlardı — her vazgeçen müşteri için bir hayalet
+rezervasyon ve dolu görünen bir koltuk → [[web-kararlar]]
+
+⚠️ **Tutar kutusu yok, indirim yalnız kuponla.** Elle yazılan tutar,
+işletmenin hakedişini haberi olmadan azaltabilecek ikinci bir yol olurdu;
+komisyon o tutardan hesaplanıyor. Kuponun arkasında kim tanımladı, kime
+tanımlı, kaç kez kullanıldı var — elle yazılan sayının arkasında hiçbir şey.
+
+⚠️ **Çok günlü tarifede gece sayısı soruluyor** (`durationKind: MultiDay`),
+gün içi turda hiç gönderilmiyor. Bunun bir bedeli var ve bilerek kabul
+edildi: `minNights`/`maxNights` bugün **bütün tiplerde boş**, yani üç günlük
+ilan edilen tarife `nights: 1` ile üçte bir fiyata alınabiliyor ve tek
+koruma müşteri ekranımızın `nights` göndermemesiydi. Artık personel ekranı
+da gönderiyor; sormasaydık çok günlü tur telefonla hiç satılamazdı.
+
+⚠️ **Bu bulguyu back-end'e yanlış bildirdim ve düzeltildi.** *"Sunucuda
+denetim yok"* demiştim; `PricingService` kontrolü **yapıyor** (satır 218,
+224). Eksik olan kod değil **veri** — sekiz satış biçiminin hiçbirinde
+sınır dolu değil. Ders yine aynı: *"alan boş"* ile *"kural yok"* farklı
+şeyler ve ikincisini iddia etmeden önce kodun kendisine bakmam
+gerekiyordu → [[web-desenler]]
+
+⚠️ **Dalışçı kutusunun kapısı `supportsDivers`**, `diverCapacity` değil:
+kontenjanı sınırsız olan dalış turunda kapasite `null` gelir ve o tur,
+dalış yapılmayan turdan ayırt edilemez.
+
+**Silinen örnek veri:** `ORNEK_TELEFON_SUTUNLARI` · `ORNEK_TELEFON_REZERVASYONLARI`.
+Bu, statik verinin gerçek sanıldığı sınıftan **beşinci** temizlik.
+
+### Bekleyen — tahsilat dilimi
+
+Back-end'e iletildi: `POST /{id}/collect` (elle tahsil işaretleme, yöntem
+burada seçiliyor — açılışta değil), `POST /{id}/payment-link` (ödeme
+bağlantılı SMS/e-posta), detaya `collection` · `paymentLinkSentAt` ·
+`channel`. Modül bu yüzden `admin-durum.ts`'de `statik` değil **`kismi`**.
+
+Cevabı beklenen tek soru: tutma süresi dolunca kayıt düşüyor mu, yoksa
+`AwaitingCollection`'da mı kalıyor — ekranda "süresi doldu" hâlini basmak
+için hangi durumu okuyacağım belli değil.
+
+⚠️ **Tarayıcıda doğrulanmadı.** `build` · `lint` · `tsc` temiz ama ekran
+personel hesabıyla açılmadı: yereldeki oturum Mert'in müşteri hesabı ve
+parolayı ben yazmıyorum. Sabah doğrulanacak.
+
+## 2026-09-11 gecesi — Örnek veri dosyası **silindi**
+
+`src/lib/data/admin-ornek.ts` artık yok. Bu oturumda yönetim panelinin
+kalan bütün uydurma verisi kaldırıldı ve dosyayı hiçbir yer okumaz hâle
+gelince silindi.
+
+⚠️ **Kaldırma ile doldurma ayrı iki iş ve ikisi de yapıldı.** Bazı
+modüllerde gerçek uç zaten vardı ve ekran onu kullanmıyordu; bazılarında
+uç hiç yok ve ekran artık *"yok"* diyor. Karıştırılırsa yanlış yere iş
+yazılır.
+
+| Modül | Ne oldu |
+|---|---|
+| Bölge yönetimi | `lookups.regions` + `platform/boats` → **gerçek**. Uydurma tur/ciro sütunları silindi |
+| Reklam yönetimi | Uydurma kampanya, sayaç ve performans grafiği silindi. Kapsam `S-01` ile daraltıldı |
+| Aktivite kayıtları | `platform/staff/{id}/activity` → **gerçek**. Liste ortak dosyaya taşındı |
+| Log kayıtları | Uydurma istek satırları ve **uydurma JSON ödeme gövdesi** silindi |
+| E-posta · SMS · SMS gönderimleri | Uydurma şablon, oran ve sağlayıcı ayarı silindi |
+| Finans | `platform/overview` → ciro, komisyon, ortalama sepet, aylık eğri **gerçek** |
+| Sözleşme listesi | İmzalanmış işletme sözleşmeleri bölümü eklendi (gerçek) |
+| Yolcu gönder | Form + liste + **elle tahsilat** bağlandı |
+
+### İki kez aynı ders: eksik notları da çürüyor
+
+⚠️ **`activity.tsx`** *"openapi.json'da activity kelimesi hiç geçmiyor"*
+yazıyordu — uç vardı ve personel detayında **zaten kullanılıyordu**.
+⚠️ **`finance.tsx`** platform geneli uç yok diyordu — `overview` ciroyu ve
+komisyonu zaten döndürüyordu.
+
+İkisini de uçları yeniden ölçünce gördüm, okuyunca değil. Kendi yazdığım
+*"uç yok"* notu, yazıldığı gün doğru olsa bile **tetikleyicisi olmadan
+bayatlıyor** ve bayat bir eksik notu, olmayan bir işi duyurup var olan
+veriyi gizliyor → [[genel-desenler]]
+
+Bunun araç karşılığı var: `admin-durum.ts` bugün elle yazılıyor ve
+`openapi.json`'a karşı denetlenmiyor. Bir betik, `uc:` alanındaki yolların
+gerçekten var olduğunu **ve** `eksik:` metninde adı geçen yolların
+gerçekten yok olduğunu ölçebilir. Vault oturumuna öneriliyor.
+
+### Kopya yerine ortak parça
+
+- `components/panel/admin/activity-log.tsx` — etkinlik listesi + olay
+  ayrıntısı; personel detayı ve aktivite modülü paylaşıyor.
+- `kit.tsx: BeklenenUclar` — "back-end'den beklenen" kutusu; **beş** modül.
+- `kit.tsx: egri` — aylık eğri kurucusu; genel bakış ve finans.
+
+### Bekleyen
+
+- Ödeme bağlantısı (`POST /{code}/payment-link`) back-end'de sırada.
+- Spec geçilenler: genel aktivite akışı · istek günlüğü · belge onay/red
+  kuyruğu · platform finans · bildirim şablonları · reklam · referans
+  kataloğu yazma. Hepsi `src-d9`'a tek mesajda iletildi.
+
+⚠️ **Bu gece yazılan hiçbir ekran tarayıcıda açılmadı.** `build` · `lint`
+· `tsc` · sözlük denetimi temiz ama personel girişi Mert'te; parolayı ben
+yazmıyorum. Sabah doğrulanacaklar: tahsilat formu (`VZZC9JG8` bekliyor,
+`3S2G3T3K` form için duruyor) · telefon listesi süzgeci · bölge tablosu ·
+aktivite seçicisi · finans sayaçları.
+

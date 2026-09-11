@@ -13,6 +13,40 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (9) — telefonla rezervasyon modülü tamam.**
+`dotnet test` **783/783**, son commit `aae6ba4`, migration **A126**.
+
+Üç parça bitti: açma ucu (`A124`) · elle tahsilat (`A125`) · ödeme bağlantısı
+(`A126`). Bağlantının geçerliliği tutma süresiyle aynı, tekrar gönderim aynı
+jetonu taşıyor → [[api-kararlar]].
+
+⚠️ **Web yedi modülün eksik uçlarını ölçüp iletti → `A-165`.** Sıralama
+Mert'te; hepsi birden beklenmiyor. İçinde iki "istemiyorum" var ve ikisi de
+doğru: istek günlüğünde "tekrar dene" ucu, finansta ödeme başlatan uç.
+
+⚠️ Web'e bırakılan test verisi: `VZZC9JG8` ve `3S2G3T3K`, ikisi de
+`AwaitingCollection` · `channel: Phone`. Tahsil edilmiş örnek **bilerek
+verilmedi** — SQL ile üretilseydi defteri olmayan "ödenmiş" bir kayıt olurdu.
+
+---
+
+**2026-09-11 (8) — telefonla rezervasyon açma ucu hazır.**
+`dotnet test` **778/778**, son commit `cd319bc`, migration **A124**.
+
+`POST /api/platform/reservations` · yeni durum `AwaitingCollection` ·
+`CreatedByStaffId` ve ondan türetilen `?channel=web|phone` süzgeci · tahsil
+edilmeyen kayıt `Expired` oluyor. Fiyat **katalogdan**, personel dokunamıyor
+(Mert'in kararı) → [[api-kararlar]].
+
+⚠️ Üç denetim de bu turda iş gördü: `EnumConstraintTests` durum geçmişinin
+unutulan kısıtlarını, mutasyon testi C# `Live` listesinin **ne sürdüğünü**,
+canlı hata ise `Status` kolonunun 19 karaktere yetmediğini gösterdi.
+
+⚠️ **Sırada:** elle tahsilat ucu (`POST .../collect`) → ödeme bağlantısı →
+`AwaitingCollection` iptali (personelin kendi gerekçe listesiyle).
+
+---
+
 **2026-09-11 (7) — taşıma zinciri web'de uçtan uca doğrulandı; iki kusur daha
 kapandı.** `dotnet test` **775/775**, son commit `cabfbb0`.
 
