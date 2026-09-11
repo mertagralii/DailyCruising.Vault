@@ -1491,3 +1491,28 @@ göndermezse de sessiz — bilinmeyen hakkında iddia üretmiyor.
 Ölçüldü: uç `droppedSinceStart: 0` dönüyor, 409 istek. Uyarı doğru
 biçimde **görünmüyor**.
 
+## 2026-09-12 · tekne alt ekranları ilk kez açıldı
+
+Defterde **66 panel bileşeninin 28'i** kayıtlıydı; kalanın en riskli
+kümesi `/admin/tekneler/*` alt ekranlarıydı çünkü hiç açılmamışlardı.
+Beşi de açıldı ve **beşi de düzgün**: künye/kapasite, fiyatlandırma
+(kiralama tipi · taban fiyat · dört ek hizmet), görseller, belgeler
+(üç belge, "İnceleniyor"), düzenleme formu.
+
+⚠️ **Bir şeyi kusur sanıp ölçtüm ve kusur değildi.** Görsel yükleme
+kutusu *"En fazla 23 dosya · dosya başına 10 MB"* yazıyor ve bu, gecenin
+en çok tekrar eden kusur sınıfına (sunucu değerinin ekranda kopyası)
+benziyordu. Ölçüm: ikisi de `lookups.limits`'ten geliyor
+(`boatPhotoMax`, `boatPhotoMaxBytes`), 23 = tavan eksi mevcut görsel.
+Kopya yok. `file-upload.tsx`'teki `maxFiles = 8` varsayılanı yalnız
+çağıran sınır vermediğinde devreye giriyor; burada veriliyor.
+
+**Benzemek kanıt değil** — sınıfı tanımak nereye bakacağımı söylüyor,
+ne bulacağımı değil. Bu gece bunun tersini bir kez yaptım (401'leri
+"bayat" sayıp geçmek) ve yanılmıştım.
+
+tarayıcıda doğrulandı: tekne detayı (admin) · 2026-09-12 · src/components/panel/boat-screen-shell.tsx · d0bb7aa
+tarayıcıda doğrulandı: tekne fiyatlandırma · 2026-09-12 · src/components/panel/boat-pricing.tsx · d0bb7aa
+tarayıcıda doğrulandı: tekne görselleri · 2026-09-12 · src/components/panel/boat-media.tsx · d0bb7aa
+tarayıcıda doğrulandı: tekne belgeleri · 2026-09-12 · src/components/panel/boat-documents.tsx · d0bb7aa
+tarayıcıda doğrulandı: tekne düzenleme formu · 2026-09-12 · src/components/panel/boat-form.tsx · d0bb7aa
