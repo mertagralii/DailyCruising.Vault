@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: genel
-guncelleme: 2026-09-05
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -11,6 +11,32 @@ durum: guncel
 karar değişirse yeni giriş eklenir ve eskisini iptal ettiği yazılır.
 
 ---
+
+## 2026-09-11 — `PreCompact` hook'u küresel ayardan proje ayarına taşındı
+
+**Karar:** `~/.claude/settings.json` içindeki `PreCompact` kancası kaldırıldı ve
+`DailyCruising/.claude/settings.json` içine alındı. Küresel ayarda artık **hiç
+hook yok**; yedek `~/.claude/settings.json.yedek-20260911-035133`.
+
+**Neden:** Hook küresel olduğu için **her projede** tetikleniyordu ve bağlı olduğu
+betik yalnızca *"DailyCruising vault klasörü diskte var mı"* diye bakıyor, oturumun
+hangi projeye ait olduğuna bakmıyor. Yazacağı yer de sabit (`04-Oturumlar`). Yani
+başka bir projede compact olduğunda o oturumun özeti **bu vault'un arşivine**
+düşecekti. Kusuru `test-a9` oturumu bildirdi (kendi vault'unu kurarken hook'u
+bilerek bağlamamış); arşiv tarandı, kirlenme **henüz olmamıştı**.
+
+Mert'in talimatı (2026-09-11): *"bunu sadece bu proje için kullanacağız, küresel
+Claude Code'umun bozulmasını istemiyorum."* Aynı gerekçe `ui-ux-pro-max`,
+`seo-butler` ve Expo eklentisi için de uygulanmıştı — **küresel ayar
+kirletilmez**; proje ayarı, projeye ait olanın yeridir.
+
+**Sonucu:** Hook yalnız bu projede çalışır; başka projede compact olursa arşive
+hiçbir şey yazılmaz. Bedeli: `04-Oturumlar` artık bu proje dışındaki çalışmayı
+hiç kaydetmiyor — bilinçli, çünkü o kayıtlar buraya ait değil.
+
+Betiğin içindeki yol hâlâ sabit yazılı; kapsam daraltıldığı için bugün zararsız,
+ama makine başka bir projeye taşınırken **üç hook dosyasının da yolu elle
+düzeltilmek zorunda** → [[genel-notlar]]
 
 ## 2026-08-21 — İki ayrı private repo
 
