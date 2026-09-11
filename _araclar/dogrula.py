@@ -1284,6 +1284,22 @@ if _D28 and (VAULT / _D28["dosya"]).exists():
     _dyok = re.compile(_D28["dogrulanmadi_deseni"], re.M)
     _onayli = list(_dvar.finditer(_dmetin))
     _bekleyen = len(_dyok.findall(_dmetin))
+    # SESSIZ KORLUK DEDEKTORU: defterin bicimine bagli her desen, bicim
+    # degistiginde kaydi GORMEZ ve hicbir sey soylemez. 2026-09-11'de web
+    # oturumunun kapsam betigi tam bunu yasadi: yolu satir SONUNDA ariyordu,
+    # ardina commit eklenince iki kaydi kaybetti ve sayi 28'den 26'ya dustu.
+    # Yakalanma sebebi sayinin DUSMESIYDI — artsaydi kimse bakmazdi.
+    # Bu yuzden desene uymayan ama defter satiri gibi GORUNEN satirlar sayilir.
+    _isaret28 = "tarayıcıda doğrula"
+    _eslesmeyen = sum(
+        1 for _s28 in _dmetin.split("\n")
+        if _s28.startswith(_isaret28)
+        and not _dvar.match(_s28) and not _dyok.match(_s28))
+    if _eslesmeyen:
+        sorunlar.append(
+            f"[defter satiri okunamadi] {_D28['dosya']}: {_eslesmeyen} satir "
+            f"'{_isaret28}' ile basliyor ama desene uymuyor — kayit SESSIZCE "
+            f"olcum disinda kaliyor. Bicim mi degisti, desen mi eski?")
     _yolsuz = _geride = 0
     for _m28 in _onayli:
         _ekran, _tarih28 = _m28.group(1), _m28.group(2)

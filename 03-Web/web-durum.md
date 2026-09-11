@@ -1100,10 +1100,26 @@ yapılmadı ve Mert başındayken yapılacak.
 > adından dosya çıkarmak yanlış kırmızı üretirdi — **sayıyor ve
 > bildiriyor**, yani ölçülemeyen kayıt sessizce temiz görünmüyor.
 >
-> ⚠️ İki kayıt bugün **kırmızı yanacak ve yanması doğru**:
-> `cancellations.tsx` ve `reservation-detail.tsx` doğrulandıktan **sonra**
-> bu gece değişti (tutar süzgeci düzeltmesi ve tahsilat kartı). Yani o
-> ekranların bugünkü hâli görülmedi. Defterin işe yaradığının ilk kanıtı bu.
+> ⚠️ **Çapa gün değil commit.** İlk sürümde tarih karşılaştırılıyordu ve
+> kör noktası **kalıcıydı**: aynı gün doğrulanıp aynı gün değişen bir ekran
+> iki eşit tarih üretiyor, yarın da eşit kalıyor — yani o değişiklik
+> *hiçbir zaman* görünmüyordu. **Gün belirsizdir, commit değildir.**
+>
+> Çapa, doğrulama anında `HEAD`'de olan commit. Ölçüt: *o commit'ten bu
+> yana bu dosyaya dokunuldu mu*.
+>
+> ⚠️ Dört kaydın dördü de bugün **kırmızı yanacak ve yanması doğru.**
+> Doğrulama `9e4c0f9` üzerindeyken yapıldı ve çıkan kusurun düzeltmesi
+> (`e9a4b54`) **o doğrulamadan doğdu** — yani görülen hâl, düzeltilmiş hâl
+> değil. Üstüne bu gece tahsilat kartı ve ödeme bağlantısı da eklendi.
+> Müşteri iptal ekranı `1ac13a3`'e çapalı: üye rezervasyonuyla denendiğinde
+> `HEAD` oradaydı ve iki kusur (misafir olarak açılan rezervasyon, uydurma
+> fatura) o denemeden çıktı.
+>
+> ⚠️ **Çapalar bilerek erken seçildi.** Emin olunmayan durumda daha eski
+> commit yazmak kaydı kırmızıya, daha yenisini yazmak yeşile götürür;
+> yanlış yeşil sessizdir, yanlış kırmızı bakılır. Belirsizlik ölçümün
+> lehine çözülüyor.
 >
 > ⚠️ Bir satır diğerlerinden farklı: `/odeme` sayfası **giriş meselesi
 > değil akış meselesi**. Personel girişi geldiğinde on sekiz kayıt
@@ -1111,10 +1127,10 @@ yapılmadı ve Mert başındayken yapılacak.
 > üretiliyor. Sebebi ayrı yazmak, kapanmayanın neden kapanmadığını
 > görünür tutuyor.
 
-tarayıcıda doğrulandı: iade modalı · 2026-09-11 · src/components/panel/admin/cancellations.tsx
-tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11 · src/components/panel/admin/cancellations.tsx
-tarayıcıda doğrulandı: iptal kartı · 2026-09-11 · src/components/panel/admin/reservation-detail.tsx
-tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11 · src/components/account/cancel-reservation.tsx
+tarayıcıda doğrulandı: iade modalı · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 9e4c0f9
+tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 9e4c0f9
+tarayıcıda doğrulandı: iptal kartı · 2026-09-11 · src/components/panel/admin/reservation-detail.tsx · 9e4c0f9
+tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11 · src/components/account/cancel-reservation.tsx · 1ac13a3
 
 tarayıcıda doğrulanmadı: yolcu gönder · personel girişi Mert'te · src/components/panel/admin/phone-booking.tsx
 tarayıcıda doğrulanmadı: tahsilat kartı ve ödeme bağlantısı · personel girişi Mert'te · src/components/panel/admin/reservation-detail.tsx

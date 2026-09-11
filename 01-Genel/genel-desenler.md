@@ -1221,7 +1221,6 @@ burada **yapısal olarak** kapandı.
 **Kural:** bir iddianın denetlenmesini istiyorsan, onu cümleden çıkar ve alan
 yap. Denetlenemeyen iddia, yazıldığı gün doğru olan bir cümledir — o kadar.
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## İki farklı eksik, tek sayıya toplanmaz
 
@@ -1254,3 +1253,25 @@ dosyaya dokunuldu mu"* oluyor. Gün belirsizdir, commit değildir.
 yüksekti. Burada kaydı yazan insan olduğu için çapayı da o yazabiliyor.
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Biçime bağlı ölçüm sessizce körleşir — ve körlüğün YÖNÜ fark edilmeyi belirler
+
+2026-09-11: deftere commit çapası eklenince web oturumunun kapsam betiği iki
+kaydı **görmez** oldu. Sebebi küçük: yolu satır **sonunda** arıyordu, ardına
+commit gelince desen tutmadı. Sayı 28'den 26'ya düştü ve *"iptal modülü defterde
+yok"* dedi — yanlıştı.
+
+⚠️ **Asıl ders yakalanma sebebindedir:** web sayının **düştüğünü** gördüğü için
+baktı. Aynı kusur sayıyı **artırsaydı** kimse bakmazdı — artan sayı "iyileşme"
+gibi görünür. Yani biçim kusurunun yakalanması, kusurun yönüne bağlı kaldı;
+bu bir denetim değil, şans.
+
+**Karşılığı:** biçime bağlı her ölçüme bir **sessiz körlük dedektörü** konur —
+desene uymayan ama *o satır gibi görünen* satırlar sayılır ve bildirilir.
+Kontrol 28'e eklendi: `tarayıcıda doğrula` ile başlayıp desene uymayan her satır
+hata veriyor. Kör test: bir kaydın ayıracını bozmak kırmızı yakıyor.
+
+**Kural:** bir desen bir dosyayı okuyorsa, o dosyanın **okunamayan** kısmı da
+sayılmalıdır. Okunamayan satırı görmeyen ölçüm, azaldığını bile söylemez.
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
