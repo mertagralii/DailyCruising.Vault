@@ -6782,3 +6782,39 @@ taşıma farkıdır; **davranıştan çıkarım** orada yanlış cevap verirdi.
 
 Ayrı kolon açılmadı: anahtar zaten yazılıyor, benzersiz ve geçmişe dönük
 değişmiyor — ikinci bir gerçek kaynağı olurdu.
+
+## 2026-09-11 · `ExceedsCommission` ret sebebi YOK — iki eski kaydı düzeltir
+
+**Bu giriş, kupon ret sebeplerini sayan kaydı ve `S-10` güvenlik kaydını
+kısmen iptal eder.** İkisi de `ExceedsCommission` adlı bir kupon ret sebebinden
+bahsediyor; **öyle bir sebep kodda yok ve olmaması tasarım.**
+
+Ölçülen hâl: `CouponRejection` sekiz değer taşıyor — `NotFound` · `Inactive` ·
+`NotStarted` · `Expired` · `OtherPartner` · `OtherBoat` · `LimitReached` ·
+`NotYours`. Sekizincisi `NotYours`, `ExceedsCommission` değil.
+
+**Neden yok:** komisyonu aşan kupon **reddedilmiyor**, aşan kısmı platform
+üstleniyor. `PricingService`:
+
+```
+var cap = coupon.FundedBy == CouponFunder.Platform
+    ? commission
+    : baseTry - commission;
+
+var platformCovered = Math.Max(0m, discount - cap);
+```
+
+Yani "komisyonu aşıyor" bir **ret** değil, bir **bölüşüm** sonucu; karşılığı
+`Reservations.PlatformAbsorbedTry` kolonu. Kuponu reddetmek, müşteriye
+işletmenin komisyon oranını ima eden bir cevap döndürmek olurdu.
+
+⚠️ `S-10` kaydının **sonucu geçerli kalıyor**, gerekçesi düzeltiliyor: denetim
+"platform geneli kuponlarda `ExceedsCommission` ret sebebini gizle" demişti;
+gizlenecek bir sebep zaten yok. Sızıntının gerçek kanalı o kaydın kendi
+söylediği şeydi — `discountAmountTry`'ın 180 mi 0 mı olduğu.
+
+⚠️ **Nasıl bulundu:** `araclar/karar-sembol-denetle.py`, ilk koşusunda.
+Kararlarda anılan sembol adlarını kodda arıyor ve `ExceedsCommission` üç ay
+boyunca iki kayıtta yaşayıp kodda hiç var olmamıştı. Kardeşleri
+(`OtherPartner`, `LimitReached`) kodda olduğu için kayıt inandırıcı
+görünüyordu — bir ismin doğru komşular arasında durması onu doğru yapmıyor.

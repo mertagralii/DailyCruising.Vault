@@ -312,6 +312,23 @@ def m_uretilen_bayat(k):
         return
 
 
+def m_gate_kabul_silindi(k):
+    # Bir yayin kosulundan kabul olcutunu sil. Gercek kusur: 15 kosuldan 13'unde
+    # "saglandigini nasil anlariz" hic yazmiyordu ve gate dosyasi hicbir kimlik
+    # ya da icerik denetimine tabi degildi.
+    rel = AYAR["ozel"]["gate"]
+    metin = oku(k, rel)
+    isaret = AYAR["ozel"].get("gate_kabul_isareti", "Kabul")
+    satirlar = metin.split("\n")
+    for i, satir in enumerate(satirlar):
+        if re.match(r"^\| Y-\d+ \|", satir) and isaret in satir:
+            satirlar[i] = re.sub(r"\s*·?\s*\*\*" + isaret + r":.*?\*\*", "", satir)
+            if isaret in satirlar[i]:            # bicim farkliysa kaba kes
+                satirlar[i] = satirlar[i].split(isaret)[0].rstrip(" ·*") + " |"
+            break
+    yaz(k, rel, "\n".join(satirlar))
+
+
 def m_durum_bayat(k):
     r = D_DURUM
     yaz(k, r, re.sub(r"^guncelleme: .*$", "guncelleme: 2026-01-01",
@@ -426,6 +443,7 @@ SENARYOLAR = [
     (22, "acilis sayisi elle yazilmis",         "acilis uretilmemis", m_acilis_uretilmemis),
     (24, "betik tipi kuralin cirnigi indi",    "desen ihlali",    m_betik_kurali),
     (25, "uretilen dosya kaynagin gerisinde", "uretilen dosya bayat", m_uretilen_bayat),
+    (26, "yayin kosulunun kabul olcutu silindi", "gate kabul yok",  m_gate_kabul_silindi),
 ]
 
 

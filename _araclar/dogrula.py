@@ -28,6 +28,7 @@ Tarar:
  23. Alan durumu kod reposundaki commit'lerin gerisinde mi
  24. Yazili desen kodda cignenmis mi (cirnik: borc buyuyemez)
  25. Uretilen dosya, uretildigi kaynagin gerisinde mi
+ 26. Yayin kosulu kabul olcutu tasiyor mu, kimlikleri benzersiz mi
 
 Kullanim: python3 _araclar/dogrula.py
 Cikis kodu: 0 temiz, 1 sorun var
@@ -1163,6 +1164,57 @@ for _k25 in _U25:
         olcumler.append(
             f"kontrol 25 · {_k25['hedef']}: beyan {_t25} · kaynaklar "
             f"{' '.join(_kaynak25)} — uretim guncel")
+
+
+
+# ---------------------------------------------------------------------------
+# 26: yayin kosulu kabul olcutu tasiyor mu, kimlikler benzersiz mi
+#
+# Gate dosyasinin degeri TEK BIR GUN gelir ve o gun butun kosullar ayni anda
+# sorulur. 2026-09-11'de olculdu: 15 kosuldan 13'unde "saglandigini nasil
+# anlariz" YAZMIYORDU. O gun bu soruyu sormak icin gec olur.
+#
+# Ayni olcumde `Y-12` numarasi IKI kosulda birden kullanilmisti (ters vekil ve
+# Paratika). Panolarda kimlik cakismasi kontrol 9 tarafindan olculuyordu; gate
+# dosyasi hicbir kimlik denetimine tabi degildi.
+#
+# Olcut GOZLEMLENEBILIRLIK degil VARLIK: betik "deneme e-postasi teslim oldu"
+# ile "hesap acildi" arasindaki farki goremez. `Kabul: YAZILMADI` bilerek
+# birakilan boslugu isaretler ve sayilir — gizlenmesin diye.
+_G26 = OZEL.get("gate")
+if _G26 and (VAULT / _G26).exists():
+    _gmetin = (VAULT / _G26).read_text(encoding="utf-8")
+    _gdesen = re.compile(OZEL.get("gate_kimlik_deseni", r"^\| (Y-\d+) \|"))
+    _gkabul = OZEL.get("gate_kabul_isareti", "Kabul")
+    _gorulen, _kabulsuz, _yazilmadi = {}, [], 0
+    for _gsatir in _gmetin.split("\n"):
+        _gm = _gdesen.match(_gsatir)
+        if not _gm:
+            continue
+        _kod = _gm.group(1)
+        if _kod.startswith("~~"):
+            continue
+        _gorulen.setdefault(_kod, 0)
+        _gorulen[_kod] += 1
+        if _gkabul not in _gsatir:
+            _kabulsuz.append(_kod)
+        elif "YAZILMADI" in _gsatir:
+            _yazilmadi += 1
+    for _kod, _n in sorted(_gorulen.items()):
+        if _n > 1:
+            sorunlar.append(
+                f"[gate kimlik cakismasi] {_G26}: {_kod} {_n} kez kullanilmis — "
+                f"yayin gunu hangi kosulun kastedildigi bilinemez")
+    for _kod in _kabulsuz:
+        sorunlar.append(
+            f"[gate kabul yok] {_G26}: {_kod} kosulunda `{_gkabul}:` satiri yok — "
+            f"saglandigini nasil anlayacagimiz yazili degil. Yazilamiyorsa "
+            f"`{_gkabul}: YAZILMADI` yaz, boslugu gizleme")
+    olcumler.append(
+        f"kontrol 26 · {_G26}: {len(_gorulen)} kosul · kabul olcutu yok "
+        f"{len(_kabulsuz)} · bilerek bos {_yazilmadi}")
+elif _G26:
+    olcumler.append(f"kontrol 26 · gate dosyasi yok ({_G26}) — OLCULEMEDI")
 
 
 print(f"Vault: {VAULT}")

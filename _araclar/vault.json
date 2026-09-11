@@ -68,7 +68,10 @@
   "ozel": {
     "acilis": "01-Genel/acilis.md",
     "durum": "01-Genel/durum.md",
-    "mimari_soneki": "-mimari.md"
+    "mimari_soneki": "-mimari.md",
+    "gate": "01-Genel/yayin-oncesi.md",
+    "gate_kimlik_deseni": "^\\| (Y-\\d+) \\|",
+    "gate_kabul_isareti": "Kabul"
   },
   "pano": {
     "yapilacak": "Yapılacak",
@@ -241,8 +244,8 @@
         "ad": "karar, kodda olmayan sembol aniyor",
         "alan": "02-API",
         "betik": "araclar/karar-sembol-denetle.py",
-        "tavan": 26,
-        "kaynak": "CLAUDE.md: karar append-only ve 'karar degisirse yeni giris ekle'. Hicbir sey bir kararin HALA gecerli oldugunu denetlemiyordu; kodla celisen karar, kararsizliktan kotudur cunku okuyan ona guvenir. SINIR: adi duran ama DAVRANISI degismis karari gormez (2026-09-11 ProcessRefundsJob ornegi)"
+        "tavan": 24,
+        "kaynak": "CLAUDE.md: karar append-only ve 'karar degisirse yeni giris ekle'. Hicbir sey bir kararin HALA gecerli oldugunu denetlemiyordu; kodla celisen karar, kararsizliktan kotudur cunku okuyan ona guvenir. SINIR: adi duran ama DAVRANISI degismis karari gormez (2026-09-11 ProcessRefundsJob ornegi). MUAF LISTESI: araclar/karar-sembol-muaf.txt — 'onemsiz' degil 'bakildi ve aciklandi' demek"
       }
     ]
   },
