@@ -97,6 +97,10 @@ Tetikleyicisi yok ama bedeli yüksek üç şey — ikisi bugün ısırdı:
    bulundu → [[web-desenler]]
 3. **Migration `dailycruising` rolüyle koşar**, uygulama rolüyle değil →
    [[api-araclar]]
+4. **Kabukta sözcük bölme:** `set -- $cift`, `for x in $liste` gibi tek satırlar
+   zsh'ta sessizce yanlış sonuç veriyor. Ölçüm alıyorsan Python kullan —
+   web bu tuzağa iki kez, backend bir kez düştü; üçünde de sayı **makul**
+   göründü → [[genel-desenler]]
 
 ## Ölçüm almadan önce — üç soru
 

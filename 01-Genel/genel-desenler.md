@@ -1252,7 +1252,6 @@ dosyaya dokunuldu mu"* oluyor. Gün belirsizdir, commit değildir.
 ölçüyor) ama oralarda gün **bilerek** seçildi: yanlış alarmın bedeli daha
 yüksekti. Burada kaydı yazan insan olduğu için çapayı da o yazabiliyor.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Biçime bağlı ölçüm sessizce körleşir — ve körlüğün YÖNÜ fark edilmeyi belirler
 
@@ -1275,3 +1274,24 @@ hata veriyor. Kör test: bir kaydın ayıracını bozmak kırmızı yakıyor.
 sayılmalıdır. Okunamayan satırı görmeyen ölçüm, azaldığını bile söylemez.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Kapı, kapı gibi hissedilmeyen anda ateşlenmez
+
+2026-09-11 gecesi web oturumu kabukta sözcük bölme tuzağına **ikinci kez** düştü
+ve şunu bildirdi: *"Not vault'ta zaten var, ben okumadan yazdım."* Doğru — bilgi
+`genel-desenler` ve `web-desenler`'de yazılı, üstelik **kendi yazdığı** satırlar.
+
+Kapısı da var: *"bir deseni çiğnemek üzereyim"*. Ama **üç satırlık bir kabuk
+komutu yazmak bir deseni çiğnemek gibi hissedilmiyor**; ölçüm almak gibi
+hissediliyor. Aynı sebep backend'in `*-araclar` için söylediğiyle birebir aynı:
+*"ben araç seçmiyorum, araç seçmem gerektiğini fark etmiyorum."*
+
+**Ders:** bir kapının tarifi, **kategoriye** değil **ana** uymalı. "Desen
+çiğneyeceksen oku" bir kategori; "kabukta ölçüm alacaksan Python kullan" bir an.
+Kategoriye yazılan kural, o kategoriye ait olduğunu fark etmeyen kişiyi yakalamaz.
+
+Bu yüzden bu madde [[acilis]]'teki *"her oturum yeniden keşfedilenler"*
+listesine girdi: tetikleyicisi olmayan ama bedeli yüksek bilgi, tetikleyici
+aranacak yere değil **her oturumun önüne** konur.
+
+İlgili: [[genel-esszamanli-oturumlar]]
