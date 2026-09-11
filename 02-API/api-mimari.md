@@ -18,6 +18,22 @@ durum: guncel
 > **Buradaki her sayı ölçülerek yazıldı, hatırlanarak değil.**
 
 
+## Telefonla rezervasyon — 2026-09-11
+
+| Yöntem | Yol | Not |
+|---|---|---|
+| POST | `/api/platform/reservations` | Personel adına açma. **Tutar katalogdan**, istekten değil |
+| POST | `/api/platform/reservations/{kod}/collect` | Elle tahsilat; gerçek bir `Payment` satırı açıyor (`Provider = manual`) |
+| POST | `/api/platform/reservations/{kod}/payment-link` | E-posta/SMS ile jetonlu bağlantı; geçerlilik `HoldExpiresAt` ile aynı |
+| GET · POST | `/api/reservation-payments/{jeton}` · `/pay` | **Kimliksiz** müşteri tarafı |
+
+Yeni durum `AwaitingCollection` (`A124`) · elle tahsilat alanları `Payments`
+üzerinde (`A125`) · ödeme bağlantısı jetonu `Reservations` üzerinde (`A126`) ·
+`RescheduleRequests.Status` 32 karaktere genişledi (`A127`).
+
+`Reservations.CreatedByStaffId` — kanal buradan türetiliyor
+(`?channel=web|phone`), ayrı kolon yok.
+
 ## Taşıma farkının tahsilatı — 2026-09-11
 
 Müşteriye giden jetonlu bağlantı ve onun iki açık ucu:
@@ -99,8 +115,8 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 |---|---|---|
 | `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **84 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
-| `DailyCruising.Infrastructure` | Application | EF Core, **21 yapılandırma dosyası** (84 entity eşlemesi), **79 migration**, **11 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
-| `DailyCruising.Api` | Application + Infrastructure | **49 controller, 162 yol / 208 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Infrastructure` | Application | EF Core, **21 yapılandırma dosyası** (84 entity eşlemesi), **83 migration**, **11 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
+| `DailyCruising.Api` | Application + Infrastructure | **50 controller, 166 yol / 213 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 

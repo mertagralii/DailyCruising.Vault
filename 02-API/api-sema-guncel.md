@@ -1155,7 +1155,7 @@ Kısıtlar:
 Kısıtlar:
 
 - `CK_RescheduleRequests_Difference` — `CHECK (("DifferenceTry" > (0)::numeric))`
-- `CK_RescheduleRequests_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['AwaitingPayment'::character varying, 'PaymentFailed'::character varying, 'Completed'::character varying, 'Expired'::character varying, 'Cancelled'::character varying, 'DroppedOnCancellation'::character varying])::text[])))`
+- `CK_RescheduleRequests_Status_Enum` — `CHECK ((("Status")::text = ANY (ARRAY[('AwaitingPayment'::character varying)::text, ('PaymentFailed'::character varying)::text, ('Completed'::character varying)::text, ('Expired'::character varying)::text, ('Cancelled'::character varying)::text, ('DroppedOnCancellation'::character varying)::text])))`
 
 ## `ReservationExtras`
 

@@ -13,6 +13,23 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (10) — iptal, bekleyen taşımayı düşürüyor: para kaçağı kapandı.**
+`dotnet test` **785/785**, son commit `2b0ece1`, migration **A127**.
+
+⚠️ **Gizli dal kusuru:** `DroppedOnCancellation` enum'da, kısıtta ve ekranın
+sözlüğünde vardı — **hiçbir kod yazmıyordu.** Sonucu para hareketiydi: iptal
+edilmiş bir rezervasyonun ödeme bağlantısı çalışmaya devam ediyor, fark tahsil
+ediliyor ve rezervasyon yeni sefere taşınıyordu. İkinci katman: kolon
+`varchar(16)`, değer 22 karakter — kod denese bile yazamazdı.
+
+Bulunma biçimi kayda değer: web'in *"bir kusuru düzeltince ikinci kopyasını
+ara"* refleksini kendi işime uygulayınca çıktı → [[api-desenler]].
+
+⚠️ Yedi commit + bu ikisi **pushlanmadı**; izin Mert'te. `A-165` sıralaması da
+onda.
+
+---
+
 **2026-09-11 (9) — telefonla rezervasyon modülü tamam.**
 `dotnet test` **783/783**, son commit `aae6ba4`, migration **A126**.
 

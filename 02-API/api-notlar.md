@@ -58,3 +58,4 @@ ararken önce [[api-kararlar]]'a, orada yoksa buraya bak.
 - [[api-eski-panel-tekne-ekranlari]] — canlı yönetim panelinin tekne ekranları, ölçülmüş yapı ve API boşlukları
 - [[api-gelistirme-verisindeki-artiklar]] — "test artığı" sanılan kaydın gerçek kaynağı ve ayırt eden üç soru
 - [[api-mutasyon-geri-alma]] — mutasyon geri alınmazsa geriye kapalı koruma ve yeşil süit kalır
+- [[api-openapi-uret-apiyi-oldurur]] — belge üretimi API'yi düşürüyor, geri açan yok

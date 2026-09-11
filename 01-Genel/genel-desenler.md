@@ -1273,7 +1273,6 @@ hata veriyor. Kör test: bir kaydın ayıracını bozmak kırmızı yakıyor.
 **Kural:** bir desen bir dosyayı okuyorsa, o dosyanın **okunamayan** kısmı da
 sayılmalıdır. Okunamayan satırı görmeyen ölçüm, azaldığını bile söylemez.
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Sonucun yolunu da ölç — doğru kanal varsayılmaz
 
@@ -1331,3 +1330,39 @@ listesine girdi: tetikleyicisi olmayan ama bedeli yüksek bilgi, tetikleyici
 aranacak yere değil **her oturumun önüne** konur.
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Kalkanın gerekçesi yönteme değil, ürettiği sessizliğe bağlanır
+
+2026-09-11, web oturumunun önerisi ve iki zıt kanıtı:
+
+**Kalkan kaldırıldı:** bölge tablosunda "0 tekne" kalkanı vardı; kimliğe
+geçerken *"artık ayrışamaz"* denip kaldırıldı. Kimlik gerçekten ayrışamıyor —
+ama **eksik olabiliyor**. Ekrandaki sonuç aynı: on bölge de sıfır gösterdi.
+`build`, `lint`, `tsc` ve üç ölçüm betiği **hepsi temizdi**.
+
+**Belirti kapatıldı:** aynı gün sabah, bir belirtiyi kapatmak kalan bir kusuru
+**örtmüştü**.
+
+Zıt yönler, tek kural: **kalkan bir yöntemi değil bir SESSİZLİĞİ koruyor.**
+Yöntem değişince kalkanı kaldırmak, yöntemi kalkanın sebebi sanmaktır. Doğru
+soru *"bu kontrol hâlâ gerekli mi"* değil, **"kaldırırsam hangi sessiz yanlış
+geri gelir"**dır.
+
+⚠️ Bu, bu vault'ta yazılı iki kuralın kesişimi: *"bir kuralı kaldırırken neyi
+dolaylı garanti ediyordu"* (api-desenler) ve *"kapısı olmayan adım atlanır"*.
+Yeni olan kısım şu: **kalkanın gerekçesi, koruduğu yöntem değiştiğinde de
+geçerli kalabilir** — ve genelde kalır.
+
+## Çalışan sürümü hiçbir şey ölçmüyor — bilinen boşluk
+
+Aynı kusurun ikinci yarısı ölçülemedi: bölge ucu **çalışan süreçte** eskiydi,
+kodda doğruydu. `build`/`lint`/`tsc` ve bütün betikler **diskteki** kodu ölçüyor;
+**bellekteki** süreci hiçbir şey ölçmüyor. Aynı sınıf o gün ikinci kez çıktı
+(bayat API süreci, ölçüm disiplini maddesinin üçüncü sorusu).
+
+Ölçülebilir hâle gelmesi için uygulamanın **kendi commit'ini bildirmesi** gerekir
+(`/api/health` içinde bir sürüm alanı gibi). O gün geldiğinde kontrol yazılabilir:
+çalışan sürüm ile `HEAD` arasındaki fark, ölçümün geçerliliğini belirler.
+**Bugün boşluk olarak kayıtlı** — ölçülemeyeni ölçülüyor göstermemek için.
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

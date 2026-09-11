@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-04
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -594,3 +594,67 @@ Kural: **kısaltılacak kimlik rastgele üretilir** (`Guid.NewGuid()`), sıralı
 değil. Sıralı kimlik kısaltılmadan kullanılır (2026-09-04).
 
 İlgili: [[api-notlar]] · [[api-mimari]] · [[api-kararlar]] · [[api-gorevler]] · [[api-araclar]]
+
+## Bir kusuru düzeltince İKİNCİ kopyasını ara
+
+Bir kusur bulunduğunda düzeltmek yetmiyor; aynı varsayımın **başka nerede**
+durduğunu aramak gerekiyor. 2026-09-11'de bu üç kez ödendi:
+
+| Kusur | İlk kopya | İkinci kopya | Nasıl bulundu |
+|---|---|---|---|
+| Defter para hareketinden değil rezervasyondan sürülüyor | iade tarafı | tahsilat tarafı | **arandı** — kusur doğmadan kapandı |
+| Taşımada seferden türeyen pencere yenilenmiyor | `Reservations.BoardingTokenExpiresAt` | `BoardingTickets.ExpiresAt` | **aranmadı** — web tarayıcıda buldu, müşterinin karekodu çözülmüyordu |
+| Sabit tekillik anahtarı tekrar denemeyi engelliyor | taşıma farkı ödemesi | rezervasyonun ilk ödemesi | **arandı** |
+
+⚠️ Ortadaki satır farkı anlatıyor: aranmayan kopya, **kullanıcıya ulaşan**
+tek kusur oldu.
+
+**Arama biçimi ucuz ve somut:** kusurun cümlesini kur ("seferden türeyen her
+şey taşımada yenilenmeli"), sonra o cümlenin geçtiği bütün alanları listele.
+Burada `grep -n "reservation\.\|quote\." RescheduleRepository.cs` ve
+`grep -rln "ExpiresAt" Domain/` yetti; ikisi birlikte **üçüncü bir kopya
+olmadığını** da gösterdi (`ReviewInvitation.ExpiresAt` gönderim anına bağlı,
+sefere değil).
+
+⚠️ **"Üçüncü kopya yok" bir ölçüm olmalı, bir his değil.** Aramadan
+"herhalde kalmadı" demek, kusurun ikinci kopyasını bulmayı web'e bırakmakla
+aynı şey.
+
+⚠️ **Kopyalar aynı sınıftan olur ama aynı bedeli taşımaz** — web'in aynı gün
+kendi tarafında ölçtüğü incelik. Bir sınıfın üç kopyası sırasıyla *sessizce
+sıfır gösterme*, *yanlış liste gösterme* ve *yanlış kayıt açma* üretebiliyor.
+Bu yüzden "üç kopya buldum" cümlesi bir sayı değil: **her kopyanın bedeli ayrı
+ölçülmeli**, yoksa en ucuzuna bakıp hepsini önemsiz sanma riski var. Bugünkü
+kendi örneğimde ikinci kopyanın bedeli en ağırdı — müşterinin karekodu
+iskelede çözülmüyordu.
+
+İlgili: [[api-kararlar]] · [[api-notlar]]
+
+## Gizli dal: çalışmayan kod ölçülmüyor, ölçülmeyen kod yanlış
+
+Web'in ölçtüğü bir sınıf, aynı gece bende de çıktı: **var olan ama hiç
+çalışmayan bir dal**, kusur taşısa bile hiçbir yerde görünmüyor.
+
+Bendeki örnek: `RescheduleStatus.DroppedOnCancellation` değeri enum'da,
+veritabanı kısıtında ve **ekranın sözlüğünde** vardı — yani üç yerde
+"destekleniyor" görünüyordu. **Hiçbir kod onu yazmıyordu.**
+
+İki katmanlı gizlilik:
+
+1. İptal, bekleyen taşıma talebini düşürmüyordu → müşterinin elindeki ödeme
+   bağlantısı **iptal edilmiş bir rezervasyon için çalışmaya devam ediyordu**;
+   fark tahsil edilir, rezervasyon yeni sefere taşınırdı.
+2. Kod yazmayı **deneseydi bile** olmayacaktı: kolon `varchar(16)`, değer
+   22 karakter.
+
+⚠️ **Aramanın biçimi:** bir enum değeri, durum ya da dal eklendiğinde
+*"bunu kim YAZIYOR"* diye sor — okunduğu yerleri değil, **üretildiği** yeri
+ara. `grep -rn "DroppedOnCancellation" src/` bunu tek komutta gösterdi:
+sonuçların hepsi kısıt ve göç dosyasıydı, tek bir atama yoktu.
+
+⚠️ **Bedeli ertelenmiş kusurlar en sinsisi.** Web'in aynı gece bulduğu
+kardeş örnek: henüz ucu olmayan bir ekranın satır eşleştirmesi yanlıştı;
+kusur uç geldiği gün doğacaktı ve o gün kimse *"acaba eşleştirme doğru mu"*
+diye bakmayacaktı, çünkü ekran yeni çalışmaya başlamış olacaktı.
+
+İlgili: [[api-kararlar]] · [[api-notlar]]
