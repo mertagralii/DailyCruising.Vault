@@ -219,7 +219,7 @@
           "global-error"
         ],
         "ara": "#[0-9a-fA-F]{6}\\b",
-        "tavan": 77,
+        "tavan": 76,
         "kaynak": "web-desenler: 'Bilesende sabit renk kodu yazilmaz' — istisnasi src/emails/*.html (e-posta istemcileri) ve global-error (kok duzeni degistirir, Tailwind yok)"
       },
       {
@@ -246,6 +246,20 @@
         "betik": "araclar/karar-sembol-denetle.py",
         "tavan": 24,
         "kaynak": "CLAUDE.md: karar append-only ve 'karar degisirse yeni giris ekle'. Hicbir sey bir kararin HALA gecerli oldugunu denetlemiyordu; kodla celisen karar, kararsizliktan kotudur cunku okuyan ona guvenir. SINIR: adi duran ama DAVRANISI degismis karari gormez (2026-09-11 ProcessRefundsJob ornegi). MUAF LISTESI: araclar/karar-sembol-muaf.txt — 'onemsiz' degil 'bakildi ve aciklandi' demek"
+      },
+      {
+        "ad": "var olmayan tasarim belirteci",
+        "alan": "03-Web",
+        "betik": "araclar/belirtec-denetle.py",
+        "tavan": 0,
+        "kaynak": "web-desenler: bilesende sabit renk kodu yazilmaz, belirtec okunur. Tanimli olmayan belirtec SESSIZCE hicbir sey cizmez. 2026-09-11'de dort uretim dosyasinda kenarligi olmayan rozet bulundu. OLCUT DAR: var olan bir belirtec ailesinin var olmayan varyanti — genis olcut 175 satirin 171'i yanlis pozitif uretti"
+      },
+      {
+        "ad": "modul durum notu semayla celisiyor",
+        "alan": "03-Web",
+        "betik": "araclar/durum-denetle.py",
+        "tavan": 0,
+        "kaynak": "genel-desenler: yokluk iddiasi varliktan farkli bayatlar — dunya zenginlestikce yalan olur ve hicbir yerde alarm uretmez. 2026-09-11'de yedi modulun 'uc yok' notu yanlisti. Ucu: uc yollari semada VAR mi · istenen yollari semada YOK mu · statik modulde uc dolu OLMASIN"
       }
     ]
   },

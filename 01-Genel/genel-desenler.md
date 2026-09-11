@@ -1173,7 +1173,6 @@ değiştirdi. Backend fark etti ve betiği kendi kendini taramaktan çıkardı.
 Bu, *"her ölçütün yanında ölçmediği yazılmalı"* kuralının kardeşi — orada ölçüt
 eksik ölçüyordu, burada **kendini** ölçüyor.
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Yokluk iddiası, varlık iddiasından farklı bayatlar
 
@@ -1198,3 +1197,29 @@ yolu). Yoklukla ilgili iddia, kaynağı gösterilmeden yazılmaz; gösterilirse
 denetlenebilir hâle gelir.
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Denetlenecek iddia düzyazıdan alana çıkarılır
+
+*"X yok yazan not, X'in nerede aranacağını yazar"* kuralı 2026-09-11'de web
+oturumunda bir tasarım değişikliğine yol açtı ve sonucu kuralın kendisinden
+öğreticiydi.
+
+İlk sürüm modül notlarının **düzyazısını** tarıyordu ve dört bulgunun üçü yanlış
+pozitifti — çünkü düzyazı, var olan bir ucun **sınırını** anlatmak için de ondan
+söz ediyor: *"/api/lookups yalnız aktif bölgeleri döndürüyor"* bir yokluk iddiası
+değildir, bir kapsam açıklamasıdır. Makine ikisini ayıramaz; **insan diliyle
+yazılmış iddia denetlenemez.**
+
+Çözüm iddiayı düzyazıdan çıkarmak oldu: `istenen: {yol, ne}[]` diye **alan**
+eklendi. Düzyazı düzyazı kaldı, iddia alan oldu ve alan denetlenebilir.
+
+⚠️ **Yan kazanç, asıl kazançtan büyük olabilir:** aynı liste artık **ekranda da**
+basılıyor. Yani personelin *"bu modül neden boş"* sorusuna verilen cevap,
+denetlenen iddianın **kendisi** — iki kopya yok, dolayısıyla ikisinin ayrışması
+da mümkün değil. Bu vault'un en pahalı arıza modu (aynı gerçeğin iki kopyası)
+burada **yapısal olarak** kapandı.
+
+**Kural:** bir iddianın denetlenmesini istiyorsan, onu cümleden çıkar ve alan
+yap. Denetlenemeyen iddia, yazıldığı gün doğru olan bir cümledir — o kadar.
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

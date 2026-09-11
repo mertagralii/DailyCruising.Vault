@@ -18,11 +18,11 @@ durum: uretilen
 
 | Ne | Kaç |
 |---|---|
-| Rota (`page.tsx`) | 41 |
-| Bileşen (`src/components/**/*.tsx`) | 136 |
-| Yönetim paneli ekranı | 24 |
+| Rota (`page.tsx`) | 44 |
+| Bileşen (`src/components/**/*.tsx`) | 141 |
+| Yönetim paneli ekranı | 26 |
 | API istemci modülü | 12 |
-| Uçtaki yol · işlem | 162 · 208 |
+| Uçtaki yol · işlem | 166 · 213 |
 
 ## Rotalar
 
@@ -97,6 +97,10 @@ durum: uretilen
 
 - `/messages`
 
+**`/odeme`** — 1 rota
+
+- `/odeme`
+
 **`/owner-panel`** — 1 rota
 
 - `/owner-panel`
@@ -134,6 +138,11 @@ durum: uretilen
 **`/support-panel`** — 1 rota
 
 - `/support-panel`
+
+**`/tarih-degisikligi`** — 2 rota
+
+- `/tarih-degisikligi`
+- `/tarih-degisikligi/tamamlandi`
 
 **`/verify-email`** — 1 rota
 
