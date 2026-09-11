@@ -1020,9 +1020,20 @@ for _k in _D24:
             continue
         _m24 = re.search(r"IHLAL=(\d+)\s*$", _b24.stdout.strip())
         if not _m24:
-            olcumler.append(
-                f"kontrol 24 · {_k['ad']}: betik IHLAL=<sayi> basmadi "
-                f"(cikis {_b24.returncode}) — OLCULEMEDI")
+            # SOZLESME IHLALI, "olculemedi" DEGIL. 2026-09-11'de web oturumu
+            # kendi betiginde buldu: kirik dosya yolunda `raise SystemExit(...)`
+            # kullaniyordu ve SystemExit yalniz STDERR'e yaziyor — yani denetim
+            # tam da sessizligin kirilmasi gereken anda IHLAL satirini hic
+            # gormeyecekti. Bunu "olculemedi" saymak, kirik kapiyi kapali
+            # gostermek olurdu; kural taşiyan betik konusmuyorsa bu bir HATADIR.
+            _stderr_ipucu = ""
+            if re.search(r"IHLAL=\d+", _b24.stderr or ""):
+                _stderr_ipucu = (" ⚠️ IHLAL satiri STDERR'de bulundu — "
+                                 "sozlesme STDOUT diyor, kanal yanlis")
+            sorunlar.append(
+                f"[betik sozlesmeyi bozdu] {_k['alan']} · {_k['ad']}: "
+                f"{_k['betik']} son satirda `IHLAL=<sayi>` basmadi "
+                f"(cikis {_b24.returncode}).{_stderr_ipucu} Kural olculmuyor")
             continue
         # Betigin kendi bildirdigi atlama/olcememe satirlari GORUNUR kalmali:
         # web oturumu uyardi — openapi.json yoksa betik IHLAL=0 basip cikiyor,

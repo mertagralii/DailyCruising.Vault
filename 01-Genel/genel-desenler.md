@@ -1275,6 +1275,28 @@ sayılmalıdır. Okunamayan satırı görmeyen ölçüm, azaldığını bile sö
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
+## Sonucun yolunu da ölç — doğru kanal varsayılmaz
+
+2026-09-11: web oturumu kendi dedektöründe buldu. `durum-denetle.py`'nin
+**ayrıştırma kırık** yolu `raise SystemExit("…IHLAL=1")` kullanıyordu ve
+`SystemExit` yalnız **stderr**'e yazar. Kontrol 24 ise stdout okuyor. Yani
+biçim bozulduğunda denetim, **tam sessizliğin kırılması gereken anda**, `IHLAL`
+satırını hiç görmeyecekti.
+
+Ben de aynı soruyu kendi tarafımda ölçtüm (varsaymadım): kontrol 22 üreticiyi
+`subprocess.run(capture_output=True)` ile koşuyor ve **çıkış kodunu** okuyor —
+kabuk yok, boru hattı yok, `$?` tuzağı yok. Kontrol 24 ise yalnız stdout'tan
+`IHLAL=<sayı>` arıyor.
+
+**Ama orada başka bir kusur çıktı:** satır bulunamayınca *"OLCULEMEDI"* diyordu.
+Bu, kırık kapıyı **kapalı göstermek**tir. Artık hata veriyor, ve `IHLAL` satırı
+yanlış kanalda bulunduysa bunu ayrıca söylüyor. Kör test: stderr'e yazan sahte
+bir betik kırmızı yaktı, kanal ipucunu bastı.
+
+**Kural:** bir ölçümün **sonucuna** bakıp **yoluna** bakmamak, bu vault'ta bu
+gecenin en sık kusuru oldu (iki oturumda toplam altı örnek). Çıkış kodu, kanal
+ve biçim — üçü de ölçülür, varsayılmaz.
+
 ## Ölçümü boru hattından okuma — `$?` son komutu söyler
 
 2026-09-11: sözcük bölme tuzağını `acilis`'e yazdıktan **on dakika sonra**
