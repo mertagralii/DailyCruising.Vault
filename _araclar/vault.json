@@ -333,11 +333,15 @@
       "Kontrol 28: bir ekranin tarayicida gorulduğu tarih ile o ekranin DOSYASININ",
       "son degistigi tarih karsilastirilir. Kod dogrulamadan SONRA degistiyse,",
       "dogrulama o hali gormemis demektir — kontrol 23'un ekran duzeyindeki esi.",
-      "Dosya yolu yazilmayan kayit OLCULEMEZ; sayilir ve bildirilir, hata degil."
+      "Dosya yolu yazilmayan kayit OLCULEMEZ; sayilir ve bildirilir, hata degil.",
+      "Dorduncu alan (commit SHA) ISTEGE BAGLI ama GUN sinirini kaldirir:",
+      "tarih olcutu ayni gun icindeki degisimi goremez ve o kor nokta KALICIDIR",
+      "(hem dogrulama hem degisim 2026-09-11 ise tarihler esit kalir, yarin da esit).",
+      "SHA verilirse olcut 'o commit'ten bu yana bu dosyaya dokunuldu mu' olur."
     ],
     "dosya": "03-Web/web-durum.md",
     "alan": "03-Web",
-    "dogrulandi_deseni": "^tarayıcıda doğrulandı: (.+?) · (\\d{4}-\\d{2}-\\d{2})\\s*(?:·\\s*(\\S+))?\\s*$",
+    "dogrulandi_deseni": "^tarayıcıda doğrulandı: (.+?) · (\\d{4}-\\d{2}-\\d{2})(?: · (\\S+?))?(?: · ([0-9a-f]{7,40}))?\\s*$",
     "dogrulanmadi_deseni": "^tarayıcıda doğrulanmadı: (.+?) · (.+?)\\s*$"
   }
 }

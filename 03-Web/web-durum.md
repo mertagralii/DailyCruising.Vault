@@ -1092,26 +1092,69 @@ yapılmadı ve Mert başındayken yapılacak.
 > ⚠️ *"Yazıldı"* ile *"görüldü"* arasındaki farkı yalnız bu defter taşıyor.
 > Ayrı tutulmazsa ikisi aynı kelimeye çöküyor ve panoda tamamlanmış görünen
 > bir görev, hiç açılmamış bir ekran oluyor.
+>
+> ⚠️ **Dosya yolu zorunlu ve kaydın ölçülebilir olmasının tek şartı.**
+> Kontrol 28 o dosyanın son değişiklik tarihini doğrulama tarihiyle
+> karşılaştırıyor: dosya sonra değiştiyse doğrulama **o hâli görmemiştir**
+> ve kayıt kırmızı yanar. Yol yazılmazsa kontrol tahmin etmiyor — ekran
+> adından dosya çıkarmak yanlış kırmızı üretirdi — **sayıyor ve
+> bildiriyor**, yani ölçülemeyen kayıt sessizce temiz görünmüyor.
+>
+> ⚠️ İki kayıt bugün **kırmızı yanacak ve yanması doğru**:
+> `cancellations.tsx` ve `reservation-detail.tsx` doğrulandıktan **sonra**
+> bu gece değişti (tutar süzgeci düzeltmesi ve tahsilat kartı). Yani o
+> ekranların bugünkü hâli görülmedi. Defterin işe yaradığının ilk kanıtı bu.
+>
+> ⚠️ Bir satır diğerlerinden farklı: `/odeme` sayfası **giriş meselesi
+> değil akış meselesi**. Personel girişi geldiğinde on sekiz kayıt
+> kapanacak, o bir tane kapanmayacak — jeton yalnız gerçek bir gönderimle
+> üretiliyor. Sebebi ayrı yazmak, kapanmayanın neden kapanmadığını
+> görünür tutuyor.
 
-tarayıcıda doğrulandı: iade modalı · 2026-09-11
-tarayıcıda doğrulandı: iptal kartı · 2026-09-11
-tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11
-tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11
+tarayıcıda doğrulandı: iade modalı · 2026-09-11 · src/components/panel/admin/cancellations.tsx
+tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11 · src/components/panel/admin/cancellations.tsx
+tarayıcıda doğrulandı: iptal kartı · 2026-09-11 · src/components/panel/admin/reservation-detail.tsx
+tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11 · src/components/account/cancel-reservation.tsx
 
-tarayıcıda doğrulanmadı: yolcu gönder (form · liste · tahsilat · ödeme bağlantısı) · personel girişi Mert'te
-tarayıcıda doğrulanmadı: /odeme müşteri ödeme sayfası · jeton yalnız gönderimle üretiliyor
-tarayıcıda doğrulanmadı: bölge yönetimi · personel girişi Mert'te
-tarayıcıda doğrulanmadı: reklam yönetimi · personel girişi Mert'te
-tarayıcıda doğrulanmadı: aktivite kayıtları · personel girişi Mert'te
-tarayıcıda doğrulanmadı: log kayıtları · personel girişi Mert'te
-tarayıcıda doğrulanmadı: e-posta yönetimi · personel girişi Mert'te
-tarayıcıda doğrulanmadı: sms yönetimi · personel girişi Mert'te
-tarayıcıda doğrulanmadı: sms gönderimleri · personel girişi Mert'te
-tarayıcıda doğrulanmadı: finans · personel girişi Mert'te
-tarayıcıda doğrulanmadı: sözleşme listesi · personel girişi Mert'te
-tarayıcıda doğrulanmadı: rezervasyon ayarları · personel girişi Mert'te
-tarayıcıda doğrulanmadı: belge talepleri · personel girişi Mert'te
-tarayıcıda doğrulanmadı: yeşil rozetler (kupon · blog · hesap kuponları) · personel girişi Mert'te
+tarayıcıda doğrulanmadı: yolcu gönder · personel girişi Mert'te · src/components/panel/admin/phone-booking.tsx
+tarayıcıda doğrulanmadı: tahsilat kartı ve ödeme bağlantısı · personel girişi Mert'te · src/components/panel/admin/reservation-detail.tsx
+tarayıcıda doğrulanmadı: /odeme müşteri ödeme sayfası · jeton yalnız gerçek gönderimle üretiliyor, giriş meselesi değil · src/app/odeme/page.tsx
+tarayıcıda doğrulanmadı: bölge yönetimi · personel girişi Mert'te · src/components/panel/admin/regions.tsx
+tarayıcıda doğrulanmadı: reklam yönetimi · personel girişi Mert'te · src/components/panel/admin/adverts.tsx
+tarayıcıda doğrulanmadı: aktivite kayıtları · personel girişi Mert'te · src/components/panel/admin/activity.tsx
+tarayıcıda doğrulanmadı: etkinlik listesi · personel girişi Mert'te · src/components/panel/admin/activity-log.tsx
+tarayıcıda doğrulanmadı: log kayıtları · personel girişi Mert'te · src/components/panel/admin/logs.tsx
+tarayıcıda doğrulanmadı: e-posta yönetimi · personel girişi Mert'te · src/components/panel/admin/email.tsx
+tarayıcıda doğrulanmadı: sms yönetimi · personel girişi Mert'te · src/components/panel/admin/sms.tsx
+tarayıcıda doğrulanmadı: sms gönderimleri · personel girişi Mert'te · src/components/panel/admin/sms-log.tsx
+tarayıcıda doğrulanmadı: finans · personel girişi Mert'te · src/components/panel/admin/finance.tsx
+tarayıcıda doğrulanmadı: sözleşme listesi · personel girişi Mert'te · src/components/panel/admin/contracts.tsx
+tarayıcıda doğrulanmadı: rezervasyon ayarları · personel girişi Mert'te · src/components/panel/admin/reservation-settings.tsx
+tarayıcıda doğrulanmadı: belge talepleri · personel girişi Mert'te · src/components/panel/admin/documents.tsx
+tarayıcıda doğrulanmadı: kupon rozetleri · personel girişi Mert'te · src/components/panel/partner-coupons.tsx
+tarayıcıda doğrulanmadı: blog rozetleri · personel girişi Mert'te · src/components/panel/blog-moderation.tsx
+tarayıcıda doğrulanmadı: hesap kuponu rozetleri · personel girişi Mert'te · src/components/account/coupons.tsx
+
+tarayıcıda doğrulanmadı: genel bakış · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/overview.tsx
+tarayıcıda doğrulanmadı: müşteri listesi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/customers.tsx
+tarayıcıda doğrulanmadı: rezervasyonlar · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/reservations.tsx
+tarayıcıda doğrulanmadı: müsaitlik yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/availability.tsx
+tarayıcıda doğrulanmadı: personel listesi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/staff.tsx
+tarayıcıda doğrulanmadı: rol yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/roles.tsx
+tarayıcıda doğrulanmadı: kupon yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/coupons.tsx
+tarayıcıda doğrulanmadı: iş sağlığı · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/job-health.tsx
+
+⚠️ **Son sekizi "doğrulandı" diye yazmadım ve yazmamak bilinçli.** Bu
+ekranların bir kısmı önceki oturumlarda Mert giriş yapmışken açıldı, ama
+**hangisinin hangi gün** açıldığının kaydı yok — defter bugün açıldı.
+Tarihsiz bir "doğrulandı", kontrol 28'in karşılaştıracağı şeyi yok eder ve
+kayıt sessizce temiz görünür. Bilinmeyeni bilinmeyen olarak yazmak,
+uydurulmuş bir tarihten iyi.
+
+⚠️ Dört modülün ekran dosyası **çözülemiyor** ve defterde yok:
+`isletmeler`, `destek`, `yorum` ortak `ListeModulu` üzerinden basılıyor,
+`tekneler` ise görünümün içinde satır içi JSX. Betik bunu tahmin etmiyor,
+sayıp bildiriyor — ekran adından dosya çıkarmak yanlış kırmızı üretirdi.
 
 ⚠️ **Parolayı ben yazmıyorum** — Mert bilgiyi verdiğinde bile. Giriş onun
 elinden yapılıyor, doğrulama ondan sonra başlıyor. Bu bir araç kısıtı değil,

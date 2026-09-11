@@ -1286,11 +1286,26 @@ if _D28 and (VAULT / _D28["dosya"]).exists():
     _bekleyen = len(_dyok.findall(_dmetin))
     _yolsuz = _geride = 0
     for _m28 in _onayli:
-        _ekran, _tarih28, _yol28 = _m28.group(1), _m28.group(2), _m28.group(3)
+        _ekran, _tarih28 = _m28.group(1), _m28.group(2)
+        _yol28, _sha28 = _m28.group(3), _m28.group(4)
         if not _yol28:
             _yolsuz += 1
             continue
         if not _drepo.exists():
+            continue
+        # SHA varsa GUN siniri kalkar: "o commit'ten bu yana dokunuldu mu".
+        # Tarih olcutu ayni gun icindeki degisimi goremez ve bu kor nokta
+        # KALICIDIR — 2026-09-11'de dogrulanip ayni gun degisen iki ekran
+        # yarin da sessiz kalirdi, cunku iki tarih esit donuyor.
+        if _sha28:
+            _sonrasi = (_git_repo(_drepo, ["log", "--format=%h", f"{_sha28}..HEAD",
+                                           "--", _yol28]) or "").split()
+            if _sonrasi:
+                _geride += 1
+                sorunlar.append(
+                    f"[tarayici dogrulamasi geride] {_D28['dosya']}: '{_ekran}' "
+                    f"{_sha28} commit'inde goruldu, {_yol28} o gunden bu yana "
+                    f"{len(_sonrasi)} commit'te degisti — o hali gorulmedi")
             continue
         _son28 = (_git_repo(_drepo, ["log", "-1", "--format=%cs", "--", _yol28]) or "").strip()
         if _son28 and _son28 > _tarih28:
@@ -1302,7 +1317,7 @@ if _D28 and (VAULT / _D28["dosya"]).exists():
     olcumler.append(
         f"kontrol 28 · {_D28['dosya']}: {len(_onayli)} dogrulanmis "
         f"({_yolsuz} tanesi dosya yolu YAZMADIGI icin olculemedi) · "
-        f"{_bekleyen} dogrulanmamis · koddan geride {_geride}")
+        f"{_bekleyen} dogrulanmamis · koddan geride {_geride} · gun sinirini kaldiran SHA kayitli {sum(1 for _m in _onayli if _m.group(4))}")
 elif _D28:
     olcumler.append(f"kontrol 28 · defter dosyasi yok ({_D28['dosya']}) — OLCULEMEDI")
 

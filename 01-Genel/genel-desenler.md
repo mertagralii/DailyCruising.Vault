@@ -1196,7 +1196,6 @@ hiçbir yerde alarm üretmez.**
 yolu). Yoklukla ilgili iddia, kaynağı gösterilmeden yazılmaz; gösterilirse
 denetlenebilir hâle gelir.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Denetlenecek iddia düzyazıdan alana çıkarılır
 
@@ -1223,3 +1222,35 @@ burada **yapısal olarak** kapandı.
 yap. Denetlenemeyen iddia, yazıldığı gün doğru olan bir cümledir — o kadar.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## İki farklı eksik, tek sayıya toplanmaz
+
+2026-09-11, tarayıcı doğrulama defteri: web oturumu kapsam ölçümünü yazarken
+**"defterde yok"** ile **"hangi dosya olduğu bilinmiyor"**u ayrı saydı. Dördü
+ikinci sınıftı (`isletmeler`, `destek`, `yorum` ortak bir bileşenden basılıyor,
+`tekneler` satır içi JSX).
+
+Tek sayıya toplansaydı ikinci sınıf **görünmez** olurdu — ve o sınıfın çözümü
+tamamen farklı: birincisi *"git bak"*, ikincisi *"ekranı ayrı dosyaya çıkar"*.
+Aynı sayıya toplanan iki eksik, çözümü olmayan bir tek eksik gibi görünür.
+
+**Kural:** bir ölçüm, farklı sebeplerle eksik olan şeyleri ayrı basar. Ölçümün
+değeri toplamda değil, **ayrımda**.
+
+## Tarih zayıf çapa, commit kesin çapa
+
+Kontrol 28 ilk hâlinde günü ölçüyordu ve kör noktası **kalıcıydı**: bir ekran
+2026-09-11'de doğrulanıp aynı gün değiştiyse, iki tarih eşit kalıyor ve **ertesi
+gün de eşit kalıyor** — yani o değişiklik hiçbir zaman görünmüyor. Kontrol 23'te
+aynı gün muafiyeti zararsızdı (durum dosyası yeniden yazılıyor); burada zararlı,
+çünkü doğrulama kaydı sabit.
+
+Çözüm ölçütü değiştirmek değil **çapayı** değiştirmek oldu: kayıt isteğe bağlı
+bir **commit SHA** taşıyabiliyor ve o zaman ölçüt *"o commit'ten bu yana bu
+dosyaya dokunuldu mu"* oluyor. Gün belirsizdir, commit değildir.
+
+⚠️ Aynı ilke başka yerlerde de geçerli olabilir (kontrol 15, 23, 25 hepsi gün
+ölçüyor) ama oralarda gün **bilerek** seçildi: yanlış alarmın bedeli daha
+yüksekti. Burada kaydı yazan insan olduğu için çapayı da o yazabiliyor.
+
+İlgili: [[genel-esszamanli-oturumlar]]
