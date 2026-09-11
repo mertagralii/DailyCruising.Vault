@@ -1392,7 +1392,6 @@ yapılmaz. `okunma.py` tartışmasında ilk ikisini yazmıştık; üçüncüsü 
 edebildiğini** göstermek zorunda — ayırt edemiyorsa sıfırı sonuç değil **soru**
 olarak bildirir.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Kapı düşünmeyi gerektirir, ölçüm gerektirmez
 
@@ -1420,3 +1419,25 @@ Kontrol 29'un değeri bunun kanıtı: aynı kusur üç kez oldu; ilk ikisini **i
 tarayıcıda buldu, üçüncüsünü **makine** ilk koşumunda.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Gerekçenin sahibi de yazılır
+
+2026-09-11, web oturumunun bulgusu: ekranda üç yerde *"değiştirilmemeli"*,
+*"eksiklik değil karar"* gibi cümleler vardı ve **üçü de onun kendi önerisiydi**,
+Mert'in kararı değil. İkisi ertesi akşam tersine döndü — ve ekran, **kararın
+tersini savunan cümlelerle** kaldı.
+
+Sahip yazmak **bir kelimelik iş**. Karşılığı: karar döndüğünde hangi cümlelerin
+yalanlandığını **aramak** yerine **bilmek**.
+
+⚠️ Bu ayrım bu vault'ta bir kez zaten bedel ödetmişti — `api-benim-kararlarim.md`
+tam bu yüzden ayrı bir dosya olarak açıldı: *"Claude'un kendi yetkisiyle aldığı
+kararlar"* ile *"Mert'in verdiği kararlar"* karışınca, hangisinin sorulacağı
+belirsizleşiyordu. O gün dosya ayrılarak çözüldü; bugün anlaşıldı ki ayrım
+**dosya düzeyinde değil satır düzeyinde** gerekiyor.
+
+**Ölçülüyor, dayatılmıyor:** kontrol 6 artık üç yerine dört oran basıyor. İlk
+ölçüm (2026-09-11): `api` %15 · `genel` %36 · `mobil` %28 · `web` %8. Oran
+düşükken zorunlu satır eklemek, `Sonucu`'nun başına geleni tekrarlamak olurdu.
+
+İlgili: [[genel-esszamanli-oturumlar]]

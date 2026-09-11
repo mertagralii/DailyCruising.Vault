@@ -13,6 +13,101 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (15) — panelde uçsuz modül kalmadı.**
+`dotnet test` **840/840**, son commit `5830ffa`, 62 controller · 195 yol / 248
+operasyon.
+
+Web'in bıraktığı son iki kısmi modül kapandı:
+
+| Uç | Not |
+|---|---|
+| `GET /api/legal` · `/{consentType}` | **Kimliksiz** — site gizlilik politikasını okuyamıyordu, tablo vardı ama hiçbir uç sunmuyordu |
+| `GET · POST /api/platform/legal-documents` · `/{id}` · `/{id}/activate` · `DELETE` | Gövde değişmez, sürüm eklenir |
+| `paymentLinkSentAt` | Rezervasyon ayrıntısında; alan yazılıyordu ama okunmuyordu |
+
+⚠️ **Silme kapısında sessiz bir tuzak vardı:** onay kaydı metnin kimliğine
+değil **tür + sürüm etiketine** bağlı. Kimliğe bakan bir kontrol hiç eşleşme
+bulmaz — yani çalışıyor görünür — ve onaylanmış bir metin silinebilirdi.
+Mutasyonla doğrulandı → [[api-kararlar]]
+
+⚠️ **Açık borç:** yasal metin gövdesi HTML olarak saklanıyor ve sunucuda
+temizlenmiyor. Bugün yazan taraf en yetkili personel; uç daha geniş bir role
+açılmadan önce süzülmesi gerekiyor.
+
+---
+
+**2026-09-11 (14) — platform ayarları okunur hâle geldi; commit dili İngilizceye döndü.**
+`dotnet test` **834/834**, son commit `dad11ab`.
+
+`GET /api/platform/settings` — panelin elle yazdığı sayıları kaldırıyor.
+İade kademeleri `switch`'ten `RefundPolicy.Tiers`'a taşındı ve **hesap artık
+o listeden yürüyor**; ölçüldü, listedeki bir oran değişince yedi iade testi
+kırılıyor.
+
+⚠️ **`PUT` YAZILMADI ve sebebi iki ayrı şey:** süreler derleme zamanı sabiti
+(taşınması gerekiyor), iptal kademeleri ise yazılabilir **olmamalı** —
+müşteriye rezervasyon anında verilmiş bir söz, önce sürümlenmesi gerekiyor
+(`S-02`) → [[api-kararlar]]
+
+⚠️ **Commit dili:** `tercihler.md` zaten *"Commit mesajları İngilizce"*
+diyordu, ben commit atmadan önce o dosyayı okumamıştım. Ölçtüm: 343 commit
+başlığının **339'u Türkçe** — kural yazıldığı günden beri hiç uygulanmamış.
+Mert teyit etti (*"globalde neyse o"*), `dad11ab`'den itibaren İngilizce.
+Geçmiş düzeltilmiyor → [[tercihler]]
+
+---
+
+**2026-09-11 (13) — `A-165` tamamlandı: etkinlik akışı, referans katalogları,
+reklam, istek günlüğü.**
+`dotnet test` **829/829**, son commit `315ca27`, migration **A133**.
+
+| Modül | Uç |
+|---|---|
+| Etkinlik akışı | `GET /api/platform/activity` · `/{id}` |
+| Referans katalogları | `GET · POST /api/platform/lookups/{katalog}` · `PUT` · `/activate` · `/deactivate` |
+| Reklam | `/api/platform/adverts` CRUD + `/{id}/image` · kimliksiz `GET /api/adverts` |
+| İstek günlüğü | `GET /api/platform/logs` · `/{id}` |
+
+⚠️ **İstek günlüğünde iki karardan biri KAPANDI:**
+1. ✅ **Gövde saklanmayacak** — Mert karar verdi (Web oturumu üzerinden
+   ulaştı, `S-10`): *"gövdeyi saklamayalım, traceId yeterli."* Kod
+   değişmiyor; yazılmayan şey artık bir eksik değil, bir karar.
+2. ⚠️ **Saklama süresi 30 gün** (`RequestLog:RetentionDays`) hâlâ AÇIK —
+   teknik bir varsayılan, hukuki bir karar değil. `S-09` ile birlikte
+   kararlaştırılmalı.
+
+⚠️ **Ölçülerek bulundu:** `/api/reservation-payments/{token}` ödeme
+bağlantısının jetonunu bir **yol parçası** olarak taşıyor. Günlük ham yol
+yazsaydı, günlüğü okuyan herkes o bağlantıyı kullanabilirdi → [[api-kararlar]]
+
+⚠️ Yeni testler **iki var olan kusuru** açığa çıkardı: müşteri listesi
+sayfalamasının eşit zaman damgasında kararsız olması, ve finans uçlarının
+`platform.settings` ile korunuyor olması (`ledger.read` olmalıydı).
+
+⚠️ Hijyen notu: finans yetkisi düzeltmesi `4d19a47` içine karıştı, mesajı ise
+`f5b6a40`'ta anlatıldı. Commit mesajı ile içeriği ayrı düştü; düzeltmek
+rebase gerektirir, atlandı.
+
+---
+
+**2026-09-11 (12) — platform geneli etkinlik akışı açıldı; müşteri
+sayfalamasında kararlılık kusuru kapandı.**
+`dotnet test` **803/803**, son commit `b504fc0`.
+
+`GET /api/platform/activity` · `/{id}` — `A-165`'in genel akış maddesi.
+Personel işlem geçmişinin genelleştirilmiş hâli: aynı `EventLogs`, aynı
+başlık sözlüğü, aynı etiket çözücü. Yeni bir kayıt kaynağı **yok**.
+
+⚠️ **Yeni testler var olan bir kusuru açığa çıkardı:** müşteri listesi yalnız
+`CreatedAt` azalanına göre sıralanıyordu; eşit damgada aynı satır iki sayfada
+birden çıkıyordu. `Id` ikinci ölçüt olarak eklendi → [[api-kararlar]]
+
+⚠️ `A-165`'te kalanlar: **istek günlüğü** (gövde yakalama kararı Mert'te),
+**reklam**, **referans kataloğu yazma** (önce `/api/lookups` görünürlük
+kusuru). Ayrıntı [[api-gorevler]]
+
+---
+
 **2026-09-11 (11) — çalışan sürecin sürümü artık ölçülebiliyor.**
 `dotnet test` **785/785**, son commit `24d90ab`.
 

@@ -486,4 +486,34 @@ doğrula.** Üç kontrol sorusu işe yarıyor:
 İlk üçünde de hata bendeydi ve ikisinde yanlış rapor vermekten son anda
 döndüm.
 
+## Kendi önerini ekrana *karar* diliyle yazma
+
+Ekranda şu üç cümle duruyordu:
+
+- *"Kademeler panelden değiştirilemiyor **ve değiştirilmemeli**"*
+- *"Şablon düzenleme yok ve bu bir **eksiklik değil karar**"*
+- *"Yanıt gövdesi yok **ve istenmedi**"*
+
+Üçü de **benim önerimdi.** Mert'e sorulmuştu ama cevap gelmemişti; ben
+gerekçemi yazarken kendi görüşümü kararmış gibi ifade ettim.
+
+2026-09-11 akşamı ikisi **tersine döndü** ve ekran, kararın tersini
+savunan bir cümleyle kaldı. Üçüncüsü (`S-10`) tesadüfen onaylandı.
+
+**Kural:** bir kısıtın gerekçesini yazarken **sahibini de yaz.**
+
+| Yanlış | Doğru |
+|---|---|
+| "değiştirilmemeli" | "henüz değiştirilemiyor; önce sürümleme gerekiyor" |
+| "eksiklik değil karar" | "Mert karar verdi (`S-05`): düzenlenebilir olacak" |
+
+Ayrımın bedeli bir kelime, faydası şu: **karar döndüğünde hangi
+cümlelerin yalanlandığını aramak yerine biliyorsun.** Sahipsiz yazılmış
+gerekçe, sahibi fikrini değiştirince sessizce yalan olur — ve ekranda
+kaldığı sürece personele *"bu böyle olmalı"* diye okunur.
+
+⚠️ Gerekçenin kendisi genelde **ölmez**, sıraya dönüşür: "sürümleme
+olmadan yazma tehlikeli" cümlesi S-02 tersine dönünce de doğruydu.
+Yanlış olan gerekçe değil, ondan çıkarılan **hüküm**dü.
+
 İlgili: [[web-kararlar]] · [[web-durum]]

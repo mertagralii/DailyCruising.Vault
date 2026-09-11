@@ -18,6 +18,97 @@ durum: guncel
 > **Buradaki her sayı ölçülerek yazıldı, hatırlanarak değil.**
 
 
+## Yasal metinler — 2026-09-11
+
+| Metot | Yol | Yetki | Not |
+|---|---|---|---|
+| GET | `/api/legal` · `/{consentType}` | **kimliksiz** | Yürürlükteki metin; yoksa `404`, boş gövde değil |
+| GET · POST | `/api/platform/legal-documents` · `/{id}` | `platform.settings` | Liste pasifleri de gösteriyor; yeni sürüm pasif doğuyor |
+| POST | `.../{id}/activate` | `platform.settings` | Eskiyi **aynı işlemde** düşürüyor |
+| DELETE | `.../{id}` | `platform.settings` | Yalnız yürürlükte olmayan **ve onaylanmamış** taslak |
+
+⚠️ Güncelleme ucu YOK: gövde değişmez, sürüm eklenir. Onay kaydı metnin
+kimliğini değil **sürüm etiketini** saklıyor → [[api-kararlar]]
+
+---
+
+## Platform ayarları — 2026-09-11
+
+| Metot | Yol | Yetki | Not |
+|---|---|---|---|
+| GET | `/api/platform/settings` | `platform.settings` | Tutma süresi · tahsilat penceresi · biniş belgesi ömrü · iade kademeleri |
+
+Değerler **motorun kendi sabitlerinden** okunuyor (`ReservationService`,
+`RefundPolicy.Tiers`), yeniden yazılmıyor. İade kademeleri `switch`'ten
+listeye taşındı ve **hesap o listeden yürüyor**.
+
+⚠️ **`PUT` yok.** Süreler derleme zamanı sabiti; iptal kademeleri ise
+yazılabilir **olmamalı** (`S-02`, müşteriye verilmiş söz). Cevapta bölüm
+başına `editable` alanı var, bugün ikisi de `false` → [[api-kararlar]]
+
+---
+
+## Reklam ve istek günlüğü — 2026-09-11
+
+| Metot | Yol | Yetki | Not |
+|---|---|---|---|
+| GET · POST · PUT · DELETE | `/api/platform/adverts` · `/{id}` | `platform.settings` | Panel listesi süresi geçmişleri ve kapalıları da gösteriyor; `isLive` ayrı alan |
+| POST | `/api/platform/adverts/{id}/image` | `platform.settings` | WebP'ye yeniden kodlanıyor; içerik türü **imzadan** doğrulanıyor |
+| POST | `/api/platform/adverts/{id}/activate` · `/deactivate` | `platform.settings` | Yayın anahtarı tarih aralığından AYRI |
+| GET | `/api/adverts?placement=` | **kimliksiz** | Yayın = açık + başlamış + bitmemiş + **görseli var** |
+| GET | `/api/platform/logs` · `/{id}` | `eventlog.read` | HTTP künyesi; **gövde yok**, yol ve sorgu maskeli |
+
+Yeni tablolar: `Adverts` (`A132`), `RequestLogs` (`A133`). Yeni iş:
+`istek-gunlugu-budama` (günde bir, varsayılan 30 gün).
+
+⚠️ İstek günlüğü `EventLogs`'tan **ayrı** ve ayrı kalmalı: olay günlüğü
+*"ne oldu"* sorusunu iş dilinde, istek günlüğü *"sunucuya ne geldi"*
+sorusunu HTTP dilinde cevaplıyor. Birleştirilseydi iş olaylarının arasına
+saniyede onlarca teknik satır karışırdı.
+
+⚠️ Yazma isteğin yolunda değil: sınırlı sıra (`RequestLogQueue`) + arka plan
+yazıcısı (`RequestLogWriter`). Ara katman **kimlik doğrulamadan sonra**
+çalışıyor → [[api-kararlar]]
+
+---
+
+## Referans kataloglarının yönetimi — 2026-09-11
+
+| Metot | Yol | Not |
+|---|---|---|
+| GET | `/api/platform/lookups/{katalog}` | **Pasifler dahil** — modülün açılma koşulu |
+| POST · PUT | `/api/platform/lookups/{katalog}` · `/{id}` | Anahtar değişmez; çeviri kümesi değiştirilir, birleştirilmez |
+| POST | `.../{id}/activate` · `/deactivate` | Silme YOK — pasifleştirme kayıtları bozmuyor |
+
+Kataloglar: `regions` · `boat-types` · `amenities` · `rules`. **Kiralama tipi
+YOK**: alanları paranın nasıl hesaplandığını belirliyor.
+
+---
+
+## Platform paneli — yönetim modülleri, 2026-09-11
+
+`A-165`'in dört modülü aynı gün açıldı. Dördü de **okuma ağırlıklı** ve
+dördü de var olan kayıtları okuyor; hiçbiri yeni bir kayıt kaynağı açmıyor.
+
+| Metot | Yol | Yetki | Not |
+|---|---|---|---|
+| GET | `/api/platform/documents` | `partner.approve` | İşletme + tekne belgeleri **tek kuyrukta**, en eskisi başta. Ayrım cevaptaki `scope` alanında |
+| POST | `/api/platform/documents/{scope}/{id}/approve` · `/reject` | `partner.approve` | Redde sebep zorunlu ve sözlükten. `Pending` şartıyla tek ifade; yarışta ikinci `409` |
+| GET | `/api/platform/finance/summary` · `/entries` · `/payouts` | `ledger.read` | Özet **defter bakiyelerinden** okunuyor, formülden değil. İade satırı **müşteri** hesabından |
+| GET | `/api/platform/notification-templates` | `platform.settings` | Katalog **koddan** geliyor (`NotificationTemplateCatalog`); `NotificationTemplates` tablosu boş ve boş olması doğru |
+| GET | `/api/platform/activity` · `/{id}` | `eventlog.read` | Personel işlem geçmişinin **genelleştirilmiş hâli** — aynı `EventLogs`, aynı `EventTitles`, aynı etiket çözücü |
+
+⚠️ **Etkinlik akışı ile personel geçmişi arasındaki tek fark süzgeç.**
+`staff/{id}/activity` tek kişiye ve `ActorType == Platform`'a kilitli; akış
+müşteriyi, işletmeyi ve arka plan işlerini de gösteriyor. Süzgeçler: tarih
+aralığı, aktör türü, olay sınıfı (`Read`/`Write`/`Denied`), kişi, konu
+(tür + kimlik) — hepsi SQL'de, çünkü `totalCount` da süzülmeli.
+
+⚠️ Konu etiketi çözümü `EventSubjectLabels` (Infrastructure) içinde ve **iki
+okuyucu paylaşıyor** → [[api-kararlar]]
+
+---
+
 ## Telefonla rezervasyon — 2026-09-11
 
 | Yöntem | Yol | Not |
@@ -116,7 +207,7 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 | `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **84 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
 | `DailyCruising.Infrastructure` | Application | EF Core, **21 yapılandırma dosyası** (84 entity eşlemesi), **83 migration**, **11 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
-| `DailyCruising.Api` | Application + Infrastructure | **50 controller, 166 yol / 213 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Api` | Application + Infrastructure | **62 controller, 195 yol / 248 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 

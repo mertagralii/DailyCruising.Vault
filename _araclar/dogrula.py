@@ -184,7 +184,7 @@ for p2 in notlar:
         sorunlar.append(f"[yalitilmis not] {rel}: hicbir nota link vermiyor")
 
 # 6: gerekcesiz karar girisi
-_karar_sayaci = collections.defaultdict(lambda: [0, 0, 0])
+_karar_sayaci = collections.defaultdict(lambda: [0, 0, 0, 0])
 for p in notlar:
     if not p.name.endswith("kararlar.md"):
         continue
@@ -211,14 +211,22 @@ for p in notlar:
             _karar_sayaci[p.name][1] += 1
         if re.search(AYAR["isaretler"]["bedel_deseni"], blok, re.I):
             _karar_sayaci[p.name][2] += 1
+        # 2026-09-11, web oturumunun onerisi: gerekce yazilirken SAHIBI de
+        # yazilir. Ekranda uc yerde "degistirilmemeli / eksiklik degil karar"
+        # cumleleri vardi ve ucu de ONUN onerisiydi, Mert'in karari degil.
+        # Ikisi ertesi gun tersine dondu ve ekran, kararin tersini savunan
+        # cumlelerle kaldi. Sahip bir kelimelik is; karar dondugunde hangi
+        # cumlelerin yalanlandigini ARAMAK yerine BILMEYI sagliyor.
+        if re.search(AYAR["isaretler"].get("sahip_deseni", "(?!)"), blok, re.I):
+            _karar_sayaci[p.name][3] += 1
 
-for _ad, (_t, _e, _b) in sorted(_karar_sayaci.items()):
+for _ad, (_t, _e, _b, _sh) in sorted(_karar_sayaci.items()):
     if _t:
         olcumler.append(
             f"kontrol 6 · {_ad}: {_t} karar · elenen secenek {_e} "
             f"({_e * 100 // _t}%) · bedel {_b} ({_b * 100 // _t}%) "
-            f"— OLCUM, dayatma degil · olcut: vault.json isaretler."
-            f"elenen_deseni / bedel_deseni")
+            f"· sahibi yazili {_sh} ({_sh * 100 // _t}%) "
+            f"— OLCUM, dayatma degil · olcut: vault.json isaretler.*_deseni")
 
 # 8: her alanda desenler / gorevler / araclar var mi
 ALAN_BOLME = {a: v["onek"] for a, v in AYAR["alanlar"].items()}

@@ -88,7 +88,8 @@
     "elenen_deseni": "elend|eleme sebebi|alternatif|yerine .{0,40}seçildi|vazgeç|denendi ama",
     "bedel_deseni": "bedeli|pahasına|karşılığında|feda|dezavantaj|riski|borç|zorlaştır",
     "dayanak": "\\*\\*Dayanak:\\*\\*(.+)",
-    "dayananlar": "\\*\\*Buna dayananlar:\\*\\*(.+)"
+    "dayananlar": "\\*\\*Buna dayananlar:\\*\\*(.+)",
+    "sahip_deseni": "Mert('?in| talimat| onay| karar)|kendi yetki|benim karar|Mert'e soruldu|Mert verdi"
   },
   "mutable_roller": [
     "map",

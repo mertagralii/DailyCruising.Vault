@@ -6981,3 +6981,260 @@ iş gerektiriyor:
 
 Ayırmadan sıfıra bakmak, üçünden hangisiyse ona göre yanlış karar verdiriyor.
 Bugün bir kez her birine düşüldü.
+
+## 2026-09-11 · Sayfalanan her sıralamada ikinci ölçüt zorunlu
+
+Müşteri listesi yalnız `CreatedAt` azalanına göre sıralanıyordu. Eşit zaman
+damgalı iki kayıt arasında Postgres istediği sırayı kullanabilir ve o sıra
+**iki sorgu arasında değişebilir**: aynı müşteri hem 1. hem 2. sayfada
+görünür, bir başkası hiç görünmez. `Id` ikinci ölçüt olarak eklendi —
+UUIDv7 zamanla arttığı için sıralamayı bozmuyor, yalnız beraberliği çözüyor.
+
+**Neden:** kusur bir tasarım tercihi değil, **sessiz** bir veri kaybı. Sayılar
+doğru kalıyor (`totalCount` değişmiyor, her sayfa dolu geliyor), yalnız liste
+yalan söylüyor. Denetim ya da müşteri ekranında bu, "böyle bir kayıt yok"
+diye okunur.
+
+⚠️ **Nasıl bulundu, asıl ders orada:** yeni `PlatformActivityTests` kendi
+kullanıcılarını *aynı* zaman damgasıyla yazıyordu. Paylaşılan veritabanında
+o eşitlik `CustomerListTests`'in sayfalama testini kırdı. Yani kusuru bir
+inceleme değil, **veri çeşitliliği** ortaya çıkardı: gerçek hayatta eşit
+damga ender, testte kurulumun varsayılanı.
+
+⚠️ Kural bu yüzden dar değil geniş yazılıyor: **sayfalanan her sorgunun
+sıralaması toplam bir sıra olmalı.** Tek ölçüt beraberlik üretebiliyorsa
+sayfalama kararlı değildir.
+
+⚠️ Testin verisi de düzeltildi — eşit damga bir **test kurgusu**, üretimin
+olağan hâli değil. Kusuru bulduran kurgu, kusur kapandıktan sonra korunacak
+bir şey değil.
+
+## 2026-09-11 · Etkinlik akışı yeni bir kaynak değil, var olan ucun genellemesi
+
+`GET /api/platform/activity`, `staff/{id}/activity` ile **aynı** `EventLogs`
+tablosunu okuyor; aynı başlık sözlüğünü (`EventTitles`) ve aynı etiket
+çözücüyü kullanıyor. Fark yalnız süzgeçte: personel sayfası tek kişiye ve
+`ActorType == Platform`'a kilitli.
+
+**Neden:** ayrı bir tablo ya da ayrı bir yazma yolu açılsaydı aynı olay iki
+yere yazılırdı ve ilk tutarsızlıkta *"hangisi doğru"* sorusu doğardı — denetim
+kaydında cevaplanamayacak tek soru bu.
+
+⚠️ Konu etiketi çözümü `EventSubjectLabels` sınıfına taşındı, kopyalanmadı.
+Kopyalansaydı aynı olay personel sayfasında rezervasyon kodu, akışta boş
+görünmeye başlardı; iki ekranın **aynı** kaydı farklı anlatması, denetimi
+işlevsiz yapar.
+
+⚠️ Ters tarih aralığının kapısı uçta değil **okuyucuda**: ölçülebilen tek yer
+orası. Uca konsaydı kural yazılı olur ama sınanamazdı.
+
+## 2026-09-11 · İstek günlüğü gövde SAKLAMIYOR
+
+`GET /api/platform/logs` künye yazıyor: yöntem, yol, rota kalıbı, durum kodu,
+süre, aktör, tuzlu IP özeti, izleme kimliği. İstek ve cevap **gövdeleri**
+saklanmıyor.
+
+**Neden:** gövde, uç başına değişen ve önceden bilinemeyen bir içerik
+taşıyor — kart numarası, parola, kimlik numarası. Neyin saklanacağına dair
+bir izin listesi kurulmadan gövde yazmak, sistemin en hassas verisini tek bir
+tabloda toplamak olurdu. Ve bu, geri alınması en zor karardır: **yazılan veri
+yazılmıştır**, sonradan "aslında saklamayalım" demek onu geri getirmez.
+
+⚠️ Karar kodda da yazılı: `RequestLogDetail` sözleşmesinde gövde alanı
+olmadığını doğrulayan bir test var. Yarın "küçük bir alan ekleyelim"
+denildiğinde orada kırmızı yanar.
+
+⚠️ **Bu bir ERTELEME, red değil.** Gövde yakalama istenirse iki şey birlikte
+kararlaştırılmalı: hangi alanların izin listesine gireceği, ve kayıtların ne
+kadar süre saklanacağı. İkisi de Mert'in kararı; peer'ın şartnamesi gövdeyi
+istiyordu ama bir peer bu izni veremez.
+
+## 2026-09-11 · Gizli veri yalnız gövdede değil, YOLDA da olabiliyor
+
+İstek günlüğü yazılırken ölçüldü: `/api/reservation-payments/{token}` ödeme
+bağlantısının jetonunu bir **yol parçası** olarak taşıyor. Ham yazılsaydı
+günlüğü okuyabilen herkes o bağlantıyı kullanabilir, yani ödeme sayfasına
+girebilirdi.
+
+**Neden karar olarak yazılıyor:** maskeleme akla geldiğinde ilk düşünülen şey
+gövde, ikinci düşünülen sorgu dizesi. **Yol düşünülmüyor** — çünkü yol
+"adres" gibi görünüyor, "veri" gibi değil. Oysa REST'te kimlik yolun içinde
+taşınır ve o kimlik bazen bir jetondur.
+
+⚠️ Maskeleme **rota kalıbına** bakıyor, yolun kendisine değil: kalıptaki
+parametre adı `token`/`jeton`/`key` benzeri ise o parça `***` oluyor. Yola
+bakan bir kural, jetonun neye benzediğini tahmin etmek zorunda kalırdı.
+
+⚠️ **Rota kalıbı bilinmiyorsa** (eşleşen uç yok, `404`) yol tamamen şüpheli
+sayılıyor ve uzun parçalar maskeleniyor. "Bilinmiyorsa gizli değildir" demek,
+en çok bilinmeyen yerde en az korumak olurdu — ve saldırgan tam olarak
+eşleşmeyen yollar dener.
+
+⚠️ Sorgu dizesinde **adlar duruyor, değerler maskeli**; izin listesi küçük ve
+hepsi sayı/tarih/kapalı küme. Serbest metin olan `q` bilerek dışarıda: arama
+kutusuna yazılan e-posta oradan geçiyor.
+
+## 2026-09-11 · Ölçen şey ölçtüğünü yavaşlatmamalı
+
+İstek günlüğü her istekte bir satır yazıyor. Yazma isteğin yolunda **değil**:
+sınırlı bir sıraya konuyor, arka plandaki bir yazıcı toplu hâlde yazıyor.
+
+**Neden:** her istek sonunda senkron `INSERT`, sistemin en sık çalışan yoluna
+bir veritabanı gidiş-dönüşü eklemek demekti — ana sayfanın her açılışı bir
+yazma işlemi. Günlük, ölçmek için var olduğu şeyi yavaşlatırdı.
+
+⚠️ Sıra **sınırlı** ve dolduğunda kayıt düşüyor, istek bekletilmiyor: bir
+günlük satırını kaybetmek kabul edilebilir, müşterinin isteğini bekletmek
+değil. Sınırsız olsaydı veritabanı yavaşladığı anda bellek büyür ve günlük
+sunucuyu düşürürdü.
+
+⚠️ Düşen kayıt **sayılıyor**. Sessizce düşseydi eksik bir günlük tam bir
+günlük gibi görünürdü; *"o istek hiç gelmedi"* ile *"yazamadık"* arasındaki
+fark denetimde her şeydir.
+
+⚠️ **Budama işi modülün parçası**, sonradan düşünülecek bir ek değil
+(`istek-gunlugu-budama`, günde bir, varsayılan 30 gün). Budamasız bir istek
+günlüğü sınırsız büyür ve bir gün diski doldurur.
+
+## 2026-09-11 · Panel listesi yayın sorgusundan okumaz
+
+Üç modülde aynı kural çıktı ve üçünde de sebebi aynı: **panelin listesi,
+müşteriye gösterilen süzgeci kullanmaz.**
+
+- Referans katalogları: `/api/lookups` yalnız `IsActive` veriyor. Panel de
+  oradan okusaydı ilk pasifleştirme **tek yönlü** olurdu — satır kaybolur,
+  geri açacak ekran kalmazdı.
+- Reklam: yayın sorgusu süresi dolanı elemiyor. Panel oradan okusaydı süresi
+  dolan reklamın tarihini uzatacak ekran kalmazdı.
+- Etkinlik akışı: personel sayfası `ActorType == Platform`'a kilitli; akış
+  onu kullansaydı müşteri ve arka plan işleri hiç görünmezdi.
+
+**Neden:** görünmeyen satır, olmayan satır gibi okunur. Yönetim ekranının işi
+**bütün durumu** göstermek; süzme müşteri tarafının işi. İkisi aynı sorguyu
+paylaştığında, yönetim ekranı kendi düzeltmesi gereken durumu göremez hâle
+geliyor.
+
+⚠️ Reklamda bunun ek bir yüzü var: `isActive` ile `isLive` **ayrı alanlar**.
+Anahtar açık ama tarihi gelmemiş ya da **görseli yüklenmemiş** bir reklam
+yayında değildir. Tek alan olsaydı panel "yayında" derken site boş kalır ve
+sebebi hiçbir ekranda görünmezdi.
+
+## 2026-09-11 · Kuralın değeri ekrana KOPYALANMAZ, sunucudan okunur
+
+`GET /api/platform/settings` tutma süresini (15 dk), tahsilat penceresini
+(24 sa), biniş belgesi ömrünü (12 sa) ve iade kademelerini döndürüyor.
+
+**Neden:** panel bu sayıları `RefundPolicy.cs` ve `ReservationService`'ten
+**ölçüp kendi koduna yazıyordu**. Sunucudaki kural değiştiğinde ekran sessizce
+eskiyor ve — asıl tehlikeli olan — **iki sayı da kendi kodunda doğru
+görünüyor.** `RefundPolicy`'nin kendi açıklaması bu tuzağa zaten karşı
+uyarıyordu, ama yalnız sunucu içindeki kopyalara karşı; sunucu-ekran
+kopyası gözden kaçmıştı.
+
+⚠️ Kademeler `switch`'ten çıkarılıp `RefundPolicy.Tiers` listesine alındı ve
+**hesap artık bu listeden yürüyor**. Liste dışarı açılıp `switch` yerinde
+bırakılsaydı, ikizlenme sunucunun içine taşınmış olurdu. Ölçüldü: listedeki
+bir oran değiştirildiğinde **yedi iade testi** kırılıyor — hesap gerçekten
+listeyi okuyor.
+
+⚠️ Uç testleri sabitleri **tekrar etmiyor**, motorun kaynağıyla karşılaştırıyor.
+Beklenen değer yazılsaydı, sabit değiştiğinde test kırılır, biri testi
+"düzeltir" ve uç yanlış kalırdı — ikizlenme üçüncü bir yere taşınırdı.
+
+## 2026-09-11 · Ayarların yazma ucu YOK — sabit olduğu için değil, söz olduğu için
+
+`PUT /api/platform/settings` yazılmadı. Web oturumu istedi ve iki yarısı için
+sebep ayrı:
+
+- **Tutma süresi ve tahsilat penceresi:** bugün derleme zamanı sabiti
+  (`static readonly TimeSpan`). Yazılabilir olmaları için çalışma anında
+  okunan bir kaynağa taşınmaları gerekiyor — ayrı ve küçük olmayan bir iş.
+- **İptal kademeleri:** yazılabilir **olmamalı** (`S-02`). İptal politikası
+  müşteriye **rezervasyon anında verilmiş bir söz**; panelden değiştirilirse
+  geçmiş rezervasyonların hangi kurala tabi olduğu belirsizleşir. Bugün
+  iptal anındaki oran rezervasyona donduruluyor, ama önizleme ekranı
+  yürürlükteki kuralı gösteriyor — kural değişirse müşteriye verilen söz ile
+  gösterilen kural ayrışır. Değiştirilebilmesi için kuralın **sürümlenmesi**
+  gerekiyor.
+
+**Neden karar olarak yazılıyor:** "sabit olduğu için yazılamıyor" ile
+"yazılmamalı" farklı iki cevap ve ikincisi teknik bir engel değil. İleride
+biri sabitleri taşıyıp *"artık yazılabilir"* dediğinde, kademelerin hâlâ
+kapalı kalması gerektiği bu satırdan okunmalı.
+
+⚠️ Cevapta bölüm başına `editable` alanı var ve bugün ikisi de `false`.
+Ekranın "düzenle" düğmesini kendi varsayımına göre değil **sunucunun
+söylediğine** göre göstermesi için; sabitler taşındığında alan `true` olur ve
+ekran değişmez. Bir test bunu bekçiliyor.
+
+⚠️ Komisyon bu uçta YOK: tek bir platform değeri değil, **sözleşme başına**
+tutuluyor (`Contract.CommissionRate`). Tek sayı gibi gösterilseydi farklı
+oranla çalışan işletmeler ekranda yanlış görünürdü.
+
+## 2026-09-11 · Yasal metin: gövde değişmez, sürüm eklenir
+
+`/api/platform/legal-documents` yazma ucunda **güncelleme yok**. Metin
+değişikliği yeni bir sürüm eklemekle yapılıyor; yürürlüğe alma eskisini aynı
+işlemde düşürüyor.
+
+**Neden:** onay kaydı (`ConsentRecord`) metnin **kimliğini değil sürüm
+etiketini** saklıyor. Gövde düzenlenebilseydi, geçmişte onay vermiş bir
+kullanıcının neyi onayladığı geriye dönük olarak değişirdi — ve anlaşmazlıkta
+elde tutulacak tek kanıt değersizleşirdi. Varlığın kendi açıklaması bunu zaten
+söylüyordu; uç bu kuralı **uygulanabilir** hâle getirdi.
+
+⚠️ **Silme kapısı ölçülerek kuruldu ve sessiz bir tuzağı var:** onay kaydı
+tür + sürüm etiketi çiftine bağlı. "Bu metne onay verilmiş mi" kontrolü metnin
+**kimliğine** bakılarak yazılsaydı hiçbir zaman eşleşme bulmaz — yani
+*çalışıyor görünür* — ve onaylanmış bir metin silinebilirdi. Mutasyonla
+doğrulandı: kontrol kimliğe çevrildiğinde tek bir test kırılıyor.
+
+Silme yine de gerekiyordu: yazım hatası içeren bir taslak silinemeseydi liste
+çöp sürümlerle dolardı. Kural bu yüzden dar: **yürürlükte değil ve onay
+verilmemiş** olacak.
+
+⚠️ Yeni sürüm **pasif doğuyor**. Yazıldığı anda yayına girseydi yarım
+bırakılmış bir taslak siteye düşerdi ve yasal metinde yarım, boş olmaktan
+kötü. Panel listesi pasifleri gösteriyor — göstermeseydi taslak hiçbir ekranda
+görünmez ve yürürlüğe alınamazdı.
+
+⚠️ **Açık borç:** gövde HTML olarak saklanıyor ve sunucuda temizlenmiyor.
+Bugün yazan taraf `platform.settings` yetkisine sahip personel — sistemin en
+yetkili kullanıcısı — ve metin siteye ham basılıyor. Uç daha geniş bir role
+açılmadan önce gövdenin süzülmesi gerekiyor.
+
+## 2026-09-11 · Yazılan bir alan, okunduğu anlamına gelmiyor
+
+`Reservation.PaymentLinkSentAt` telefonla açılan rezervasyonda ödeme bağlantısı
+gönderilirken **yazılıyordu** ama hiçbir okuma yolundan dönmüyordu.
+
+**Neden karar olarak yazılıyor:** kusurun görüntüsü bir eksik alan değil, bir
+**tekrar**. Personel bağlantının gidip gitmediğini göremediği için yeniden
+gönderiyor, müşteriye aynı bağlantı ikinci kez düşüyor. Ekranda hiçbir hata
+yok, günlükte hiçbir uyarı yok.
+
+⚠️ Genelleşmiş hâli: **bir alanın yazıldığını görmek, birinin onu okuduğunu
+kanıtlamaz.** Aynı sınıfın başka yüzleri bu gece iki kez daha çıktı —
+`Notifications`/`NotificationDeliveries` eşlenmişti ama hiçbir kod yazmıyordu
+(ölü şema), ve `NotificationOutbox` boşluğu üç ayrı yanlış sebeple
+açıklanmıştı. Üçünde de şema doğru göründüğü için kimse ölçmemişti.
+
+## 2026-09-11 · İstek günlüğü gövde kararı KAPANDI — saklanmayacak
+
+Yukarıdaki *"gövde SAKLAMIYOR"* kararı bir **erteleme** olarak yazılmıştı:
+izin listesi ve saklama süresi kararlaştırılırsa eklenebilir deniyordu.
+Mert karar verdi ve erteleme kapandı: *"gövdeyi saklamayalım, traceId
+yeterli."*
+
+**Neden:** gövde uç başına değişen içerik taşıyor ve izin listesi kurulmadan
+saklamak **geri alınamaz** — yazdıktan sonra vazgeçmek, zaten yazılmış
+kayıtları silmek demek.
+
+⚠️ **Kaynak:** karar bu oturuma doğrudan değil, Web oturumu üzerinden ulaştı
+(`S-10`, web tarafında cevaplanmış madde olarak kayıtlı). Kodda bir değişiklik
+gerektirmiyor — uç zaten gövdesiz yazılmıştı ve `RequestLogDetail`
+sözleşmesinde gövde alanı olmadığını doğrulayan test duruyor. Değişen tek şey
+**niteliği**: yazılmayan şey artık bir eksik değil, bir karar.
+
+⚠️ Saklama süresi (`RequestLog:RetentionDays`, varsayılan 30 gün) **hâlâ
+açık**; gövde kararıyla birlikte kapanmadı.

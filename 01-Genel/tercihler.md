@@ -1,7 +1,7 @@
 ---
 rol: constitution
 kapsam: genel
-guncelleme: 2026-09-09
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -40,7 +40,25 @@ değil, bir maliyettir.
 |---|---|
 | Konuşma, vault notları | Türkçe |
 | Kod, dosya/sınıf/uç nokta adları | İngilizce |
-| Commit mesajları | İngilizce |
+| Commit mesajları | **İngilizce** — konuşma dili ne olursa olsun |
+
+⚠️ **Bu satır yazılıydı ve tutulmadı. 2026-09-11'de ölçüldü: API deposundaki
+343 commit başlığının 339'u Türkçe.** Yani kural, yazıldığı günden beri hiç
+uygulanmamış.
+
+Sebep bir disiplin hatası değil, **tetikleyicinin ateşlenmemesi**: okuma
+tablosunda *"Commit atacağım → tercihler.md"* satırı var ama commit atan
+oturum bu dosyayı açmıyor, çünkü commit mesajını yazarken zaten var olan
+geçmişe bakıp ona benzetiyor. **Geçmişin kendisi bir talimat gibi
+davranıyor** ve yazılı kuraldan daha güçlü çıkıyor.
+
+Mert 2026-09-11'de teyit etti: *"globalde neyse o"* — yani
+`~/.claude/CLAUDE.md` geçerli, commit mesajları İngilizce.
+
+⚠️ Geçmiş 339 commit **düzeltilmiyor**: rebase + force-push, kazancından
+büyük bir maliyet. Kural bundan sonrakiler için geçerli, yani bir süre
+depoda iki dil bir arada duracak — ve **yeni commit yazarken örnek alınacak
+şey geçmiş değil bu dosyadır.**
 
 ## Commit
 

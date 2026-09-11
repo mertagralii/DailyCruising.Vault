@@ -2131,4 +2131,59 @@ var ve kapanmak onu siliyor.
 "Diğer"de görünseydi planı değişen müşterinin yeni tarih önerisini yazacağı
 yer olmazdı.
 
+## 2026-09-11 — Yönetim paneli: Mert'in on kararı
+
+Gece boyunca aldığım kararlar `SORULAR.md` adlı geçici bir dosyada
+toplanmıştı; Mert hepsini cevapladıktan sonra dosya silindi ve kararlar
+buraya taşındı. **Geçici dosya kalıcı kayıt değildir** — silinecek bir
+yerde biriken karar, silindiği gün kaybolur.
+
+| # | Konu | Karar |
+|---|---|---|
+| S-01 | Reklam kapsamı | **Dar kalsın** — platformun kendi vitrini |
+| S-02 | İptal kademeleri | **Değiştirilebilir olsun** ⚠️ önce sürümleme |
+| S-03 | Belge red sebepleri | Dört sebep yeterli |
+| S-04 | Kayıt saklama | **24 ay** · varsayılan görünüm 30 gün |
+| S-05 | Bildirim şablonları | **Düzenlenebilsin** ⚠️ önce değişken doğrulaması |
+| S-06 | Elle indirim | **Olmasın** — indirim yalnız kuponla |
+| S-07 | Gece sınırları | Mert dolduracak (veri girişi) |
+| S-08 | Tarayıcı doğrulaması | Yapıldı |
+| S-09 | Gönderim günlüğü | Ayrı tablo (`NotificationDeliveries`) |
+| S-10 | İstek gövdesi | **Saklanmayacak** — `traceId` yeterli |
+
+### İki karar benim önerimin tersine çıktı ve ikisi de iş doğurdu
+
+⚠️ **S-02 · iptal kademeleri değiştirilebilir olacak.** Ben salt okunur
+önermiştim, back-end de aynı fikirdeydi. Mert değiştirilebilir istedi.
+
+Bu **kutuyu açmak değil**: iptal politikası müşteriye rezervasyon anında
+verilmiş bir söz ve panelden değiştirilirse geçmiş rezervasyonların hangi
+kurala tabi olduğu belirsizleşir. Önce **sürümleme** gerekiyor — hangi
+rezervasyonun hangi kural sürümüne tabi olduğunun kaydı. Oran iptal anında
+rezervasyona zaten donuyor ama **önizleme ekranı yürürlükteki kuralı**
+gösteriyor; sürümleme tam olarak o ayrışmayı çözmeli.
+
+⚠️ **S-05 · şablonlar düzenlenebilir olacak.** Ben ertelemiştim. Mert
+istedi ve önce **değişken doğrulaması** gerekiyor: kaydederken şablonun
+taşıması gereken değişkenlerin hepsi var mı diye denetim. Onsuz, bir
+değişkeni silen personel bildirimi **sessizce** boşaltır.
+
+İkisi de back-end'e iletildi; ikisinde de *"istenen şey basit görünüyor
+ama altında bir kayıt yapısı var"* aynı kalıp.
+
+### S-04: 12 ay varsayımım yanlış çıktı
+
+Ekranda ve `admin-durum.ts`'de **12 ay** yazıyordu ve bu benim
+varsayımımdı, Mert'in kararı değil. **24 ay** oldu — iki sezon geriye
+bakılabiliyor. Varsayımı yazmış olmam iyiydi: yazılmasaydı sayı hiç
+sorgulanmazdı.
+
+### Değişmeyen dördü de boşuna sorulmadı
+
+S-01, S-03, S-06 ve S-07'de kararım onaylandı. Ama S-07 bir **eylem**
+doğurdu: çok günlü tarifelerde gece sınırları boş ve Mert dolduracak.
+Boş kaldığı sürece *"3 günlük"* ilan edilen tarife tek geceye satın
+alınabiliyor — denetim sunucuda çalışıyor, karşılaştıracağı sınır yok.
+
 İlgili: [[web-desenler]] · [[web-durum]]
+

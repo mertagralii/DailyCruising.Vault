@@ -24,52 +24,6 @@ Biçim ve gerekçe -> [[genel-desenler]]
 ## 🔵 Yapılacak
 
 
-- [ ] **A-165** Panel modüllerinin eksik uçları · 🔴 **SIRALAMA MERT'TE** · ölçüldü: 2026-09-11
-
-      Web yedi modülün ucunun olmadığını ölçtü ve öncelik sırasıyla iletti.
-      **Hepsi birden beklenmiyor**; sıralamayı Mert verecek.
-
-      1. **Olay günlüğü — iki ayrı ihtiyaç.**
-         `GET /api/platform/activity` (platform geneli denetim izi; bugün
-         yalnız `staff/{userId}/activity` var ve on kişinin ilk sayfasını
-         birleştirmek gerçek akışın ilk sayfası değil) ·
-         `GET /api/platform/logs` + `/{id}` (istek günlüğü, ayrı şey).
-         ⚠️ Ödeme yanıtlarında kart ve jeton **maskeli**. "Tekrar dene" ucu
-         **istenmiyor** — gerçek para hareketi üretir.
-      2. **Belge onay/red kuyruğu.** `GET /api/platform/documents?status=Pending`
-         (işletme + tekne belgesi bir arada) · `approve` · `reject`.
-         ⚠️ Redde sebep **zorunlu ve sözlükten**: `Unreadable` · `Expired` ·
-         `WrongDocument` · `MismatchedInfo`. Serbest metin raporlanamıyor ve
-         sebepsiz red işletmeyi kör bırakıyor.
-      3. **Platform finansı — okuma.** `summary` · `entries` · `payouts`.
-         ⚠️ Ödeme **başlatan** uç istenmiyor: para transferi tetikleyen düğme
-         panelde olmayacak.
-      4. **Bildirim şablonları.** Liste + kendine test gönderimi.
-         ⚠️ Düzenleme **istenmiyor** (ilk sürüm): şablonlar `{{kod}}` gibi
-         değişken taşıyor, bir değişkeni silen personel bildirimi **sessizce**
-         bozar. Düzenleme istenirse önce değişken doğrulaması — ayrı iş.
-      5. **Bildirim gönderimleri listesi.** `?channel=Sms|Email`.
-         ⚠️ **`NotificationOutbox`'tan OKUNAMAZ ve bu ölçüldü:** o tablo bir
-         **kuyruk**, günlük değil — `DispatchNotificationsJob` gönderdiği
-         satırı `Remove` ediyor (satır 114). Geriye yalnız bekleyen ve
-         başarısız satırlar kalıyor; başarıyla gidenlerin **hiçbir izi yok.**
-         Dev'de üç tablo da boş çıktı (`NotificationOutbox` 0 ·
-         `Notifications` 0 · `NotificationDeliveries` 0) — son ikisi
-         eşlenmiş ama **hiçbir kod onlara yazmıyor**, yani ölü şema.
-         Yani bu modül önce bir **gönderim günlüğü** gerektiriyor: ya
-         gönderilen satır silinmeyip `Sent` damgalanacak (kuyruk sorgusu
-         buna göre daraltılmalı), ya da ayrı bir tabloya yazılacak.
-         Karar verilmeden uç yazılamaz.
-      6. **Reklam — en dar kapsam.** `adverts` yazma + herkese açık okuma.
-         ⚠️ Satış, teklif, faturalama, gösterim/tıklama sayımı **kapsam dışı**.
-      7. **Referans kataloğu yazma** (bölge vb.) — en düşük öncelik.
-
-      ⚠️ **7'den ÖNCE bir görünürlük kusuru var:** `/api/lookups` yalnız
-      `IsActive` bölgeleri döndürüyor (`LookupRepository.cs:37`). Kapatma ucu
-      bu hâlde gelirse ilk kapatma **tek yönlü** olur — bölge panelden de
-      kaybolur, kimse geri açamaz. Bugün on bölgenin onu da açık olduğu için
-      kusur görünmüyor.
-
 - [ ] **A-159** İşletme çalışanı davet akışı · 🔴 **MERT'TE** · ölçüldü: 2026-09-10
 
       ⚠️ **Ekran olmayan bir şeyi vaat ediyor.** İşletme panelinde çalışan
@@ -230,6 +184,43 @@ Biçim ve gerekçe -> [[genel-desenler]]
       🔴 **MERT'TE**
 
 ## 🟢 Tamamlandı
+
+- [x] **A-165** Panel modüllerinin eksik uçları · 2026-09-11
+
+      **Kanıt:** yedi maddenin yedisi de uçlandı, `dotnet test` **829/829**,
+      commit'ler `54159e4` · `bac9de2` · `e0810bd` · `b504fc0` · `4d19a47` ·
+      `f5b6a40` · `315ca27`. Migration `A129`–`A133`.
+
+      | # | Modül | Uç |
+      |---|---|---|
+      | 1 | Olay günlüğü | `GET /api/platform/activity` · `/{id}` · `GET /api/platform/logs` · `/{id}` |
+      | 2 | Belge onay/red | `GET /api/platform/documents` · `approve` · `reject` |
+      | 3 | Platform finansı | `summary` · `entries` · `payouts` |
+      | 4 | Bildirim şablonları | liste + kendine test gönderimi |
+      | 5 | Bildirim gönderimleri | gönderim günlüğü açıldı (`A128`, `d3021c1`) |
+      | 6 | Reklam | `platform/adverts` CRUD + kimliksiz `GET /api/adverts` |
+      | 7 | Referans kataloğu yazma | `platform/lookups/{katalog}` |
+
+      ⚠️ **7'nin görünürlük kusuru önce kapatıldı:** panel listesi pasif
+      satırları da gösteriyor. `/api/lookups` değişmedi — müşteri tarafı
+      yalnız aktifleri görmeli → [[api-kararlar]] 2026-09-11.
+
+      ⚠️ **5'in kilidi ölçülerek çözüldü:** `NotificationOutbox` bir kuyruk,
+      günlük değil. Kuyruğa yazılırken `Notification` + `NotificationDelivery`
+      satırı da açılıyor, kuyruk satırı silinse de iz kalıyor.
+
+      ⚠️ **1'de İKİ KARAR MERT'TE ve açık:** istek günlüğü gövde yakalamıyor
+      (KVKK kararı), saklama süresi 30 gün varsayılan
+      (`RequestLog:RetentionDays`). Peer'ın şartnamesi *"detayda yanıt
+      gövdesi"* istiyordu; bir peer bu izni veremez → `S-09`.
+
+      "Tekrar dene" ucu yazılmadı — istenmemişti, gerçek para hareketi üretir.
+
+      ⚠️ **Yan bulgular:** yeni testler müşteri listesi sayfalamasının eşit
+      zaman damgasında kararsız olduğunu (`3a56448`), finans uçlarının
+      `platform.settings` ile korunduğunu (`ledger.read` olmalıydı) ve iki
+      panel ucunun bugünü sunucu saatinden okuduğunu (`91f6acc`) açığa
+      çıkardı.
 
 - [x] **A-164** Rezervasyonun ilk ödemesi tekrar denenemiyor · 2026-09-11
 

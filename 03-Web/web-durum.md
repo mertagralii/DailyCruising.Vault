@@ -1131,13 +1131,20 @@ tarayıcıda doğrulandı: yolcu gönder · 2026-09-11 · src/components/panel/a
 tarayıcıda doğrulandı: tahsilat kartı ve ödeme bağlantısı · 2026-09-11 · src/components/panel/admin/reservation-detail.tsx · 8586b59
 tarayıcıda doğrulandı: iptal kartı · 2026-09-11 · src/components/panel/admin/reservation-detail.tsx · 8586b59
 tarayıcıda doğrulandı: /odeme müşteri ödeme sayfası · 2026-09-11 · src/app/odeme/page.tsx · 8586b59
-tarayıcıda doğrulandı: bölge yönetimi · 2026-09-11 · src/components/panel/admin/regions.tsx · 8586b59
-tarayıcıda doğrulandı: finans · 2026-09-11 · src/components/panel/admin/finance.tsx · 8586b59
-tarayıcıda doğrulandı: aktivite kayıtları · 2026-09-11 · src/components/panel/admin/activity.tsx · 8586b59
-tarayıcıda doğrulandı: etkinlik listesi · 2026-09-11 · src/components/panel/admin/activity-log.tsx · 8586b59
-tarayıcıda doğrulandı: reklam yönetimi · 2026-09-11 · src/components/panel/admin/adverts.tsx · 8586b59
 tarayıcıda doğrulandı: sözleşme listesi · 2026-09-11 · src/components/panel/admin/contracts.tsx · 8586b59
-tarayıcıda doğrulandı: rezervasyon ayarları · 2026-09-11 · src/components/panel/admin/reservation-settings.tsx · 8586b59
+tarayıcıda doğrulandı: bölge yönetimi · 2026-09-11 · src/components/panel/admin/regions.tsx · c1e22c6
+tarayıcıda doğrulandı: finans · 2026-09-11 · src/components/panel/admin/finance.tsx · c1e22c6
+tarayıcıda doğrulandı: aktivite kayıtları · 2026-09-11 · src/components/panel/admin/activity.tsx · c1e22c6
+tarayıcıda doğrulandı: etkinlik listesi · 2026-09-11 · src/components/panel/admin/activity-log.tsx · c1e22c6
+tarayıcıda doğrulandı: reklam yönetimi · 2026-09-11 · src/components/panel/admin/adverts.tsx · c1e22c6
+tarayıcıda doğrulandı: log kayıtları · 2026-09-11 · src/components/panel/admin/logs.tsx · c1e22c6
+tarayıcıda doğrulandı: e-posta yönetimi · 2026-09-11 · src/components/panel/admin/email.tsx · c1e22c6
+tarayıcıda doğrulandı: sms yönetimi · 2026-09-11 · src/components/panel/admin/sms.tsx · c1e22c6
+tarayıcıda doğrulandı: sms gönderimleri · 2026-09-11 · src/components/panel/admin/sms-log.tsx · c1e22c6
+tarayıcıda doğrulandı: bildirim şablonları · 2026-09-11 · src/components/panel/admin/notification-templates.tsx · c1e22c6
+tarayıcıda doğrulandı: bildirim günlüğü · 2026-09-11 · src/components/panel/admin/notification-log.tsx · c1e22c6
+tarayıcıda doğrulandı: belge kuyruğu · 2026-09-11 · src/components/panel/admin/document-queue.tsx · c1e22c6
+tarayıcıda doğrulandı: rezervasyon ayarları · 2026-09-11 · src/components/panel/admin/reservation-settings.tsx · c1e22c6
 tarayıcıda doğrulandı: iade modalı · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 8586b59
 tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 8586b59
 tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11 · src/components/account/cancel-reservation.tsx · 1ac13a3
@@ -1165,10 +1172,6 @@ ve kapalı hâl kazayla oluştu, planlanmadı.
 Bu satırın `tarayıcıda doğrulandı` olmamasının sebebi: sunucu çıktısını
 okumak, ekranı görmek değil. Yerleşim, düğme ve tıklama yolu ölçülmedi.
 Kanıtın **cinsini** karıştırmak, defterin taşıdığı tek bilgiyi bozar.
-tarayıcıda doğrulanmadı: log kayıtları · personel girişi Mert'te · src/components/panel/admin/logs.tsx
-tarayıcıda doğrulanmadı: e-posta yönetimi · personel girişi Mert'te · src/components/panel/admin/email.tsx
-tarayıcıda doğrulanmadı: sms yönetimi · personel girişi Mert'te · src/components/panel/admin/sms.tsx
-tarayıcıda doğrulanmadı: sms gönderimleri · personel girişi Mert'te · src/components/panel/admin/sms-log.tsx
 tarayıcıda doğrulanmadı: belge talepleri · personel girişi Mert'te · src/components/panel/admin/documents.tsx
 tarayıcıda doğrulanmadı: kupon rozetleri · personel girişi Mert'te · src/components/panel/partner-coupons.tsx
 tarayıcıda doğrulanmadı: blog rozetleri · personel girişi Mert'te · src/components/panel/blog-moderation.tsx
@@ -1256,3 +1259,105 @@ basılmadı; o onay alınmadı.
 kullanılmıyor. SMS gönderimleri modülünün istediği uç buna göre
 güncellenmeli — back-end'e iletildi.
 
+## 2026-09-11 akşamı — gönderim günlüğü bağlandı (`S-09`)
+
+Mert **(b) ayrı günlük** dedi, back-end aynı gün yazdı, bağlandı.
+
+⚠️ **Ölü şema canlandı.** `Notifications` + `NotificationDeliveries`
+zaten tasarlanmıştı ve hiç bağlanmamıştı — durum kümesi kuyruğunkinden
+zengin (`Queued`/`Sent`/`Failed`/**`Bounced`**). Yani karar yeni bir şey
+kurmadı, unutulmuş bir tasarımı uyandırdı.
+
+⚠️ **Mesaj gövdesi saklanmıyor** ve saklanmayacak: kayıtta `TemplateKey`
+ve `Payload` var, metin şablondan yeniden üretiliyor. Ekran *"gitti mi"*
+sorusunu cevaplıyor, *"ne yazıyordu"* sorusunu değil. KVKK açısından
+saklanan şey alıcı adresi ve değişkenler.
+
+⚠️ **`Failed` yalnız deneme hakkı bitince** yazılıyor. Ekranda deneme
+sayısı durumun yanında basılıyor, çünkü *"Sırada"* ile *"Sırada · 3
+deneme"* farklı iki şey söylüyor ve personelin tek ipucu bu.
+
+⚠️ **`Bounced` bugün hiç yazılmıyor** — sağlayıcı geri bildirimi
+bağlanmadı. Sözlükte yine de var: gelmeyen bir değerin karşılığını
+hazırlamak, geldiği gün ham İngilizce görünmesinden iyi.
+
+Liste **ortak bileşen** (`notification-log.tsx`): tek uç, iki ekran.
+`sms-gonderim` artık tam bağlı, `eposta` kısmi (şablon tarafı eksik ama
+gönderim listesi gerçek).
+
+### Doğrulama — yarım
+
+Tarayıcıda açıldı: süzgeçler, boş durum metni ve sayfalama basılıyor.
+Ama **veriyle görülmedi**: üç tablo da sıfır, çünkü günlük bağlandıktan
+sonra hiç bildirim gönderilmedi (ödeme bağlantısı 17:07'de gitti,
+bağlanma ondan sonra). "0 kayıt" bu yüzden **dürüst** — ölçüldü, uydurma
+değil.
+
+⚠️ Veriyle doğrulama için yeni bir gönderim gerekiyor ve o **dışarıya iş
+yapan** bir eylem; Mert'in onayı bekleniyor.
+
+
+## 2026-09-11 gece — on soru kapandı, iki karar tersine döndü
+
+`SORULAR.md` **silindi**. On sorunun hepsi Mert'e soruldu, hepsi
+cevaplandı ve kararlar [[web-kararlar]]'a taşındı. Dosyanın kendisi
+geçiciydi; **geçici dosyada biriken karar, silindiği gün kaybolur** —
+taşıma bu yüzden silmeden önce yapıldı.
+
+⚠️ **İki cevap benim önerimin tersi çıktı** ve ikisi de ekranda yazılı
+bir cümleyi yalanladı:
+
+- `S-02` — iptal kademeleri **değiştirilebilir olacak**. Ekranda
+  *"değiştirilmemeli"* yazıyordu ve bu benim gerekçemdi, Mert'in kararı
+  değil. Cümle *"henüz değil"*e döndü; gerekçe ortadan kalkmadı,
+  **sıraya** dönüştü (önce sürümleme, sonra yazma).
+- `S-05` — şablonlar **düzenlenebilir olacak**. Aynı kalıp: üç yerde
+  (`email.tsx`, `notification-templates.tsx`, `admin-durum.ts`)
+  *"eksiklik değil karar"* yazıyordu.
+
+**Ders:** kendi önerimi ekrana *karar* diliyle yazmışım. Öneri ile karar
+aynı cümleyle yazılırsa, karar tersine döndüğünde ekran **eski öneriyi
+savunmaya** devam eder. Artık ikisi ayrı yazılıyor: kararın sahibi
+cümlede geçiyor.
+
+⚠️ İki yeni uç `admin-durum.ts: istenen` alanına yazıldı ve **ekranda**
+basılıyor (`BeklenenUclar`). Bu alan bir süredir boştu — beş modülün
+hepsi bağlanınca kutu hiçbir yerde görünmüyordu; bileşenin *"aynı liste
+ekranda da basılıyor"* notu o sırada **sessizce yalan**dı. Şimdi iki
+modülde tekrar görünür: `rez-ayar` ve `eposta`.
+
+### `S-04` — saklama süresi 24 ay
+
+Ekranda **hiçbir yerde tavan yoktu**: `SORULAR.md`'de "en fazla 12 ay"
+yazıyordu ama kodda karşılığı yoktu — tarih kutuları sınırsızdı. Yani
+karar bir yere yazılmıştı, **ürüne hiç geçmemişti**.
+
+Tavan artık `SAKLAMA_AYI = 24` sabitinde, tek yerde; iki ekranın dört
+tarih kutusu ondan besleniyor. Tarayıcıda ölçüldü: `min=2024-09-11`,
+`max=2026-09-11`.
+
+⚠️ Sınır **sunucuda hesaplanmıyor** — `useSyncExternalStore` ile
+istemcide. Sunucu UTC, tarayıcı Türkiye: gece yarısından sonraki üç
+saatte iki taraf farklı gün üretir ve hidrasyon uyuşmazlığı çıkardı.
+
+⚠️ Bu bugün **yalnız ekranın tavanı**: `EventLogs` eski satırı silmiyor.
+*"24 ay saklıyoruz"* cümlesi ancak back-end budama işini yazınca doğru
+olur — istendi.
+
+### Doğrulama
+
+Üç ekran tarayıcıda açıldı ve **veriyle** görüldü: aktivite kayıtları
+(1264 kayıt, tarih sınırları ölçüldü), rezervasyon ayarları ve e-posta
+yönetimi (iki "beklenen uç" kutusu da basılıyor). Hidrasyon uyarısı yok.
+
+⚠️ Konsolda üç uçta `401` göründü (`platform/partners`, `support/tickets`,
+`platform/reviews`) — **kusur değil**, oturum açılmadan önceki
+yüklemelerden kalma. Konsol temizlenip sayfa yeniden yüklendi: temiz, ve
+üç listenin ikisi aynı anda veriyle basılıyordu. Ölçmeden bildirilseydi
+olmayan bir hata duyurulmuş olacaktı.
+
+### Önceki bir notun düzeltmesi
+
+⚠️ Yukarıdaki *"`NotificationOutbox` boş → outbox artık kullanılmıyor"*
+cümlesi **yanlıştı**. Outbox bir **kuyruk**: gönderdiği satırı siliyor,
+yani boş olması başarı demek. Ölçüm yerine çıkarım yapılmıştı.

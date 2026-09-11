@@ -19,10 +19,10 @@ durum: uretilen
 | Ne | Kaç |
 |---|---|
 | Rota (`page.tsx`) | 44 |
-| Bileşen (`src/components/**/*.tsx`) | 141 |
-| Yönetim paneli ekranı | 26 |
+| Bileşen (`src/components/**/*.tsx`) | 145 |
+| Yönetim paneli ekranı | 30 |
 | API istemci modülü | 12 |
-| Uçtaki yol · işlem | 166 · 213 |
+| Uçtaki yol · işlem | 195 · 248 |
 
 ## Rotalar
 

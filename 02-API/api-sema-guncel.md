@@ -17,7 +17,29 @@ yalnız *bugün veritabanında ne var* yazıyor.
 **Ne zaman okunur:** hangi tablo/kolon/kısıt var sorusu.
 **Ne zaman yazılır:** her migration uygulandıktan sonra betiği çalıştır.
 
-**85 tablo** (olay günlüğü parçaları hariç).
+**87 tablo** (olay günlüğü parçaları hariç).
+
+## `Adverts`
+
+| kolon | tip | boş | varsayılan |
+|---|---|---|---|
+| `Id` | uuid | hayır | `uuidv7()` |
+| `Title` | character varying | hayır |  |
+| `Placement` | character varying | hayır |  |
+| `FileKey` | character varying | evet |  |
+| `TargetUrl` | character varying | hayır |  |
+| `StartsAt` | timestamp with time zone | hayır |  |
+| `EndsAt` | timestamp with time zone | hayır |  |
+| `IsActive` | boolean | hayır |  |
+| `SortOrder` | integer | hayır |  |
+| `CreatedAt` | timestamp with time zone | hayır |  |
+| `UpdatedAt` | timestamp with time zone | hayır |  |
+
+Kısıtlar:
+
+- `CK_Adverts_Adres` — `CHECK ((("TargetUrl")::text ~~ 'https://%'::text))`
+- `CK_Adverts_Aralik` — `CHECK (("EndsAt" > "StartsAt"))`
+- `CK_Adverts_Placement_Enum` — `CHECK ((("Placement")::text = ANY ((ARRAY['HomeHero'::character varying, 'HomeBelowSearch'::character varying, 'SearchResults'::character varying, 'BoatDetail'::character varying, 'BlogSidebar'::character varying])::text[])))`
 
 ## `Amenities`
 
@@ -178,10 +200,14 @@ Kısıtlar:
 | `VerifiedByUserId` | uuid | evet |  |
 | `ExpiryNotifiedAt` | timestamp with time zone | evet |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
+| `RejectionReason` | character varying | evet |  |
+| `ReviewNote` | character varying | evet |  |
 
 Kısıtlar:
 
 - `CK_BoatDocuments_DocumentType_Enum` — `CHECK ((("DocumentType")::text = ANY ((ARRAY['Registration'::character varying, 'Insurance'::character varying, 'TourismCertificate'::character varying, 'Other'::character varying])::text[])))`
+- `CK_BoatDocuments_RedSebebi` — `CHECK ((("RejectionReason" IS NULL) OR (("Status")::text = 'Rejected'::text)))`
+- `CK_BoatDocuments_RejectionReason_Enum` — `CHECK ((("RejectionReason" IS NULL) OR (("RejectionReason")::text = ANY ((ARRAY['Unreadable'::character varying, 'Expired'::character varying, 'WrongDocument'::character varying, 'MismatchedInfo'::character varying])::text[]))))`
 - `CK_BoatDocuments_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['Pending'::character varying, 'Verified'::character varying, 'Rejected'::character varying, 'Expired'::character varying])::text[])))`
 
 ## `BoatMedia`
@@ -752,6 +778,8 @@ Kısıtlar:
 | `NextAttemptAt` | timestamp with time zone | hayır |  |
 | `LastError` | character varying | evet |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
+| `NotificationId` | uuid | evet |  |
+| `TemplateKey` | text | hayır | `''::text` |
 
 Kısıtlar:
 
@@ -861,10 +889,18 @@ Kısıtlar:
 | `DocumentType` | character varying | hayır |  |
 | `FileKey` | character varying | hayır |  |
 | `UploadedAt` | timestamp with time zone | hayır |  |
+| `RejectionReason` | character varying | evet |  |
+| `ReviewNote` | character varying | evet |  |
+| `ReviewedAt` | timestamp with time zone | evet |  |
+| `ReviewedByUserId` | uuid | evet |  |
+| `Status` | character varying | hayır | `''::character varying` |
 
 Kısıtlar:
 
 - `CK_PartnerDocuments_DocumentType_Enum` — `CHECK ((("DocumentType")::text = ANY ((ARRAY['TaxCertificate'::character varying, 'IdentityDocument'::character varying, 'TradeRegistry'::character varying, 'Other'::character varying])::text[])))`
+- `CK_PartnerDocuments_RedSebebi` — `CHECK ((("RejectionReason" IS NULL) OR (("Status")::text = 'Rejected'::text)))`
+- `CK_PartnerDocuments_RejectionReason_Enum` — `CHECK ((("RejectionReason" IS NULL) OR (("RejectionReason")::text = ANY ((ARRAY['Unreadable'::character varying, 'Expired'::character varying, 'WrongDocument'::character varying, 'MismatchedInfo'::character varying])::text[]))))`
+- `CK_PartnerDocuments_Status_Enum` — `CHECK ((("Status")::text = ANY ((ARRAY['Pending'::character varying, 'Verified'::character varying, 'Rejected'::character varying, 'Expired'::character varying])::text[])))`
 
 ## `PartnerMembers`
 
@@ -1134,6 +1170,28 @@ Kısıtlar:
 - `CK_RentalTypes_ExtraDayCount` — `CHECK (("ExtraDayCount" >= 0))`
 - `CK_RentalTypes_OccupancyMode_Enum` — `CHECK ((("OccupancyMode")::text = ANY ((ARRAY['Shared'::character varying, 'Exclusive'::character varying])::text[])))`
 - `CK_RentalTypes_PricingStrategy_Enum` — `CHECK ((("PricingStrategy")::text = ANY ((ARRAY['PerPerson'::character varying, 'PerBoat'::character varying])::text[])))`
+
+## `RequestLogs`
+
+| kolon | tip | boş | varsayılan |
+|---|---|---|---|
+| `Id` | uuid | hayır | `uuidv7()` |
+| `OccurredAt` | timestamp with time zone | hayır |  |
+| `Method` | character varying | hayır |  |
+| `Path` | character varying | hayır |  |
+| `RouteTemplate` | character varying | evet |  |
+| `Query` | character varying | evet |  |
+| `StatusCode` | integer | hayır |  |
+| `DurationMs` | integer | hayır |  |
+| `ActorUserId` | uuid | evet |  |
+| `ActorType` | character varying | hayır |  |
+| `IpHash` | character varying | evet |  |
+| `UserAgent` | character varying | evet |  |
+| `TraceId` | character varying | evet |  |
+
+Kısıtlar:
+
+- `CK_RequestLogs_ActorType_Enum` — `CHECK ((("ActorType")::text = ANY ((ARRAY['Customer'::character varying, 'BoatOwner'::character varying, 'Platform'::character varying, 'System'::character varying, 'Anonymous'::character varying])::text[])))`
 
 ## `RescheduleRequests`
 
