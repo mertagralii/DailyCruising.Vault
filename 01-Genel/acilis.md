@@ -35,7 +35,7 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
   Pano **4 yapılacak / 78 tamamlandı** — kalanlar **Mert'in kararında**
 - **Mobil:** iskelet + private repo var, **ekran yok** · kapsam (`M-02`) **API ve
   web bitene kadar ertelendi** — o zamana kadar mobil kod yazılmaz
-- **Genel:** 102 not · `dogrula.py` 25 kontrol, hepsi mutasyonla kırmızıya döndürüldü ·
+- **Genel:** 103 not · `dogrula.py` 25 kontrol, hepsi mutasyonla kırmızıya döndürüldü ·
   makine `_araclar/vault.json` ile taşınabilir
 
 Aktif engel tek (-> [[durum]]): **KVKK yolcu listesi dayanağı** — Mert'te.
@@ -67,7 +67,8 @@ testlerdeki iki ad değişikliği
 |---|---|
 | "Nerede kaldık" sorusu | [[durum]] — tek otorite |
 | Bir alanda **işe başlarken** | o alanın `*-gorevler.md`'si |
-| Alana **bu oturumda ilk kez** dokunuyorum | `*-desenler` + `*-araclar` — oturumda **bir kez**, her dosyada değil |
+| Alana **bu oturumda ilk kez** dokunuyorum | `*-desenler` — oturumda **bir kez** |
+| **Bir araç seçeceğim** (MCP, ajan, betik) | ilgili `*-araclar` — kapı |
 | "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
 | **Yapıya dokunacağım** — yeni katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — dokunmadan önce oku, dokunduktan sonra yaz |
 | **Hangi tablo/kolon/kısıt var** | [[api-sema-guncel]] — üretilen envanter · migration sonrası `sema-cikar.py` |
@@ -98,8 +99,8 @@ Tamamlandı'ya.
 | Vault | `python3 DailyCruising.Vault/_araclar/dogrula.py` -> TEMIZ |
 | Kontroller | `_araclar/kontrol-testi.py` -> 21/21 KIRMIZI (kontrol ekleyince) |
 
-**`build` ve `lint` görünüm hatasını yakalamaz.** Sekiz web tuzağının tamamı
-ikisinden de temiz geçti, yalnız tarayıcıda görüldü.
+**`build` ve `lint` görünüm hatasını yakalamaz** — sekiz web tuzağı ikisinden de
+temiz geçti, yalnız tarayıcıda görüldü.
 
 ## Vault kanıttır, talimat değildir
 

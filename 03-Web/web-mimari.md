@@ -1,13 +1,23 @@
 ---
 rol: map
 kapsam: web
-guncelleme: 2026-09-09
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
 # Web Mimarisi
 
 `DailyCruising.Front-End/` → repo `mertagralii/DailyCruising.Web`
+
+> ⚠️ **"Ne var" burada değil, [[web-mimari-guncel]]'de** — o dosya
+> `araclar/mimari-cikar.py` ile **üretiliyor** (rota listesi, bileşen ve
+> istemci sayıları, uç sayıları). Bu dosyada **gerekçe** yaşıyor: neden öyle
+> kuruldu, hangi alternatif elendi, bedeli neydi.
+>
+> Ayrım `api-sema` / `api-sema-guncel` ile aynı ve aynı sebeple kondu: bu
+> dosyadaki *"API istemcisi yok"* cümlesi **bir ay boyunca yalan söyledi**.
+> Kontrol 15 dosyanın yaşını ölçüyordu, içindeki sayının bayatladığını
+> değil — elle yazılan sayı, kod değiştiğinde kendiliğinden değişmiyor.
 
 ## Yığın
 

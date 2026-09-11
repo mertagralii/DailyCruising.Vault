@@ -1145,6 +1145,7 @@ Kısıtlar:
 | `CreatedByUserId` | uuid | evet |  |
 | `CreatedAt` | timestamp with time zone | hayır |  |
 | `ResolvedAt` | timestamp with time zone | evet |  |
+| `TokenSha256` | character varying | hayır | `''::character varying` |
 
 Kısıtlar:
 

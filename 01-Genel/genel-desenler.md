@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: genel
-guncelleme: 2026-09-09
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
@@ -956,7 +956,6 @@ yakaladı: *"beyan gününden beri kaç commit"* aynı gün commit atıp sonunda
 yazan oturumu cezalandırdı; *"dosyanın son yazılma anı"* ise dosyaya dokunmayı
 aklanma sayıp kontrolü tamamen susturdu. Kalan ölçüt gün karşılaştırması.
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Yazılı desen okunmuyor, ölçülen desen çalışıyor
 
@@ -984,3 +983,50 @@ girer; her kuralın `kaynak` alanı onu gösterir. Uydurulmuş kural, ölçülse
 kuraldır sayılmaz — kimsenin bedelini ödemediği kural ilk yoğun günde delinir.
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Ölçümü ölçen bir şey yok — üç kontrol sorusu
+
+Ürün kodunu ölçümle yakalıyoruz. **Ölçüm aracını yakalayan bir şey yok** ve
+2026-09-11'de web oturumu bunu dört kez yaşadı: zsh sözcük bölmesi, çöken bir
+betiğin yarım çıktısı, bayat bir API süreci, henüz koşmamış zamanlanmış iş.
+Üçünde hata kendisindeydi, ikisinde **yanlış rapor vermekten son anda döndü.**
+
+Bu alan bağımsızdır — bu yüzden web'den buraya taşındı. Bir ölçüm almadan önce:
+
+1. **Beklediğim kadar satır/alan geldi mi?** Sayıyla doğrula.
+2. **İki farklı girdi aynı sonucu veriyorsa, gerçekten iki farklı istek mi attım?**
+3. **Ölçtüğüm süreç, ölçmek istediğim kodu mu çalıştırıyor?** (uptime, commit
+   zamanı, işin periyodu)
+
+Ve tek kullanımlık betikte bile: çıktı **sayıyla doğrulanır** ya da çökme açıkça
+*"ölçüm başarısız"* diye basılır. ⚠️ *"Traceback ekranda görünürdü"* yetmiyor —
+**makul görünen yarım çıktı, görünmeyen bir traceback'ten daha çok ikna ediyor.**
+
+Bu vault'ta aynı sınıfın kanıtı bol: bu yıl yazılan her ölçüm aracı ilk koşumunda
+yalan söyledi ve hepsini bağımsız bir kör test yakaladı → [[genel-kararlar]]
+
+## `araclar` bölmesinin tetikleyicisi değişti — ölçümle
+
+2026-09-11 ölçümü (`okunma.py`), dört `araclar` dosyası:
+
+| Dosya | Yazıldığı oturum dışında okunma |
+|---|---|
+| `web-araclar` | **2** |
+| `api-araclar` | 0 |
+| `genel-araclar` | 0 |
+| `mobil-araclar` | 0 |
+
+Web oturumu *"web-araclar'ı kapat, 16 gündür açmadım"* dedi. **Ölçüm bunun
+tersini söyledi:** dördünün tek dışarıdan okunanı o. Yani sorun dosyada değil
+**tetikleyicide** — üçü birden ölü.
+
+Eski tetikleyici *"alana ilk dokunuş"*tu ve fiilen hiç ateşlenmiyordu; web aynı
+gün **üç araç kararı** verdi ve hiçbirinde açmadı, *"aklıma bile gelmedi"* dedi.
+Bu, 2026-09-05'te `desenler` için öğrenilen dersin aynısı: **başlangıç okuması
+çalışmıyor, kapı çalışıyor.**
+
+Yeni tetikleyici bir kapı: **"bir araç seçeceğim"** — hangi MCP, hangi ajan,
+hangi betik biçimi. İzlenmeye devam ediyor; bu tetikleyiciyle de okunmazsa
+bölme kapatılır. **İzlenimle budama yapılmadı, ölçümle tetikleyici değişti.**
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]

@@ -247,7 +247,9 @@
       "  yoksa -> uretilen dosyanin `guncelleme` beyani ile kod reposunun",
       "           `izlenen` yollarina dokunan son commit'in GUNU karsilastirilir",
       "Betigi dogrula.py CALISTIRMAZ (veritabani/ag gerektirebilir); yalnizca",
-      "bayatligi olcer ve komutu soyler."
+      "bayatligi olcer ve komutu soyler.",
+      "izlenen: [{alan, yollar}] — bir uretici baska bir alanin",
+      "reposundaki dosyaya da bagli olabilir (web mimarisi openapi.json'a)."
     ],
     "kaynaklar": [
       {
@@ -256,9 +258,37 @@
         "betik": "araclar/sema-cikar.py",
         "komut": "PSQL_URI=... python3 araclar/sema-cikar.py",
         "izlenen": [
-          "*Migrations/*"
+          {
+            "alan": "02-API",
+            "yollar": [
+              "*Migrations/*"
+            ]
+          }
         ],
         "tetikleyici": "migration uygulandi"
+      },
+      {
+        "hedef": "03-Web/web-mimari-guncel.md",
+        "alan": "03-Web",
+        "betik": "araclar/mimari-cikar.py",
+        "komut": "python3 araclar/mimari-cikar.py",
+        "izlenen": [
+          {
+            "alan": "03-Web",
+            "yollar": [
+              "src/app/*",
+              "src/components/*",
+              "src/lib/api/*.ts"
+            ]
+          },
+          {
+            "alan": "02-API",
+            "yollar": [
+              "openapi.json"
+            ]
+          }
+        ],
+        "tetikleyici": "rota/bilesen/istemci eklendi veya openapi.json degisti"
       }
     ]
   }

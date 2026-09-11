@@ -1129,23 +1129,40 @@ for _k25 in _U25:
         olcumler.append(
             f"kontrol 25 · {_k25['hedef']}: kod reposu yok ({_repo25}) — OLCULEMEDI")
         continue
-    _arg25 = ["log", "-1", "--format=%cs", "--"] + list(_k25.get("izlenen") or ["."])
-    _son25 = (_git_repo(_repo25, _arg25) or "").strip()
-    if not _son25:
+    # izlenen: [{alan, yollar}] — bir uretici birden fazla reponun
+    # degisimine bagli olabilir. Web mimarisi kendi kaynak agacina VE API'nin
+    # openapi.json'ina bagli; tek repoya bakan olcut onu kacirirdi.
+    _son25, _kaynak25 = "", []
+    _olculemedi25 = []
+    for _iz in _k25.get("izlenen") or []:
+        _ialan = AYAR["alanlar"].get(_iz.get("alan"), {})
+        _irepo = VAULT.parent / (_ialan.get("kod_repo") or "")
+        if not _ialan.get("kod_repo") or not _irepo.exists():
+            _olculemedi25.append(f"{_iz.get('alan')}: repo yok")
+            continue
+        _g = (_git_repo(_irepo, ["log", "-1", "--format=%cs", "--"]
+                        + list(_iz.get("yollar") or ["."])) or "").strip()
+        if not _g:
+            _olculemedi25.append(f"{_iz.get('alan')}: izlenen yollarda commit yok")
+            continue
+        _kaynak25.append(f"{_iz['alan']}:{_g}")
+        _son25 = max(_son25, _g)
+    if _olculemedi25:
         olcumler.append(
-            f"kontrol 25 · {_k25['hedef']}: izlenen yollarda "
-            f"({', '.join(_k25.get('izlenen') or ['.'])}) hic commit yok — OLCULEMEDI")
+            f"kontrol 25 · {_k25['hedef']}: {'; '.join(_olculemedi25)} — KISMEN OLCULEMEDI")
+    if not _son25:
+        olcumler.append(f"kontrol 25 · {_k25['hedef']}: hic kaynak olculemedi — OLCULEMEDI")
         continue
     if _son25 > _t25:
         sorunlar.append(
             f"[uretilen dosya bayat] {_k25['hedef']}: beyan {_t25}, kaynak "
-            f"({', '.join(_k25.get('izlenen') or ['.'])}) {_son25}'de degisti. "
+            f"({', '.join(_kaynak25)}) icinde en yeni {_son25}. "
             f"Tetikleyici: {_k25['tetikleyici']} -> `{_k25['komut']}` calistirilmali. "
             f"Uretilen dosya elle duzeltilmez")
     else:
         olcumler.append(
-            f"kontrol 25 · {_k25['hedef']}: beyan {_t25} · kaynak son degisim "
-            f"{_son25} — uretim guncel")
+            f"kontrol 25 · {_k25['hedef']}: beyan {_t25} · kaynaklar "
+            f"{' '.join(_kaynak25)} — uretim guncel")
 
 
 print(f"Vault: {VAULT}")

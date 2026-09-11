@@ -31,8 +31,9 @@ Kök klasör git reposu **değil**. git komutlarını ilgili alt klasörde çal�
 | **"Nerede kaldık"** sorusu | `01-Genel/durum.md` — **tek otorite** |
 | `/compact` sonrası ilk iş | `01-Genel/acilis.md` + `01-Genel/durum.md` |
 | Bir alanda **işe başlarken** | o alanın `*-gorevler.md`'si — görevi Yapılıyor'a taşımak için |
-| O alana **bu oturumda ilk kez** dokunuyorum | `*-desenler.md` + `*-araclar.md` — oturumda bir kez, her dosyada değil |
-| **Bir deseni çiğnemek üzereyim** — mock veri basacağım, boş tablo göstereceğim, `dangerouslySetInnerHTML` yazacağım, elle tip yazacağım | ilgili `*-desenler.md` — **kapı burada**, gerekçesi orada yazıyor |
+| O alana **bu oturumda ilk kez** dokunuyorum | `*-desenler.md` — oturumda bir kez, her dosyada değil |
+| **Bir araç seçeceğim** — hangi MCP, hangi ajan, hangi ölçüm betiği | ilgili `*-araclar.md`. ⚠️ Eski tetikleyici *"alana ilk dokunuş"*tu ve ölçüldü: hiç ateşlenmiyordu → [[genel-desenler]] |
+| **Bir deseni çiğnemek üzereyim** — mock veri basacağım, boş tablo göstereceğim, `dangerouslySetInnerHTML` yazacağım, elle tip yazacağım, **yeni bir uç öneki çağıracağım** | ilgili `*-desenler.md` — **kapı burada**, gerekçesi orada yazıyor |
 | **Hangi tablo/kolon/kısıt var** sorusu | `02-API/api-sema-guncel.md` — **üretilen** envanter, 84 tablonun tamamı |
 | **Şema neden böyle tasarlandı** sorusu | `02-API/api-sema.md` — `rol: tasarim-kaydi`, 24 Ağustos onayı ve gerekçesi. **Envanter değildir** |
 | **26 Ağu – 4 Eyl arasında Claude'un kendi yetkisiyle aldığı bir karar** soruluyor | `02-API/api-benim-kararlarim.md` — **arşiv**; işlevi 4 Eylül'de bitti (29 soru cevaplandı), yeni giriş eklenmez |
