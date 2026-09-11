@@ -132,6 +132,8 @@ def main():
     atif = defaultdict(set)
     cagri = defaultdict(int)     # ad -> toplam dokunma sayisi
     belirsiz = defaultdict(int)  # okuma mi yazma mi ayirt edilemeyen Bash dokunusu
+    tam_okuma = defaultdict(set)    # bastan sona acildi: belge olarak okundu
+    kismi_okuma = defaultdict(set)  # satir araligi: icinde bir sey arandi
     son = {}
     dosyalar = sorted(KAYITLAR.glob(f"{KAYIT_DESENI}/*.jsonl"))
     satir_sayisi = 0
@@ -170,6 +172,21 @@ def main():
                                     yazan[ad].add(oturum)
                                 elif arac in OKUMA_ARAC:
                                     okuyan[ad].add(oturum)
+                                    # TAM mi KISMI mi: 2026-09-11'de backend
+                                    # oturumu ayrimi bildirdi — dosyayi
+                                    # TETIKLEYICI ateslediginde degil, bir
+                                    # komutun tam metnini ARADIGI icin acmis
+                                    # (satir 100-130, sonra 130-160). Ikisi
+                                    # farkli sey soyler: tetikleyiciyle acilan
+                                    # kural calisiyor demek, arama sonucu acilan
+                                    # "icerik degerli ama kural olu" demek.
+                                    # Niyet olculemez; VEKIL olcut satir araligi:
+                                    # offset/limit ile acmak avlanmaktir, bastan
+                                    # sona okumak belge okumaktir.
+                                    if girdi.get("offset") or girdi.get("limit"):
+                                        kismi_okuma[ad].add(oturum)
+                                    else:
+                                        tam_okuma[ad].add(oturum)
                                 elif arac in ("Bash", "BashOutput"):
                                     yazma_d = re.compile(
                                         r"(>>?\s*[^\s|;&]*" + re.escape(ad) +
@@ -180,6 +197,10 @@ def main():
                                         yazan[ad].add(oturum)
                                     elif OKUMA_KOMUT.search(metin):
                                         okuyan[ad].add(oturum)
+                                        if re.search(r"sed -n|head -|tail -|grep", metin):
+                                            kismi_okuma[ad].add(oturum)
+                                        else:
+                                            tam_okuma[ad].add(oturum)
                                     else:
                                         belirsiz[ad] += 1   # susmasin diye sayilir
                                 else:
@@ -196,7 +217,9 @@ def main():
     for ad, yol in ad_yol.items():
         disaridan = okuyan[ad] - yazan[ad]
         satirlar.append((len(disaridan), len(okuyan[ad]), len(yazan[ad]),
-                         len(atif[ad]), son.get(ad, "-"), yol, ad))
+                         len(atif[ad]), son.get(ad, "-"), yol, ad,
+                         len(tam_okuma[ad] - yazan[ad]),
+                         len(kismi_okuma[ad] - yazan[ad])))
     satirlar.sort()
 
     okuma_degerli = [s for s in satirlar if rol(s[5]) not in YAZMA_DEGERLI_ROLLER]
@@ -214,17 +237,20 @@ def main():
 
     def yaz(baslik, kume):
         print(f"── {baslik} ({len(kume)})")
-        for d, o, y, at, s, yol, ad in kume:
+        for d, o, y, at, s, yol, ad, tm, km in kume:
             im = " [otomatik yuklenir]" if ad in OTOMATIK else ""
-            print(f"   disaridan-okuma {d:>3} · okuma {o:>3} · yazma {y:>3} · "
-                  f"atif {at:>3} · son {s} · {yol}{im}")
+            # tam/kismi: VEKIL olcut. Bastan sona acmak "belge okundu",
+            # satir araligiyla acmak "icinde arama yapildi" demeye yakin.
+            # Niyeti olcmez — ama kural mi ise yariyor icerik mi, ayirmaya yarar.
+            print(f"   disaridan-okuma {d:>3} (tam {tm:>2} · kismi {km:>2}) · "
+                  f"okuma {o:>3} · yazma {y:>3} · atif {at:>3} · son {s} · {yol}{im}")
         print()
 
     yaz("OKUMA-DEGERLI ama yazildigi oturum disinda HIC OKUNMAMIS", hic)
     if yalniz_atif:
         print("   ⚠️ Bunlarin " + str(len(yalniz_atif)) +
               " tanesine ATIF verilmis ama dosya hic acilmamis:")
-        for _, _, _, at, _, yol, _ in yalniz_atif:
+        for _, _, _, at, _, yol, *_ in yalniz_atif:
             print(f"      {at} atif · {yol}")
         print("   Okunmadan verilen atif, belgesiz koddan kotudur -> [[genel-desenler]]")
         print()

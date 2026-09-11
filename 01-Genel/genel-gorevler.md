@@ -23,9 +23,16 @@ tamamlanamaz.**
       **Taban (2026-09-11, `okunma.py`):** yazıldığı oturum dışında okunma —
       `web-araclar` 2 · `api-araclar` 0 · `genel-araclar` 0 · `mobil-araclar` 0
       **Tetikleyici:** bir sonraki `okunma.py` koşumu (vault oturumunun takip turu)
-      Kabul: dört dosyadan **en az ikisi** dışarıdan okunmuş çıkarsa tetikleyici
-      işe yaradı, görev kanıtla kapanır. Taban aynı kalırsa bölme **kapatılır** ve
-      yaşayan içeriği `*-desenler`'e taşınır — üçüncü bir tetikleyici denenmez
+      Kabul **üç sonuçlu** (backend'in ayrımı üzerine, 2026-09-11): ölçüm
+      `tam`/`kismi` kolonlarıyla birlikte okunur →
+      · **tam okuma artmışsa** → tetikleyici çalıştı, görev kanıtla kapanır
+      · **yalnız kısmi okuma varsa** → içerik değerli ama kural ölü:
+        tetikleyici okuma tablosundan **kaldırılır**, dosya aranabilir başvuru
+        olarak kalır (rolü `map` → başvuru; kapı olduğu iddiası bırakılır)
+      · **ikisi de sıfırsa** → bölme **kapatılır**, yaşayan içerik
+        `*-desenler`'e taşınır. Üçüncü bir tetikleyici denenmez
+      ⚠️ "Kapat" ile "tetikleyicisini kaldır ama dosyayı bırak" aynı şey değil —
+      ilk taban ölçümünde bu ayrım yoktu, `okunma.py` o yüzden genişletildi
 
 
 - [ ] **G-16** SaaS / abonelik ürününe dönüştürme · öncelik: **EN SON**

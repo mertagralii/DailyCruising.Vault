@@ -1054,7 +1054,6 @@ değil. Karşı taraf varsayımını okuyamaz; okuyamadığı varsayım, ilk ger
 kırılır. Bu vault'ta üreticiler artık `[{alan, yollar}]` alıyor — çünkü ilk gerçek
 vaka bunu gerektirdi ve sözleşme onu söylemiyordu.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Gerekçeyi koda yazmak bayatlamayı çözmez, yerini değiştirir
 
@@ -1082,3 +1081,32 @@ adı değişirse derleyici konuşur.
 yazıldı → [[genel-kararlar]]
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Açılma sayısı, açılma sebebini söylemez
+
+2026-09-11: `okunma.py`'nin ölçtüğü şeyin ne olmadığı iki kez birden görüldü.
+
+**① Aynı sayı iki farklı şey anlatabilir.** Backend oturumu `api-araclar`'ı açtı
+ve işine yaradı — ama tetikleyici ateşlediği için değil, **bir komutun tam metnini
+aradığı için**. Kendi ifadesi: *"o okuma, tetikleyici tablosunun değil, dosyanın
+arama sonucu bulunabilir olmasının eseri."* İkisi zıt sonuç verir:
+
+- tetikleyiciyle açıldıysa → **kural çalışıyor**
+- arama sonucu açıldıysa → **içerik değerli, kural ölü**
+
+Niyet ölçülemez. Onun yerine bir **vekil ölçüt** eklendi: dosya baştan sona mı
+açıldı (belge okundu), yoksa satır aralığıyla mı (içinde arandı). Çıktıda
+`tam N · kismi M` olarak görünüyor. Vekil olduğu yazılıdır — niyeti ölçmez.
+
+**② Yazan oturumun okuması görünmez.** Ölçüt *"yazan oturumların dışında"*dır,
+çünkü kendi yazdığını okumak notun işe yaradığını göstermez. Ama backend bugün
+`api-araclar`'ı hem okudu hem yazdı, ve ölçüm onu **0 dışarıdan okuma** gösterdi.
+Okuma gerçekti ve işe yaradı; ölçüt onu **eksik saydı.**
+
+⚠️ **Ders, bu vault'ta üçüncü kez aynı yerden geliyor:** ölçüt, ölçmediği şey
+yazılmadıkça olduğundan güçlü sanılıyor. Kontrol 23 tarihe bakıyor içeriğe
+bakmıyordu; kontrol 24 yorumları sayıyordu; `okunma.py` açılmayı sayıyor ama
+sebebini ve yazan oturumun okumasını saymıyor. **Her ölçütün yanında ölçmediği
+yazılmazsa, o ölçüt bir süre sonra kanıt sanılır.**
+
+İlgili: [[genel-esszamanli-oturumlar]]
