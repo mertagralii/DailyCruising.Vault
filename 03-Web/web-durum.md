@@ -1137,7 +1137,7 @@ tarayıcıda doğrulandı: finans · 2026-09-12 · src/components/panel/admin/fi
 tarayıcıda doğrulandı: aktivite kayıtları · 2026-09-11 · src/components/panel/admin/activity.tsx · ccb8730
 tarayıcıda doğrulandı: etkinlik listesi · 2026-09-11 · src/components/panel/admin/activity-log.tsx · ccb8730
 tarayıcıda doğrulandı: reklam yönetimi · 2026-09-11 · src/components/panel/admin/adverts.tsx · c1e22c6
-tarayıcıda doğrulandı: log kayıtları · 2026-09-11 · src/components/panel/admin/logs.tsx · ccb8730
+tarayıcıda doğrulandı: log kayıtları · 2026-09-12 · src/components/panel/admin/logs.tsx · d0bb7aa
 tarayıcıda doğrulandı: e-posta yönetimi · 2026-09-11 · src/components/panel/admin/email.tsx · ccb8730
 tarayıcıda doğrulandı: sms yönetimi · 2026-09-11 · src/components/panel/admin/sms.tsx · c1e22c6
 tarayıcıda doğrulandı: sms gönderimleri · 2026-09-11 · src/components/panel/admin/sms-log.tsx · c1e22c6
@@ -1183,13 +1183,12 @@ tarayıcıda doğrulandı: rezervasyonlar · 2026-09-12 · src/components/panel/
 tarayıcıda doğrulandı: müsaitlik yönetimi · 2026-09-12 · src/components/panel/admin/availability.tsx · 0fd5356
 tarayıcıda doğrulandı: personel listesi · 2026-09-12 · src/components/panel/admin/staff.tsx · 0fd5356
 tarayıcıda doğrulandı: rol yönetimi · 2026-09-12 · src/components/panel/admin/roles.tsx · 0fd5356
-tarayıcıda doğrulanmadı: kupon yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin/coupons.tsx
-tarayıcıda doğrulanmadı: iş sağlığı · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/job-health.tsx
-tarayıcıda doğrulanmadı: yat işletmeleri · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin-panel-view.tsx
-tarayıcıda doğrulanmadı: destek talepleri · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin-panel-view.tsx
-tarayıcıda doğrulanmadı: yorum yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin-panel-view.tsx
-tarayıcıda doğrulanmadı: tekne yönetimi · bu defter açılmadan önce görülmüş olabilir, kaydı yok · src/components/panel/admin-panel-view.tsx
-
+tarayıcıda doğrulandı: kupon yönetimi · 2026-09-12 · src/components/panel/admin/coupons.tsx · 0fd5356
+tarayıcıda doğrulandı: iş sağlığı · 2026-09-12 · src/components/panel/job-health.tsx · 0fd5356
+tarayıcıda doğrulandı: yat işletmeleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 0fd5356
+tarayıcıda doğrulandı: destek talepleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 0fd5356
+tarayıcıda doğrulandı: yorum yönetimi · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 0fd5356
+tarayıcıda doğrulandı: tekne yönetimi · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 0fd5356
 ⚠️ **Son sekizi "doğrulandı" diye yazmadım ve yazmamak bilinçli.** Bu
 ekranların bir kısmı önceki oturumlarda Mert giriş yapmışken açıldı, ama
 **hangisinin hangi gün** açıldığının kaydı yok — defter bugün açıldı.
@@ -1457,4 +1456,38 @@ kopyalanmadı**; değiştirenin adı da kullanıcı satırından çözülüyor.
 Yanlış değildi ama eksikti: **kopyalamamanın karşılığı eksikliğin kalıcı
 olması değil, doğru yerin cevap vermesi oldu.** Eksikliği yazmak, onu
 görünür kılıp çözdürdü.
+
+## 2026-09-12 · defterdeki on iki boş satır kapandı
+
+Hepsi tarayıcıda **veriyle** görüldü: genel bakış · müşteri listesi ·
+rezervasyonlar · müsaitlik · personel · roller · destek · yorum · tekne
+yönetimi · kupon · iş sağlığı · belge kuyruğu.
+
+**Bir kusur çıktı** (görünmeyen çubuklar, üstteki bölümde) ve iki şey
+**kusur değildi** — ama ikisini de ölçmeden anlayamazdım:
+
+⚠️ **`rezervasyonlar` ve `musaitlik` bir kez "çıkış yapmış" gibi açıldı.**
+Kod değil, API'nin o an yeniden başlaması. Ama ortaya çıkardığı davranış
+gerçek bir kusur ve ayrı notta → [[web-ulasilamayan-api-cikis-gibi]]
+
+⚠️ **Tekne kartlarında kapak görselleri boş.** Kart *"1 görsel"* diyor,
+kutu gri. Ölçüldü: `next/image` **500** dönüyor çünkü nesne deposu
+(MinIO, `:9000`) **çalışmıyor**. Kod tarafında yapacak bir şey yok ve
+bozulma doğru yönde: kart kırık görsel ikonu değil sakin bir gri kutu
+basıyor. Ortam notu, kusur değil.
+
+### Kayıp sayacı ekrana bağlandı
+
+Back-end istek günlüğünde iki kusur buldu: düşen kayıt sayacı **hiç
+artmıyordu** (`DropWrite` kipinde `TryWrite` dolu sırada da `true`
+dönüyor) ve sayacı **hiçbir yer okumuyordu**. İkincisi benim tarafıma
+düşüyordu; `droppedSinceStart` artık yanıtta ve ekranda.
+
+⚠️ Kutu **listenin üstünde** ve yalnız sıfırdan büyükken basılıyor.
+*"0 kayıp"* yazmak, sayacın **süreçle sıfırlandığı** gerçeğini gizleyen
+bir güvence olurdu; o ayrım dipnotta tek cümleyle duruyor. Uç alanı hiç
+göndermezse de sessiz — bilinmeyen hakkında iddia üretmiyor.
+
+Ölçüldü: uç `droppedSinceStart: 0` dönüyor, 409 istek. Uyarı doğru
+biçimde **görünmüyor**.
 
