@@ -112,7 +112,7 @@ def main():
 
     metin = ACILIS.read_text(encoding="utf-8")
     yeni = metin
-    degisenler, olculemeyenler = [], []
+    degisenler, olculemeyenler, kor = [], [], []
 
     # 1) pano sayimlari — her alanin kendi madde blogunda
     for alan, etiket in A.get("alan_etiketleri", {}).items():
@@ -153,10 +153,32 @@ def main():
             if eski != yenisi:
                 degisenler.append(f"{kelime}: {eski.strip()} -> {yenisi.strip()}")
             return yenisi
+        if not re.search(birim["desen"], yeni):
+            kor.append(f"birim '{birim['kelime']}'")
         yeni = re.sub(birim["desen"], _birim, yeni)
+
+    _pano_toplam = sum(len(re.findall(d, metin, re.I))
+                       for d in A.get("pano_desenleri", []))
+    if A.get("pano_desenleri") and not _pano_toplam:
+        # Alan bazinda olculmez: bir alanin maddesinde pano sayisi bulunmamasi
+        # MESRU (01-Genel boyle). Hicbir yerde bulunmamasi ariza.
+        kor.append("pano (hicbir alanda)")
 
     for o in olculemeyenler:
         print(f"OLCULEMEDI · {o} — metne dokunulmadi")
+
+    # SESSIZ KORLUK: bir desen acilis'te HIC eslesmezse, "degisiklik yok" ile
+    # "goremiyorum" ayni cikti uretir — ve ikincisi felakettir, cunku betik
+    # "zaten guncel" der. 2026-09-11'de olculdu: acilis'in bicimi bozulunca
+    # betik tam bunu dedi ve cikis kodu 0 verdi.
+    # Web oturumunun kendi betiklerinde kapattigi sinifin aynisi: desen hic
+    # eslesmiyorsa sayi degil ARIZA bildirilir.
+    if kor:
+        for k in kor:
+            print(f"BOZUK · {k} deseni acilis.md'de HIC eslesmedi — "
+                  f"dosyanin bicimi mi degisti, desen mi eski?")
+        print("Uretici olcemedigi icin durdu; 'guncel' demiyor.")
+        return 2
 
     if yeni == metin:
         print("acilis.md zaten guncel — degisiklik yok")

@@ -1275,6 +1275,20 @@ sayılmalıdır. Okunamayan satırı görmeyen ölçüm, azaldığını bile sö
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
+## Ölçümü boru hattından okuma — `$?` son komutu söyler
+
+2026-09-11: sözcük bölme tuzağını `acilis`'e yazdıktan **on dakika sonra**
+kendim `python3 betik | tail -3; echo $?` yazdım ve çıkış kodunu 0 okudum.
+Betik 2 dönüyordu; `$?` boru hattının **son** komutunun (`tail`) kodudur.
+
+Yani üç oturumun bugün ödediği bedelin dördüncüsünü, kuralı yazan kişi olarak
+ben ödedim. Bu, kuralın yanlış olduğunu değil — **kuralı bilmenin yetmediğini**
+gösteriyor. Kapı, kapı gibi hissedilmeyen anda ateşlenmiyor; ben de "ölçüm
+alıyorum" diye düşünürken bir kabuk deyimi yazdım.
+
+**Karşılığı:** çıkış kodu ölçülecekse komut **boru hattına sokulmaz**
+(`betik >/dev/null; echo $?`), ya da Python'dan `subprocess` ile koşulur.
+
 ## Kapı, kapı gibi hissedilmeyen anda ateşlenmez
 
 2026-09-11 gecesi web oturumu kabukta sözcük bölme tuzağına **ikinci kez** düştü

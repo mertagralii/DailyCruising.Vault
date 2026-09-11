@@ -891,6 +891,11 @@ if _A22 and _acilis_yol.exists():
                     f"hesapliyor ({'; '.join(_istek) or 'ayrinti yok'}). "
                     f"`python3 _araclar/acilis-guncelle.py` calistirilmali — "
                     f"elle yazilan sayi bir sonraki degisiklikte bayatlar")
+            elif _u.returncode == 2:
+                sorunlar.append(
+                    f"[uretici kor] {_rel_a}: uretici desenlerinden biri dosyada "
+                    f"HIC eslesmiyor — sayilar denetlenmiyor demektir. Ciktisi: "
+                    + "; ".join(x for x in _u.stdout.split("\n") if x.startswith("BOZUK")))
             elif _u.returncode != 0:
                 olcumler.append(
                     f"kontrol 22 · uretici hata verdi (kod {_u.returncode}) "
