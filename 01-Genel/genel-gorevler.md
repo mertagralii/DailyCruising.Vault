@@ -22,7 +22,15 @@ tamamlanamaz.**
       çevrildi → [[genel-desenler]]. Değişiklik davranışı değiştirdi mi, bilinmiyor.
       **Taban (2026-09-11, `okunma.py`):** yazıldığı oturum dışında okunma —
       `web-araclar` 2 · `api-araclar` 0 · `genel-araclar` 0 · `mobil-araclar` 0
-      **Tetikleyici:** bir sonraki `okunma.py` koşumu (vault oturumunun takip turu)
+      **Tetikleyici düzeltildi (2026-09-11, aynı gün):** ilk hâli *"bir sonraki
+      `okunma.py` koşumu"*ydu ve Mert aynı gün çalıştırınca **hemen ateşledi** —
+      pencere saatlerdi, sayılar tabanla birebir aynı çıktı. Birkaç saatlik
+      örnekle "tetikleyici işe yaramadı" demek gürültüyü kanıt saymak olurdu.
+      Yeni tetikleyici **hacim**: `okunma.py` çıktısındaki oturum kaydı sayısı
+      **192'den 220'ye** çıktığında ölç (≈28 yeni oturum). Tarih değil hacim,
+      çünkü ölçülen şey davranış ve davranış oturum başına birikiyor.
+      **1. ölçüm (2026-09-11, 192 kayıt):** web 2 (tam 2 · kısmi 1) · api 0 ·
+      genel 0 · mobil 0 — **tabanla aynı, karar için yetersiz**
       Kabul **üç sonuçlu** (backend'in ayrımı üzerine, 2026-09-11): ölçüm
       `tam`/`kismi` kolonlarıyla birlikte okunur →
       · **tam okuma artmışsa** → tetikleyici çalıştı, görev kanıtla kapanır
