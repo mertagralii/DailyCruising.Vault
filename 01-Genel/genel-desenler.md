@@ -1098,7 +1098,32 @@ Niyet ölçülemez. Onun yerine bir **vekil ölçüt** eklendi: dosya baştan so
 açıldı (belge okundu), yoksa satır aralığıyla mı (içinde arandı). Çıktıda
 `tam N · kismi M` olarak görünüyor. Vekil olduğu yazılıdır — niyeti ölçmez.
 
-**② Yazan oturumun okuması görünmez.** Ölçüt *"yazan oturumların dışında"*dır,
+**② Ölçüm birimi yanlış seçilmişti ve oranı yarıya indirmişti.** İlk açıklamam
+şuydu: *"backend aynı oturumda o dosyaya yazdı, o yüzden sayılmadı."* Backend
+ölçtü ve **çürüttü** — dosyaya 5 Eylül'den beri yazılmamıştı. Gerçek sebep:
+`okunma.py` oturum kimliğini **tüm geçmiş boyunca** biriktiriyordu ve o oturum
+24 Ağustos'ta yazmıştı. Oturumlar haftalarca yaşadığı için, bir kez yazan oturum
+bir daha asla "dışarıdan okuyan" sayılamıyordu.
+
+Birim `(oturum, gün)` yapıldı: *"yazmadığı bir günde okumak"* dışarıdan okuma
+sayılıyor. Etkisi tek satırlık düzeltme için büyük:
+
+| | eski birim | düzeltilmiş |
+|---|---|---|
+| Dışarıdan okunan dosya | 24/82 | **41/82** |
+| `api-araclar` | 0 | **5** |
+
+⚠️ Buradan iki sonuç çıkıyor. Birincisi: *"sistem okumayla değil denetimle iş
+görüyor"* dediğim ölçüm **yanlış ölçüttendi**; gerçek oran yarı yarıya.
+İkincisi ve daha önemlisi: **sıfır, okunmadığını değil, aracın görmediğini
+söyleyebilir.** Sıfırdan çıkarım yapmak, varlıktan çıkarım yapmaktan kırılgan.
+
+⚠️ Bu turda üç adımda üç kez aynı hata yapıldı: backend kaynağı **hatırladı** ve
+yanıldı; ben onun bildirimini **ölçmeden** tekrarladım; sonra düzeltmenin
+**gerekçesini** ölçmeden yazdım ve backend onu da çürüttü. Her adımda düzelten
+şey ölçüm oldu.
+
+**③ Yazan oturumun okuması hâlâ görünmez** (aynı gün içinde): Ölçüt *"yazan oturumların dışında"*dır,
 çünkü kendi yazdığını okumak notun işe yaradığını göstermez. Ama backend bugün
 `api-araclar`'ı hem okudu hem yazdı, ve ölçüm onu **0 dışarıdan okuma** gösterdi.
 Okuma gerçekti ve işe yaradı; ölçüt onu **eksik saydı.**

@@ -13,6 +13,18 @@ durum: guncel
 
 ## Nerede duruyoruz
 
+**2026-09-11 (6) — `A-164` de kapandı: ödeme tekrar denenebiliyor.**
+`dotnet test` **775/775**, son commit `3c7e470`.
+
+Canlı (`AWHJQ6UJ`): üç `start` çağrısı da **200**, üçüncüsü tamamlandı,
+rezervasyon `Paid`, defter **4 satır toplam 0** — tek tahsilat. Ödenmişken
+`start` **400** dönüyor, yani mükerrer tahsilat kapısı hâlâ kapalı.
+
+Web tarafı da bitti (`6669492`): `/tarih-degisikligi` sayfası bağlı,
+`TAHSILAT_HAZIR` açık. Kalan tek şey Mert'in girişiyle uçtan uca panel koşusu.
+
+---
+
 **2026-09-11 (5) — `A-163` TAMAM: taşıma farkı uçtan uca tahsil ediliyor.**
 `dotnet test` **774/774**, son commit `c55e1dc`, migration **A123**.
 

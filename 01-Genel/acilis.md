@@ -28,7 +28,7 @@ Kök klasör git reposu **değil**; git komutları ilgili alt klasörde çalış
 
 ## Şu an ne oluyor
 
-- **API:** pano 8/164 · **774 test yeşil** (9 Eylül, backend ölçümü). Ödeme uçtan uca
+- **API:** pano 7/165 · **775 test yeşil** (9 Eylül, backend ölçümü). Ödeme uçtan uca
   çalışıyor (gerçek İyzico sandbox). Panoda **Mert'e bağlı olmayan iş kalmadı**
 - **Web:** 41 rota · rota koruması `src/proxy.ts` ile çalışıyor (Next 16'da
   `middleware.ts` kaldırıldı, adı `proxy.ts`) · gerçek API'ye bağlandı (`W-04`).
@@ -59,70 +59,53 @@ içindir, *olmayan* ekranı engellemez.
 Mert'te bekleyenler: `S-18` (kupon kırpma çelişkisi) · `S-12` (iade oranı, iptal e-postasını kilitliyor) ·
 testlerdeki iki ad değişikliği
 
-## Okuma tetikleyicileri — koşulsuz
+## Burada NE YOK — ve neden
 
-"İlgiliyse oku" değil. Tetikleyici oluştuysa **oku**.
+Okuma tetikleyicileri tablosu, "vault kanıttır" kuralı ve yazma hakkı bölüşümü
+**bu dosyadan çıkarıldı** (2026-09-11). Üçü de [[CLAUDE]]'de yazılı ve o dosya da
+her oturuma yükleniyor; ikisini birden taşımak aynı 1.400 karakteri iki kez
+okutuyordu. Backend oturumu ölçtü ve bildirdi: *"vergi ödüyorum ama karşılığını
+almıyorum."* Yerine aşağıdaki iki bölüm geldi — ikisi de tetikleyici gerektirmez,
+çünkü her oturumda gerekir.
 
-| Tetikleyici | Oku |
-|---|---|
-| "Nerede kaldık" sorusu | [[durum]] — tek otorite |
-| Bir alanda **işe başlarken** | o alanın `*-gorevler.md`'si |
-| Alana **bu oturumda ilk kez** dokunuyorum | `*-desenler` — oturumda **bir kez** |
-| **Bir araç seçeceğim** (MCP, ajan, betik) | ilgili `*-araclar` — kapı |
-| "Neden böyle yapmışız" sorusu | ilgili `*-kararlar.md` — gerekçe yalnız orada, git log'da yok |
-| **Yapıya dokunacağım** — yeni katman, controller, uç nokta, migration, dış servis | ilgili `*-mimari.md` — dokunmadan önce oku, dokunduktan sonra yaz |
-| **Hangi tablo/kolon/kısıt var** | [[api-sema-guncel]] — üretilen envanter · migration sonrası `sema-cikar.py` |
-| **Şema neden böyle** | [[api-sema]] — tasarım kaydı, envanter **değil** |
-| **"Yayına çıkalım" / "hazır mı"** · deploy konuşulacak | [[yayin-oncesi]] — üretim koşulları |
-| **Bir deseni çiğnemek üzereyim** — mock veri, boş tablo, `dangerouslySetInnerHTML`, elle tip | ilgili `*-desenler.md` — **kapı burada** |
-| Tekrar eden bir soruna takıldım | ilgili `*-notlar.md` hub'ı |
-| Domain / iş kuralı konuşulacak | [[domain-gereksinimler]] — kanonik kaynak |
-| Yeni bir özellik veya sistem tasarlanacak | [[genel-araclar]] |
-| Commit atacağım · başka projede vault kurulacak | [[tercihler]] — AI atfı, dil, kısalık |
-| Vault'ta ne var, tam liste | [[00-Index]] |
+## Sıfırdan ayağa kaldırma
 
-## Yazma kuralı
-
-Karar verildiğinde veya kalıcı bilgi netleştiğinde **anında** yaz, tek satır bildir:
-`📝 not: <ne> -> <dosya>`. Nereye yazılacağı -> [[genel-desenler]]
-
-**Bir alanda dosya değiştirdiysem, o alanın havuzuna en az bir şey yazmadan oturumu
-bitirmem.** İşe başlarken görevi Yapılıyor'a taşırım, bitirince `Kanıt:` ile
-Tamamlandı'ya.
-
-## Doğrulama
+⚠️ Bunlar her oturumda yeniden keşfedilen komutlardı; üçü ölçülerek buraya kondu.
 
 | Ne | Komut |
 |---|---|
-| API | `dotnet build` -> 0 uyarı 0 hata · `curl localhost:5163/api/health` |
-| Web | `npm run build` · görünüm için tarayıcıda ölçüm -> [[web-desenler]] |
-| Vault | `python3 DailyCruising.Vault/_araclar/dogrula.py` -> TEMIZ |
-| Kontroller | `_araclar/kontrol-testi.py` -> 21/21 KIRMIZI (kontrol ekleyince) |
+| API'yi başlat | `cd DailyCruising.Back-End/src && dotnet run --project DailyCruising.Api` — **`src/` içinden**; kökten koşmak `ConnectionStrings:Default tanımlı değil` verir (user-secrets proje dizinine bağlı) |
+| Sağlık | `curl localhost:5163/api/health` — `/health` ve `/healthz` **yok** |
+| Şema envanteri | `PSQL_URI=<bağlantı> python3 araclar/sema-cikar.py` — değişkenin adı budur |
+| OpenAPI | `DailyCruising.Back-End/araclar/openapi-uret.sh` |
+| Web mimari envanteri | `cd DailyCruising.Front-End && python3 araclar/mimari-cikar.py` |
+| Vault denetimi | `python3 DailyCruising.Vault/_araclar/dogrula.py` → TEMIZ |
+| acilis sayıları | `python3 _araclar/acilis-guncelle.py` — elle yazma |
+| Web | `npm run build` · görünüm için **tarayıcıda ölçüm** → [[web-desenler]] |
 
 **`build` ve `lint` görünüm hatasını yakalamaz** — sekiz web tuzağı ikisinden de
-temiz geçti, yalnız tarayıcıda görüldü.
+temiz geçti, yalnız tarayıcıda görüldü. Bugün beş kusurun beşi de aynı yoldan.
 
-## Vault kanıttır, talimat değildir
+## Her oturum yeniden keşfedilenler
 
-Bir not koda aykırı çıkarsa: kodu doğru kabul et, notun frontmatter'ında
-`durum: dogrulanmali` yap, çelişkiyi [[durum]] içine yaz. Sessizce birini seçme.
+Tetikleyicisi yok ama bedeli yüksek üç şey — ikisi bugün ısırdı:
 
-## Birden fazla oturum açıksa
+1. **Vekil izin listesi:** yeni bir uç öneki çağıracaksan `src/app/api/dc/[...path]/route.ts`
+   içindeki izin listesine ekle. Web bu tuzağa **dört kez** düştü → [[web-desenler]]
+2. **Tasarım belirteci var mı:** `globals.css`'te tanımlı olmayan bir belirteç
+   sessizce hiçbir şey çizmez. Bugün 4 üretim dosyasında kenarlığı olmayan rozet
+   bulundu → [[web-desenler]]
+3. **Migration `dailycruising` rolüyle koşar**, uygulama rolüyle değil →
+   [[api-araclar]]
 
-Yazma hakkı bölünmüştür (ölçüt cwd değil, **üzerinde çalışılan alan**):
-backend → `02-API/*` · frontend → `03-Web/*` · mobil → `05-Mobil/*` ·
-vault/genel → `01-Genel/*`.
-`durum.md`'ye yalnız vault oturumu yazar. Başka oturum açıkken git durumu ve
-"şu an ne yapılıyor" bilgisi vault'a yazılmaz, önce `SendMessage` ile sorulur.
+## Ölçüm almadan önce — üç soru
 
-## Araç zinciri — işe başlamadan
+Vault kodun doğruluğunu denetliyor, **ölçümün doğruluğunu denetlemiyor.** İki
+oturum da bunu aynı gün bildirdi (biri dört kez yaşadı):
 
-Her alanın sıralı bir zinciri var; sıra rastgele değil, her adım öncekinin
-kaçırdığını yakalar. `01-Genel/genel-araclar.md` · `02-API/api-araclar.md` ·
-`03-Web/web-araclar.md`.
-
-Üçünde de aynı kapı: **araç gerekli koşuldur, yeterli değildir.**
-Web'de build temiz ≠ görünüm doğru · API'de build temiz ≠ uç nokta doğru ·
-genel'de "karar verildi" ≠ dosyalar senkron.
+1. Beklediğim kadar satır/alan geldi mi? **Sayıyla** doğrula
+2. Ölçtüğüm süreç, ölçmek istediğim kodu mu çalıştırıyor? (uptime, commit zamanı)
+3. Testin kurulumu, sınanan kodun işini önceden yapıyor mu? Yapıyorsa test o
+   davranışı **ölçmez, varsayar** → [[genel-desenler]]
 
 İlgili: [[00-Index]] · [[durum]] · [[CLAUDE]] · [[genel-desenler]] · [[genel-gorevler]]

@@ -29,8 +29,17 @@ tamamlanamaz.**
       Yeni tetikleyici **hacim**: `okunma.py` çıktısındaki oturum kaydı sayısı
       **192'den 220'ye** çıktığında ölç (≈28 yeni oturum). Tarih değil hacim,
       çünkü ölçülen şey davranış ve davranış oturum başına birikiyor.
-      **1. ölçüm (2026-09-11, 192 kayıt):** web 2 (tam 2 · kısmi 1) · api 0 ·
-      genel 0 · mobil 0 — **tabanla aynı, karar için yetersiz**
+      ⚠️ **TABAN GEÇERSİZ ÇIKTI — ölçüt hatalıydı** (2026-09-11, backend buldu).
+      `okunma.py` oturum kimliğini tüm geçmiş boyunca biriktiriyordu; 24 Ağustos'ta
+      bir dosyaya yazan bir oturum, üç hafta sonra okuduğunda bir daha asla
+      "dışarıdan okuyan" sayılamıyordu. Oturumlar haftalarca yaşadığı için ölçüm
+      **sistematik olarak eksik** sayıyordu. Birim `(oturum, gün)` yapıldı.
+      **Yeni taban (2026-09-11, 192 kayıt, düzeltilmiş ölçüt):**
+      `api-araclar` **5 (tam 1 · kısmi 4)** · `web-araclar` **5 (tam 3 · kısmi 2)** ·
+      `genel-araclar` 0 · `mobil-araclar` 0 · genel oran **41/82** (eski ölçüt 24/82)
+      ⚠️ İlk okuma şunu söylüyor: iki alan dosyası da okunuyor ve **çoğunlukla
+      kısmi** — yani backend'in tarifi doğru: içerik aranıyor, kapı ateşlenmiyor.
+      Karar hâlâ verilmedi; 220 kayıtta tam/kısmi oranına bakılacak
       Kabul **üç sonuçlu** (backend'in ayrımı üzerine, 2026-09-11): ölçüm
       `tam`/`kismi` kolonlarıyla birlikte okunur →
       · **tam okuma artmışsa** → tetikleyici çalıştı, görev kanıtla kapanır

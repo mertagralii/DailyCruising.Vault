@@ -152,6 +152,22 @@ def main():
                 if kayit.get("type") != "assistant":
                     continue
                 tarih = (kayit.get("timestamp") or "")[:10]
+                # OLCUM BIRIMI: oturum DEGIL (oturum, gun).
+                #
+                # 2026-09-11'de backend oturumu olcumu curuttu: `api-araclar`i
+                # o gun iki kez actigini bildirdi, arac "disaridan okuma 0"
+                # gosterdi. Sebebini ilk yanlis tahmin ettim ("ayni oturumda
+                # yazdi"); backend olctu, dosyaya 5 Eylul'den beri yazilmamis.
+                # Gercek sebep: o oturum 24 AGUSTOS'ta baslamis ve o gun
+                # dosyaya yazmis. Arac oturum kimligini TUM GECMIS boyunca
+                # biriktirdiginden, uc hafta once yazan bir oturum bir daha
+                # asla "disaridan okuyan" sayilamiyordu.
+                #
+                # Bu oturumlar haftalarca yasiyor; birim oturum oldugu surece
+                # olcum sistematik olarak EKSIK sayiyor. Birim artik gun bazli:
+                # "yazmadigi bir GUNDE okumak" disaridan okuma sayilir.
+                birim = f"{oturum}|{tarih}"
+
                 icerik = (kayit.get("message") or {}).get("content") or []
                 if not isinstance(icerik, list):
                     continue
@@ -169,9 +185,9 @@ def main():
                                 if tarih > son.get(ad, ""):
                                     son[ad] = tarih
                                 if arac in YAZMA_ARAC:
-                                    yazan[ad].add(oturum)
+                                    yazan[ad].add(birim)
                                 elif arac in OKUMA_ARAC:
-                                    okuyan[ad].add(oturum)
+                                    okuyan[ad].add(birim)
                                     # TAM mi KISMI mi: 2026-09-11'de backend
                                     # oturumu ayrimi bildirdi — dosyayi
                                     # TETIKLEYICI ateslediginde degil, bir
@@ -184,32 +200,32 @@ def main():
                                     # offset/limit ile acmak avlanmaktir, bastan
                                     # sona okumak belge okumaktir.
                                     if girdi.get("offset") or girdi.get("limit"):
-                                        kismi_okuma[ad].add(oturum)
+                                        kismi_okuma[ad].add(birim)
                                     else:
-                                        tam_okuma[ad].add(oturum)
+                                        tam_okuma[ad].add(birim)
                                 elif arac in ("Bash", "BashOutput"):
                                     yazma_d = re.compile(
                                         r"(>>?\s*[^\s|;&]*" + re.escape(ad) +
                                         r"\.md|\btee\b[^\n]*" + re.escape(ad) + r"\.md)")
                                     if yazma_d.search(metin):
-                                        yazan[ad].add(oturum)
+                                        yazan[ad].add(birim)
                                     elif re.search(r"write_text|open\([^)]*['\"]w", metin):
-                                        yazan[ad].add(oturum)
+                                        yazan[ad].add(birim)
                                     elif OKUMA_KOMUT.search(metin):
-                                        okuyan[ad].add(oturum)
+                                        okuyan[ad].add(birim)
                                         if re.search(r"sed -n|head -|tail -|grep", metin):
-                                            kismi_okuma[ad].add(oturum)
+                                            kismi_okuma[ad].add(birim)
                                         else:
-                                            tam_okuma[ad].add(oturum)
+                                            tam_okuma[ad].add(birim)
                                     else:
                                         belirsiz[ad] += 1   # susmasin diye sayilir
                                 else:
-                                    okuyan[ad].add(oturum)
+                                    okuyan[ad].add(birim)
                     elif blok.get("type") == "text":
                         for ad in wikilink.findall(blok.get("text") or ""):
                             ad = ad.strip()
                             if ad in ad_yol:
-                                atif[ad].add(oturum)
+                                atif[ad].add(birim)
 
     # ASIL OLCUT: notu YAZAN oturumlarin disinda kac oturumda okundu.
     # Kendi yazildigi oturumda goriunmek, o notun ise yaradigini gostermez.

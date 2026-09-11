@@ -6710,3 +6710,25 @@ testin ne ölçtüğünü belirliyor.
 
 Test artık işletmenin payını da ölçüyor; eski hâli defter eski tutardan
 hesaplandığında da geçiyordu.
+
+## 2026-09-11 · Ödeme anahtarı denemeyi de adlandırıyor
+
+`payment:{rezervasyon}` sabitti ve benzersizdi; ödeme sayfasını kapatıp geri
+dönen ya da kartı reddedilen müşteri ikinci kez "Öde"ye bastığında
+`23505 IX_Payments_IdempotencyKey` dışarı çıkıyor, ekranda **500** görünüyordu.
+Canlıda ölçüldü.
+
+**Neden ek yalnız ikinci denemeden itibaren:** ilk deneme eski biçimi
+koruyor, yani var olan kayıtlara dokunulmadı ve göç gerekmedi.
+
+⚠️ **Mükerrer tahsilat riski AÇILMIYOR ve bu ölçüldü.** `StartAsync` yalnız
+`Pending` rezervasyonda çalışıyor; ilk ödeme başarılı olur olmaz rezervasyon
+`Paid` oluyor ve ikinci deneme kapıdan dönüyor. Canlı: üç `start` de 200,
+üçüncüsü tamamlandı, defter **4 satır toplam 0**, ödenmişken `start` **400**.
+
+⚠️ **İki test birlikte anlam taşıyor:** "ödenmiş rezervasyon ikinci ödemeyi
+reddeder" ve "ödenmemiş rezervasyonda tekrar denenebilir". Yalnız birini
+sınayan bir kod tabanı, ya müşteriyi duvara çarptıran ya da iki kez tahsil
+eden bir kodu geçirir.
+
+Aynı desen taşıma farkında da kullanılıyor (`reschedule-payment:{talep}:{n}`).

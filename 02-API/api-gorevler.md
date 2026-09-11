@@ -24,19 +24,6 @@ Biçim ve gerekçe -> [[genel-desenler]]
 ## 🔵 Yapılacak
 
 
-- [ ] **A-164** Rezervasyonun ilk ödemesi tekrar denenemiyor
-
-      `PaymentService.StartAsync` anahtarı `payment:{rezervasyon}` sabiti
-      kuruyor ve benzersiz. `POST /api/payments/start` ikinci kez
-      çağrıldığında `DbUpdateException` dışarı çıkıyor, müşteri **500**
-      görüyor. **Canlıda ölçüldü** (2026-09-11, `EMYC85QX`).
-
-      ⚠️ Sıradan bir dizilim: müşteri ödeme sayfasını kapatır, kartını bulur,
-      "Öde"ye tekrar basar. Kartı reddedilen müşteri de aynı duvara çarpıyor.
-
-      Taşıma farkında aynı kusur `reschedule-payment:{talep}:{n}` ile
-      kapatıldı; ilk ödeme aynı deseni almalı → [[api-kararlar]] 2026-09-11.
-
 - [ ] **A-159** İşletme çalışanı davet akışı · 🔴 **MERT'TE** · ölçüldü: 2026-09-10
 
       ⚠️ **Ekran olmayan bir şeyi vaat ediyor.** İşletme panelinde çalışan
@@ -197,6 +184,26 @@ Biçim ve gerekçe -> [[genel-desenler]]
       🔴 **MERT'TE**
 
 ## 🟢 Tamamlandı
+
+- [x] **A-164** Rezervasyonun ilk ödemesi tekrar denenemiyor · 2026-09-11
+
+      `PaymentService.StartAsync` anahtarı `payment:{rezervasyon}` sabiti
+      kuruyor ve benzersiz. `POST /api/payments/start` ikinci kez
+      çağrıldığında `DbUpdateException` dışarı çıkıyor, müşteri **500**
+      görüyor. **Canlıda ölçüldü** (2026-09-11, `EMYC85QX`).
+
+      ⚠️ Sıradan bir dizilim: müşteri ödeme sayfasını kapatır, kartını bulur,
+      "Öde"ye tekrar basar. Kartı reddedilen müşteri de aynı duvara çarpıyor.
+
+      Taşıma farkında aynı kusur `reschedule-payment:{talep}:{n}` ile
+      kapatıldı; ilk ödeme aynı deseni almalı → [[api-kararlar]] 2026-09-11.
+
+      **Çözüldü (`3c7e470`):** anahtar denemeyi de adlandırıyor, ilk deneme
+      eki almıyor (göç gerekmedi). **Kanıt:**
+      `PaymentTests.An_unpaid_reservation_can_retry_the_payment` · canlı
+      `AWHJQ6UJ`: üç `start` de 200, üçüncüsü tamamlandı, defter **4 satır
+      toplam 0** (tek tahsilat), ödenmişken `start` **400**.
+
 
 - [x] **A-163** Rezervasyon taşıma · 2026-09-11
 
