@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: api
-guncelleme: 2026-09-11
+guncelleme: 2026-09-12
 durum: guncel
 ---
 
@@ -12,6 +12,78 @@ durum: guncel
 > Genel dosya bu dosyayı özetler → [[durum]]
 
 ## Nerede duruyoruz
+
+**2026-09-12 (4) — destek talebi müşteriye atanabiliyormuş.**
+`dotnet test` **849/849**, son commit `dfe96f5`.
+
+⚠️ Atama doğrulaması *"böyle bir kullanıcı var mı"* diyordu. Atanan talep
+hiçbir destek kuyruğunda görünmüyor ama **atanmış olduğu için sahipsiz de
+sayılmıyordu** — hiçbir hata üretmeden kaybolurdu. Ölçüt `support.read`
+yetkisine çevrildi.
+
+`GET /api/support/assignable-staff` eklendi: Web'in istediği liste. Liste ile
+atama kontrolü **tek sorgudan** besleniyor → [[api-kararlar]]
+
+⚠️ Var olan bir kuyruk testi kırıldı ve kırılması doğruydu: rolsüz bir
+kullanıcıya atama yapıyordu, yani ancak kusur sayesinde çalışan bir kurgu.
+
+---
+
+**2026-09-12 (3) — istek günlüğünün kayıp sayacı çalışmıyormuş.**
+`dotnet test` **847/847**, son commit `598bcc7`.
+
+⚠️ Sıra `DropWrite` kipindeydi: `TryWrite` dolu sırada da `true` dönüyor ve
+kaydı sessizce atıyor, yani **sayaç hiç artmıyordu**. Sınıfın açıklaması
+*"düşen kayıt sayılıyor"* diyordu — gerekçe doğru, olgu yanlıştı. Kip `Wait`
+yapıldı; istek yine bekletilmiyor, kayıp görünüyor.
+
+⚠️ Sayaç ayrıca **hiçbir yerden okunmuyordu** — birkaç saat önce kararını
+yazdığım kusurun aynısını aynı modülde yapmışım. Artık
+`droppedSinceStart` olarak istek günlüğü listesiyle **yan yana** dönüyor
+→ [[api-kararlar]]
+
+Web'in `401` bilmecesi çözüldü ve sebebi bendeydi: ölçüm anlarında API'yi
+yeniden başlatıyordum, jeton yenileme isteği ölü sunucuya gidiyor ve istek
+jetonsuz devam ediyordu. `actorType: Anonymous` bunu söylüyor.
+
+---
+
+**2026-09-12 (2) — istek günlüğü 401 göremiyordu, düzeltildi.**
+`dotnet test` **846/846**, son commit `e2104fe`.
+
+⚠️ **Bu gecenin en sinsi kusuru:** `UseRequestLog()` yetki katmanından SONRA
+duruyordu ve hiçbir `401` günlüğe düşmüyordu. Günlük **dolu görünüyordu**
+(258 kayıt), yalnız reddedilen istekler yoktu — bir denetim günlüğünün ilk
+sorusu cevapsızdı. Ara katman öne alındı, üç boru hattı testiyle iki yönde
+ölçüldü → [[api-kararlar]]
+
+Web'in bildirdiği `401`'ler bu yüzden bende **görünmüyordu**; ölçüm sonucu
+hâlâ açık ve sebep web tarafında olabilir (sunucu render'ında jeton
+yenilenmiyor hipotezi). Artık ölçülebilir: yeni `401`'ler günlüğe düşüyor.
+
+Ayrıca: ayar ucu kabul edilen sınırları `limits` alanında döndürüyor ve
+`updatedByName` çözülüyor.
+
+---
+
+**2026-09-12 — tutma süresi ve tahsilat penceresi panelden değiştirilebiliyor.**
+`dotnet test` **843/843**, son commit `0eae276`, migration **A134**.
+
+`PUT /api/platform/settings` — Mert'in kararı: değerler veritabanına taşındı,
+panelden düzenleniyor. `PlatformSettings` tek satırlık tablo, eski sabitlerle
+tohumlandı. Değişiklik **anında** geçerli (önbellek yok) ve **yalnız yeni
+rezervasyonları** etkiliyor.
+
+⚠️ İptal kademeleri hâlâ yazılamaz; yazma sözleşmesinde alanı bile yok ve
+bunu bir test bekçiliyor.
+
+⚠️ **Ölçüm dersi:** motoru sabite bağlayan mutasyon ilk denemede hiçbir testi
+kırmadı — beklenti de tablodan okunduğu için ikisi aynı değerde buluşuyordu.
+Değeri bilerek değiştiren bir test eklendi. Ayrıca ilk mutasyon denemem
+**yanlış veritabanına** yazmıştı: testler Testcontainers'ta koşuyor
+→ [[api-kararlar]]
+
+---
 
 **2026-09-11 (15) — panelde uçsuz modül kalmadı.**
 `dotnet test` **840/840**, son commit `5830ffa`, 62 controller · 195 yol / 248

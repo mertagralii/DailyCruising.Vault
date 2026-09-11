@@ -67,9 +67,21 @@ def pano_sayimi(alan, onek):
 
 def vault_md_sayisi():
     """dogrula.py'nin saydigi kume: denetim disi dosyalar haric."""
+    # dogrula.py ile AYNI kume olmali. Web oturumunun uyarisi (2026-09-12):
+    # "uretilen bir sayinin yanlis girdiden gelmesi, elle yazilmis yanlis
+    # sayidan daha zor fark ediliyor, cunku 'uretilmis' olmasi dogru saniliyor."
+    # Skill tanimlari not sayilinca sayac 106'dan 111'e sismisti.
     disi = set(AYAR.get("denetim_disi", []))
-    return sum(1 for p in VAULT.rglob("*.md")
-               if ".git" not in p.parts and p.name not in disi)
+    tarama_disi = tuple(AYAR.get("tarama_disi", []))
+    n = 0
+    for p in VAULT.rglob("*.md"):
+        if ".git" in p.parts or p.name in disi:
+            continue
+        rel = p.relative_to(VAULT).as_posix()
+        if any(rel.startswith(d) or f"/{d}" in f"/{rel}" for d in tarama_disi):
+            continue
+        n += 1
+    return n
 
 
 def dogrula_kontrol_sayisi():

@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/mertagrali/Desktop/DailyCruising/DailyCruising.Vault/.codex/hooks/vault-precompact.js'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/mertagrali/Desktop/DailyCruising/DailyCruising.Vault/.codex/hooks/vault-sessionstart.js'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/mertagrali/Desktop/DailyCruising/DailyCruising.Vault/.codex/hooks/vault-stop.js'"
+          },
+          {
+            "type": "command",
+            "command": "python3 /Users/mertagrali/Desktop/DailyCruising/DailyCruising.Vault/_araclar/acilis-guncelle.py >/dev/null 2>&1 || true"
+          }
+        ]
+      }
+    ]
+  }
+}

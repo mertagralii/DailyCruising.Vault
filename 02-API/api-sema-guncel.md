@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-11
+guncelleme: 2026-09-12
 durum: uretilen
 ---
 
@@ -17,7 +17,7 @@ yalnız *bugün veritabanında ne var* yazıyor.
 **Ne zaman okunur:** hangi tablo/kolon/kısıt var sorusu.
 **Ne zaman yazılır:** her migration uygulandıktan sonra betiği çalıştır.
 
-**87 tablo** (olay günlüğü parçaları hariç).
+**88 tablo** (olay günlüğü parçaları hariç).
 
 ## `Adverts`
 
@@ -1044,6 +1044,22 @@ Kısıtlar:
 | `Name` | character varying | hayır |  |
 | `Category` | character varying | hayır |  |
 | `IsPartnerAssignable` | boolean | hayır |  |
+
+## `PlatformSettings`
+
+| kolon | tip | boş | varsayılan |
+|---|---|---|---|
+| `Id` | integer | hayır |  |
+| `HoldMinutes` | integer | hayır |  |
+| `CollectionWindowHours` | integer | hayır |  |
+| `UpdatedAt` | timestamp with time zone | hayır |  |
+| `UpdatedByUserId` | uuid | evet |  |
+
+Kısıtlar:
+
+- `CK_PlatformSettings_TahsilatPenceresi` — `CHECK ((("CollectionWindowHours" >= 1) AND ("CollectionWindowHours" <= 168)))`
+- `CK_PlatformSettings_TekSatir` — `CHECK (("Id" = 1))`
+- `CK_PlatformSettings_TutmaSuresi` — `CHECK ((("HoldMinutes" >= 1) AND ("HoldMinutes" <= 120)))`
 
 ## `Prices`
 

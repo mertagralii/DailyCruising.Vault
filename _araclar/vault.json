@@ -55,6 +55,7 @@
   "notlar_klasoru": "notlar",
   "arsiv_klasoru": "04-Oturumlar",
   "denetim_disi": [
+    "AGENTS.md",
     "README.md"
   ],
   "yetim_muaf": [
@@ -360,5 +361,19 @@
     "alan": "02-API",
     "adres": "http://localhost:5163/api/health",
     "alan_adi": "commit"
-  }
+  },
+  "tarama_disi": [
+    ".agents/",
+    ".obsidian/",
+    ".vault-kontrol-testi/"
+  ],
+  "_tarama_disi_aciklama": [
+    "Vault NOTU olmayan .md dosyalari. Denetim bir dosyanin not olup olmadigini",
+    "KONUMUNDAN cikariyordu; 2026-09-12'de .agents/skills/*/SKILL.md dosyalari",
+    "(Codex icin uretilen skill tanimlari) 20 yanlis pozitif uretti: frontmatter",
+    "semasi onlara uymuyor, dordunun de adi ZORUNLU olarak SKILL.md, ve hub'dan",
+    "linklenmemeleri kusur degil — harness onlari adiyla yukluyor.",
+    "Muafiyet listesi DEGIL kapsam duzeltmesi: bu dosyalar kural ihlali yapmiyor,",
+    "kuralin konusu degil."
+  ]
 }

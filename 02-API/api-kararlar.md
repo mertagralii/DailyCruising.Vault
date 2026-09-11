@@ -1,7 +1,7 @@
 ---
 rol: history
 kapsam: api
-guncelleme: 2026-09-11
+guncelleme: 2026-09-12
 durum: guncel
 ---
 
@@ -7238,3 +7238,171 @@ sözleşmesinde gövde alanı olmadığını doğrulayan test duruyor. Değişen
 
 ⚠️ Saklama süresi (`RequestLog:RetentionDays`, varsayılan 30 gün) **hâlâ
 açık**; gövde kararıyla birlikte kapanmadı.
+
+## 2026-09-12 · Ayar tablosu okunurken önbellek YOK
+
+Tutma süresi ve tahsilat penceresi `PlatformSettings` tablosundan, **her
+rezervasyonda yeniden** okunuyor. Önbellek konmadı.
+
+**Neden:** önbellek olsaydı panelden yapılan değişiklik ekranda anında
+görünür, motorda saniyeler/dakikalar sonra geçerli olurdu. Aradaki
+rezervasyonlar eski süreyle açılırdı ve personel *"kaydettim ama olmadı"*
+derdi — sebebi hiçbir ekranda görünmeyen bir kusur. Maliyeti tek satırlık bir
+birincil anahtar okuması; rezervasyon açma yolu zaten ondan çok daha pahalı
+sorgular yapıyor.
+
+⚠️ Satır bulunamazsa depo **patlıyor**, varsayılana düşmüyor. Sessiz
+varsayılan ikinci bir gerçek kaynağı olurdu: tablo boşsa hangi sürenin
+geçerli olduğu koda gömülü kalırdı.
+
+⚠️ Değişiklik **yalnız yeni rezervasyonları** etkiliyor: açık bir tutmanın
+bitiş anı kaydın kendisinde (`HoldExpiresAt`) duruyor. Aksi hâlde süreyi
+kısaltan bir personel, o anda ödeme sayfasında olan müşterilerin koltuklarını
+altlarından çekerdi.
+
+⚠️ Teklif yolu (`OfferReservationFactory`) süreyi **parametre** olarak alıyor.
+Statik olduğu için sabite geri dönülseydi müşteri akışında 20 dakika, teklif
+kabulünde 15 dakika tutulurdu — ve ikisi de kendi kodunda doğru görünürdü.
+
+## 2026-09-12 · Sabiti tablodan okuyan bir test, sabite bağlı kodu YAKALAMAZ
+
+`ReservationTests` tutma süresini ayar tablosundan okuyup beklentisini ona
+göre kuruyordu. Motor sabite bağlandığında ve tablodaki değer o sabitle
+**aynı** olduğunda test geçti — mutasyon sessiz kaldı.
+
+**Neden karar olarak yazılıyor:** bu, "beklenen değeri koda yazma, kaynaktan
+oku" kuralının ters yüzü. Kaynaktan okumak ikizlenmeyi önlüyor ama **bağın
+kurulduğunu kanıtlamıyor**: iki taraf da aynı yerden okuyorsa, arada bağ
+olmasa bile sayılar tutar.
+
+⚠️ Kapatan şey: değeri **bilerek değiştiren** bir test.
+`The_hold_follows_the_configured_duration` ayarı 41 dakikaya çekiyor,
+rezervasyon açıyor ve 41 dakika bekliyor. Sabite bağlı kod buradan geçemiyor —
+ölçüldü, aynı sessiz mutasyon artık kırmızı yanıyor.
+
+⚠️ İkinci ders, ölçümün kendisinden: ilk mutasyon denemesinde **dev
+veritabanına** yazıp testin değeri göreceğini sanmıştım. Testler
+Testcontainers'ta kendi veritabanını açıyor; yazdığım satır oraya hiç
+ulaşmadı ve "mutasyon bir şeyi kırmadı" sonucu **yanlış yere bakmaktan**
+geliyordu. Ölçümün kendisi de ölçülmeli.
+
+## 2026-09-12 · İstek günlüğü 401'leri GÖREMİYORDU — ara katmanın sırası
+
+`UseRequestLog()` `UseAuthentication`/`UseAuthorization`'dan **sonra**
+duruyordu. Yetki katmanı isteği kendisi kesip attığı için hiçbir `401` günlüğe
+düşmedi. Ara katman kimlik doğrulamadan **önceye** alındı.
+
+**Neden kritik:** *"hangi istekler yetkisiz kaldı"* bir denetim günlüğünün
+cevaplaması gereken **ilk** sorulardan biri — ve cevabı boştu. Üstelik günlük
+**çalışıyor görünüyordu**: tablo doluydu, ekran açılıyordu, 258 kayıt vardı.
+Eksik olan şey yokluğuyla belli olmuyordu.
+
+⚠️ **Nasıl bulundu, ders orada:** Web oturumu üç uçta `401` gördüğünü söyleyip
+*"jetonun süresi mi dolmuş, imza mı tutmuyor"* diye sordu. Günlüğe baktım,
+sıfır `401` vardı ve neredeyse *"sorun sende, API 401 üretmiyor"* diyecektim.
+Onun yerine ölçtüm: elle jetonsuz istek attım, `401` aldım, **yine günlükte
+satır yoktu**. Yani günlüğün sessizliği kanıt değil, kusurun kendisiydi.
+
+⚠️ Düzeltmenin bedeli olabilirdi ve olmadığı ÖLÇÜLDÜ: aktör bilgisi
+kaybolmuyor, çünkü kayıt `next()` döndükten sonra yazılıyor ve `CurrentUser`
+bağlamı gecikmeli okuyor. Bu ölçülmeseydi bir kusur kapatılırken başkası
+açılabilirdi — ve yenisi sessiz olurdu: 401'ler gelirdi, aktör sütunu boş
+kalırdı, kimse fark etmezdi.
+
+⚠️ Üç test boru hattından geçen **gerçek isteklerle** ölçüyor
+(`RequestLogPipelineTests`); sıra bir uygulama detayı değil, günlüğün neyi
+görebildiğini belirleyen şey. Mutasyonla iki yönde de doğrulandı.
+
+## 2026-09-12 · Sınır sayıları ekrana yazılmaz, cevapta döner
+
+Ayar ucu artık kabul edilen alt/üst sınırları `limits` alanında döndürüyor
+(tutma 1–120 dk, pencere 1–168 sa).
+
+**Neden:** Web oturumu sınırları kutuya `max` olarak yazmayı reddetti ve
+gerekçesi doğruydu — *"sunucu tavanı değiştirdiği gün sessizce yalan
+olurdu"*. Bedeli operatörün aralığı kaydetmeden görememesiydi. Doğru çözüm
+sayıyı ekranda değil **cevapta** tutmak.
+
+⚠️ Bu, bu gecenin en çok tekrarlayan kusur sınıfının dördüncü yüzü: iade
+kademeleri, tutma süresi, yasal metin sürümü ve şimdi sınırlar. Hepsinde aynı
+kural: **sunucudaki bir değerin ekranda ikinci bir kopyası olmaz.**
+
+⚠️ `updatedByName` de eklendi: kimlik tek başına ekranda hiçbir şey
+söylemiyor. Ad **ayar satırında saklanmıyor**, kullanıcı satırından
+çözülüyor — saklansaydı personelin adı değiştiğinde ekranda eskisi kalırdı.
+
+## 2026-09-12 · "Düşen kayıt sayılıyor" yazılıydı ve YANLIŞTI
+
+`RequestLogQueue` sırası `BoundedChannelFullMode.DropWrite` ile kurulmuştu.
+O kipte <c>TryWrite</c> sıra doluyken de **`true` dönüyor** ve gelen kaydı
+sessizce atıyor — yani sayaç hiç artmıyordu. Kip `Wait` yapıldı:
+<c>TryWrite</c> dolu sırada `false` dönüyor ve **beklemiyor** (bekleyen
+yalnız `WriteAsync`). İstek yine bekletilmiyor, kayıp artık görünüyor.
+
+**Neden karar olarak yazılıyor:** sınıfın kendi açıklaması *"Düşen kayıt
+SAYILIYOR. Sessizce düşseydi eksik bir günlük, tam bir günlük gibi
+görünürdü"* diyordu. Cümle doğru bir **gerekçeydi** ama yanlış bir **olgu**
+bildiriyordu. Yorum, kodun yaptığı şeyi değil yazarın niyetini anlatıyordu ve
+aradaki fark hiçbir yerde ölçülmüyordu.
+
+⚠️ İkinci kusur aynı yerdeydi ve daha da tanıdık: sayaç **hiçbir yer
+tarafından okunmuyordu.** Birkaç saat önce *"yazılan bir alan, okunduğu
+anlamına gelmiyor"* kararını yazmıştım ve aynı modülde aynı şeyi yapmışım.
+Sayı artık `droppedSinceStart` olarak **istek günlüğü listesiyle birlikte**
+dönüyor — ayrı bir sağlık ucunda dursaydı tam gerektiği anda kimse bakmazdı.
+
+⚠️ **Nasıl bulundu:** Web oturumu görünmeyen bir grafik çubuğunu düzeltip
+*"derleme, lint ve üç betik temizdi ve temiz kalmaya devam ediyor; sende de
+'testler yeşil ama ekranda yok' sınıfından bir şey varsa tek yakalayan şey
+ona bakmak"* dedi. Bakmak için yazdığım test kusuru ilk çalıştırmada
+buldu — sayaç sıfırda kalıyordu.
+
+⚠️ Genelleşmiş hâli: **bir yorumun bir özelliği iddia etmesi, o özelliğin
+ölçüldüğü anlamına gelmiyor.** Yorum ne kadar ayrıntılı ve gerekçeliyse o
+kadar ikna edici oluyor — ve bu projede yorumlar çok ayrıntılı. Ölçüsü olmayan
+iddia, yorumda da kodda da aynı ağırlıkta: sıfır.
+
+## 2026-09-12 · Destek talebi MÜŞTERİYE atanabiliyordu
+
+Atama doğrulaması `UserExistsAsync` idi: *"böyle bir kullanıcı var mı"*. Yani
+bir destek talebi herhangi bir kullanıcıya — müşteriye de — atanabiliyordu.
+Ölçüt `support.read` yetkisine çevrildi.
+
+**Neden sessiz bir kusurdu:** atanan talep o andan sonra hiçbir destek
+kuyruğunda görünmüyor, ama **atanmış olduğu için sahipsiz de sayılmıyor**.
+Yani ne birinin önüne düşüyor ne de "kimse bakmıyor" listesine. Hiçbir hata
+üretmeden kayboluyor.
+
+⚠️ Ret kodu `AssigneeNotFound` değil **`AssigneeNotAllowed`**: kullanıcı
+gerçekten var, atanamaz olan o. Eski kod ekranda *"kullanıcı bulunamadı"*
+derdi ve personel adı yanlış yazdığını sanırdı.
+
+⚠️ **Ölçüt yetki, rol adı değil.** `support.read` taşıyan her rol destekçi
+sayılıyor — aynı tanım `PlatformStaffRepository.DestekOlcutleriAsync`'te
+zaten vardı ve ikinci bir tanım yazmak yerine aynı sabite bağlandı. Rol adına
+bakılsaydı `platform.admin` rolündeki biri listede görünmezdi; o rol de bu
+yetkiyi taşıyor.
+
+⚠️ Var olan bir test kırıldı ve **kırılması doğruydu**: kuyruk testi rolsüz
+bir kullanıcıya atama yapıyordu, yani ancak kusur sayesinde çalışan bir kurgu.
+Kusur kapanınca kurulum gerçekçileşti. Kusurun testte de yaşıyor olması,
+kusurun ne kadar görünmez olduğunun ölçüsü.
+
+## 2026-09-12 · "Kime atanabilir" sorusunun cevabı sunucunundur
+
+`GET /api/support/assignable-staff` eklendi. Panel bütün personeli çekip
+süzecekti; Web oturumu bunu kendi istemedi ve gerekçesi doğruydu.
+
+**Neden:** *"destekçi kimdir"* bir yetki kuralı. İstemcide süzülseydi kuralın
+ikinci bir kopyası ekranda yaşardı ve yetki değiştiği gün ikisi sessizce
+ayrışırdı. Üstelik istemcinin "atanabilir = `support.read`" bilgisini taşıması
+gerekirdi — o da kuralın kendisi.
+
+⚠️ **Liste ve atama kontrolü TEK sorgudan besleniyor.** Ayrı yazılsalardı
+panel, sunucunun reddedeceği birini önerirdi: personel adı seçer, kaydeder,
+hata alır ve sebebini göremezdi. Bir test bağı tutuyor — yetki sabiti
+değiştirildiğinde üç test birden kırılıyor.
+
+⚠️ Yetki şartı **atamayı yapan uçla aynı** (`support.resolve`): atayabilen
+kişi kime atayabileceğini görebilmeli. Ayrı yetkiler olsaydı biri diğerini
+kilitlerdi — ekranda seçenek yok ama uç çalışıyor, ya da tersi.

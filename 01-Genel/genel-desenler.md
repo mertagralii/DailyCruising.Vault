@@ -1513,7 +1513,6 @@ olmalı — ve bunu yalnız anlatı taşıyabilir.
 Envanter bugünü sayar; **yokluğun gerekçesi** elle yazılır. Bu, *"envanter
 üretilir, gerekçe yazılır"* kuralının ikinci yarısının en somut örneği.
 
-İlgili: [[genel-esszamanli-oturumlar]]
 
 ## Aynı kontrol farklı sebeplerden ateşlenir — sebebi etiketlemek çözümü belirler
 
@@ -1546,3 +1545,37 @@ susturabilseydi kontrol kendi kendini aklardı ve ölçtüğü şey kaybolurdu.
 oturumda mı"**dır. İkincisiyse otomatikleştirmek ölçümü öldürür.
 
 İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
+
+## Üretilen yanlış sayı, elle yazılmış yanlış sayıdan zor fark edilir
+
+2026-09-12, web oturumunun uyarısı. Vault ağacına `.agents/skills/*/SKILL.md`
+dosyaları (Codex için üretilen skill tanımları) girdi ve not sayacı **106'dan
+111'e** çıktı. Sayı **üretilmişti**, yani güvenilir sanılıyordu — oysa girdisi
+yanlıştı.
+
+⚠️ Elle yazılmış yanlış sayı bir gün fark edilir çünkü kimse ona güvenmez;
+**üretilmiş** yanlış sayı fark edilmez çünkü *"betik hesapladı"* denir. Üretim
+doğruluğu garanti etmiyor, yalnızca **elle bakma ihtiyacını** kaldırıyor — ve o
+ihtiyaç kalktığında hatalı girdi görünmez oluyor.
+
+**Kural:** bir sayıyı üretmeye başladığında, üreticinin **girdi kümesini** de
+denetime bağla. Bu vault'ta karşılığı: `dogrula.py` ile `acilis-guncelle.py`
+**aynı** kapsam süzgecini kullanıyor; farklı kullanırlarsa ikisi farklı gerçeği
+ölçer ve ikisi de "temiz" der.
+
+## Konum, bir dosyanın ne olduğunu söylemez
+
+Aynı olayın ikinci yarısı: denetim bir `.md` dosyasının **vault notu** olduğunu
+**bulunduğu yerden** çıkarıyordu. `SKILL.md` dosyaları not değil — frontmatter
+şeması onlara uymuyor, dördünün de adı **zorunlu** olarak aynı, ve hub'dan
+linklenmemeleri kusur değil (harness onları adıyla yüklüyor).
+
+Sonuç 19 yanlış pozitifti ve düzeltmesi **muafiyet listesi değil kapsam**:
+o dosyalar kuralı ihlal etmiyor, **kuralın konusu değil**. İkisini karıştırmak
+muafiyet listesini çöplüğe çevirir — kontrol 24'ün muaf listesi *"bakıldı ve
+açıklandı"* demek, *"bu dosya bizi ilgilendirmiyor"* demek değil.
+
+**Kural:** bir dosyanın denetime tabi olup olmadığı **konumla değil kimlikle**
+belirlenir; kimlik belirsizse yapılandırmaya yazılır (`tarama_disi`).
+
+İlgili: [[genel-esszamanli-oturumlar]]

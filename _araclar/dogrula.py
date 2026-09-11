@@ -95,7 +95,24 @@ def frontmatter(text):
 # Vault notu olmayan repo belgeleri denetim disi: README GitHub icin yazilir,
 # frontmatter ve hub bagi kurallari ona uygulanmaz.
 DENETIM_DISI = set(AYAR["denetim_disi"])
-notlar = sorted(p for p in VAULT.rglob("*.md") if p.name not in DENETIM_DISI)
+TARAMA_DISI = tuple(AYAR.get("tarama_disi", []))
+
+
+def _vault_notu_mu(p):
+    """Vault NOTU mu, yoksa baska bir aracin .md dosyasi mi.
+
+    Denetim bir dosyanin not oldugunu KONUMUNDAN cikariyordu ve bu 2026-09-12'de
+    20 yanlis pozitif uretti: `.agents/skills/*/SKILL.md` (Codex skill tanimlari)
+    not degil, ama vault agacinda duruyorlar. Muafiyet degil KAPSAM: o dosyalar
+    kurali ihlal etmiyor, kuralin konusu degil.
+    """
+    if p.name in DENETIM_DISI:
+        return False
+    rel = p.relative_to(VAULT).as_posix()
+    return not any(rel.startswith(d) or f"/{d}" in f"/{rel}" for d in TARAMA_DISI)
+
+
+notlar = sorted(p for p in VAULT.rglob("*.md") if _vault_notu_mu(p))
 adlar = {}
 for p in notlar:
     adlar.setdefault(p.stem, []).append(p.relative_to(VAULT))

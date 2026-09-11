@@ -1,7 +1,7 @@
 ---
 rol: map
 kapsam: api
-guncelleme: 2026-09-11
+guncelleme: 2026-09-12
 durum: guncel
 ---
 
@@ -37,14 +37,19 @@ kimliğini değil **sürüm etiketini** saklıyor → [[api-kararlar]]
 | Metot | Yol | Yetki | Not |
 |---|---|---|---|
 | GET | `/api/platform/settings` | `platform.settings` | Tutma süresi · tahsilat penceresi · biniş belgesi ömrü · iade kademeleri |
+| PUT | `/api/platform/settings` | `platform.settings` | **Yalnız iki süre.** İptal kademeleri ve komisyon sözleşmede YOK |
 
 Değerler **motorun kendi sabitlerinden** okunuyor (`ReservationService`,
 `RefundPolicy.Tiers`), yeniden yazılmıyor. İade kademeleri `switch`'ten
 listeye taşındı ve **hesap o listeden yürüyor**.
 
-⚠️ **`PUT` yok.** Süreler derleme zamanı sabiti; iptal kademeleri ise
-yazılabilir **olmamalı** (`S-02`, müşteriye verilmiş söz). Cevapta bölüm
-başına `editable` alanı var, bugün ikisi de `false` → [[api-kararlar]]
+Süreler `PlatformSettings` tek satırlık tablosundan okunuyor (`A134`) ve
+panelden değiştirilebiliyor; **önbellek yok**, değişiklik anında geçerli ve
+yalnız yeni rezervasyonları etkiliyor.
+
+⚠️ İptal kademeleri yazılamaz (`S-02`, müşteriye verilmiş söz).
+`reservation.editable` artık `true`, `cancellation.editable` `false`
+→ [[api-kararlar]]
 
 ---
 
@@ -207,7 +212,7 @@ Domain  ←  Application  ←  Infrastructure  ←  Api
 | `DailyCruising.Domain` | **hiçbiri** | 17 klasör, **84 entity** (DbSet sayısı) |
 | `DailyCruising.Application` | Domain | **hiçbir NuGet paketi yok** — kasıtlı |
 | `DailyCruising.Infrastructure` | Application | EF Core, **21 yapılandırma dosyası** (84 entity eşlemesi), **83 migration**, **11 zamanlanmış iş**, JWT, MailKit, **AWS S3 + SkiaSharp**, ödeme sağlayıcıları **Paratika (yürürlükte) + İyzico (eski ödemelerin iadesi için)** |
-| `DailyCruising.Api` | Application + Infrastructure | **62 controller, 195 yol / 248 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
+| `DailyCruising.Api` | Application + Infrastructure | **62 controller, 195 yol / 249 operasyon**; API arayüzü **Scalar** (`/scalar/v1`, yalnız Development); `Program` `public partial` (`A-43`) |
 
 **İki değişmez kural:**
 
