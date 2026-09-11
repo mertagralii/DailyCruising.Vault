@@ -1516,3 +1516,35 @@ tarayıcıda doğrulandı: tekne fiyatlandırma · 2026-09-12 · src/components/
 tarayıcıda doğrulandı: tekne görselleri · 2026-09-12 · src/components/panel/boat-media.tsx · d0bb7aa
 tarayıcıda doğrulandı: tekne belgeleri · 2026-09-12 · src/components/panel/boat-documents.tsx · d0bb7aa
 tarayıcıda doğrulandı: tekne düzenleme formu · 2026-09-12 · src/components/panel/boat-form.tsx · d0bb7aa
+
+## 2026-09-12 · blog onay ekranı yazıyı göstermiyormuş (`11324d6`)
+
+⚠️ Onay ekranı gövdeyi **ham HTML olarak** basıyordu:
+`<h2>Bakım</h2><p>Gövde boyası yenilendi…`. Yayınlayıp
+yayınlamayacağına karar veren kişi **makaleyi değil etiketleri**
+okuyordu.
+
+Kodda gerekçe yazılıydı: *"Onaylayan kişi ne görüyorsa ziyaretçi de onu
+görecek."* **Cümle yanlıştı** — ziyaretçi yazıyı `blog/[slug]`
+sayfasında render edilmiş görüyor. Ekran, tam da göstermesi gereken şeyi
+göstermiyordu.
+
+⚠️ Gerekçenin **ikinci yarısı doğruydu** ve korundu: denetçi gömülü bir
+etiketi görebilmeli. İkisi birbirini dışlamıyormuş — artık üstte render
+edilmiş önizleme (*"Ziyaretçi bunu görecek"*), altında kaynak. İki
+gösterim iki ayrı soruyu cevaplıyor: *"nasıl görünecek"* ve *"içinde ne
+var"*.
+
+Önizleme **yalıtılmış çerçevede** (`sandbox=""`, `srcDoc`) — yasal metin
+görüntüleyicisindeki desenin aynısı ve sebebi aynı: içerik başkası
+tarafından yazılmış, onay ekranı o içeriğin çalışabildiği son yer
+olmamalı. `dangerouslySetInnerHTML` tavanı **değişmedi** (hâlâ 1, yalnız
+ziyaretçi sayfası).
+
+**Bu, gecenin "sahipsiz gerekçe" kalıbının üçüncü örneği** ve en
+pahalısı: diğer ikisi (iptal kademeleri, şablon düzenleme) bir kararı
+yanlış anlatıyordu; bu, **ekranın işini yapmamasına** yol açıyordu.
+Gerekçe ikna ediciydi, ölçülmemişti.
+
+tarayıcıda doğrulandı: blog yönetimi ve onay ekranı · 2026-09-12 · src/components/panel/blog-moderation.tsx · 11324d6
+tarayıcıda doğrulandı: yasal metin görüntüleyici · 2026-09-12 · src/components/panel/admin/legal-documents.tsx · 11324d6
