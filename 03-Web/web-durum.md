@@ -1131,20 +1131,20 @@ tarayıcıda doğrulandı: yolcu gönder · 2026-09-11 · src/components/panel/a
 tarayıcıda doğrulandı: tahsilat kartı ve ödeme bağlantısı · 2026-09-11 · src/components/panel/admin/reservation-detail.tsx · 8586b59
 tarayıcıda doğrulandı: iptal kartı · 2026-09-11 · src/components/panel/admin/reservation-detail.tsx · 8586b59
 tarayıcıda doğrulandı: /odeme müşteri ödeme sayfası · 2026-09-11 · src/app/odeme/page.tsx · 8586b59
-tarayıcıda doğrulandı: sözleşme listesi · 2026-09-11 · src/components/panel/admin/contracts.tsx · 8586b59
+tarayıcıda doğrulandı: sözleşme listesi · 2026-09-11 · src/components/panel/admin/contracts.tsx · ccb8730
 tarayıcıda doğrulandı: bölge yönetimi · 2026-09-11 · src/components/panel/admin/regions.tsx · c1e22c6
 tarayıcıda doğrulandı: finans · 2026-09-11 · src/components/panel/admin/finance.tsx · c1e22c6
-tarayıcıda doğrulandı: aktivite kayıtları · 2026-09-11 · src/components/panel/admin/activity.tsx · c1e22c6
-tarayıcıda doğrulandı: etkinlik listesi · 2026-09-11 · src/components/panel/admin/activity-log.tsx · c1e22c6
+tarayıcıda doğrulandı: aktivite kayıtları · 2026-09-11 · src/components/panel/admin/activity.tsx · ccb8730
+tarayıcıda doğrulandı: etkinlik listesi · 2026-09-11 · src/components/panel/admin/activity-log.tsx · ccb8730
 tarayıcıda doğrulandı: reklam yönetimi · 2026-09-11 · src/components/panel/admin/adverts.tsx · c1e22c6
-tarayıcıda doğrulandı: log kayıtları · 2026-09-11 · src/components/panel/admin/logs.tsx · c1e22c6
-tarayıcıda doğrulandı: e-posta yönetimi · 2026-09-11 · src/components/panel/admin/email.tsx · c1e22c6
+tarayıcıda doğrulandı: log kayıtları · 2026-09-11 · src/components/panel/admin/logs.tsx · ccb8730
+tarayıcıda doğrulandı: e-posta yönetimi · 2026-09-11 · src/components/panel/admin/email.tsx · ccb8730
 tarayıcıda doğrulandı: sms yönetimi · 2026-09-11 · src/components/panel/admin/sms.tsx · c1e22c6
 tarayıcıda doğrulandı: sms gönderimleri · 2026-09-11 · src/components/panel/admin/sms-log.tsx · c1e22c6
-tarayıcıda doğrulandı: bildirim şablonları · 2026-09-11 · src/components/panel/admin/notification-templates.tsx · c1e22c6
+tarayıcıda doğrulandı: bildirim şablonları · 2026-09-11 · src/components/panel/admin/notification-templates.tsx · ccb8730
 tarayıcıda doğrulandı: bildirim günlüğü · 2026-09-11 · src/components/panel/admin/notification-log.tsx · c1e22c6
 tarayıcıda doğrulandı: belge kuyruğu · 2026-09-11 · src/components/panel/admin/document-queue.tsx · c1e22c6
-tarayıcıda doğrulandı: rezervasyon ayarları · 2026-09-11 · src/components/panel/admin/reservation-settings.tsx · c1e22c6
+tarayıcıda doğrulandı: rezervasyon ayarları · 2026-09-11 · src/components/panel/admin/reservation-settings.tsx · ccb8730
 tarayıcıda doğrulandı: iade modalı · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 8586b59
 tarayıcıda doğrulandı: iptal tutar süzgeci · 2026-09-11 · src/components/panel/admin/cancellations.tsx · 8586b59
 tarayıcıda doğrulandı: müşteri iptal ekranı · 2026-09-11 · src/components/account/cancel-reservation.tsx · 1ac13a3

@@ -1355,8 +1355,18 @@ if _D28 and (VAULT / _D28["dosya"]).exists():
                 f"[tarayici dogrulamasi geride] {_D28['dosya']}: '{_ekran}' "
                 f"{_tarih28}'de goruldu ama {_yol28} {_son28}'de degisti — "
                 f"dogrulama o hali gormemis, defter sessizce yalan soyluyor")
+    # KAPSAM ACIKCA BASILIR: "2 kirmizi" tek basina yaniltir — kac satira
+    # BAKILDIGI yazilmazsa okuyan, bakilmayan satirlari temiz sanar. Web
+    # oturumu 2026-09-11'de tam bunu sordu: kontrol 2 sapma bildirdi, kendisi 7
+    # olctu. Sebep korluk DEGIL zamandi (bes commit ben olcerken henuz yoktu)
+    # ama soru yerindeydi: eksik bakan bir denetim, hic bakmayandan pahalidir.
+    # ⚠️ Bu sayi (defter SATIRI) `durum-denetle.py`'nin bastigi modul sayisiyla
+    # AYNI SEY DEGIL — ayni sanilmasin diye ikisi de ne saydigini yaziyor.
     olcumler.append(
-        f"kontrol 28 · {_D28['dosya']}: {len(_onayli)} dogrulanmis "
+        f"kontrol 28 · {_D28['dosya']}: {len(_onayli) + _bekleyen} defter "
+        f"satiri tarandi ({len(_onayli)} dogrulanmis + {_bekleyen} degil) · "
+        f"olcum ani: {(_git_repo(_drepo, ['rev-parse', '--short', 'HEAD']) or '?').strip()} · "
+        f"{len(_onayli)} dogrulanmis "
         f"({_yolsuz} tanesi dosya yolu YAZMADIGI icin olculemedi) · "
         f"{_bekleyen} dogrulanmamis · koddan geride {_geride} · gun sinirini kaldiran SHA kayitli {sum(1 for _m in _onayli if _m.group(4))}")
 elif _D28:

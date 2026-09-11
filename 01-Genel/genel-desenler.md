@@ -1418,7 +1418,6 @@ gerekiyor. Ölçüm, hatırlamayı da fark etmeyi de gerektirmiyor.
 Kontrol 29'un değeri bunun kanıtı: aynı kusur üç kez oldu; ilk ikisini **insan**
 tarayıcıda buldu, üçüncüsünü **makine** ilk koşumunda.
 
-İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
 
 ## Gerekçenin sahibi de yazılır
 
@@ -1441,3 +1440,43 @@ belirsizleşiyordu. O gün dosya ayrılarak çözüldü; bugün anlaşıldı ki 
 düşükken zorunlu satır eklemek, `Sonucu`'nun başına geleni tekrarlamak olurdu.
 
 İlgili: [[genel-esszamanli-oturumlar]]
+
+## Denetim ölçtüğü ANI bildirir — ve kaç satıra baktığını
+
+2026-09-11: kontrol 28 **iki** sapma bildirdi, web oturumu aynı defteri ölçüp
+**yedi** buldu. İlk refleks *"denetim kör"* oldu; ölçtüm, kör değildi —
+**beş commit ben ölçerken henüz yoktu.** Aynı dosya, aynı desen, `HEAD`
+`ccb8730`'a geldiğinde yedi sapma veriyor.
+
+Yani denetim yanlış değildi, **anlık**tı. Bu, 2026-08-24'te yazılan dersin
+denetim tarafındaki hâli: *"ölçüm yanlış değildi, sadece bir saniye sonra yalan
+oldu."* Eşzamanlı oturumlarda bu kaçınılmaz.
+
+**Karşılığı iki satır:**
+1. Denetim **ölçtüğü anı** bildirir (`olcum ani: ccb8730`) — okuyan, sonucu
+   hangi koda karşı alındığını bilir.
+2. Denetim **kaç satıra baktığını** bildirir. *"İki kırmızı"* tek başına
+   yanıltıyor; web'in cümlesi doğru: **eksik bakan bir denetim, hiç bakmayandan
+   pahalıdır**, çünkü kalanları temiz sandırır.
+
+⚠️ Ve iki sayının **aynı şeyi saydığı sanılmamalı**: kontrol 28 defter satırı
+sayıyor, `durum-denetle.py` modül sayıyor. Farklı olmaları sorun değil; aynı
+sanılması sorun. İkisi de artık ne saydığını yazıyor.
+
+## Ölçüt "yok" ile "yanlış"ı ayıramaz
+
+Web oturumunun uyarısı, kontrol 6'nın yeni oranı için: *"benim üç kusurum
+sahipsiz değildi, **yanlış sahipliydi** — kendi önerimi karar diliyle
+yazmıştım."*
+
+Doğru ve kaydedilmesi gerek: regex *"Mert"* kelimesini görüyor, o kelimenin
+**doğru** kullanılıp kullanılmadığını göremiyor. Oran %100 olsa bile aynı hata
+tekrar edebilir.
+
+Bu, bu vault'ta üçüncü kez çıkan sınırın yeni bir yüzü: kontrol 24 adın **var
+olduğunu** ölçüyor doğruluğunu değil; kontrol 21 atıf hedefinin **var olduğunu**
+ölçüyor içeriğini değil; kontrol 6 sahibin **yazıldığını** ölçüyor doğru
+olduğunu değil. **Varlık ölçülebiliyor, doğruluk ölçülemiyor** — ve bu sınır her
+ölçütün yanına yazılmadıkça ölçüt olduğundan güçlü sanılıyor.
+
+İlgili: [[genel-notlar]] · [[genel-kararlar]] · [[calisma-duzeni]] · [[genel-gorevler]] · [[genel-araclar]]
