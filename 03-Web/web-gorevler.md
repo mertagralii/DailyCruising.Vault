@@ -1,7 +1,7 @@
 ---
 rol: gorev
 kapsam: web
-guncelleme: 2026-09-10
+guncelleme: 2026-09-11
 durum: guncel
 ---
 
