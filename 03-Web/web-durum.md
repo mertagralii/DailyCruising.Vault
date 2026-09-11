@@ -1185,10 +1185,10 @@ tarayıcıda doğrulandı: personel listesi · 2026-09-12 · src/components/pane
 tarayıcıda doğrulandı: rol yönetimi · 2026-09-12 · src/components/panel/admin/roles.tsx · 0fd5356
 tarayıcıda doğrulandı: kupon yönetimi · 2026-09-12 · src/components/panel/admin/coupons.tsx · 0fd5356
 tarayıcıda doğrulandı: iş sağlığı · 2026-09-12 · src/components/panel/job-health.tsx · 0fd5356
-tarayıcıda doğrulandı: yat işletmeleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 0fd5356
-tarayıcıda doğrulandı: destek talepleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 0fd5356
-tarayıcıda doğrulandı: yorum yönetimi · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 0fd5356
-tarayıcıda doğrulandı: tekne yönetimi · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 0fd5356
+tarayıcıda doğrulandı: yat işletmeleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 54a1e04
+tarayıcıda doğrulandı: destek talepleri · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 54a1e04
+tarayıcıda doğrulandı: yorum yönetimi · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 54a1e04
+tarayıcıda doğrulandı: tekne yönetimi · 2026-09-12 · src/components/panel/admin-panel-view.tsx · 54a1e04
 ⚠️ **Son sekizi "doğrulandı" diye yazmadım ve yazmamak bilinçli.** Bu
 ekranların bir kısmı önceki oturumlarda Mert giriş yapmışken açıldı, ama
 **hangisinin hangi gün** açıldığının kaydı yok — defter bugün açıldı.
