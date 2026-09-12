@@ -1724,3 +1724,18 @@ kalıcı olur). Ekranda *"bu parolayı kişiye siz iletin"* yazmazsa
 yönetici e-postanın taşıdığını varsayar, kimse söylemez ve kişi giriş
 yapamaz.
 
+
+### ⚠️ Bir satır doğrulanamadan kaldı
+
+`aktivite kayıtları` · `activity.tsx` — `4e32b8b`'de değişti ve o hâli
+**görülmedi**. Sebep: oturum süresi doldu, panel giriş ekranına düştü ve
+**parola girmiyorum**. Çapa bilerek eski commit'te bırakıldı; kontrol 28
+bu satırı kırmızı göstermeye devam edecek ve **göstermesi doğru**.
+
+Değişiklik salt yeniden adlandırmaydı (`SAKLAMA_NOTU` → `PENCERE_NOTU`,
+aynı metin) ve derleme bunu yakalar — ama "derleme yakalar" bu gece üç
+kez yetmedi. Çapayı ilerletmek, görmediğim bir şeyi görmüş gibi yazmak
+olurdu; kırmızı bırakmak dürüst olan.
+
+Mert panele yeniden giriş yaptığında tek bir ekran açılıp çapa
+tazelenebilir.
