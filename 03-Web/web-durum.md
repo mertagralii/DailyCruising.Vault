@@ -1132,14 +1132,14 @@ tarayıcıda doğrulandı: tahsilat kartı ve ödeme bağlantısı · 2026-09-11
 tarayıcıda doğrulandı: iptal kartı · 2026-09-11 · src/components/panel/admin/reservation-detail.tsx · 8586b59
 tarayıcıda doğrulandı: /odeme müşteri ödeme sayfası · 2026-09-11 · src/app/odeme/page.tsx · 8586b59
 tarayıcıda doğrulandı: sözleşme listesi · 2026-09-11 · src/components/panel/admin/contracts.tsx · ccb8730
-tarayıcıda doğrulandı: bölge yönetimi · 2026-09-11 · src/components/panel/admin/regions.tsx · c1e22c6
+tarayıcıda doğrulandı: bölge yönetimi · 2026-09-12 · src/components/panel/admin/regions.tsx · 0877d1e
 tarayıcıda doğrulandı: finans · 2026-09-12 · src/components/panel/admin/finance.tsx · 0fd5356
 tarayıcıda doğrulandı: aktivite kayıtları · 2026-09-12 · src/components/panel/admin/activity.tsx · 4e32b8b
 tarayıcıda doğrulandı: etkinlik listesi · 2026-09-11 · src/components/panel/admin/activity-log.tsx · ccb8730
 tarayıcıda doğrulandı: reklam yönetimi · 2026-09-11 · src/components/panel/admin/adverts.tsx · c1e22c6
 tarayıcıda doğrulandı: log kayıtları · 2026-09-12 · src/components/panel/admin/logs.tsx · d0bb7aa
-tarayıcıda doğrulandı: e-posta yönetimi · 2026-09-11 · src/components/panel/admin/email.tsx · ccb8730
-tarayıcıda doğrulandı: sms yönetimi · 2026-09-11 · src/components/panel/admin/sms.tsx · c1e22c6
+tarayıcıda doğrulandı: e-posta yönetimi · 2026-09-12 · src/components/panel/admin/email.tsx · 0877d1e
+tarayıcıda doğrulandı: sms yönetimi · 2026-09-12 · src/components/panel/admin/sms.tsx · 0877d1e
 tarayıcıda doğrulandı: sms gönderimleri · 2026-09-11 · src/components/panel/admin/sms-log.tsx · c1e22c6
 tarayıcıda doğrulandı: bildirim şablonları · 2026-09-12 · src/components/panel/admin/notification-templates.tsx · 959427a
 tarayıcıda doğrulandı: bildirim günlüğü · 2026-09-11 · src/components/panel/admin/notification-log.tsx · c1e22c6
@@ -1946,3 +1946,58 @@ yakalayamaz.** `WebApplicationFactory` doğrudan API'ye gidiyor, vekil
 bu repoda. Bugünkü kusur tam o boşlukta yaşıyordu — *API doğru, test
 yeşil, ekran boş.* İki tarafın da tek başına göremeyeceği yer burası ve
 defterin varlık sebebi de bu.
+
+## 2026-09-12 · bölge artık fiyat modelini yönetiyor (`0877d1e`)
+
+Mert ekranın **işini** düzeltti:
+
+> *"Bodrum bölgesinde teknesini koyan kişi fiyatlandırmayı Bodrum
+> kurallarına göre yapmalı, Fethiye'de ona göre."*
+
+Bölge bir ad/slug satırı gibi yönetiliyordu; asıl işi *"o bölgede hangi
+yolcu tipleri fiyatlanıyor"* kuralını koymakmış. Kural **bağlayıcı**,
+varsayılan değil. Yaş sınırları teknede kaldı — Mert öyle karar verdi;
+bölge çapında bir yaş sınırı, aynı bölgede farklı çalışan bir işletmeyi
+sessizce yanlış fiyatlandırırdı.
+
+Tarayıcıda denendi: Bodrum'u `AdultOnly`'ye daraltma `409` aldı, model
+değişmedi ve ekranda şu çıktı:
+
+```
+Mavi Rüzgâr Guleti · gunluk-tekne · childPrice, infantPrice (3 fiyat satırı)
+```
+
+⚠️ Uç her **fiyat satırı** için ayrı çakışma döndürüyor; ekran tekne+tarife
+başına gruplayıp **kaç satır** olduğunu sayıyor. Tekilleştirip sayıyı
+atmak, üç sezonluk bir temizliği tek satırlık gibi gösterirdi.
+
+### Aynı kusurun üçüncüsü — ve nihayet doğru düzeltmesi
+
+⚠️ Çakışma listesi ilk denemede **ekrana hiç ulaşmadı**. Sebep, iki gün
+içinde üçüncü kez aynı yerdi:
+
+| # | Nerede | Ne oldu |
+|---|---|---|
+| 1 | vekil | hata gövdesini yeniden kuruyordu, tanımadığı alanı düşürdü |
+| 2 | `parseError` | yalnız `code`/`error`/`status` alıyordu → şablon adları düştü |
+| 3 | `parseError` | **aynı yol**, bu kez `conflicts` düştü |
+
+İkinci düzeltmede **alan adı** eklemişim (`degiskenler`), mekanizmayı
+değil. O yüzden üçüncüsü kaçınılmazdı. Artık gövdenin tamamı taşınıyor
+(`detail.govde`), okuyan taraf daraltıyor.
+
+**Kural:** tanınan alanları tek tek eklemek, her yeni alanda aynı kusuru
+üretir.
+
+### Back-end'in sorusuna ölçümle cevap
+
+*"`passengerModel`'i müşteri tarafındaki `RegionOption`'a da ekleyeyim
+mi?"* → **Hayır.** `BoatRentalTypeOption` rezervasyon formuna
+`adultPrice` · `childPrice` · `infantPrice` alanlarını zaten veriyor;
+form seçiciyi **fiyatın `null` olmasına** bakarak gizleyebilir ve bu,
+sunucunun yeni doğrulamasının birebir karşılığı.
+
+⚠️ Fiyat alanı **daha hassas**: bölge `AdultChildInfant` iken çocuk
+fiyatı girilmemiş bir tarife olabilir. Bölge modeline bakan bir form
+seçiciyi gösterir, müşteri seçer ve `400` yer. Fiyata bakan form o
+durumu da doğru kapatıyor. İkinci kopya eklenmedi.
