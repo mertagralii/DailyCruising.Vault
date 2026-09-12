@@ -1671,3 +1671,56 @@ Ret kodu `AssigneeNotAllowed` olarak eşlendi — `AssigneeNotFound`
 değil. Fark önemli: kullanıcı var, atanamaz olan o; "bulunamadı"
 deseydi personel adı yanlış yazdığını sanırdı.
 
+## 2026-09-12 · kapanış düzeltmesi — "saklama" değil "pencere" (`4e32b8b`)
+
+Back-end üç kararı da bitirdi. Biri kodda duran bir cümleyi yanlışladı:
+**Mert budama istemedi**, yani `EventLogs` süresiz büyüyor.
+
+Sabitin adı `SAKLAMA_AYI` idi ve dokümanı *"saklama süresi"* diyordu.
+Doğrusu: **ekranın penceresi 24 ay, verinin ömrü sınırsız.** Ad
+`PENCERE_AYI` oldu, `SAKLAMA_NOTU` → `PENCERE_NOTU`.
+
+⚠️ Eski ad **iki yönde birden** yanlış yapardı: var olan veri yok
+sanılırdı, ya da silindiği sanılan veri durmaya devam ederdi. Ekrandaki
+cümle tesadüfen doğru kalmıştı (*"24 ay geriye açılıyor"* — pencereden
+bahsediyor); yanlış olan **adın kendisiydi.**
+
+⚠️ Asıl ders adın nasıl yanlış olduğunda: yazıldığı gün **doğru değildi
+ama doğru olacaktı** — budama istenmişti. Karar değişince ad sessizce
+yalana döndü. **"Yakında doğru olacak" bir şeyi bugünkü adıyla yazmak,
+gecikmeli bir yalan yazmaktır.**
+
+### `durum-denetle.py` ilk kez kendi işini yaptı
+
+Aynı turda kırmızı yandı:
+
+```
+eposta: istenen uç ARTIK VAR, ekran hâlâ yokmuş gibi davranıyor
+        — /api/platform/notification-templates/{}
+```
+
+Şablon yazma ucu geldi, benim `istenen` kaydım hâlâ *"yok"* diyordu.
+Alanın var olma sebebi buydu — **yokluk iddiası dünya zenginleştikçe
+bozulur** — ve mekanizma tam olarak öyle çalıştı.
+
+⚠️ **Ama ikinci iddiayı yakalayamadı ve sebebi öğretici.** İptal
+kademeleri için `PUT .../cancellation-tiers` yazmıştım; uç başka adla
+geldi (`POST .../cancellation-policies`). Yol adına bakan bir denetim,
+**aynı yeteneğin başka adla gelmesini göremiyor.** Makine okunur alan,
+yokluk iddiasının bir bayatlama biçimine karşı koruyor; hepsine değil.
+
+İkisi de düzyazıya çevrildi: uç **var**, ekran **henüz bağlamadı**.
+
+### Bağlanmayı bekleyen iki uç ailesi
+
+| Ne | Uç | Ekranda yazması gereken |
+|---|---|---|
+| İptal kademeleri | `GET/POST .../cancellation-policies` | değişiklik yalnız **bundan sonraki** rezervasyonları etkiler |
+| Şablon düzenleme | `GET .../{key}` · `PUT .../{key}/{channel}` | zorunlu değişkenler **kanal başına** (SMS 160 karakter) |
+
+⚠️ Üçüncü bir not back-end'den: personel oluşturulurken parola
+**e-postayla gitmiyor** (bilerek — düz metin parola posta kutusunda
+kalıcı olur). Ekranda *"bu parolayı kişiye siz iletin"* yazmazsa
+yönetici e-postanın taşıdığını varsayar, kimse söylemez ve kişi giriş
+yapamaz.
+
