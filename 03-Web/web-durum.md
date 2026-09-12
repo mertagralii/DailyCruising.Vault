@@ -1794,3 +1794,55 @@ yalnız tur sayısı değişir.
 Mert panele girdiğinde: e-posta şablonu düzenle → bilerek bir değişkeni
 sil → sunucunun adını basması beklenir. Sonra rezervasyon ayarlarında
 yeni sürüm → kademeyi artan oranla gir → reddedilmesi beklenir.
+
+## 2026-09-12 · iki uç ailesi tarayıcıda doğrulandı (`4a42c22`)
+
+Mert giriş yaptı, ikisi de açıldı.
+
+### Şablon düzenleme — bir kusur çıktı ve ekranda çıktı
+
+Editör uçtan konu ve gövdeyi getiriyor, kaydetme yolu çalışıyor, sunucu
+eksik değişkeni reddediyor.
+
+⚠️ **Ama "adlarını basıyor" iddiam yanlıştı.** Ekranda yalnız *"Zorunlu
+değişken eksik."* çıktı, hangi değişken olduğu yok. İki katmanlı sebep,
+ikisi de ölçüldü:
+
+1. `parseError` gövdeden yalnız `code`, `error`, `status` alıyordu;
+   tanımadığı alanları **sessizce düşürüyordu**. Düzeltildi —
+   `detail.degiskenler` artık taşıyor.
+2. Düzelttikten sonra da ad gelmedi. Ham gövde ölçüldü:
+   `{"error":"Zorunlu değişken eksik.","code":"MissingVariable"}` —
+   **diziler sunucudan hiç gelmiyor.** Kaynaktaki
+   `TemplateValidationError` kaydı `Missing`/`Unknown` taşıyor, yani
+   arada bir şey gövdeyi yeniden şekillendiriyor. Back-end'e bildirildi.
+
+⚠️ **Bu, bu oturumun kendi dersine düşmem.** Yorum *"alan adlarıyla
+gösteriliyor"* diyordu; derleme, lint ve üç ölçüm betiği temizdi ve
+kusuru yalnız **ekrana bakmak** yakaladı. Yorum kodun yaptığını değil
+benim niyetimi anlatıyordu — gece boyunca beş kez düzelttiğim şeyin
+aynısı, bu kez benim yazdığımda.
+
+Şerit **yalnız ad geldiğinde** basılıyor; boş şerit basmak "denetlendi,
+sorun yok" gibi okunurdu.
+
+### İptal politikası sürümleme — üç kural da doğrulandı
+
+Bölüm basılıyor (`1 sürüm`, `v1` yürürlükte, kademe sayısı ve bağlı
+rezervasyon sayısıyla). Form yürürlükteki kademelerle açılıyor.
+
+| Deneme | Sonuç |
+|---|---|
+| Oran kalkışa yaklaştıkça artıyor | `400` · `NonDecreasingTiers` |
+| Sıfır saat kademesi yok | `400` · `ZeroTierRequired` |
+| Formda artan oran | Kaydet **kapalı**, sebep yazılı |
+
+⚠️ **Hiç sürüm oluşturulmadı** ve bu bilinçli: yeni sürüm kalıcı ve
+geri alınamaz bir kayıt — oluşturulduğu andan sonraki her rezervasyonu
+bağlıyor. Reddetme yolları yazma üretmiyor, o yüzden serbestçe denendi;
+başarı yolu **Mert'in onayını bekliyor**. Ölçüldü: deneme sonrası hâlâ
+tek sürüm var ve yürürlükteki kademeler değişmedi (48s/%100 · 24s/%50 ·
+0s/%0).
+
+tarayıcıda doğrulandı: bildirim şablonu düzenleme · 2026-09-12 · src/components/panel/admin/notification-templates.tsx · 4a42c22
+tarayıcıda doğrulandı: iptal politikası sürümleri · 2026-09-12 · src/components/panel/admin/reservation-settings.tsx · 4a42c22
