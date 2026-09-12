@@ -1739,3 +1739,58 @@ olurdu; kırmızı bırakmak dürüst olan.
 
 Mert panele yeniden giriş yaptığında tek bir ekran açılıp çapa
 tazelenebilir.
+
+## 2026-09-12 · iki uç ailesi bağlandı (`5e90c86`) — **tarayıcıda görülmedi**
+
+Mert *"iki uç ailesini de bağla"* dedi. İkisi de yazıldı, derleme ve üç
+betik temiz. ⚠️ **Ama hiçbiri ekranda açılmadı**: oturum süresi doldu,
+panel giriş istiyor ve **parola girmiyorum**. Defterde satır açılmadı —
+görmediğim bir şeyi doğrulanmış yazmak, bu oturumda altı kez düzelttiğim
+kusurun aynısı olurdu.
+
+### Şablon düzenleme
+
+`PUT /api/platform/notification-templates/{key}/{channel}`. Sunucu
+reddederse ekran eksik ve tanınmayan değişkenleri **adıyla** basıyor.
+
+⚠️ **Değişken şeridi "kullanılabilir" diyor, "zorunlu" demiyor** ve bu
+ölçümden çıktı, back-end'in tarifinden değil. Bana *"zorunlu liste kanal
+başına, o kanal için iste"* denmişti; kaynağa baktım
+(`PlatformNotificationTemplatesController`): doğrulama gerçekten
+`RequiredFor(channel)` ile kanal başına çalışıyor **ama `GET` anahtarın
+tüm listesini döndürüyor**. Yani ekranın kanal başına zorunluyu
+gösterme yolu yok. "Zorunlu" yazsaydım SMS'te olmayan bir şartı varmış
+gibi gösterirdim.
+
+⚠️ Kaynakta iki hata kodu daha buldum, mesajda geçmiyordu:
+`BodyRequired` ve `SubjectRequired` (e-postada konu zorunlu, SMS'te
+konu kavramı yok).
+
+**Ders:** bir eş oturumun tarifi, kendi kodunun ölçümü yerine geçmiyor.
+İkisi de iyi niyetliydi ve ikisi de bu gece birbirinin kusurunu buldu;
+yine de sözleşmeyi **şemadan ve kaynaktan** okumak gerekti.
+
+### İptal politikası sürümleme
+
+`GET/POST /api/platform/settings/cancellation-policies`. Ekranda
+"düzenleme" **yok**, sürüm üretme var — iptal politikası müşteriye
+rezervasyon anında verilmiş bir söz, var olan satırı değiştirmek onu
+geriye dönük değiştirmek olurdu.
+
+⚠️ Her sürümün `reservationCount`'u basılıyor: **"eski sürüm" ile "hâlâ
+birilerini bağlayan sürüm" aynı şey değil.**
+
+⚠️ Yeni sürüm formu **yürürlükteki kademelerle** açılıyor, boş değil:
+politika baştan yazılmıyor, bir kademesi değişiyor. Boş açsaydım en
+olası hata, personelin bir kademeyi yazmayı unutması olurdu.
+
+Sunucunun üç kuralı (sıfır saat kademesi zorunlu · aynı saat iki kez
+olamaz · oran kalkışa yaklaştıkça artamaz) kaydetmeden önce söyleniyor
+— **ama kapı sunucu**: buradaki denetim kaldırılsa güvenlik değil,
+yalnız tur sayısı değişir.
+
+### Doğrulanması gereken
+
+Mert panele girdiğinde: e-posta şablonu düzenle → bilerek bir değişkeni
+sil → sunucunun adını basması beklenir. Sonra rezervasyon ayarlarında
+yeni sürüm → kademeyi artan oranla gir → reddedilmesi beklenir.
