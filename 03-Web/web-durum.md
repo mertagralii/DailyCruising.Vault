@@ -1869,3 +1869,64 @@ bağlayan sürüm"* ayrımını basmasının sebebi bu ve artık gerçek bir
 sayıyla görünüyor.
 
 Yürürlükteki kademeler değişmedi: 48s/%100 · 24s/%50 · 0s/%0.
+
+## 2026-09-12 · değişken adları geldi — kusur **vekildeymiş** (`959427a`)
+
+Back-end *"bende gövdede çıkıyor, sürümü teyit et"* dedi. İkimiz de
+doğru ölçmüşüz; **aynı şeyi ölçmüyormuşuz.**
+
+Onun testi `WebApplicationFactory` ile **doğrudan** API'ye gidiyor.
+Benim ölçümüm `/api/dc/...` yani **kendi vekilimden** geçiyordu. Vekil
+hata gövdesini yeniden kuruyordu:
+
+```ts
+{ error: e.detail.message, code: e.detail.code, ...(fieldErrors ? {errors} : {}) }
+```
+
+Tanımadığı her alanı düşürüyordu. Yani `missing` / `unknown` sunucudan
+çıkmıyordu değil — **çıktıktan sonra kayboluyordu.**
+
+⚠️ Üstündeki yorum şunu diyordu: *"Hata gövdesi olduğu gibi
+geçiriliyor."* **Cümle yanlıştı.** Bu oturumun en sık kusuru ve bu
+üçüncü kez bende.
+
+### Sürümü nasıl elediğim — iki gözlem, tek başına ikisi de yanıltırdı
+
+Back-end haklı olarak *"çalışan süreç eski olabilir"* dedi; bu gece iki
+kez tam olarak o yaşanmıştı. Ama süreç **günceldi** ve bunu hata
+gövdesinden değil, **başka bir alandan** anladım: aynı turda eklediği
+`channels[].required` geliyordu. Yani yeni kod ayaktaydı ve gövde yine
+dizisizdi.
+
+⚠️ Tek başına *"gövde dizisiz"* beni sürüme baktırırdı; tek başına
+*"`required` geliyor"* hiçbir şey söylemezdi. **İkisi birlikte vekili
+işaret etti.**
+
+### Düzeltme ve yan faydası
+
+Vekil artık gövdeyi **olduğu gibi** geçiriyor. Ölçüm:
+
+```
+{"error":"Zorunlu değişken eksik.","code":"MissingVariable","missing":["bağlantı"],"unknown":[]}
+{"error":"Tanınmayan değişken kullanılmış.","code":"UnknownVariable","missing":[],"unknown":["uydurma"]}
+```
+
+Ekranda uyarının altında `{{bağlantı}}` çipi basılıyor.
+
+⚠️ Yan fayda kalıcı: **vekil bir alanı tanımak zorunda değil, yalnız
+iletmek zorunda.** İleride eklenecek her alan kendiliğinden geçer;
+yeniden kuran bir vekil, her yeni alanda sessizce eskiyen bir kopya
+tutuyordu.
+
+⚠️ Kusurun görünmezliği **iki taraflı** olmasındandı: istemcideki
+`parseError` de aynı alanları düşürüyordu. Birini düzeltmek ekranı
+değiştirmezdi — bu yüzden "düzelttim ama olmadı" diye bırakılabilirdi.
+
+### Kanal başına zorunlu değişkenler
+
+Back-end `channels[].required` ekledi, bağlandı. SMS şablonunda
+`{{kod}}` · `{{kalkış}}` · `{{bağlantı}}` **koyu**, kalan dördü soluk;
+e-postada yedisi de koyu. Personel artık e-postada gördüğü alanların
+SMS'te de gerektiğini sanmıyor.
+
+tarayıcıda doğrulandı: vekil hata gövdesi · 2026-09-12 · src/app/api/dc/[...path]/route.ts · 959427a
