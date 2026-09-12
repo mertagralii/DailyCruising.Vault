@@ -1846,3 +1846,26 @@ tek sürüm var ve yürürlükteki kademeler değişmedi (48s/%100 · 24s/%50 ·
 
 tarayıcıda doğrulandı: bildirim şablonu düzenleme · 2026-09-12 · src/components/panel/admin/notification-templates.tsx · 4a42c22
 tarayıcıda doğrulandı: iptal politikası sürümleri · 2026-09-12 · src/components/panel/admin/reservation-settings.tsx · 4a42c22
+
+### Sürüm oluşturma denendi — Mert onayıyla (`v2`)
+
+Mert *"dene, sürüm oluştur"* dedi. **Kademeleri aynı bırakarak** bir
+sürüm açıldı: yazma yolunun tamamı denenir ama iade kuralları
+değişmez. İçeriği değiştiren bir sürüm, deneme değil gerçek bir
+politika değişikliği olurdu.
+
+Sonuç — ve buradaki iki sayı sürümlemenin **niye** gerektiğini tek
+başına anlatıyor:
+
+| Sürüm | Durum | Bağlı rezervasyon |
+|---|---|---|
+| `v2 – deneme (kademeler aynı)` | Yürürlükte | **0** |
+| `v1` | Yürürlükte değil | **60** |
+
+⚠️ **`v1` artık yürürlükte değil ama hâlâ 60 rezervasyonu bağlıyor.**
+Sürümleme olmasaydı bu 60 kayıt, kimsenin fark etmediği bir anda yeni
+kurala geçmiş olurdu. Ekranın *"eski sürüm"* ile *"hâlâ birilerini
+bağlayan sürüm"* ayrımını basmasının sebebi bu ve artık gerçek bir
+sayıyla görünüyor.
+
+Yürürlükteki kademeler değişmedi: 48s/%100 · 24s/%50 · 0s/%0.
