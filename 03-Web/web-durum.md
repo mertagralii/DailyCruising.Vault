@@ -1,7 +1,7 @@
 ---
 rol: status
 kapsam: web
-guncelleme: 2026-09-12
+guncelleme: 2026-09-14
 durum: guncel
 ---
 
@@ -2001,3 +2001,41 @@ sunucunun yeni doğrulamasının birebir karşılığı.
 fiyatı girilmemiş bir tarife olabilir. Bölge modeline bakan bir form
 seçiciyi gösterir, müşteri seçer ve `400` yer. Fiyata bakan form o
 durumu da doğru kapatıyor. İkinci kopya eklenmedi.
+
+## 2026-09-14 · gizlenme dalı ekranda görüldü (Mert onayıyla)
+
+`aff2915`'te yazılan kapı doğrulandı ama **gizlenme dalı** bugünkü veriyle
+hiç tetiklenmiyordu: kişi başı fiyatlanan her tarifede çocuk fiyatı
+girilmişti. Mert, bir tarifenin çocuk fiyatını **geçici silmeyi** onayladı.
+
+Seçilen tarife: `Mavi Derinlik · Dalış turu` — **sezon fiyatı yok**, yani
+tek satır değişiyor ve geri alması tek işlem.
+
+| Adım | Sonuç |
+|---|---|
+| `childPrice: 1400 → null` | `204` |
+| Rezervasyon formu | **Yetişkin · Bebek** — çocuk kutusu **yok** |
+| `childPrice: null → 1400` | `204` |
+| Rezervasyon formu | Yetişkin · Çocuk · Bebek |
+
+⚠️ **Aynı ekran ikinci kuralı da kanıtladı:** çocuk gizlenirken **bebek
+kaldı**, çünkü bebek fiyatı `0` — yani *"ücretsiz taşınıyor"*, *"fiyatlanmıyor"*
+değil. `null` ile `0` ayrımı bir varsayım değil, ekranda görülmüş davranış.
+
+⚠️ **Yedek önce alındı**, sonra dokunuldu: dört fiyat alanı ve sezon sayısı
+ölçülüp yazıldı. Geri yazma o yedekten yapıldı, hatırlamadan değil.
+
+### Bu doğrulamanın neden gerektiği
+
+Kapıyı yazarken kuralı **iki kez** değiştirmek zorunda kaldım ve ikisini de
+ölçüm yakaladı:
+
+1. İlk kural yalnız birim fiyata bakıyordu → **tekne bazlı** kiralamada üç
+   fiyatın üçü de `null` olduğu için bir aile tekne kiralayamazdı. Uç
+   `childCount: 1` isteğini kabul ediyor: sayı fiyat için değil
+   **kapasite** için gerekiyor.
+2. `0` gizlenseydi ücretsiz bebek taşıyan turda bebek hiç seçilemezdi.
+
+Üçüncüsünü ise **hiç ölçemedim** ve bu yüzden Mert'ten izin istedim: kuralın
+kendisi doğru olabilir ama ekranda görmediğim bir dal, "çalışıyor" diye
+yazılamaz.
