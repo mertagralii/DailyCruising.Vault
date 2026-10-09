@@ -207,7 +207,7 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
       işlemde **yanıt şeması** taşıyor — daha önce hiçbirinde yoktu, yani
       elle yazılan yanıt tipleri sessizce yalan söyleyebiliyordu.
       Kanıt: canlı, gerçek veri, iki yönlü. **Olumlu** — Mert'in başvurusu
-      (`my_mert07@hotmail.com`) satırda "Sözleşme reddedildi", modalda
+      (`musteri-test@ornek.com`) satırda "Sözleşme reddedildi", modalda
       `Ret: 5 Eyl 05:13` ve gerekçe kutusu. **Olumsuz** — Kekova Mavi Tur'da
       iki sözleşme var (%15 gönderildi, %25 reddedildi) ve gerekçe kutusu
       **yalnız 1 kez** basılıyor; satır durumu "Sözleşme gönderildi",
@@ -234,7 +234,7 @@ ister. Biçim ve gerekçe -> [[genel-desenler]]
       sayfa taşmıyor, 390'da sayfa taşması 0; destek ve yorum tabloları
       da 0'a düştü. Beş düğmenin hepsi **99px**, iki hizalı sütun, aynı
       satırdakiler eşit yükseklikte. Mert'in başvurusu
-      (`my_mert07@hotmail.com`) **"Sözleşme reddedildi"** basıyor ve
+      (`musteri-test@ornek.com`) **"Sözleşme reddedildi"** basıyor ve
       "Sözleşme gönder" düğmesi açık; 31 satırın dağılımı Aktif 19 ·
       Sözleşme gönderildi 9 · Başvuru alındı 2 · Sözleşme reddedildi 1.
       `npm run build`, `lint` ve `tsc` temiz. `982ee73`
