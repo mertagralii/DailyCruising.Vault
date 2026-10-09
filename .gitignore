@@ -14,3 +14,7 @@
 
 # macOS
 .DS_Store
+
+# Araçların geçici çıktıları (ekran karşılaştırmaları vb.) — repoya girmez
+_araclar/.tmp*/
+.tmp*/
