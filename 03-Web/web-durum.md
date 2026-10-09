@@ -293,7 +293,7 @@ ekle (`5497725`), düzenle · detay · belgeler (`df1a74f`), fiyat · resimler
 (`60cadfb`). Backend dört uç ailesini `40e59ff` ile açtı.
 
 ⚠️ **Hiçbiri personel hesabıyla açılmadı.** Yereldeki tarayıcı oturumu Mert'in
-müşteri hesabı (`my_mert07@hotmail.com`), `/admin` doğru şekilde 403 veriyor.
+müşteri hesabı (`musteri-test@ornek.com`), `/admin` doğru şekilde 403 veriyor.
 Parolayı ben yazmıyorum. Doğrulanacak iki şey var ve ikincisi daha ağır:
 
 1. `PanelKabuk` refaktörü **işletme panelindeki beş modalı** bozmuş olabilir.
