@@ -1604,7 +1604,7 @@ işletme yanıtında (`GET /api/partner/contracts`) dönüyor; platform yanıtı
 **sebebini okuyamıyor**, dolayısıyla yeni sözleşmede neyi değiştireceğini bilmiyor.
 Backend'e bildirildi → `W-86`
 
-Kanıt: canlı, gerçek veri — Mert'in kendi başvurusu (`my_mert07@hotmail.com`,
+Kanıt: canlı, gerçek veri — Mert'in kendi başvurusu (`musteri-test@ornek.com`,
 `01a06f26-…`) tabloda **"Sözleşme reddedildi"** basıyor ve satırda "Sözleşme
 gönder" düğmesi açık. 31 satırın rozet dağılımı: Aktif 19 · Sözleşme gönderildi 9 ·
 Başvuru alındı 2 · Sözleşme reddedildi 1. `982ee73`
